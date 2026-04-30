@@ -1,0 +1,335 @@
+{
+  "schema_version": "openings_seed_v1",
+  "lines": [
+    {
+      "eco_code": "C50",
+      "name": "Italian Game",
+      "variation": "Main Line",
+      "color": "both",
+      "moves_uci": ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4"],
+      "target_depth_plies": 5,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "C55",
+      "name": "Italian Game",
+      "variation": "Two Knights Defense",
+      "color": "both",
+      "moves_uci": ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "g8f6"],
+      "target_depth_plies": 6,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "C54",
+      "name": "Italian Game",
+      "variation": "Giuoco Piano",
+      "color": "both",
+      "moves_uci": ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "f8c5"],
+      "target_depth_plies": 6,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "C60",
+      "name": "Ruy Lopez",
+      "variation": "Main Line",
+      "color": "both",
+      "moves_uci": ["e2e4", "e7e5", "g1f3", "b8c6", "f1b5"],
+      "target_depth_plies": 5,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "C78",
+      "name": "Ruy Lopez",
+      "variation": "Morphy Defense",
+      "color": "both",
+      "moves_uci": ["e2e4", "e7e5", "g1f3", "b8c6", "f1b5", "a7a6"],
+      "target_depth_plies": 6,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "B20",
+      "name": "Sicilian Defense",
+      "variation": "Main Line",
+      "color": "both",
+      "moves_uci": ["e2e4", "c7c5"],
+      "target_depth_plies": 2,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "B50",
+      "name": "Sicilian Defense",
+      "variation": "Open Sicilian",
+      "color": "both",
+      "moves_uci": ["e2e4", "c7c5", "g1f3", "d7d6", "d2d4", "c5d4", "f3d4"],
+      "target_depth_plies": 7,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "C00",
+      "name": "French Defense",
+      "variation": "Main Line",
+      "color": "both",
+      "moves_uci": ["e2e4", "e7e6"],
+      "target_depth_plies": 2,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "C02",
+      "name": "French Defense",
+      "variation": "Advance Variation",
+      "color": "both",
+      "moves_uci": ["e2e4", "e7e6", "d2d4", "d7d5", "e4e5"],
+      "target_depth_plies": 5,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "B10",
+      "name": "Caro-Kann Defense",
+      "variation": "Main Line",
+      "color": "both",
+      "moves_uci": ["e2e4", "c7c6"],
+      "target_depth_plies": 2,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "B12",
+      "name": "Caro-Kann Defense",
+      "variation": "Advance Variation",
+      "color": "both",
+      "moves_uci": ["e2e4", "c7c6", "d2d4", "d7d5", "e4e5"],
+      "target_depth_plies": 5,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "D06",
+      "name": "Queen's Gambit",
+      "variation": "Main Line",
+      "color": "both",
+      "moves_uci": ["d2d4", "d7d5", "c2c4"],
+      "target_depth_plies": 3,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "D30",
+      "name": "Queen's Gambit",
+      "variation": "Declined",
+      "color": "both",
+      "moves_uci": ["d2d4", "d7d5", "c2c4", "e7e6"],
+      "target_depth_plies": 4,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "D20",
+      "name": "Queen's Gambit",
+      "variation": "Accepted",
+      "color": "both",
+      "moves_uci": ["d2d4", "d7d5", "c2c4", "d5c4"],
+      "target_depth_plies": 4,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "D02",
+      "name": "London System",
+      "variation": null,
+      "color": "white",
+      "moves_uci": ["d2d4", "d7d5", "g1f3", "g8f6", "c1f4"],
+      "target_depth_plies": 5,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "E60",
+      "name": "King's Indian Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["d2d4", "g8f6", "c2c4", "g7g6", "b1c3", "f8g7"],
+      "target_depth_plies": 6,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "D10",
+      "name": "Slav Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["d2d4", "d7d5", "c2c4", "c7c6"],
+      "target_depth_plies": 4,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "B01",
+      "name": "Scandinavian Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["e2e4", "d7d5"],
+      "target_depth_plies": 2,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "B07",
+      "name": "Pirc Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["e2e4", "d7d6", "d2d4", "g8f6", "b1c3", "g7g6"],
+      "target_depth_plies": 6,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "A10",
+      "name": "English Opening",
+      "variation": "Main Line",
+      "color": "white",
+      "moves_uci": ["c2c4"],
+      "target_depth_plies": 1,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "A04",
+      "name": "Reti Opening",
+      "variation": "Main Line",
+      "color": "white",
+      "moves_uci": ["g1f3", "d7d5", "c2c4"],
+      "target_depth_plies": 3,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "E20",
+      "name": "Nimzo-Indian Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["d2d4", "g8f6", "c2c4", "e7e6", "b1c3", "f8b4"],
+      "target_depth_plies": 6,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "E12",
+      "name": "Queen's Indian Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["d2d4", "g8f6", "c2c4", "e7e6", "g1f3", "b7b6"],
+      "target_depth_plies": 6,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "A80",
+      "name": "Dutch Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["d2d4", "f7f5"],
+      "target_depth_plies": 2,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "B02",
+      "name": "Alekhine Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["e2e4", "g8f6"],
+      "target_depth_plies": 2,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "B06",
+      "name": "Modern Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["e2e4", "g7g6", "d2d4", "f8g7"],
+      "target_depth_plies": 4,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "E01",
+      "name": "Catalan Opening",
+      "variation": "Main Line",
+      "color": "white",
+      "moves_uci": ["d2d4", "g8f6", "c2c4", "e7e6", "g2g3", "d7d5", "f1g2"],
+      "target_depth_plies": 7,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "C30",
+      "name": "King's Gambit",
+      "variation": "Main Line",
+      "color": "white",
+      "moves_uci": ["e2e4", "e7e5", "f2f4"],
+      "target_depth_plies": 3,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "C25",
+      "name": "Vienna Game",
+      "variation": "Main Line",
+      "color": "white",
+      "moves_uci": ["e2e4", "e7e5", "b1c3"],
+      "target_depth_plies": 3,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "C45",
+      "name": "Scotch Game",
+      "variation": "Main Line",
+      "color": "white",
+      "moves_uci": ["e2e4", "e7e5", "g1f3", "b8c6", "d2d4"],
+      "target_depth_plies": 5,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "C42",
+      "name": "Petrov Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["e2e4", "e7e5", "g1f3", "g8f6"],
+      "target_depth_plies": 4,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "C41",
+      "name": "Philidor Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["e2e4", "e7e5", "g1f3", "d7d6"],
+      "target_depth_plies": 4,
+      "parent_line_name": null,
+      "note": null
+    },
+    {
+      "eco_code": "D85",
+      "name": "Grunfeld Defense",
+      "variation": "Main Line",
+      "color": "black",
+      "moves_uci": ["d2d4", "g8f6", "c2c4", "g7g6", "b1c3", "d7d5"],
+      "target_depth_plies": 6,
+      "parent_line_name": null,
+      "note": null
+    }
+  ]
+}

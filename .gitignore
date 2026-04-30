@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# Local DB / data
+neurochess.db
+neurochess.db-journal
+*.sqlite
+*.sqlite3
+
+# Logs / temp
+logs/
+.tmp/
+.tmp-tests/
+*.log
+*.err
+
+# Secrets / local config
+.env
+.env.*
+!.env.example
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Stockfish binary (large, platform-specific)
+backend/neurochess/stockfish.exe
+
+# Lichess opening sources (large data files)
+backend/neurochess/data/sources/
+
+# Generated opening book
+backend/neurochess/data/openings_book.json
