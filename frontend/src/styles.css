@@ -1134,7 +1134,7 @@ button:focus-visible {
   border-radius: 8px;
   display: grid;
   gap: 4px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   padding: 4px;
 }
 
@@ -1154,6 +1154,202 @@ button:focus-visible {
   background: #ffffff;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
   color: #172033;
+}
+
+.review-cockpit-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.review-cockpit-hero,
+.review-cockpit-section,
+.review-game-story {
+  background: #ffffff;
+  border: 1px solid #d8e0eb;
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 0.85rem;
+}
+
+.review-cockpit-hero {
+  align-items: start;
+  grid-template-columns: minmax(0, 1.15fr) minmax(210px, 0.85fr);
+}
+
+.review-cockpit-score,
+.review-cockpit-meta {
+  display: grid;
+  gap: 6px;
+}
+
+.review-cockpit-score span,
+.review-cockpit-meta span,
+.review-cockpit-indicator span,
+.review-cockpit-indicator em,
+.review-game-story-event span,
+.review-game-story-event em {
+  color: #657386;
+  font-size: 0.74rem;
+  font-style: normal;
+  font-weight: 820;
+}
+
+.review-cockpit-score strong {
+  color: #172033;
+  font-size: 1.58rem;
+  line-height: 1.05;
+}
+
+.review-cockpit-score p,
+.review-cockpit-empty,
+.review-cockpit-takeaways {
+  color: #526071;
+  font-size: 0.86rem;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.review-cockpit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.review-cockpit-indicators {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.review-cockpit-indicator {
+  background: #f8fbff;
+  border: 1px solid #d8e0eb;
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 0.68rem;
+}
+
+.review-cockpit-indicator strong {
+  color: #172033;
+  font-size: 0.98rem;
+}
+
+.review-cockpit-indicator-good {
+  border-color: #9bd2aa;
+}
+
+.review-cockpit-indicator-watch,
+.review-cockpit-indicator-fragile {
+  border-color: #f0bf73;
+}
+
+.review-cockpit-indicator-critical {
+  border-color: #eea09b;
+}
+
+.review-game-story-track {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+}
+
+.review-game-story-event {
+  background: #f8fbff;
+  border: 1px solid #d8e0eb;
+  border-radius: 8px;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+  min-height: 74px;
+  padding: 0.58rem;
+  text-align: left;
+}
+
+.review-game-story-event strong {
+  color: #172033;
+  font-size: 0.84rem;
+}
+
+.review-game-story-info {
+  border-color: #9ec6ef;
+}
+
+.review-game-story-warning {
+  border-color: #f0bf73;
+}
+
+.review-game-story-critical {
+  border-color: #eea09b;
+}
+
+.review-game-story-positive {
+  border-color: #9bd2aa;
+}
+
+.review-cockpit-priority-list,
+.review-cockpit-takeaways {
+  display: grid;
+  gap: 7px;
+  list-style: none;
+  padding: 0;
+}
+
+.review-cockpit-priority-list {
+  margin: 0;
+}
+
+.review-cockpit-priority-list button {
+  align-items: center;
+  background: #f8fbff;
+  border: 1px solid #d8e0eb;
+  border-radius: 8px;
+  color: #172033;
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: 8px;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  padding: 0.52rem 0.62rem;
+  text-align: left;
+  width: 100%;
+}
+
+.review-cockpit-priority-list span {
+  background: #eaf2ff;
+  border-radius: 999px;
+  color: #24496f;
+  font-size: 0.72rem;
+  font-weight: 880;
+  padding: 0.12rem 0.42rem;
+}
+
+.review-cockpit-priority-list strong {
+  font-size: 0.84rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-cockpit-priority-list em,
+.review-cockpit-priority-list b {
+  color: #657386;
+  font-size: 0.74rem;
+  font-style: normal;
+}
+
+.review-cockpit-takeaways {
+  margin: 0;
+}
+
+.review-cockpit-takeaways li {
+  background: #f8fbff;
+  border: 1px solid #d8e0eb;
+  border-radius: 8px;
+  padding: 0.58rem 0.64rem;
 }
 
 .review-opening-reality {
@@ -2296,7 +2492,8 @@ button:focus-visible {
 }
 
 .actions button:last-of-type,
-.review-action-row button.primary {
+.review-action-row button.primary,
+.review-cockpit-actions button.primary {
   background: linear-gradient(90deg, var(--nc-cyan), var(--nc-blue));
   border-color: rgba(0, 229, 255, 0.6);
   color: #02111d;
@@ -2310,6 +2507,9 @@ button:focus-visible {
 .review-step-status-panel,
 .right-panel,
 .review-score-summary,
+.review-cockpit-hero,
+.review-cockpit-section,
+.review-game-story,
 .review-coach-moment,
 .review-opening-reality,
 .review-practice-launch,
@@ -2395,6 +2595,10 @@ button:focus-visible {
 .review-coach-moment-head h3,
 .review-line-comparison-head strong,
 .review-line-card strong,
+.review-cockpit-score strong,
+.review-cockpit-indicator strong,
+.review-game-story-event strong,
+.review-cockpit-priority-list strong,
 .review-coach-type,
 .review-headline-score strong,
 .review-score-metric strong {
@@ -2410,6 +2614,16 @@ button:focus-visible {
 .review-legacy-moments,
 .review-analysis-origin,
 .review-analysis-settings,
+.review-cockpit-score span,
+.review-cockpit-score p,
+.review-cockpit-meta span,
+.review-cockpit-indicator span,
+.review-cockpit-indicator em,
+.review-game-story-event span,
+.review-game-story-event em,
+.review-cockpit-priority-list em,
+.review-cockpit-priority-list b,
+.review-cockpit-takeaways,
 .review-practice-card span,
 .review-practice-head span,
 .review-practice-history-head span,
@@ -2435,6 +2649,10 @@ button:focus-visible {
 .review-practice-theme,
 .review-compact-row,
 .review-section-tab,
+.review-cockpit-indicator,
+.review-game-story-event,
+.review-cockpit-priority-list button,
+.review-cockpit-takeaways li,
 .review-score-debug-block,
 .review-reset-picker,
 .review-job-debug,
@@ -2503,6 +2721,56 @@ button:focus-visible {
   background:
     radial-gradient(circle at 12% 18%, rgba(0, 229, 255, 0.12), transparent 34%),
     rgba(9, 11, 29, 0.86);
+}
+
+.review-cockpit-hero {
+  background:
+    linear-gradient(135deg, rgba(0, 229, 255, 0.1), transparent 42%),
+    rgba(9, 11, 29, 0.9);
+}
+
+.review-cockpit-score strong {
+  color: var(--nc-cyan);
+  text-shadow: 0 0 22px rgba(0, 229, 255, 0.22);
+}
+
+.review-cockpit-indicator-good,
+.review-game-story-positive {
+  border-color: rgba(48, 242, 164, 0.34);
+}
+
+.review-cockpit-indicator-good strong,
+.review-game-story-positive strong {
+  color: #30f2a4;
+}
+
+.review-cockpit-indicator-watch,
+.review-cockpit-indicator-fragile,
+.review-game-story-warning {
+  border-color: rgba(249, 180, 76, 0.34);
+}
+
+.review-cockpit-indicator-watch strong,
+.review-cockpit-indicator-fragile strong,
+.review-game-story-warning strong {
+  color: #ffd28b;
+}
+
+.review-cockpit-indicator-critical,
+.review-game-story-critical {
+  border-color: rgba(255, 76, 120, 0.38);
+}
+
+.review-cockpit-indicator-critical strong,
+.review-game-story-critical strong {
+  color: #ff8aaa;
+}
+
+.review-cockpit-indicator-unknown,
+.review-cockpit-indicator-neutral,
+.review-game-story-info,
+.review-game-story-neutral {
+  border-color: rgba(0, 229, 255, 0.2);
 }
 
 .review-headline-score strong {
@@ -2676,8 +2944,18 @@ button:focus-visible {
 
   .review-coach-grid,
   .review-line-comparison-grid,
-  .review-coach-impact {
+  .review-coach-impact,
+  .review-cockpit-hero,
+  .review-cockpit-indicators {
     grid-template-columns: 1fr;
+  }
+
+  .review-focus-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .review-cockpit-priority-list button {
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
   .review-lesson-stepper {

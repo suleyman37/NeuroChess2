@@ -475,7 +475,8 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("fen_after_exit?: string | null", client_source)
         self.assertIn("OpeningRealityCard", review_panel_source)
         self.assertIn("ReviewFocusTabs", review_panel_source)
-        self.assertIn('useState<ReviewFocusKey>("lesson")', review_panel_source)
+        self.assertIn('useState<ReviewFocusKey>("summary")', review_panel_source)
+        self.assertIn("Synthèse", review_panel_source)
         self.assertIn("Leçon", review_panel_source)
         self.assertIn("Ouverture", review_panel_source)
         self.assertIn("Entraînement", review_panel_source)
@@ -521,9 +522,10 @@ class CalibrationLogicTests(unittest.TestCase):
         for step in ('"observe"', '"try"', '"played"', '"solution"', '"compare"', '"takeaway"'):
             self.assertIn(step, review_panel_source)
 
-        self.assertIn('useState<ReviewFocusKey>("lesson")', review_panel_source)
-        for label in ("Leçon", "Ouverture", "Entraînement", "Explorer"):
+        self.assertIn('useState<ReviewFocusKey>("summary")', review_panel_source)
+        for label in ("Synthèse", "Leçon", "Ouverture", "Entraînement", "Explorer"):
             self.assertIn(label, review_panel_source)
+        self.assertIn('{effectiveFocus === "summary" && (', normalized_panel)
         self.assertIn('{effectiveFocus === "lesson" && (', normalized_panel)
         self.assertIn('{effectiveFocus === "opening" && (', normalized_panel)
         self.assertIn('{effectiveFocus === "practice" && (', normalized_panel)
@@ -577,6 +579,87 @@ class CalibrationLogicTests(unittest.TestCase):
         coach_card_body = normalized_panel[coach_card_start:comparison_function_start]
         self.assertNotIn("ReviewPvContrastTechnicalDetails", coach_card_body)
         self.assertNotIn("Détails techniques PV", coach_card_body)
+        self.assertNotIn("best branch", review_panel_source.lower())
+        self.assertNotIn("best branch", app_source.lower())
+
+    def test_v5_4_ui_2_review_cockpit_contract_is_staticly_present(self) -> None:
+        review_panel_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
+        ).read_text(encoding="utf-8")
+        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
+            encoding="utf-8"
+        )
+        styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
+            encoding="utf-8"
+        )
+        normalized_panel = review_panel_source.replace("\r\n", "\n")
+        normalized_app = app_source.replace("\r\n", "\n")
+
+        self.assertIn(
+            'type ReviewFocusKey = "summary" | "lesson" | "opening" | "practice" | "explorer"',
+            review_panel_source,
+        )
+        self.assertIn('useState<ReviewFocusKey>("summary")', review_panel_source)
+        for label in ("Synthèse", "Leçon", "Ouverture", "Entraînement", "Explorer"):
+            self.assertIn(label, review_panel_source)
+        for guard in (
+            '{effectiveFocus === "summary" && (',
+            '{effectiveFocus === "lesson" && (',
+            '{effectiveFocus === "opening" && (',
+            '{effectiveFocus === "practice" && (',
+            '{effectiveFocus === "explorer" && (',
+        ):
+            self.assertIn(guard, normalized_panel)
+
+        self.assertIn("ReviewCockpitSummary", review_panel_source)
+        self.assertIn("reviewCockpitIndicators", review_panel_source)
+        self.assertIn("reviewCockpitOpeningIndicator", review_panel_source)
+        self.assertIn("isTacticalCockpitMoment", review_panel_source)
+        self.assertIn("isConversionCockpitMoment", review_panel_source)
+        self.assertIn("isDefenseCockpitMoment", review_panel_source)
+        self.assertIn("GameStoryTimeline", review_panel_source)
+        self.assertIn("gameStoryTimeline", review_panel_source)
+        self.assertIn("3 priorités", review_panel_source)
+        self.assertIn("3 choses à retenir", review_panel_source)
+        self.assertIn("S'entraîner sur cette Review", review_panel_source)
+        self.assertIn("Voir la leçon du moment clé", review_panel_source)
+        self.assertIn("Lancer l'analyse recommandée", review_panel_source)
+        self.assertIn('data-review-incomplete-single-cta="true"', review_panel_source)
+
+        summary_start = normalized_panel.index("function ReviewCockpitSummary")
+        indicator_start = normalized_panel.index("function ReviewCockpitIndicatorRow")
+        summary_body = normalized_panel[summary_start:indicator_start]
+        for token in ("NeuroChess", "reviewCockpitIndicators", "GameStoryTimeline", "reviewCockpitPriorities"):
+            self.assertIn(token, summary_body)
+        self.assertNotIn("ReviewAnalysisOptions", summary_body)
+        self.assertNotIn("ReviewPvContrastTechnicalDetails", summary_body)
+
+        incomplete_start = normalized_panel.index('if (!review || review.status === "not_generated")')
+        incomplete_end = normalized_panel.index("return (\n    <div className=\"review-content\">", incomplete_start)
+        incomplete_body = normalized_panel[incomplete_start:incomplete_end]
+        self.assertIn("ReviewAnalysisUnavailableMessage", incomplete_body)
+        self.assertNotIn("ReviewAnalysisProfileSelector", incomplete_body)
+        self.assertNotIn("Analyse standard recommandée", incomplete_body)
+
+        self.assertIn('<details className="review-score-details">', normalized_panel)
+        self.assertNotIn('<details className="review-score-details" open', normalized_panel)
+        self.assertIn('<details className="review-analysis-options">', normalized_panel)
+        self.assertNotIn('<details className="review-analysis-options" open', normalized_panel)
+        self.assertIn("<summary>Détails techniques</summary>", normalized_panel)
+        self.assertIn("<summary>Options d'analyse</summary>", normalized_panel)
+
+        self.assertIn("setReviewFocusKey(\"summary\")", normalized_app)
+        self.assertIn("focusKey === \"summary\"", normalized_app)
+        self.assertIn("Sélectionne un moment pour voir la leçon.", app_source)
+        self.assertIn("Position de sortie du livre.", app_source)
+        self.assertIn('activeTab === "review" && (', normalized_app)
+
+        self.assertIn(".review-cockpit-summary", styles_source)
+        self.assertIn(".review-cockpit-indicators", styles_source)
+        self.assertIn(".review-game-story", styles_source)
+        self.assertIn("grid-template-columns: repeat(5, minmax(0, 1fr));", styles_source)
+
+        self.assertNotIn("Meilleur choix", review_panel_source)
         self.assertNotIn("best branch", review_panel_source.lower())
         self.assertNotIn("best branch", app_source.lower())
 
@@ -1252,7 +1335,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertNotIn('<option value="quick">', review_panel_source)
         self.assertIn("Standard recommand", review_panel_source)
         self.assertIn("Approfondie", review_panel_source)
-        self.assertIn("Analyse standard recommand", review_panel_source)
+        self.assertIn("Lancer l'analyse recommand", review_panel_source)
         self.assertIn("Analyse rapide disponible", review_panel_source)
         self.assertIn("Stockfish MultiPV", review_panel_source)
         self.assertIn("Debug score Review", review_panel_source)

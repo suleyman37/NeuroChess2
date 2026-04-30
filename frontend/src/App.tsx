@@ -334,6 +334,7 @@ export default function App() {
   const [reviewAnalysisProfile, setReviewAnalysisProfile] =
     useState<ReviewAnalysisProfile>("standard");
   const [selectedReviewPov, setSelectedReviewPov] = useState<ReviewPov>("both");
+  const [reviewFocusKey, setReviewFocusKey] = useState<string>("summary");
   const [reviewPollingActiveDebug, setReviewPollingActiveDebug] =
     useState(false);
   const [reviewPendingStartedAtDebug, setReviewPendingStartedAtDebug] =
@@ -526,6 +527,10 @@ export default function App() {
   useEffect(() => {
     setSelectedReviewPov(readReviewPovPreference(gameId, review));
   }, [gameId, review?.user_color]);
+
+  useEffect(() => {
+    setReviewFocusKey("summary");
+  }, [gameId, review?.game_id, review?.status]);
 
   useEffect(() => {
     setOpeningIntentionNote(readOpeningIntentionNote(gameId));
@@ -3270,6 +3275,7 @@ export default function App() {
   }
 
   function handleReviewFocusChange(focus: string) {
+    setReviewFocusKey(focus);
     clearReviewOverlays(`review_focus_${focus}`);
     resetSolutionReveal(`review_focus_${focus}`);
   }
@@ -3819,13 +3825,15 @@ export default function App() {
               </button>
             )}
           </div>
-          {positionMode === "REVIEW" && (
+          {activeTab === "review" && (
             <ReviewStepStatusPanel
+              focusKey={reviewFocusKey}
               annotation={selectedReviewAnnotation}
               moment={selectedReviewMoment}
               guidedPhase={guidedReplayPhase}
               pvLineState={reviewPvLineState}
               practiceState={reviewPracticeState}
+              openingFocusMessage={reviewOpeningFocusMessage}
               canPrevious={reviewStepStatusCanPrevious}
               canNext={reviewStepStatusCanNext}
               canReplay={reviewStepStatusCanReplay}
@@ -5052,11 +5060,13 @@ function guidedReplayPhaseLabel(phase: GuidedReplayPhase): string {
 }
 
 function ReviewStepStatusPanel({
+  focusKey,
   annotation,
   moment,
   guidedPhase,
   pvLineState,
   practiceState,
+  openingFocusMessage,
   canPrevious,
   canNext,
   canReplay,
@@ -5064,11 +5074,13 @@ function ReviewStepStatusPanel({
   onNext,
   onReplay,
 }: {
+  focusKey: string;
   annotation: ReviewMoveAnnotation | null;
   moment: ReviewMoment | null;
   guidedPhase: GuidedReplayPhase | null;
   pvLineState: ReviewPvLineState | null;
   practiceState: ReviewPracticeState | null;
+  openingFocusMessage: string | null;
   canPrevious: boolean;
   canNext: boolean;
   canReplay: boolean;
@@ -5077,11 +5089,13 @@ function ReviewStepStatusPanel({
   onReplay: () => void;
 }) {
   const status = reviewStepStatusCopy(
+    focusKey,
     annotation,
     moment,
     guidedPhase,
     pvLineState,
     practiceState,
+    openingFocusMessage,
   );
   if (!status) {
     return null;
@@ -5109,12 +5123,26 @@ function ReviewStepStatusPanel({
 }
 
 function reviewStepStatusCopy(
+  focusKey: string,
   annotation: ReviewMoveAnnotation | null,
   moment: ReviewMoment | null,
   guidedPhase: GuidedReplayPhase | null,
   pvLineState: ReviewPvLineState | null,
   practiceState: ReviewPracticeState | null,
+  openingFocusMessage: string | null,
 ): { title: string; message: string; detail?: string } | null {
+  if (focusKey === "summary" && !practiceState?.active && !pvLineState?.active) {
+    return {
+      title: "Synthèse",
+      message: "Sélectionne un moment pour voir la leçon.",
+    };
+  }
+  if (focusKey === "opening" && !practiceState?.active && !pvLineState?.active) {
+    return {
+      title: "Ouverture",
+      message: openingFocusMessage ?? "Position de sortie du livre.",
+    };
+  }
   if (practiceState?.active) {
     if (practiceState.itemState === "attempted") {
       return {

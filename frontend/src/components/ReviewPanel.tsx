@@ -188,7 +188,7 @@ export type ReviewLessonStep =
   | "solution"
   | "compare"
   | "takeaway";
-type ReviewFocusKey = "lesson" | "opening" | "practice" | "explorer";
+type ReviewFocusKey = "summary" | "lesson" | "opening" | "practice" | "explorer";
 
 export function ReviewPanel({
   review,
@@ -255,7 +255,7 @@ export function ReviewPanel({
   const [resetPickerOpen, setResetPickerOpen] = useState(false);
   const [activeSection, setActiveSection] =
     useState<ReviewSectionKey>("to_review");
-  const [activeFocus, setActiveFocus] = useState<ReviewFocusKey>("lesson");
+  const [activeFocus, setActiveFocus] = useState<ReviewFocusKey>("summary");
   const [lessonStep, setLessonStep] = useState<ReviewLessonStep>("observe");
   const [selectedCoachPly, setSelectedCoachPly] = useState<number | null>(null);
   const displayStatus = reviewPanelDisplayStatus(review, uiState);
@@ -290,6 +290,13 @@ export function ReviewPanel({
     setLessonStep("observe");
   }, [selectedLessonKey]);
 
+  useEffect(() => {
+    setActiveFocus("summary");
+    setActiveSection("to_review");
+    setSelectedCoachPly(null);
+    setLessonStep("observe");
+  }, [review?.game_id, review?.status]);
+
   function handleReviewPovChange(nextPov: ReviewPov) {
     setSelectedCoachPly(null);
     setActiveSection("to_review");
@@ -315,10 +322,50 @@ export function ReviewPanel({
     setLessonStep("observe");
   }
 
+  function openLessonForAnnotation(annotation: ReviewMoveAnnotation | null) {
+    if (!annotation) {
+      return;
+    }
+    handleCoachAnnotationSelect(annotation.ply ?? null);
+    setActiveFocus("lesson");
+    onReviewFocusChange("lesson");
+    onShowAnnotation(annotation, annotationIndex(review, annotation), "before");
+  }
+
   function handleExplorerAnnotationSelect(ply: number | null) {
+    const annotation =
+      filteredSections.all.find((candidate) => candidate.ply === ply) ?? null;
+    if (annotation) {
+      openLessonForAnnotation(annotation);
+      return;
+    }
     handleCoachAnnotationSelect(ply);
     setActiveFocus("lesson");
     onReviewFocusChange("lesson");
+  }
+
+  function handleSummaryPracticeStart() {
+    setActiveFocus("practice");
+    onReviewFocusChange("practice");
+    onStartPractice();
+  }
+
+  function handleTimelineEventSelect(event: GameStoryEvent) {
+    if (event.annotation) {
+      openLessonForAnnotation(event.annotation);
+      return;
+    }
+    if (event.focus === "opening") {
+      setActiveFocus("opening");
+      onReviewFocusChange("opening");
+      if (event.openingEvidence && event.showOpeningExit) {
+        onShowOpeningExit(event.openingEvidence);
+      }
+      return;
+    }
+    if (event.focus) {
+      handleReviewFocusChange(event.focus);
+    }
   }
 
   function handleNextLessonMoment() {
@@ -346,6 +393,21 @@ export function ReviewPanel({
           activeFocus={effectiveFocus}
           onFocusChange={handleReviewFocusChange}
         />
+        {effectiveFocus === "summary" && (
+          <ReviewCockpitSummary
+            review={review}
+            povContext={povContext}
+            filteredSections={filteredSections}
+            selectedCoachAnnotation={selectedCoachAnnotation}
+            practiceEligibleCount={practiceEligibleCount}
+            onPovChange={handleReviewPovChange}
+            onRebuildMetrics={onRebuildMetrics}
+            onStartPractice={handleSummaryPracticeStart}
+            onOpenLesson={openLessonForAnnotation}
+            onFocusChange={handleReviewFocusChange}
+            onTimelineEventSelect={handleTimelineEventSelect}
+          />
+        )}
         {effectiveFocus === "lesson" && (
           <ReviewCoachMomentCard
             annotation={selectedCoachAnnotation}
@@ -570,22 +632,19 @@ export function ReviewPanel({
     review?.review_analysis_state === "incomplete"
   ) {
     return (
-      <ReviewMessage>
-        <div className="review-job-progress" data-testid="review-status">
-          <strong>Analyse incomplète</strong>
-          <span>
-            {review.completed_position_count ?? review.deep_done_count ?? 0}/
-            {review.required_position_count ?? review.total_required_deep_count ?? 0} positions
-          </span>
-          <div className="review-action-row">
-            <button data-testid="review-resume" onClick={() => onRetry()}>Reprendre</button>
-            <button onClick={() => setResetPickerOpen((open) => !open)}>
-              Relancer depuis zéro
-            </button>
-          </div>
-          {resetPicker}
-        </div>
-      </ReviewMessage>
+      <ReviewAnalysisUnavailableMessage
+        title="Analyse non disponible"
+        detail={`Analyse incomplète · ${review.completed_position_count ?? review.deep_done_count ?? 0}/${
+          review.required_position_count ?? review.total_required_deep_count ?? 0
+        } positions`}
+        analysisProfile={analysisProfile}
+        onAnalysisProfileChange={onAnalysisProfileChange}
+        onRunRecommended={() => onRetry({ profile: "standard" })}
+        onRunStandard={() => onRetry({ profile: "standard" })}
+        onRunDeep={() => onRetry({ profile: "deep" })}
+        resetPicker={resetPicker}
+        onToggleResetPicker={() => setResetPickerOpen((open) => !open)}
+      />
     );
   }
 
@@ -627,13 +686,15 @@ export function ReviewPanel({
     return (
       <div className="review-content">
         <div className="panel-title">Review coach</div>
-        <ReviewScoreSummary
-          review={review}
-          povContext={povContext}
-          filteredSections={filteredSections}
-          onPovChange={handleReviewPovChange}
-          onRebuildMetrics={onRebuildMetrics}
-        />
+        {effectiveFocus !== "summary" && (
+          <ReviewScoreSummary
+            review={review}
+            povContext={povContext}
+            filteredSections={filteredSections}
+            onPovChange={handleReviewPovChange}
+            onRebuildMetrics={onRebuildMetrics}
+          />
+        )}
         {/* REVIEW_NO_SIGNIFICANT_MOMENTS_MESSAGE is rendered by the focused module. */}
         {renderFocusedReviewModule(true)}
         {!practiceState?.active && (
@@ -677,32 +738,30 @@ export function ReviewPanel({
 
   if (!review || review.status === "not_generated") {
     return (
-      <ReviewMessage>
-        <span>Cette partie peut être relue avec l'analyse approfondie.</span>
-        <ReviewAnalysisProfileSelector
-          value={analysisProfile}
-          onChange={onAnalysisProfileChange}
-        />
-        <button onClick={() => onGenerate({ profile: "standard" })}>
-          Analyse standard recommandée
-        </button>
-        <button onClick={() => onGenerate({ profile: "deep" })}>
-          Analyse approfondie
-        </button>
-      </ReviewMessage>
+      <ReviewAnalysisUnavailableMessage
+        title="Analyse non disponible"
+        detail="L'analyse recommandée utilise un profil fiable pour construire la Review."
+        analysisProfile={analysisProfile}
+        onAnalysisProfileChange={onAnalysisProfileChange}
+        onRunRecommended={() => onGenerate({ profile: "standard" })}
+        onRunStandard={() => onGenerate({ profile: "standard" })}
+        onRunDeep={() => onGenerate({ profile: "deep" })}
+      />
     );
   }
 
   return (
     <div className="review-content">
       <div className="panel-title">Review coach</div>
-      <ReviewScoreSummary
-        review={review}
-        povContext={povContext}
-        filteredSections={filteredSections}
-        onPovChange={handleReviewPovChange}
-        onRebuildMetrics={onRebuildMetrics}
-      />
+      {effectiveFocus !== "summary" && (
+        <ReviewScoreSummary
+          review={review}
+          povContext={povContext}
+          filteredSections={filteredSections}
+          onPovChange={handleReviewPovChange}
+          onRebuildMetrics={onRebuildMetrics}
+        />
+      )}
       {renderFocusedReviewModule()}
       {!practiceState?.active && (
         <ReviewAnalysisOptions
@@ -772,6 +831,7 @@ const REVIEW_SECTION_TABS: Array<{
 ];
 
 const REVIEW_FOCUS_TABS: Array<{ key: ReviewFocusKey; label: string }> = [
+  { key: "summary", label: "Synthèse" },
   { key: "lesson", label: "Leçon" },
   { key: "opening", label: "Ouverture" },
   { key: "practice", label: "Entraînement" },
@@ -800,6 +860,239 @@ function ReviewFocusTabs({
         </button>
       ))}
     </div>
+  );
+}
+
+type ReviewCockpitIndicator = {
+  key: "opening" | "tactical" | "conversion" | "defense";
+  label: string;
+  statusLabel: string;
+  detail: string;
+  tone: "good" | "watch" | "fragile" | "critical" | "neutral" | "unknown";
+};
+
+type GameStoryEvent = {
+  id: string;
+  label: string;
+  moveLabel: string;
+  impactLabel: string;
+  tone: "info" | "warning" | "critical" | "positive" | "neutral";
+  focus?: ReviewFocusKey;
+  annotation?: ReviewMoveAnnotation;
+  openingEvidence?: OpeningRealityEvidence;
+  showOpeningExit?: boolean;
+};
+
+function ReviewCockpitSummary({
+  review,
+  povContext,
+  filteredSections,
+  selectedCoachAnnotation,
+  practiceEligibleCount,
+  onPovChange,
+  onRebuildMetrics,
+  onStartPractice,
+  onOpenLesson,
+  onFocusChange,
+  onTimelineEventSelect,
+}: {
+  review: ReviewResponse | null;
+  povContext: ReviewPovContext;
+  filteredSections: ReviewSections;
+  selectedCoachAnnotation: ReviewMoveAnnotation | null;
+  practiceEligibleCount: number;
+  onPovChange: (pov: ReviewPov) => void;
+  onRebuildMetrics: () => void;
+  onStartPractice: () => void;
+  onOpenLesson: (annotation: ReviewMoveAnnotation | null) => void;
+  onFocusChange: (focus: ReviewFocusKey) => void;
+  onTimelineEventSelect: (event: GameStoryEvent) => void;
+}) {
+  if (!review) {
+    return null;
+  }
+
+  const indicators = reviewCockpitIndicators(review, filteredSections);
+  const timeline = gameStoryTimeline(review, filteredSections);
+  const priorities = reviewCockpitPriorities(filteredSections);
+  const takeaways = reviewCockpitTakeaways(indicators, review, filteredSections);
+  const mainMoment = selectedCoachAnnotation ?? priorities[0] ?? filteredSections.all[0] ?? null;
+  const confidenceLabel = reviewScoreConfidenceLabel(review.review_score_confidence);
+  const metricsNeedRebuild = reviewMetricsNeedRebuild(review);
+  const headline = headlineScoreForReview(review, povContext);
+  const headlineLabel = headlineLabelForPov(povContext);
+  const headlineDisplay =
+    povContext.targetColor === "both"
+      ? comparisonLabelForPov(review, povContext)
+      : `NeuroChess ${formatHeadlineScore(headline)} / 100`;
+  const summarySentence = reviewSummaryForPov(review, povContext, filteredSections);
+  const scoreDetails = scoreDetailsForPov(review, povContext);
+
+  return (
+    <section className="review-cockpit-summary" aria-label="Synthèse Review Cockpit">
+      <div className="review-cockpit-hero">
+        <div className="review-cockpit-score">
+          <span>{headlineLabel}</span>
+          <strong>{headlineDisplay}</strong>
+          <p>{summarySentence}</p>
+        </div>
+        <div className="review-cockpit-meta">
+          <span>{comparisonLabelForPov(review, povContext)}</span>
+          <span>{reviewCompactAnalysisLabel(review)} · confiance {confidenceLabel}</span>
+          <ReviewPovSelector povContext={povContext} onChange={onPovChange} />
+        </div>
+      </div>
+
+      <div className="review-cockpit-actions">
+        <button
+          type="button"
+          className="primary"
+          onClick={onStartPractice}
+          disabled={practiceEligibleCount <= 0}
+          title={
+            practiceEligibleCount > 0
+              ? "Démarrer une session courte sur les moments prioritaires"
+              : "Aucune position entraînable dans cette Review"
+          }
+        >
+          S'entraîner sur cette Review
+        </button>
+        <button
+          type="button"
+          onClick={() => onOpenLesson(mainMoment)}
+          disabled={!mainMoment}
+        >
+          Voir la leçon du moment clé
+        </button>
+        <button type="button" onClick={() => onFocusChange("explorer")}>
+          Explorer les moments
+        </button>
+      </div>
+
+      {metricsNeedRebuild && (
+        <div className="review-score-rebuild">
+          <span>
+            Cette analyse complète doit être mise à jour avec les nouvelles métriques.
+          </span>
+          <button onClick={onRebuildMetrics}>Recalculer les métriques</button>
+          <small>{reviewScoreAvailabilityReason(review)}</small>
+        </div>
+      )}
+
+      <details className="review-score-details">
+        <summary>Détails du score</summary>
+        <div className="review-score-grid">
+          {scoreDetails.map((metric) => (
+            <ReviewScoreMetric
+              key={metric.label}
+              label={metric.label}
+              value={metric.value}
+              signed={metric.signed}
+              suffix={metric.suffix}
+            />
+          ))}
+        </div>
+        <p className="review-score-note">
+          Le score principal synthétise la qualité moyenne et le diagnostic NeuroChess.
+        </p>
+      </details>
+
+      <ReviewCockpitIndicatorRow indicators={indicators} />
+      <GameStoryTimeline events={timeline} onSelectEvent={onTimelineEventSelect} />
+
+      <section className="review-cockpit-section" aria-label="3 priorités">
+        <div className="review-block-title">
+          <span>3 priorités</span>
+          <strong>{priorities.length}</strong>
+        </div>
+        {priorities.length === 0 ? (
+          <p className="review-cockpit-empty">Aucun moment prioritaire détecté.</p>
+        ) : (
+          <ol className="review-cockpit-priority-list">
+            {priorities.map((annotation, index) => (
+              <li key={`${annotation.ply}-${annotation.uci}-${index}`}>
+                <button type="button" onClick={() => onOpenLesson(annotation)}>
+                  <span>#{index + 1}</span>
+                  <strong>
+                    {errorTypeLabel(annotation.pedagogical_explanation?.error_type, annotation)}
+                  </strong>
+                  <em>Coup {annotation.move_number}</em>
+                  <b>{formatImpact(annotation.win_loss)}</b>
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+
+      <section className="review-cockpit-section" aria-label="3 choses à retenir">
+        <div className="review-block-title">
+          <span>3 choses à retenir</span>
+          <strong>Coach</strong>
+        </div>
+        <ul className="review-cockpit-takeaways">
+          {takeaways.map((takeaway) => (
+            <li key={takeaway}>{takeaway}</li>
+          ))}
+        </ul>
+      </section>
+    </section>
+  );
+}
+
+function ReviewCockpitIndicatorRow({
+  indicators,
+}: {
+  indicators: ReviewCockpitIndicator[];
+}) {
+  return (
+    <div className="review-cockpit-indicators" aria-label="Indicateurs synthétiques">
+      {indicators.map((indicator) => (
+        <div
+          key={indicator.key}
+          className={`review-cockpit-indicator review-cockpit-indicator-${indicator.tone}`}
+          title={indicator.detail}
+        >
+          <span>{indicator.label}</span>
+          <strong>{indicator.statusLabel}</strong>
+          <em>{indicator.detail}</em>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function GameStoryTimeline({
+  events,
+  onSelectEvent,
+}: {
+  events: GameStoryEvent[];
+  onSelectEvent: (event: GameStoryEvent) => void;
+}) {
+  if (events.length === 0) {
+    return null;
+  }
+  return (
+    <section className="review-game-story" aria-label="Frise narrative de la partie">
+      <div className="review-block-title">
+        <span>Frise narrative</span>
+        <strong>{events.length}</strong>
+      </div>
+      <div className="review-game-story-track">
+        {events.map((event) => (
+          <button
+            key={event.id}
+            type="button"
+            className={`review-game-story-event review-game-story-${event.tone}`}
+            onClick={() => onSelectEvent(event)}
+          >
+            <span>{event.label}</span>
+            <strong>{event.moveLabel}</strong>
+            <em>{event.impactLabel}</em>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -2498,7 +2791,7 @@ function ReviewAnalysisOptions({
   return (
     <details className="review-analysis-options">
       <summary>Détails techniques</summary>
-      <div className="review-technical-title">Options d'analyse</div>
+      <div className="review-technical-title">Options avancées</div>
       <div className="review-action-row">
         <button onClick={() => onRetry()}>Recalculer {analysisProfile}</button>
         {analysisProfile !== "deep" && (
@@ -2657,6 +2950,64 @@ function reviewJobReconcileMessage(job: ReviewJobResponse): string {
     return "Le job est marqué terminé, mais la Review finale doit être reconstruite explicitement.";
   }
   return "Le statut est lu sans correction automatique. Vous pouvez lancer une vérification explicite.";
+}
+
+function ReviewAnalysisUnavailableMessage({
+  title,
+  detail,
+  analysisProfile,
+  onAnalysisProfileChange,
+  onRunRecommended,
+  onRunStandard,
+  onRunDeep,
+  resetPicker = null,
+  onToggleResetPicker,
+}: {
+  title: string;
+  detail: string;
+  analysisProfile: "quick" | "standard" | "deep";
+  onAnalysisProfileChange: (profile: "quick" | "standard" | "deep") => void;
+  onRunRecommended: () => void;
+  onRunStandard: () => void;
+  onRunDeep: () => void;
+  resetPicker?: ReactNode;
+  onToggleResetPicker?: () => void;
+}) {
+  return (
+    <ReviewMessage>
+      <div
+        className="review-job-progress review-analysis-unavailable"
+        data-review-incomplete-single-cta="true"
+      >
+        <strong>{title}</strong>
+        <span>Cette partie peut être analysée.</span>
+        <span>{detail}</span>
+        <div className="review-action-row">
+          <button className="primary" onClick={onRunRecommended}>
+            Lancer l'analyse recommandée
+          </button>
+        </div>
+        <details className="review-analysis-options">
+          <summary>Options d'analyse</summary>
+          <ReviewAnalysisProfileSelector
+            value={analysisProfile}
+            onChange={onAnalysisProfileChange}
+          />
+          <div className="review-action-row">
+            <button onClick={onRunStandard}>Standard recommandé</button>
+            <button onClick={onRunDeep}>Approfondie</button>
+            {onToggleResetPicker && (
+              <button onClick={onToggleResetPicker}>Relancer depuis zéro</button>
+            )}
+          </div>
+          {resetPicker}
+          <div className="review-analysis-settings">
+            Les options avancées restent fermées pour garder le mode standard simple.
+          </div>
+        </details>
+      </div>
+    </ReviewMessage>
+  );
 }
 
 function ReviewAnalysisProfileSelector({
@@ -2995,6 +3346,350 @@ function countPracticeEligibleItems(sections: ReviewSections): number {
     }
   }
   return seen.size;
+}
+
+function reviewCockpitPriorities(sections: ReviewSections): ReviewMoveAnnotation[] {
+  const source = sections.to_review.length
+    ? sections.to_review
+    : sections.missed_opportunities.length
+      ? sections.missed_opportunities
+      : sections.all;
+  return source
+    .slice()
+    .sort((left, right) => {
+      const leftRank = left.coach_priority_rank ?? 999;
+      const rightRank = right.coach_priority_rank ?? 999;
+      if (leftRank !== rightRank) {
+        return leftRank - rightRank;
+      }
+      return Number(right.win_loss ?? 0) - Number(left.win_loss ?? 0);
+    })
+    .slice(0, 3);
+}
+
+function reviewCockpitIndicators(
+  review: ReviewResponse,
+  sections: ReviewSections,
+): ReviewCockpitIndicator[] {
+  const annotations = sections.all ?? [];
+  return [
+    reviewCockpitOpeningIndicator(review),
+    reviewCockpitCountIndicator({
+      key: "tactical",
+      label: "Tactique",
+      count: annotations.filter(isTacticalCockpitMoment).length,
+      maxLoss: maxAnnotationLoss(annotations.filter(isTacticalCockpitMoment)),
+      fragileLabel: "Fragile",
+      detailZero: "aucune alerte tactique majeure",
+      detailOne: "1 alerte tactique",
+      detailMany: "alertes tactiques",
+      criticalAt: 3,
+    }),
+    reviewCockpitCountIndicator({
+      key: "conversion",
+      label: "Conversion",
+      count: annotations.filter(isConversionCockpitMoment).length,
+      maxLoss: maxAnnotationLoss(annotations.filter(isConversionCockpitMoment)),
+      fragileLabel: "Fragile",
+      detailZero: "positions favorables bien tenues",
+      detailOne: "1 conversion à revoir",
+      detailMany: "conversions à revoir",
+      criticalAt: 2,
+    }),
+    reviewCockpitCountIndicator({
+      key: "defense",
+      label: "Défense",
+      count: annotations.filter(isDefenseCockpitMoment).length,
+      maxLoss: maxAnnotationLoss(annotations.filter(isDefenseCockpitMoment)),
+      fragileLabel: "Fragile",
+      detailZero: "ressources défensives globalement trouvées",
+      detailOne: "1 ressource défensive manquée",
+      detailMany: "ressources défensives manquées",
+      criticalAt: 2,
+    }),
+  ];
+}
+
+function reviewCockpitOpeningIndicator(review: ReviewResponse): ReviewCockpitIndicator {
+  const evidence = review.opening_reality_evidence;
+  if (!evidence) {
+    return {
+      key: "opening",
+      label: "Ouverture",
+      statusLabel: "Inconnue",
+      detail: "aucune donnée d'ouverture dans ce payload",
+      tone: "unknown",
+    };
+  }
+  if (evidence.status === "not_applicable_from_position") {
+    return {
+      key: "opening",
+      label: "Ouverture",
+      statusLabel: "Non applicable",
+      detail: "position initiale spéciale",
+      tone: "neutral",
+    };
+  }
+  const linkedMoment = evidence.critical_moment_after_exit ?? null;
+  if (linkedMoment) {
+    const loss = Number(linkedMoment.win_loss ?? 0);
+    return {
+      key: "opening",
+      label: "Ouverture",
+      statusLabel: loss >= 12 ? "Fragile" : "À surveiller",
+      detail: openingLinkedMomentLabel(linkedMoment),
+      tone: loss >= 12 ? "fragile" : "watch",
+    };
+  }
+  const exitPly = evidence.exit_ply ?? evidence.out_of_book_ply ?? null;
+  if (typeof exitPly === "number") {
+    return {
+      key: "opening",
+      label: "Ouverture",
+      statusLabel: "Stable",
+      detail: `sortie au ${openingMoveLabel(exitPly)}`,
+      tone: "good",
+    };
+  }
+  if (evidence.available) {
+    return {
+      key: "opening",
+      label: "Ouverture",
+      statusLabel: "Stable",
+      detail: evidence.opening_name ?? "diagnostic disponible",
+      tone: "good",
+    };
+  }
+  return {
+    key: "opening",
+    label: "Ouverture",
+    statusLabel: "Inconnue",
+    detail: evidence.summary ?? "données insuffisantes",
+    tone: "unknown",
+  };
+}
+
+function reviewCockpitCountIndicator({
+  key,
+  label,
+  count,
+  maxLoss,
+  fragileLabel,
+  detailZero,
+  detailOne,
+  detailMany,
+  criticalAt,
+}: {
+  key: "tactical" | "conversion" | "defense";
+  label: string;
+  count: number;
+  maxLoss: number;
+  fragileLabel: string;
+  detailZero: string;
+  detailOne: string;
+  detailMany: string;
+  criticalAt: number;
+}): ReviewCockpitIndicator {
+  if (count <= 0) {
+    return {
+      key,
+      label,
+      statusLabel: "Bonne",
+      detail: detailZero,
+      tone: "good",
+    };
+  }
+  const critical = count >= criticalAt || maxLoss >= 25;
+  return {
+    key,
+    label,
+    statusLabel: critical ? "Critique" : fragileLabel,
+    detail: count === 1 ? detailOne : `${count} ${detailMany}`,
+    tone: critical ? "critical" : "fragile",
+  };
+}
+
+function isTacticalCockpitMoment(annotation: ReviewMoveAnnotation): boolean {
+  const tags = new Set(annotation.tags ?? []);
+  return (
+    annotation.pedagogical_explanation?.error_type === "tactical" ||
+    tags.has("missed_opportunity") ||
+    annotation.primary_category === "critical" ||
+    annotation.primary_category === "decisive"
+  );
+}
+
+function isConversionCockpitMoment(annotation: ReviewMoveAnnotation): boolean {
+  const tags = new Set(annotation.tags ?? []);
+  const playerBefore =
+    annotation.player_win_percent_before ?? annotation.player_percent_before ?? null;
+  return (
+    annotation.pedagogical_explanation?.error_type === "conversion" ||
+    tags.has("conversion_issue") ||
+    (Number(playerBefore ?? 0) >= 75 && Number(annotation.win_loss ?? 0) >= 10)
+  );
+}
+
+function isDefenseCockpitMoment(annotation: ReviewMoveAnnotation): boolean {
+  const tags = new Set(annotation.tags ?? []);
+  const playerBefore =
+    annotation.player_win_percent_before ?? annotation.player_percent_before ?? null;
+  return (
+    annotation.pedagogical_explanation?.error_type === "defensive" ||
+    tags.has("defensive_resource_missed") ||
+    (Number(playerBefore ?? 100) <= 35 &&
+      (Number(annotation.missed_gain ?? 0) >= 8 || Number(annotation.win_loss ?? 0) >= 8))
+  );
+}
+
+function maxAnnotationLoss(annotations: ReviewMoveAnnotation[]): number {
+  return annotations.reduce(
+    (maxLoss, annotation) => Math.max(maxLoss, Number(annotation.win_loss ?? 0)),
+    0,
+  );
+}
+
+function reviewCockpitTakeaways(
+  indicators: ReviewCockpitIndicator[],
+  review: ReviewResponse,
+  sections: ReviewSections,
+): string[] {
+  const byKey = new Map(indicators.map((indicator) => [indicator.key, indicator]));
+  const takeaways: string[] = [];
+  const tactical = byKey.get("tactical");
+  const conversion = byKey.get("conversion");
+  const defense = byKey.get("defense");
+  const opening = byKey.get("opening");
+  if (indicatorIsAlert(tactical)) {
+    takeaways.push("Plusieurs opportunités tactiques ont été manquées.");
+  }
+  if (indicatorIsAlert(conversion)) {
+    takeaways.push("La conversion des positions favorables a coûté cher.");
+  }
+  if (indicatorIsAlert(defense)) {
+    takeaways.push("Les ressources défensives sont un axe de travail prioritaire.");
+  }
+  if (opening && ["watch", "fragile", "critical"].includes(opening.tone)) {
+    takeaways.push("La sortie d'ouverture mérite un repère plus clair.");
+  }
+  if (takeaways.length === 0) {
+    takeaways.push("Peu de problèmes majeurs détectés.");
+  }
+  if (sections.to_review.length > 0 && takeaways.length < 3) {
+    takeaways.push("Le travail prioritaire : réessayer les positions critiques de cette partie.");
+  }
+  if (takeaways.length < 3) {
+    takeaways.push(reviewSummaryForPov(review, reviewPovContext(review, "both"), filteredReviewSections(review, "both")));
+  }
+  return takeaways.slice(0, 3);
+}
+
+function indicatorIsAlert(indicator: ReviewCockpitIndicator | undefined): boolean {
+  return Boolean(
+    indicator && ["watch", "fragile", "critical"].includes(indicator.tone),
+  );
+}
+
+function gameStoryTimeline(
+  review: ReviewResponse,
+  sections: ReviewSections,
+): GameStoryEvent[] {
+  const events: GameStoryEvent[] = [];
+  const seen = new Set<string>();
+  const evidence = review.opening_reality_evidence ?? null;
+
+  function add(event: GameStoryEvent) {
+    if (seen.has(event.id)) {
+      return;
+    }
+    seen.add(event.id);
+    events.push(event);
+  }
+
+  if (evidence?.opening_name || evidence?.eco || evidence?.available) {
+    add({
+      id: "opening-detected",
+      label: "Ouverture",
+      moveLabel: shortCockpitText(evidence.eco ?? evidence.opening_name ?? "détectée", 18),
+      impactLabel: evidence.confidence ? openingRealityConfidenceLabel(evidence.confidence) : "info",
+      tone: "info",
+      focus: "opening",
+    });
+  }
+
+  const exitPly = evidence?.exit_ply ?? evidence?.out_of_book_ply ?? null;
+  if (typeof exitPly === "number") {
+    add({
+      id: "opening-exit",
+      label: "Sortie",
+      moveLabel: openingMoveLabel(exitPly),
+      impactLabel: "hors livre",
+      tone: evidence?.critical_moment_after_exit ? "warning" : "info",
+      focus: "opening",
+      openingEvidence: evidence ?? undefined,
+      showOpeningExit: Boolean(evidence?.fen_before_exit ?? evidence?.out_of_book_fen),
+    });
+  }
+
+  const firstPriority = sections.to_review[0] ?? null;
+  if (firstPriority) {
+    add(gameStoryEventFromAnnotation("first-priority", "Moment #1", firstPriority));
+  }
+
+  const turningPoint = sections.all
+    .slice()
+    .sort((left, right) => Number(right.win_loss ?? 0) - Number(left.win_loss ?? 0))[0];
+  if (turningPoint) {
+    add(gameStoryEventFromAnnotation("turning-point", "Tournant", turningPoint));
+  }
+
+  const conversionMoment = sections.all.find(isConversionCockpitMoment);
+  if (conversionMoment) {
+    add(gameStoryEventFromAnnotation("conversion", "Conversion", conversionMoment));
+  }
+
+  const strongMove = sections.strong_moves[0] ?? null;
+  if (strongMove) {
+    add(gameStoryEventFromAnnotation("strong-move", "Coup fort", strongMove, "positive"));
+  }
+
+  add({
+    id: "game-end",
+    label: "Fin",
+    moveLabel: "bilan",
+    impactLabel: comparisonLabelForPov(review, reviewPovContext(review, "both")),
+    tone: "neutral",
+    focus: "summary",
+  });
+
+  return events.slice(0, 6);
+}
+
+function gameStoryEventFromAnnotation(
+  id: string,
+  label: string,
+  annotation: ReviewMoveAnnotation,
+  forcedTone?: GameStoryEvent["tone"],
+): GameStoryEvent {
+  return {
+    id: `${id}-${annotation.ply}`,
+    label,
+    moveLabel: `Coup ${annotation.move_number}`,
+    impactLabel: formatImpact(annotation.win_loss),
+    tone:
+      forcedTone ??
+      (Number(annotation.win_loss ?? 0) >= 15
+        ? "critical"
+        : Number(annotation.win_loss ?? 0) >= 7
+          ? "warning"
+          : "neutral"),
+    focus: "lesson",
+    annotation,
+  };
+}
+
+function shortCockpitText(value: string, maxLength: number): string {
+  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
 }
 
 function isPracticeEligibleAnnotation(annotation: ReviewMoveAnnotation): boolean {
