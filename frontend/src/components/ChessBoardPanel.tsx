@@ -76,9 +76,20 @@ export function ChessBoardPanel({
         boardWidth={boardWidth}
         customSquareStyles={squareStyles}
         customArrows={customArrows as Arrow[] | undefined}
+        customDarkSquareStyle={{
+          backgroundColor: "#0f1730",
+        }}
+        customLightSquareStyle={{
+          backgroundColor: "#222b48",
+        }}
+        customDropSquareStyle={{
+          boxShadow: "inset 0 0 0 3px rgba(0, 229, 255, 0.72)",
+        }}
+        showBoardNotation
         customBoardStyle={{
-          borderRadius: "6px",
-          boxShadow: "0 18px 42px rgba(15, 23, 42, 0.18)",
+          borderRadius: 0,
+          boxShadow:
+            "0 0 0 1px rgba(34, 211, 238, 0.16), 0 24px 70px rgba(0, 0, 0, 0.55)",
         }}
       />
     </div>

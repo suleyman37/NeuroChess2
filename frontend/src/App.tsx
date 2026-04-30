@@ -210,8 +210,8 @@ const REPLAY_IMPACT_PAUSE_MS = 1500;
 const REPLAY_BEST_MOVE_PAUSE_MS = 1200;
 const REPLAY_PV_LINE_PAUSE_MS = 1200;
 const REVIEW_REPLAY_MOVE_ANIMATION_MS = REPLAY_MOVE_ANIMATION_MS;
-const REVIEW_PLAYED_ARROW_COLOR = "rgba(220, 91, 35, 0.88)";
-const REVIEW_BEST_ARROW_COLOR = "rgba(34, 139, 78, 0.88)";
+const REVIEW_PLAYED_ARROW_COLOR = "rgba(0, 229, 255, 0.88)";
+const REVIEW_BEST_ARROW_COLOR = "rgba(105, 92, 255, 0.9)";
 
 const ANALYSIS_UNAVAILABLE_WARNINGS = new Set([
   "analysis_engine_unavailable",
@@ -3228,7 +3228,7 @@ export default function App() {
     );
   }
 
-  function showNextGuidedAnnotation() {
+  function showGuidedAnnotationByOffset(offset: number) {
     const priorities = review?.review_sections?.to_review ?? [];
     if (priorities.length === 0) {
       return;
@@ -3237,10 +3237,18 @@ export default function App() {
       (annotation) => annotation.ply === selectedReviewAnnotation?.ply,
     );
     const nextIndex =
-      currentIndex >= 0 && currentIndex + 1 < priorities.length
-        ? currentIndex + 1
+      currentIndex >= 0
+        ? (currentIndex + offset + priorities.length) % priorities.length
         : 0;
     handleGuidedReplayAnnotation(priorities[nextIndex], nextIndex);
+  }
+
+  function showNextGuidedAnnotation() {
+    showGuidedAnnotationByOffset(1);
+  }
+
+  function showPreviousGuidedAnnotation() {
+    showGuidedAnnotationByOffset(-1);
   }
 
   function closeGuidedReplay() {
@@ -3570,6 +3578,64 @@ export default function App() {
     handleShowReviewMoment(review.moments[nextIndex], nextIndex);
   }
 
+  function handleReviewStepStatusPrevious() {
+    if (reviewPvLineState?.active) {
+      showManualPvLineStep(reviewPvLineState.currentIndex - 1);
+      return;
+    }
+    if (selectedReviewAnnotation) {
+      showPreviousGuidedAnnotation();
+      return;
+    }
+    showReviewByOffset(-1);
+  }
+
+  function handleReviewStepStatusNext() {
+    if (reviewPvLineState?.active) {
+      showManualPvLineStep(reviewPvLineState.currentIndex + 1);
+      return;
+    }
+    if (selectedReviewAnnotation) {
+      showNextGuidedAnnotation();
+      return;
+    }
+    showReviewByOffset(1);
+  }
+
+  function handleReviewStepStatusReplay() {
+    if (reviewPvLineState?.active) {
+      restartManualPvLine();
+      return;
+    }
+    if (selectedReviewAnnotation && selectedReviewAnnotationIndex !== null) {
+      handleShowReviewAnnotation(selectedReviewAnnotation, selectedReviewAnnotationIndex, "before");
+      return;
+    }
+    if (selectedReviewIndex !== null && review?.moments[selectedReviewIndex]) {
+      handleShowReviewMoment(review.moments[selectedReviewIndex], selectedReviewIndex);
+    }
+  }
+
+  const reviewStepStatusCanPrevious =
+    positionMode === "REVIEW" &&
+    (reviewPvLineState?.active
+      ? reviewPvLineState.currentIndex >= 0
+      : selectedReviewAnnotation
+        ? (review?.review_sections?.to_review?.length ?? 0) > 1
+        : selectedReviewIndex !== null && selectedReviewIndex > 0);
+  const reviewStepStatusCanNext =
+    positionMode === "REVIEW" &&
+    (reviewPvLineState?.active
+      ? reviewPvLineState.currentIndex < reviewPvLineState.moves.length - 1
+      : selectedReviewAnnotation
+        ? (review?.review_sections?.to_review?.length ?? 0) > 1
+        : selectedReviewIndex !== null &&
+          Boolean(review?.moments.length) &&
+          selectedReviewIndex < (review?.moments.length ?? 0) - 1);
+  const reviewStepStatusCanReplay =
+    positionMode === "REVIEW" &&
+    Boolean(reviewPvLineState?.active || selectedReviewAnnotation || selectedReviewMoment);
+
   const boardBadge = positionBadge(
     positionMode,
     displayedPositionPly,
@@ -3753,147 +3819,20 @@ export default function App() {
               </button>
             )}
           </div>
-          {positionMode === "REVIEW" && review && review.moments.length > 0 && selectedReviewIndex !== null && (
-            <div className="review-context-nav">
-              <button onClick={() => showReviewByOffset(-1)} disabled={selectedReviewIndex === 0}>
-                ← Moment précédent
-              </button>
-              <span>
-                Moment {selectedReviewIndex + 1} / {review.moments.length}
-              </span>
-              <button
-                onClick={() => showReviewByOffset(1)}
-                disabled={selectedReviewIndex >= review.moments.length - 1}
-              >
-                Moment suivant →
-              </button>
-            </div>
-          )}
-          {positionMode === "REVIEW" && selectedReviewIndex !== null && review?.moments[selectedReviewIndex] && (
-            <div className="review-board-hint">
-              Coup joué : {review.moments[selectedReviewIndex].played_san ?? review.moments[selectedReviewIndex].played_uci}
-              {" · "}
-              Coup moteur : {review.moments[selectedReviewIndex].best_move_san ?? review.moments[selectedReviewIndex].best_move_uci ?? "non disponible"}
-            </div>
-          )}
-          {positionMode === "REVIEW" &&
-            selectedReviewAnnotation &&
-            guidedReplayPhase &&
-            !reviewPracticeState?.active && (
-            <div className="guided-replay-controls">
-              <strong>{guidedReplayPhaseLabel(guidedReplayPhase)}</strong>
-              <span>
-                {guidedReplayExplanation(
-                  selectedReviewAnnotation,
-                  guidedReplayPhase,
-                  selectedReviewPov,
-                  review,
-                )}
-              </span>
-              {guidedReplayPhase === "pv_line" && guidedPvIndex !== null && (
-                <span>
-                  {reviewPvLineState?.moves?.[guidedPvIndex]?.san ??
-                    reviewPvLineState?.moves?.[guidedPvIndex]?.uci ??
-                    selectedReviewAnnotation.pv_line_message ??
-                    "Ligne complète indisponible"}
-                </span>
-              )}
-              {guidedReplayPhase === "pv_line" && reviewPvLineState?.active && (
-                <div className="review-pv-stepper-inline">
-                  <span>
-                    {reviewPvLineState.lineMode === "played"
-                      ? "Ligne après le coup joué"
-                      : "Ligne de la solution"}
-                  </span>
-                  <span>
-                    {reviewPvLineState.currentIndex < 0
-                      ? `Départ / ${reviewPvLineState.moves.length}`
-                      : `Coup ${reviewPvLineState.currentIndex + 1} / ${reviewPvLineState.moves.length}`}
-                  </span>
-                  {reviewPvLineState.message && <span>{reviewPvLineState.message}</span>}
-                  <div className="review-pv-line-mode" aria-label="Choix de ligne PV">
-                    <button
-                      onClick={() => selectManualPvLineMode("played")}
-                      disabled={!reviewPvLineState.playedLineAvailable}
-                      className={reviewPvLineState.lineMode === "played" ? "active" : ""}
-                    >
-                      Ligne du coup joué
-                    </button>
-                    <button
-                      onClick={() => selectManualPvLineMode("solution")}
-                      disabled={!reviewPvLineState.solutionLineAvailable}
-                      className={reviewPvLineState.lineMode === "solution" ? "active" : ""}
-                    >
-                      Ligne de la solution
-                    </button>
-                  </div>
-                  <div className="review-action-row">
-                    <button
-                      onClick={showPreviousPvLineStep}
-                      disabled={reviewPvLineState.currentIndex < 0}
-                    >
-                      ← Coup précédent
-                    </button>
-                    <button
-                      onClick={showNextPvLineStep}
-                      disabled={
-                        reviewPvLineState.currentIndex >=
-                        reviewPvLineState.moves.length - 1
-                      }
-                    >
-                      Coup suivant →
-                    </button>
-                    <button onClick={restartManualPvLine}>
-                      Rejouer depuis le début
-                    </button>
-                    <button
-                      onClick={toggleManualPvLineAutoplay}
-                      disabled={
-                        reviewPvLineState.currentIndex >=
-                        reviewPvLineState.moves.length - 1
-                      }
-                    >
-                      {reviewPvLineState.autoplay ? "Pause" : "Auto"}
-                    </button>
-                    <button onClick={closeManualPvLine}>Fermer la ligne</button>
-                  </div>
-                </div>
-              )}
-              <div className="review-action-row">
-                {selectedReviewAnnotation.try_move_supported && (
-                  <button
-                    onClick={() =>
-                      handleTryMoveAnnotation(
-                        selectedReviewAnnotation,
-                        selectedReviewAnnotationIndex ?? 0,
-                      )
-                    }
-                  >
-                    Réessayer
-                  </button>
-                )}
-                <button onClick={replaySelectedGuidedMoment}>Revoir l'explication</button>
-                <button
-                  onClick={() =>
-                    handleShowPvLineAnnotation(
-                      selectedReviewAnnotation,
-                      selectedReviewAnnotationIndex ?? 0,
-                      reviewPvLineMovesForMode(selectedReviewAnnotation, "solution").length
-                        ? "solution"
-                        : "played",
-                    )
-                  }
-                  disabled={
-                    !reviewPvLineMovesForMode(selectedReviewAnnotation, "solution").length &&
-                    !reviewPvLineMovesForMode(selectedReviewAnnotation, "played").length
-                  }
-                >
-                  Voir la ligne
-                </button>
-                <button onClick={showNextGuidedAnnotation}>Moment suivant</button>
-                <button onClick={closeGuidedReplay}>Fermer</button>
-              </div>
-            </div>
+          {positionMode === "REVIEW" && (
+            <ReviewStepStatusPanel
+              annotation={selectedReviewAnnotation}
+              moment={selectedReviewMoment}
+              guidedPhase={guidedReplayPhase}
+              pvLineState={reviewPvLineState}
+              practiceState={reviewPracticeState}
+              canPrevious={reviewStepStatusCanPrevious}
+              canNext={reviewStepStatusCanNext}
+              canReplay={reviewStepStatusCanReplay}
+              onPrevious={handleReviewStepStatusPrevious}
+              onNext={handleReviewStepStatusNext}
+              onReplay={handleReviewStepStatusReplay}
+            />
           )}
         </section>
 
@@ -5112,6 +5051,116 @@ function guidedReplayPhaseLabel(phase: GuidedReplayPhase): string {
   return "À retenir";
 }
 
+function ReviewStepStatusPanel({
+  annotation,
+  moment,
+  guidedPhase,
+  pvLineState,
+  practiceState,
+  canPrevious,
+  canNext,
+  canReplay,
+  onPrevious,
+  onNext,
+  onReplay,
+}: {
+  annotation: ReviewMoveAnnotation | null;
+  moment: ReviewMoment | null;
+  guidedPhase: GuidedReplayPhase | null;
+  pvLineState: ReviewPvLineState | null;
+  practiceState: ReviewPracticeState | null;
+  canPrevious: boolean;
+  canNext: boolean;
+  canReplay: boolean;
+  onPrevious: () => void;
+  onNext: () => void;
+  onReplay: () => void;
+}) {
+  const status = reviewStepStatusCopy(
+    annotation,
+    moment,
+    guidedPhase,
+    pvLineState,
+    practiceState,
+  );
+  if (!status) {
+    return null;
+  }
+  return (
+    <div className="review-step-status-panel" aria-label="Statut d'étape Review">
+      <div>
+        <strong>{status.title}</strong>
+        <span>{status.message}</span>
+      </div>
+      {status.detail && <span className="review-step-status-detail">{status.detail}</span>}
+      <div className="review-step-status-actions">
+        <button type="button" onClick={onPrevious} disabled={!canPrevious}>
+          Précédent
+        </button>
+        <button type="button" onClick={onNext} disabled={!canNext}>
+          Suivant
+        </button>
+        <button type="button" onClick={onReplay} disabled={!canReplay}>
+          Rejouer étape
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function reviewStepStatusCopy(
+  annotation: ReviewMoveAnnotation | null,
+  moment: ReviewMoment | null,
+  guidedPhase: GuidedReplayPhase | null,
+  pvLineState: ReviewPvLineState | null,
+  practiceState: ReviewPracticeState | null,
+): { title: string; message: string; detail?: string } | null {
+  if (practiceState?.active) {
+    if (practiceState.itemState === "attempted") {
+      return {
+        title: "Tentative envoyée",
+        message: "Lis le feedback, puis retente ou révèle la solution.",
+      };
+    }
+    if (practiceState.itemState === "solution_revealed") {
+      return { title: "Solution affichée", message: "Compare ton essai au coup clé." };
+    }
+    return { title: "Position critique", message: "Cherche le meilleur coup." };
+  }
+  if (pvLineState?.active) {
+    return {
+      title: "Comparer les deux lignes",
+      message: "Compare les deux futurs.",
+      detail:
+        pvLineState.currentIndex < 0
+          ? `Départ / ${pvLineState.moves.length}`
+          : `Coup ${pvLineState.currentIndex + 1} / ${pvLineState.moves.length}`,
+    };
+  }
+  if (annotation && guidedPhase) {
+    if (guidedPhase === "played_move" || guidedPhase === "impact") {
+      return { title: "Coup joué", message: "Ton coup est affiché." };
+    }
+    if (guidedPhase === "best_move") {
+      return { title: "Solution", message: "Solution affichée." };
+    }
+    if (guidedPhase === "pv_line") {
+      return { title: "Comparer", message: "Compare les deux lignes." };
+    }
+    if (guidedPhase === "summary") {
+      return { title: "À retenir", message: "À retenir." };
+    }
+    return { title: "Position critique", message: "Position critique — cherche le meilleur coup." };
+  }
+  if (annotation) {
+    return { title: "Position critique", message: "Position critique — cherche le meilleur coup." };
+  }
+  if (moment) {
+    return { title: "Position critique", message: "Position critique — cherche le meilleur coup." };
+  }
+  return null;
+}
+
 function guidedReplayExplanation(
   annotation: ReviewMoveAnnotation,
   phase: GuidedReplayPhase,
@@ -5757,10 +5806,10 @@ function buildReviewSquareStyles(
 
   const styles: Record<string, CSSProperties> = {};
   if (moveMode === "best") {
-    addUciSquares(styles, moment.best_move_uci, "rgba(34, 197, 94, 0.36)");
+    addUciSquares(styles, moment.best_move_uci, "rgba(0, 229, 255, 0.34)");
   } else {
-    addUciSquares(styles, moment.played_uci, "rgba(245, 125, 59, 0.38)");
-    addUciSquares(styles, moment.best_move_uci, "rgba(34, 197, 94, 0.18)");
+    addUciSquares(styles, moment.played_uci, "rgba(0, 229, 255, 0.36)");
+    addUciSquares(styles, moment.best_move_uci, "rgba(105, 92, 255, 0.24)");
   }
   return styles;
 }
@@ -5900,8 +5949,13 @@ function addUciSquares(
   }
   const from = uci.slice(0, 2);
   const to = uci.slice(2, 4);
-  styles[from] = { backgroundColor: color };
-  styles[to] = { backgroundColor: color };
+  const highlight = {
+    background:
+      `radial-gradient(circle at center, ${color} 0%, rgba(0, 229, 255, 0.18) 42%, rgba(0, 0, 0, 0) 76%)`,
+    boxShadow: `inset 0 0 0 1px ${color}, 0 0 18px ${color}`,
+  };
+  styles[from] = highlight;
+  styles[to] = highlight;
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {

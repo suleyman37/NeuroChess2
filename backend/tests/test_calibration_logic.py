@@ -232,11 +232,11 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("Options d'analyse", review_panel_source)
         self.assertIn("Impact sur tes chances", review_panel_source)
         self.assertIn("Qualité du coup", review_panel_source)
-        self.assertIn("Ce que tu as raté", review_panel_source)
-        self.assertIn("Pourquoi ton coup pose problème", review_panel_source)
-        self.assertIn("Pourquoi le meilleur coup aide", review_panel_source)
+        self.assertIn("Ce que ce coup autorise", review_panel_source)
+        self.assertIn("Pourquoi la solution est meilleure", review_panel_source)
+        self.assertIn("lessonStep", review_panel_source)
         self.assertIn("À retenir", review_panel_source)
-        self.assertIn("Revoir l'explication", review_panel_source)
+        self.assertIn("Rejouer la leçon", review_panel_source)
         self.assertIn("Réessayer", review_panel_source)
         self.assertIn("Voir la ligne", review_panel_source)
         self.assertNotIn("Perte Win%", review_panel_source)
@@ -365,16 +365,18 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn('onSolutionReset("review_section_changed")', normalized_panel)
         self.assertIn('onSolutionReset("review_moment_changed")', normalized_panel)
         self.assertIn("const canShowSolutionData", review_panel_source)
-        self.assertIn("const hasPlayedMoveOnly = revealMode === \"played_move_shown\"", normalized_panel)
-        self.assertIn("const hintVisible = revealMode === \"hint_shown\"", normalized_panel)
+        self.assertIn("const hasPlayedMoveOnly =", normalized_panel)
+        self.assertIn('revealMode === "played_move_shown"', normalized_panel)
+        self.assertIn("const hintVisible =", normalized_panel)
+        self.assertIn('revealMode === "hint_shown"', normalized_panel)
         self.assertIn("const hasContrastCoach = Boolean", normalized_panel)
         self.assertIn("hiddenCoachObjective", review_panel_source)
         self.assertIn("practiceHintForAnnotation", review_panel_source)
-        self.assertIn("displayedMoveTitle", review_panel_source)
+        self.assertIn("const moveTitle", review_panel_source)
         self.assertIn("au trait", review_panel_source)
-        self.assertIn("Voir l'explication avec solution", review_panel_source)
-        self.assertIn("Révèle d'abord la solution pour voir la ligne", review_panel_source)
-        self.assertIn("disabled={!canShowAnyPvLine || !canShowSolutionData}", normalized_panel)
+        self.assertIn("Voir la solution", review_panel_source)
+        self.assertIn("Passe à l'étape Comparer pour ouvrir le stepper", review_panel_source)
+        self.assertIn("disabled={!canShowAnyPvLine || !canShowLineComparison}", normalized_panel)
         self.assertIn("ReviewLineComparison", review_panel_source)
         self.assertIn("Comparaison des lignes", review_panel_source)
         self.assertIn("Après ton coup", review_panel_source)
@@ -395,7 +397,7 @@ class CalibrationLogicTests(unittest.TestCase):
 
         comparison_index = normalized_panel.index("<ReviewLineComparison")
         comparison_guard_index = normalized_panel.rfind(
-            "canShowSolutionData",
+            "canShowLineComparison",
             0,
             comparison_index,
         )
@@ -404,26 +406,24 @@ class CalibrationLogicTests(unittest.TestCase):
 
         best_explanation_index = normalized_panel.index("explanation?.why_best_move_good")
         best_explanation_guard_index = normalized_panel.rfind(
-            "canShowSolutionData",
+            'lessonStep === "solution"',
             0,
             best_explanation_index,
         )
         self.assertNotEqual(best_explanation_guard_index, -1)
-        self.assertLess(best_explanation_index - best_explanation_guard_index, 180)
+        self.assertLess(best_explanation_index - best_explanation_guard_index, 900)
 
         contrast_index = normalized_panel.index("contrastCoach.why_solution_is_better")
         self.assertGreater(contrast_index, comparison_start)
 
-        try_solution_index = normalized_panel.index(
-            'Solution : {annotation.best_move_san ?? annotation.best_move_uci',
-        )
+        try_solution_index = normalized_panel.index("const solutionMove")
         try_solution_guard_index = normalized_panel.rfind(
-            "canShowSolutionData",
+            'lessonStep === "solution"',
             0,
-            try_solution_index,
+            normalized_panel.index('<CoachExplanationBlock title="Solution" text={solutionMove} />'),
         )
         self.assertNotEqual(try_solution_guard_index, -1)
-        self.assertLess(try_solution_index - try_solution_guard_index, 120)
+        self.assertLess(normalized_panel.index('<CoachExplanationBlock title="Solution" text={solutionMove} />') - try_solution_guard_index, 900)
 
         self.assertIn("reviewSolutionRevealState", app_source)
         self.assertIn("setSolutionRevealForAnnotation", app_source)
@@ -475,8 +475,8 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("fen_after_exit?: string | null", client_source)
         self.assertIn("OpeningRealityCard", review_panel_source)
         self.assertIn("ReviewFocusTabs", review_panel_source)
-        self.assertIn('useState<ReviewFocusKey>("coach")', review_panel_source)
-        self.assertIn("Moment coach", review_panel_source)
+        self.assertIn('useState<ReviewFocusKey>("lesson")', review_panel_source)
+        self.assertIn("Leçon", review_panel_source)
         self.assertIn("Ouverture", review_panel_source)
         self.assertIn("Entraînement", review_panel_source)
         self.assertIn("Explorer", review_panel_source)
@@ -506,6 +506,79 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn('setReviewOpeningFocusMessage("Dernier moment encore dans le livre.")', normalized_app)
         self.assertIn('setReviewOpeningFocusMessage("Premier vrai moment critique après la sortie.")', normalized_app)
         self.assertIn('setSelectedReviewPov("both")', normalized_app)
+
+    def test_v5_4_ui_lesson_mode_information_architecture_is_staticly_present(self) -> None:
+        review_panel_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
+        ).read_text(encoding="utf-8")
+        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
+            encoding="utf-8"
+        )
+        normalized_panel = review_panel_source.replace("\r\n", "\n")
+        normalized_app = app_source.replace("\r\n", "\n")
+
+        self.assertIn("export type ReviewLessonStep", review_panel_source)
+        for step in ('"observe"', '"try"', '"played"', '"solution"', '"compare"', '"takeaway"'):
+            self.assertIn(step, review_panel_source)
+
+        self.assertIn('useState<ReviewFocusKey>("lesson")', review_panel_source)
+        for label in ("Leçon", "Ouverture", "Entraînement", "Explorer"):
+            self.assertIn(label, review_panel_source)
+        self.assertIn('{effectiveFocus === "lesson" && (', normalized_panel)
+        self.assertIn('{effectiveFocus === "opening" && (', normalized_panel)
+        self.assertIn('{effectiveFocus === "practice" && (', normalized_panel)
+        self.assertIn('{effectiveFocus === "explorer" && (', normalized_panel)
+        self.assertIn('setActiveFocus("lesson")', normalized_panel)
+
+        self.assertIn('<details className="review-score-details">', normalized_panel)
+        self.assertNotIn('<details className="review-score-details" open', normalized_panel)
+        self.assertIn('<details className="review-analysis-options">', normalized_panel)
+        self.assertIn("<summary>Détails techniques</summary>", normalized_panel)
+
+        observe_start = normalized_panel.index('{lessonStep === "observe" && (')
+        try_start = normalized_panel.index('{lessonStep === "try" && (')
+        observe_body = normalized_panel[observe_start:try_start]
+        self.assertIn("Trouve le meilleur coup.", observe_body)
+        self.assertIn("Impact potentiel", observe_body)
+        self.assertNotIn("solutionMove", observe_body)
+        self.assertNotIn("best_move_san", observe_body)
+
+        solution_start = normalized_panel.index('{lessonStep === "solution" && (')
+        compare_start = normalized_panel.index('canShowLineComparison &&')
+        solution_body = normalized_panel[solution_start:compare_start]
+        self.assertIn('title="Solution" text={solutionMove}', solution_body)
+        self.assertIn("Pourquoi la solution est meilleure", solution_body)
+        self.assertIn("Voir la ligne", solution_body)
+
+        self.assertIn(
+            'const canShowLineComparison = lessonStep === "compare" || revealMode === "pv_line";',
+            normalized_panel,
+        )
+        comparison_index = normalized_panel.index("<ReviewLineComparison")
+        comparison_guard_index = normalized_panel.rfind(
+            "canShowLineComparison",
+            0,
+            comparison_index,
+        )
+        self.assertNotEqual(comparison_guard_index, -1)
+        self.assertLess(comparison_index - comparison_guard_index, 120)
+
+        self.assertIn("ReviewStepStatusPanel", app_source)
+        self.assertIn("Position critique — cherche le meilleur coup.", app_source)
+        self.assertIn("Ton coup est affiché.", app_source)
+        self.assertIn("Solution affichée.", app_source)
+        self.assertIn("Compare les deux lignes.", app_source)
+        self.assertIn("Rejouer étape", app_source)
+        self.assertNotIn('className="review-board-hint"', normalized_app)
+        self.assertNotIn('className="guided-replay-controls"', normalized_app)
+
+        coach_card_start = normalized_panel.index("function ReviewCoachMomentCard")
+        comparison_function_start = normalized_panel.index("function ReviewLineComparison")
+        coach_card_body = normalized_panel[coach_card_start:comparison_function_start]
+        self.assertNotIn("ReviewPvContrastTechnicalDetails", coach_card_body)
+        self.assertNotIn("Détails techniques PV", coach_card_body)
+        self.assertNotIn("best branch", review_panel_source.lower())
+        self.assertNotIn("best branch", app_source.lower())
 
     def test_frontend_live_eventsource_contract_is_staticly_present(self) -> None:
         client_source = (

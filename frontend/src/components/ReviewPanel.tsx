@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type {
   ReviewMoment,
@@ -181,7 +181,14 @@ export type ReviewPvLineViewState = {
 
 export type ReviewPov = "user" | "white" | "black" | "both";
 export type ReviewPvLineMode = "played" | "solution";
-type ReviewFocusKey = "coach" | "opening" | "practice" | "explorer";
+export type ReviewLessonStep =
+  | "observe"
+  | "try"
+  | "played"
+  | "solution"
+  | "compare"
+  | "takeaway";
+type ReviewFocusKey = "lesson" | "opening" | "practice" | "explorer";
 
 export function ReviewPanel({
   review,
@@ -248,7 +255,8 @@ export function ReviewPanel({
   const [resetPickerOpen, setResetPickerOpen] = useState(false);
   const [activeSection, setActiveSection] =
     useState<ReviewSectionKey>("to_review");
-  const [activeFocus, setActiveFocus] = useState<ReviewFocusKey>("coach");
+  const [activeFocus, setActiveFocus] = useState<ReviewFocusKey>("lesson");
+  const [lessonStep, setLessonStep] = useState<ReviewLessonStep>("observe");
   const [selectedCoachPly, setSelectedCoachPly] = useState<number | null>(null);
   const displayStatus = reviewPanelDisplayStatus(review, uiState);
   const povContext = reviewPovContext(review, selectedReviewPov);
@@ -262,6 +270,9 @@ export function ReviewPanel({
     activeSection,
     povContext.targetColor,
   );
+  const selectedLessonKey = selectedCoachAnnotation
+    ? `${selectedCoachAnnotation.ply}:${selectedCoachAnnotation.uci ?? ""}`
+    : "none";
   const hasNoSignificantMoments =
     (displayStatus === "done" || displayStatus === "partial") &&
     (review?.empty_reason === "no_significant_moments" ||
@@ -275,9 +286,14 @@ export function ReviewPanel({
       onCancel={() => setResetPickerOpen(false)}
     />
   ) : null;
+  useEffect(() => {
+    setLessonStep("observe");
+  }, [selectedLessonKey]);
+
   function handleReviewPovChange(nextPov: ReviewPov) {
     setSelectedCoachPly(null);
     setActiveSection("to_review");
+    setLessonStep("observe");
     onReviewPovChange(nextPov);
   }
 
@@ -289,12 +305,38 @@ export function ReviewPanel({
   function handleCoachSectionChange(section: ReviewSectionKey) {
     onSolutionReset("review_section_changed");
     setSelectedCoachPly(null);
+    setLessonStep("observe");
     setActiveSection(section);
   }
 
   function handleCoachAnnotationSelect(ply: number | null) {
     onSolutionReset("review_moment_changed");
     setSelectedCoachPly(ply);
+    setLessonStep("observe");
+  }
+
+  function handleExplorerAnnotationSelect(ply: number | null) {
+    handleCoachAnnotationSelect(ply);
+    setActiveFocus("lesson");
+    onReviewFocusChange("lesson");
+  }
+
+  function handleNextLessonMoment() {
+    const rows =
+      filteredSections[activeSection]?.length
+        ? filteredSections[activeSection]
+        : filteredSections.to_review?.length
+          ? filteredSections.to_review
+          : filteredSections.all;
+    if (!rows.length) {
+      return;
+    }
+    const currentIndex = selectedCoachAnnotation
+      ? rows.findIndex((annotation) => annotation.ply === selectedCoachAnnotation.ply)
+      : -1;
+    const nextIndex =
+      currentIndex >= 0 && currentIndex + 1 < rows.length ? currentIndex + 1 : 0;
+    handleCoachAnnotationSelect(rows[nextIndex].ply ?? null);
   }
 
   function renderFocusedReviewModule(showNoSignificantMessage = false) {
@@ -304,11 +346,14 @@ export function ReviewPanel({
           activeFocus={effectiveFocus}
           onFocusChange={handleReviewFocusChange}
         />
-        {effectiveFocus === "coach" && (
+        {effectiveFocus === "lesson" && (
           <ReviewCoachMomentCard
             annotation={selectedCoachAnnotation}
             index={annotationIndex(review, selectedCoachAnnotation)}
             active={selectedMovePly === selectedCoachAnnotation?.ply}
+            lessonStep={lessonStep}
+            onLessonStepChange={setLessonStep}
+            onNextLessonMoment={handleNextLessonMoment}
             onShowAnnotation={onShowAnnotation}
             onGuidedReplayAnnotation={onGuidedReplayAnnotation}
             onTryMoveAnnotation={onTryMoveAnnotation}
@@ -379,7 +424,7 @@ export function ReviewPanel({
             selectedCoachPly={selectedCoachAnnotation?.ply ?? selectedMovePly}
             selectedMovePly={selectedMovePly}
             onSectionChange={handleCoachSectionChange}
-            onSelectAnnotation={handleCoachAnnotationSelect}
+            onSelectAnnotation={handleExplorerAnnotationSelect}
           />
         )}
         {showNoSignificantMessage && (
@@ -727,7 +772,7 @@ const REVIEW_SECTION_TABS: Array<{
 ];
 
 const REVIEW_FOCUS_TABS: Array<{ key: ReviewFocusKey; label: string }> = [
-  { key: "coach", label: "Moment coach" },
+  { key: "lesson", label: "Leçon" },
   { key: "opening", label: "Ouverture" },
   { key: "practice", label: "Entraînement" },
   { key: "explorer", label: "Explorer" },
@@ -894,10 +939,22 @@ function OpeningRealityCard({
   );
 }
 
+const REVIEW_LESSON_STEPS: Array<{ key: ReviewLessonStep; label: string }> = [
+  { key: "observe", label: "Observer" },
+  { key: "try", label: "Essayer" },
+  { key: "played", label: "Joué" },
+  { key: "solution", label: "Solution" },
+  { key: "compare", label: "Comparer" },
+  { key: "takeaway", label: "À retenir" },
+];
+
 function ReviewCoachMomentCard({
   annotation,
   index,
   active,
+  lessonStep,
+  onLessonStepChange,
+  onNextLessonMoment,
   onShowAnnotation,
   onGuidedReplayAnnotation,
   onTryMoveAnnotation,
@@ -912,6 +969,9 @@ function ReviewCoachMomentCard({
   annotation: ReviewMoveAnnotation | null;
   index: number;
   active: boolean;
+  lessonStep: ReviewLessonStep;
+  onLessonStepChange: (step: ReviewLessonStep) => void;
+  onNextLessonMoment: () => void;
   onShowAnnotation: (
     annotation: ReviewMoveAnnotation,
     index: number,
@@ -944,6 +1004,7 @@ function ReviewCoachMomentCard({
     return null;
   }
 
+  const lessonAnnotation = annotation;
   const explanation = annotation.pedagogical_explanation;
   const contrastCoach = annotation.contrast_coach_explanation;
   const hasContrastCoach = Boolean(contrastCoach?.available);
@@ -951,11 +1012,9 @@ function ReviewCoachMomentCard({
   const tags = annotation.tag_labels?.length
     ? annotation.tag_labels
     : annotation.tags;
-  const moveTitle =
-    annotation.coach_card_title ??
-    `Coup ${annotation.move_number} — ${reviewColorLabel(annotation.color)} jouent ${
-      annotation.san ?? annotation.uci
-    }`;
+  const moveTitle = `Coup ${annotation.move_number} — ${reviewColorLabel(
+    annotation.color,
+  )} au trait`;
   const impactValue = impactPercentage(annotation.win_loss);
   const tryActiveForAnnotation =
     tryMoveState?.active && tryMoveState.annotationPly === annotation.ply;
@@ -965,23 +1024,78 @@ function ReviewCoachMomentCard({
     solutionRevealState?.ply === annotation.ply
       ? solutionRevealState.state
       : "hidden";
-  const hasAttempted =
-    revealMode === "attempted" || Boolean(tryActiveForAnnotation && tryMoveState?.feedback);
-  const hasPlayedMoveOnly = revealMode === "played_move_shown";
+  const hasPlayedMoveOnly =
+    lessonStep === "played" || revealMode === "played_move_shown";
   const canShowSolutionData =
+    lessonStep === "solution" ||
+    lessonStep === "compare" ||
+    lessonStep === "takeaway" ||
     revealMode === "solution_revealed" ||
     revealMode === "pv_line" ||
-    hasAttempted ||
     Boolean(tryActiveForAnnotation && tryMoveState?.solutionRevealed);
-  const hintVisible = revealMode === "hint_shown";
+  const canShowLineComparison = lessonStep === "compare" || revealMode === "pv_line";
+  const hintVisible =
+    lessonStep === "try" &&
+    (revealMode === "hint_shown" || Boolean(tryActiveForAnnotation));
   const canShowAnyPvLine = reviewAnnotationHasAnyPvLine(annotation);
-  const hiddenPrompt = isUserLanguage
-    ? "À toi de jouer : trouve le meilleur coup."
-    : `À toi de jouer pour les ${colorName}.`;
-  const displayedMoveTitle =
-    canShowSolutionData || hasPlayedMoveOnly
-      ? moveTitle
-      : `Coup ${annotation.move_number} — ${reviewColorLabel(annotation.color)} au trait`;
+  const playedMove = annotation.san ?? annotation.uci ?? "Coup joué non disponible.";
+  const solutionMove =
+    annotation.best_move_san ?? annotation.best_move_uci ?? "Solution indisponible.";
+  const stepIndex = Math.max(
+    0,
+    REVIEW_LESSON_STEPS.findIndex((step) => step.key === lessonStep),
+  );
+  const canGoBack = stepIndex > 0;
+  const canGoForward = stepIndex < REVIEW_LESSON_STEPS.length - 1;
+
+  function goToLessonStep(step: ReviewLessonStep) {
+    if (step === "try") {
+      handleTryStep();
+      return;
+    }
+    if (step === "played") {
+      handlePlayedStep();
+      return;
+    }
+    if (step === "solution") {
+      handleSolutionStep();
+      return;
+    }
+    if (step === "observe") {
+      onTryMoveReset();
+      onShowAnnotation(lessonAnnotation, index, "before");
+    }
+    onLessonStepChange(step);
+  }
+
+  function handleTryStep() {
+    onLessonStepChange("try");
+    onTryMoveAnnotation(lessonAnnotation, index);
+  }
+
+  function handleHintStep() {
+    onLessonStepChange("try");
+    onSolutionHintAnnotation(lessonAnnotation, index);
+  }
+
+  function handlePlayedStep() {
+    onLessonStepChange("played");
+    onShowAnnotation(lessonAnnotation, index, "played");
+  }
+
+  function handleSolutionStep() {
+    onLessonStepChange("solution");
+    onShowAnnotation(lessonAnnotation, index, "best");
+  }
+
+  function handleTryRevealSolution() {
+    onLessonStepChange("solution");
+    onTryMoveRevealSolution();
+  }
+
+  function handleCompareStep() {
+    onLessonStepChange("compare");
+  }
 
   return (
     <section
@@ -992,12 +1106,27 @@ function ReviewCoachMomentCard({
     >
       <div className="review-coach-moment-head">
         <div>
-          <span>Moment coach</span>
-          <h3>{displayedMoveTitle}</h3>
+          <span>Leçon</span>
+          <h3>{moveTitle}</h3>
         </div>
         <strong className="review-coach-type">
-          {errorTypeLabel(explanation?.error_type, annotation)}
+          {lessonTypeLabel(explanation?.error_type)}
         </strong>
+      </div>
+
+      <div className="review-lesson-stepper" role="tablist" aria-label="Étapes de la leçon">
+        {REVIEW_LESSON_STEPS.map((step) => (
+          <button
+            key={step.key}
+            type="button"
+            role="tab"
+            className={lessonStep === step.key ? "active" : ""}
+            aria-selected={lessonStep === step.key}
+            onClick={() => goToLessonStep(step.key)}
+          >
+            {step.label}
+          </button>
+        ))}
       </div>
 
       <div className="review-coach-badges">
@@ -1011,17 +1140,154 @@ function ReviewCoachMomentCard({
         ))}
       </div>
 
-      <p className="review-coach-main">
-        {canShowSolutionData || hasPlayedMoveOnly
-          ? coachTextForPov(
-              explanation?.main_message ?? humanReason(annotation),
-              povContext,
-              annotation,
-            )
-          : hiddenPrompt}
-      </p>
+      {lessonStep === "observe" && (
+        <div className="review-lesson-card">
+          <p className="review-coach-main">
+            {isUserLanguage
+              ? "Position critique — trouve le meilleur coup."
+              : `Position critique pour les ${colorName} — trouve le meilleur coup.`}
+          </p>
+          <div className="review-coach-grid">
+            <CoachExplanationBlock
+              title="Objectif"
+              text="Trouve le meilleur coup."
+            />
+            <CoachExplanationBlock
+              title="Type"
+              text={lessonTypeLabel(explanation?.error_type)}
+            />
+            <CoachExplanationBlock
+              title="Impact potentiel"
+              text={annotation.impact_label ?? impactLabelFromLoss(annotation.win_loss)}
+            />
+          </div>
+          <div className="review-action-row">
+            {annotation.try_move_supported && (
+              <button className="primary" onClick={handleTryStep}>
+                Réessayer
+              </button>
+            )}
+            <button onClick={handleHintStep}>Indice</button>
+            <button onClick={handleSolutionStep}>Voir la solution</button>
+          </div>
+        </div>
+      )}
 
-      {canShowSolutionData ? (
+      {lessonStep === "try" && (
+        <div className="review-lesson-card">
+          <p className="review-coach-main">
+            Mode tentative : joue directement sur l'échiquier. La solution reste cachée.
+          </p>
+          <div className="review-coach-grid">
+            <CoachExplanationBlock
+              title="Objectif"
+              text={hiddenCoachObjective(annotation, explanation)}
+            />
+            {hintVisible && (
+              <CoachExplanationBlock
+                title="Indice"
+                text={practiceHintForAnnotation(annotation)}
+              />
+            )}
+          </div>
+          {tryActiveForAnnotation && tryMoveState?.feedback && (
+            <div className="review-try-move-panel">
+              <strong>Feedback</strong>
+              <span>
+                {coachTextForPov(
+                  tryMoveState.feedback.message,
+                  povContext,
+                  annotation,
+                )}
+              </span>
+              {tryMoveState.attemptedUci && (
+                <span>
+                  {isUserLanguage ? "Ton coup" : "Coup joué"} :{" "}
+                  {tryMoveState.attemptedSan ?? tryMoveState.attemptedUci}
+                </span>
+              )}
+              <div className="review-action-row">
+                <button onClick={onTryMoveReset}>Essayer encore</button>
+                <button onClick={handleTryRevealSolution}>Voir la solution</button>
+              </div>
+            </div>
+          )}
+          {!tryActiveForAnnotation && annotation.try_move_supported && (
+            <div className="review-action-row">
+              <button className="primary" onClick={handleTryStep}>
+                Démarrer la tentative
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {lessonStep === "played" && (
+        <div className="review-lesson-card">
+          <p className="review-coach-main">
+            {isUserLanguage ? "Ton coup est affiché." : "Le coup joué est affiché."}
+          </p>
+          <div className="review-coach-grid">
+            <CoachExplanationBlock
+              title={isUserLanguage ? "Ton coup" : "Coup joué"}
+              text={playedMove}
+            />
+            <CoachExplanationBlock
+              title={isUserLanguage ? "Impact sur tes chances" : `Impact pour les ${colorName}`}
+              text={formatImpact(annotation.win_loss)}
+            />
+            <CoachExplanationBlock
+              title="Ce que ce coup autorise"
+              text={coachTextForPov(explanation?.why_played_move_bad, povContext, annotation)}
+            />
+            <CoachExplanationBlock
+              title="Qualité du coup"
+              text={annotation.move_quality_label ?? moveQualityLabel(annotation.move_accuracy)}
+            />
+          </div>
+        </div>
+      )}
+
+      {lessonStep === "solution" && (
+        <div className="review-lesson-card">
+          <p className="review-coach-main">
+            Solution affichée : cherche l'idée, pas seulement le coup.
+          </p>
+          <div className="review-coach-grid">
+            <CoachExplanationBlock title="Solution" text={solutionMove} />
+            <CoachExplanationBlock
+              title="Pourquoi la solution est meilleure"
+              text={coachTextForPov(explanation?.why_best_move_good, povContext, annotation)}
+            />
+            <CoachExplanationBlock
+              title="Idée principale"
+              text={
+                coachTextForPov(explanation?.missed_idea, povContext, annotation) ??
+                publicMainDifferenceText(contrastCoach, explanation)
+              }
+            />
+          </div>
+          <div className="review-action-row">
+            <button
+              className="primary"
+              onClick={handleCompareStep}
+              disabled={!canShowAnyPvLine && !hasContrastCoach}
+              title={
+                canShowAnyPvLine || hasContrastCoach
+                  ? "Comparer le coup joué et la solution"
+                  : annotation.pv_line_message ?? "Ligne indisponible"
+              }
+            >
+              Voir la ligne
+            </button>
+            <button onClick={() => onGuidedReplayAnnotation(annotation, index)}>
+              Rejouer la leçon
+            </button>
+          </div>
+        </div>
+      )}
+
+      {canShowLineComparison && (
         <ReviewLineComparison
           annotation={annotation}
           index={index}
@@ -1030,66 +1296,38 @@ function ReviewCoachMomentCard({
           povContext={povContext}
           onShowPvLineAnnotation={onShowPvLineAnnotation}
         />
-      ) : (
+      )}
+
+      {lessonStep === "takeaway" && (
+        <div className="review-lesson-card">
+          <p className="review-coach-main">À retenir.</p>
+          <div className="review-coach-grid">
+            <CoachExplanationBlock
+              title="À retenir"
+              text={
+                coachTextForPov(explanation?.training_takeaway, povContext, annotation) ??
+                "Reviens à l'objectif du moment et refais la position sans regarder la solution."
+              }
+            />
+          </div>
+          <div className="review-action-row">
+            <button onClick={() => goToLessonStep("observe")}>Refaire</button>
+            <button onClick={onNextLessonMoment}>Moment suivant</button>
+          </div>
+        </div>
+      )}
+
+      {canShowSolutionData && !canShowLineComparison && lessonStep !== "solution" && lessonStep !== "takeaway" && (
         <div className="review-coach-grid">
-          {!canShowSolutionData && !hasPlayedMoveOnly && (
-            <>
-              <CoachExplanationBlock
-                title="Objectif"
-                text={hiddenCoachObjective(annotation, explanation)}
-              />
-              {hintVisible && (
-                <CoachExplanationBlock
-                  title="Indice"
-                  text={practiceHintForAnnotation(annotation)}
-                />
-              )}
-            </>
-          )}
-          {hasPlayedMoveOnly && (
-            <CoachExplanationBlock
-              title={isUserLanguage ? "Ton coup" : "Coup joué"}
-              text={annotation.san ?? annotation.uci ?? "Coup joué non disponible."}
-            />
-          )}
-          {canShowSolutionData && (
-            <CoachExplanationBlock
-              title={isUserLanguage ? "Ce que tu as raté" : "Ce que le joueur a raté"}
-              text={coachTextForPov(explanation?.missed_idea, povContext, annotation)}
-            />
-          )}
           <CoachExplanationBlock
-            title={
-              isUserLanguage
-                ? "Pourquoi ton coup pose problème"
-                : `Pourquoi le coup des ${colorName} pose problème`
-            }
-            text={
-              hasPlayedMoveOnly || canShowSolutionData
-                ? coachTextForPov(explanation?.why_played_move_bad, povContext, annotation)
-                : null
-            }
-          />
-          <CoachExplanationBlock
-            title="Pourquoi le meilleur coup aide"
-            text={
-              canShowSolutionData
-                ? coachTextForPov(explanation?.why_best_move_good, povContext, annotation)
-                : null
-            }
-          />
-          <CoachExplanationBlock
-            title="À retenir"
-            text={
-              canShowSolutionData
-                ? coachTextForPov(explanation?.training_takeaway, povContext, annotation)
-                : null
-            }
+            title="Pourquoi la solution est meilleure"
+            text={coachTextForPov(explanation?.why_best_move_good, povContext, annotation)}
           />
         </div>
       )}
 
-      <div className="review-coach-impact">
+      {(lessonStep === "observe" || hasPlayedMoveOnly) && (
+        <div className="review-coach-impact">
         <div>
           <span>
             {canShowSolutionData || hasPlayedMoveOnly
@@ -1120,75 +1358,21 @@ function ReviewCoachMomentCard({
               : "Solution cachée"}
           </strong>
         </div>
-      </div>
-
-      {tryActiveForAnnotation && (
-        <div className="review-try-move-panel">
-          <strong>
-            {isUserLanguage
-              ? "À toi de jouer : retrouve le meilleur coup."
-              : `À toi de jouer pour les ${colorName}.`}
-          </strong>
-          {!tryMoveState?.feedback && (
-            <span>Joue directement sur l'échiquier. La partie réelle ne sera pas modifiée.</span>
-          )}
-          {tryMoveState?.feedback && (
-            <>
-              <span>
-                {coachTextForPov(
-                  tryMoveState.feedback.message,
-                  povContext,
-                  annotation,
-                )}
-              </span>
-              {tryMoveState.attemptedUci && (
-                <span>
-                  {isUserLanguage ? "Ton coup" : "Coup joué"} :{" "}
-                  {tryMoveState.attemptedSan ?? tryMoveState.attemptedUci}
-                </span>
-              )}
-              {canShowSolutionData && (
-                <span>
-                  Solution : {annotation.best_move_san ?? annotation.best_move_uci ?? "non disponible"}
-                </span>
-              )}
-              <div className="review-action-row">
-                <button onClick={onTryMoveReset}>Essayer encore</button>
-                <button onClick={onTryMoveRevealSolution}>Voir la solution</button>
-                <button onClick={() => onGuidedReplayAnnotation(annotation, index)}>
-                  Revoir l'explication
-                </button>
-              </div>
-            </>
-          )}
         </div>
       )}
 
       <div className="review-action-row">
-        {annotation.try_move_supported && (
-          <button onClick={() => onTryMoveAnnotation(annotation, index)}>
-            Réessayer
-          </button>
-        )}
-        <button onClick={() => onSolutionHintAnnotation(annotation, index)}>
-          Indice
-        </button>
-        <button onClick={() => onGuidedReplayAnnotation(annotation, index)}>
-          {canShowSolutionData ? "Revoir l'explication" : "Voir l'explication avec solution"}
-        </button>
-        <button onClick={() => onShowAnnotation(annotation, index, "played")}>
-          {isUserLanguage ? "Ton coup" : "Coup joué"}
+        <button
+          onClick={() => goToLessonStep(REVIEW_LESSON_STEPS[stepIndex - 1]?.key ?? "observe")}
+          disabled={!canGoBack}
+        >
+          Précédent
         </button>
         <button
-          onClick={() => onShowAnnotation(annotation, index, "best")}
-          disabled={!annotation.best_move_uci}
-          title={
-            annotation.best_move_uci
-              ? "Révéler la solution depuis la même position"
-              : "Solution non disponible"
-          }
+          onClick={() => goToLessonStep(REVIEW_LESSON_STEPS[stepIndex + 1]?.key ?? "takeaway")}
+          disabled={!canGoForward}
         >
-          {canShowSolutionData ? "Solution" : "Voir la solution"}
+          Suivant
         </button>
         <button
           onClick={() =>
@@ -1198,10 +1382,10 @@ function ReviewCoachMomentCard({
               reviewAnnotationHasSolutionPvLine(annotation) ? "solution" : "played",
             )
           }
-          disabled={!canShowAnyPvLine || !canShowSolutionData}
+          disabled={!canShowAnyPvLine || !canShowLineComparison}
           title={
-            !canShowSolutionData
-              ? "Révèle d'abord la solution pour voir la ligne"
+            !canShowLineComparison
+              ? "Passe à l'étape Comparer pour ouvrir le stepper"
               : canShowAnyPvLine
               ? "Voir la ligne proposée par le moteur"
               : annotation.pv_line_message ?? "Ligne complète indisponible"
@@ -1269,28 +1453,17 @@ function ReviewLineComparison({
     ) ??
     publicMainDifferenceText(contrastCoach, explanation);
   const mainDifference = publicMainDifferenceText(contrastCoach, explanation);
-  const takeaway =
-    coachTextForPov(
-      contrastCoach.safe_takeaway ?? explanation?.training_takeaway,
-      povContext,
-      annotation,
-    ) ?? "Compare les deux branches et cherche ce que la solution empêche.";
-
   return (
-    <div className="review-line-comparison">
+    <div className="review-line-comparison" aria-label="Comparaison des lignes">
       <div className="review-line-comparison-head">
-        <span>Comparaison des lignes</span>
-        <strong>{mainDifference}</strong>
+        <span>Comparer les deux futurs</span>
+        <strong>{mainDifference ?? "La solution limite mieux les réponses adverses."}</strong>
       </div>
       <div className="review-line-comparison-grid">
         <article className="review-line-card review-line-card-played">
           <span>{isUserLanguage ? "Après ton coup" : "Après le coup joué"}</span>
           <strong>Coup joué : {playedMove}</strong>
           <p>{playedSummary}</p>
-          <p>
-            Réponse adverse :{" "}
-            {opponentReply ?? "réponse adverse non disponible."}
-          </p>
           <p>
             Ligne du coup joué :{" "}
             {playedLinePreview || "ligne indisponible."}
@@ -1300,7 +1473,7 @@ function ReviewLineComparison({
             onClick={() => onShowPvLineAnnotation(annotation, index, "played")}
             disabled={!playedLineAvailable}
           >
-            Rejouer cette ligne
+            Voir la ligne
           </button>
         </article>
         <article className="review-line-card review-line-card-solution">
@@ -1316,13 +1489,9 @@ function ReviewLineComparison({
             onClick={() => onShowPvLineAnnotation(annotation, index, "solution")}
             disabled={!solutionLineAvailable}
           >
-            Rejouer cette ligne
+            Voir la ligne
           </button>
         </article>
-      </div>
-      <div className="review-line-takeaway">
-        <span>À retenir</span>
-        <p>{takeaway}</p>
       </div>
     </div>
   );
@@ -2328,7 +2497,8 @@ function ReviewAnalysisOptions({
 }) {
   return (
     <details className="review-analysis-options">
-      <summary>Options d'analyse</summary>
+      <summary>Détails techniques</summary>
+      <div className="review-technical-title">Options d'analyse</div>
       <div className="review-action-row">
         <button onClick={() => onRetry()}>Recalculer {analysisProfile}</button>
         {analysisProfile !== "deep" && (
@@ -3293,6 +3463,19 @@ function errorTypeLabel(
       return "Coup fort";
     default:
       return annotation.category_label ?? "À revoir";
+  }
+}
+
+function lessonTypeLabel(errorType: string | null | undefined): string {
+  switch (errorType) {
+    case "tactical":
+      return "Tactique";
+    case "conversion":
+      return "Conversion";
+    case "defensive":
+      return "Défense";
+    default:
+      return "Plan";
   }
 }
 

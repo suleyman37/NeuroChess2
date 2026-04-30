@@ -153,14 +153,58 @@ button:focus-visible {
   justify-items: center;
 }
 
-.position-badge,
-.review-board-hint {
+.position-badge {
   background: #eef3f9;
   border: 1px solid #d8e0eb;
   border-radius: 6px;
   color: #38475a;
   padding: 0.45rem 0.65rem;
   width: min(100%, 480px);
+}
+
+.review-step-status-panel {
+  align-items: center;
+  background: #f8fbff;
+  border: 1px solid #d8e0eb;
+  border-radius: 8px;
+  color: #38475a;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+  padding: 0.58rem 0.68rem;
+  width: min(100%, 480px);
+}
+
+.review-step-status-panel div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.review-step-status-panel strong {
+  color: #172033;
+  font-size: 0.86rem;
+}
+
+.review-step-status-panel span {
+  color: #526071;
+  font-size: 0.8rem;
+}
+
+.review-step-status-detail {
+  background: #eef3f9;
+  border-radius: 6px;
+  padding: 0.32rem 0.45rem;
+}
+
+.review-step-status-actions {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.review-step-status-actions button {
+  min-height: 32px;
+  padding: 0.38rem 0.44rem;
 }
 
 .review-replay-badge {
@@ -946,6 +990,13 @@ button:focus-visible {
   font-weight: 680;
 }
 
+.review-technical-title {
+  color: #172033;
+  font-size: 0.82rem;
+  font-weight: 860;
+  margin-top: 0.48rem;
+}
+
 .review-score-rebuild {
   align-items: center;
   background: #fff7ed;
@@ -1289,6 +1340,39 @@ button:focus-visible {
 .review-coach-badge-danger {
   background: #fee2e2;
   color: #991b1b;
+}
+
+.review-lesson-stepper {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(203, 213, 225, 0.86);
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  padding: 4px;
+}
+
+.review-lesson-stepper button {
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #526071;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 840;
+  min-height: 30px;
+  padding: 0.28rem 0.34rem;
+}
+
+.review-lesson-stepper button.active {
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+  color: #172033;
+}
+
+.review-lesson-card {
+  display: grid;
+  gap: 9px;
 }
 
 .review-coach-main {
@@ -2034,6 +2118,11 @@ button:focus-visible {
   gap: 8px;
 }
 
+.review-action-row button.primary {
+  background: #172033;
+  color: #ffffff;
+}
+
 .review-reset-picker,
 .review-job-debug {
   background: #f7f9fc;
@@ -2092,6 +2181,474 @@ button:focus-visible {
   width: 16px;
 }
 
+/* V2 visual refresh: dark cognitive cockpit, cyan board focus, compact panels. */
+:root {
+  --nc-bg: #02040b;
+  --nc-panel: #090b1d;
+  --nc-panel-2: #0d1026;
+  --nc-border: rgba(0, 229, 255, 0.18);
+  --nc-text: #f7fbff;
+  --nc-muted: #8e9bc3;
+  --nc-cyan: #00e5ff;
+  --nc-blue: #2082ff;
+  --nc-violet: #705cff;
+  --nc-green: #30f2a4;
+  --nc-warning: #f9b44c;
+  --nc-danger: #ff4c78;
+}
+
+body {
+  background:
+    radial-gradient(circle at 21% 18%, rgba(0, 229, 255, 0.11), transparent 26%),
+    radial-gradient(circle at 84% 10%, rgba(112, 92, 255, 0.16), transparent 28%),
+    linear-gradient(180deg, #02040b 0%, #050817 50%, #02040b 100%);
+  color: var(--nc-text);
+  font-family:
+    "Space Grotesk", Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body::before {
+  background-image:
+    linear-gradient(rgba(0, 229, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.035) 1px, transparent 1px);
+  background-size: 36px 36px;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: -1;
+}
+
+.app {
+  background:
+    linear-gradient(90deg, rgba(0, 229, 255, 0.08), transparent 1px) 0 0 / 72px 72px,
+    linear-gradient(rgba(112, 92, 255, 0.055), transparent 1px) 0 0 / 72px 72px;
+  padding: 14px 18px 22px;
+}
+
+button {
+  background: rgba(14, 20, 45, 0.92);
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  color: var(--nc-text);
+  min-height: 36px;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+button:hover:not(:disabled) {
+  background: rgba(0, 229, 255, 0.13);
+  border-color: rgba(0, 229, 255, 0.52);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+button:focus-visible {
+  outline: 2px solid rgba(0, 229, 255, 0.78);
+  outline-offset: 2px;
+}
+
+.topbar {
+  border-bottom: 1px solid rgba(0, 229, 255, 0.12);
+  max-width: 1420px;
+  padding-bottom: 10px;
+}
+
+.topbar h1 {
+  align-items: center;
+  background: linear-gradient(90deg, #00cfff 0%, #2082ff 48%, #7b55ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: flex;
+  font-size: 1.35rem;
+  font-weight: 850;
+  gap: 10px;
+  letter-spacing: 0;
+}
+
+.topbar h1::after {
+  background: rgba(0, 229, 255, 0.11);
+  border: 1px solid rgba(0, 229, 255, 0.24);
+  border-radius: 999px;
+  color: var(--nc-cyan);
+  content: "road to V2";
+  font-size: 0.62rem;
+  font-weight: 780;
+  padding: 0.14rem 0.42rem;
+  text-transform: uppercase;
+}
+
+.topbar p,
+.opening-summary,
+.status-note,
+.warning,
+.alert {
+  color: var(--nc-muted);
+}
+
+.actions {
+  gap: 8px;
+}
+
+.actions button:last-of-type,
+.review-action-row button.primary {
+  background: linear-gradient(90deg, var(--nc-cyan), var(--nc-blue));
+  border-color: rgba(0, 229, 255, 0.6);
+  color: #02111d;
+  font-weight: 870;
+}
+
+.evaluation-toggle,
+.opening-summary,
+.position-badge,
+.review-replay-badge,
+.review-step-status-panel,
+.right-panel,
+.review-score-summary,
+.review-coach-moment,
+.review-opening-reality,
+.review-practice-launch,
+.review-practice-panel,
+.review-moment-navigator,
+.review-note,
+.review-message,
+.game-history-card,
+.review-empty {
+  background: rgba(9, 11, 29, 0.82);
+  border: 1px solid var(--nc-border);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.24);
+  color: var(--nc-muted);
+}
+
+.alert {
+  background: rgba(255, 76, 120, 0.12);
+  border-color: rgba(255, 76, 120, 0.42);
+}
+
+.warning {
+  background: rgba(249, 180, 76, 0.1);
+  border-color: rgba(249, 180, 76, 0.32);
+}
+
+.status-note {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.28);
+}
+
+.analysis-layout {
+  gap: 16px;
+  grid-template-columns: 66px minmax(320px, 500px) minmax(410px, 1fr);
+  max-width: 1420px;
+}
+
+.board-column {
+  gap: 8px;
+}
+
+.board-panel {
+  filter: drop-shadow(0 0 28px rgba(0, 229, 255, 0.08));
+  position: relative;
+}
+
+.board-panel::after {
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  content: "";
+  inset: -1px;
+  pointer-events: none;
+  position: absolute;
+}
+
+.position-badge,
+.review-replay-badge,
+.review-step-status-panel {
+  backdrop-filter: blur(14px);
+  width: min(100%, 500px);
+}
+
+.review-replay-badge {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.36);
+  color: var(--nc-cyan);
+}
+
+.review-replay-badge-animating_move,
+.review-replay-badge-showing_after {
+  background: rgba(112, 92, 255, 0.14);
+  border-color: rgba(112, 92, 255, 0.38);
+  color: #c9c4ff;
+}
+
+.review-step-status-panel strong,
+.panel-title,
+.review-job-progress strong,
+.game-history-title,
+.review-block-title span,
+.review-score-title span,
+.review-score-comparison strong,
+.review-score-audit-title,
+.review-opening-grid strong,
+.review-coach-moment-head h3,
+.review-line-comparison-head strong,
+.review-line-card strong,
+.review-coach-type,
+.review-headline-score strong,
+.review-score-metric strong {
+  color: var(--nc-text);
+}
+
+.review-step-status-panel span,
+.review-step-status-detail,
+.review-coach-meta,
+.review-pov-selector,
+.review-score-details,
+.review-analysis-options,
+.review-legacy-moments,
+.review-analysis-origin,
+.review-analysis-settings,
+.review-practice-card span,
+.review-practice-head span,
+.review-practice-history-head span,
+.review-compact-meta,
+.move-number,
+.eval-source,
+.eval-source-details,
+.muted {
+  color: var(--nc-muted);
+}
+
+.review-step-status-detail,
+.review-score-comparison,
+.review-score-metric,
+.review-coach-explanation,
+.review-line-card,
+.review-line-comparison-head,
+.review-opening-grid div,
+.review-opening-summary,
+.review-practice-card,
+.review-practice-explanation,
+.review-practice-summary-metric,
+.review-practice-theme,
+.review-compact-row,
+.review-section-tab,
+.review-score-debug-block,
+.review-reset-picker,
+.review-job-debug,
+.review-score-debug {
+  background: rgba(16, 24, 54, 0.76);
+  border-color: rgba(0, 229, 255, 0.13);
+  color: var(--nc-muted);
+}
+
+.right-panel {
+  backdrop-filter: blur(18px);
+  min-height: 540px;
+}
+
+.history,
+.debug,
+.tab-panel {
+  background: rgba(9, 11, 29, 0.68);
+  color: var(--nc-muted);
+}
+
+.tabs {
+  background: rgba(4, 8, 22, 0.9);
+  border-bottom-color: rgba(0, 229, 255, 0.14);
+}
+
+.tabs [role="tab"],
+.review-focus-tab,
+.review-section-tab,
+.review-pov-selector button,
+.history-scope-filters button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--nc-muted);
+}
+
+.tabs [aria-selected="true"],
+.review-focus-tab.active,
+.review-section-tab.active,
+.review-pov-selector button.active,
+.history-scope-filters button.active,
+.history-scope-filters [aria-selected="true"] {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.34);
+  box-shadow: inset 0 0 18px rgba(0, 229, 255, 0.08);
+  color: var(--nc-cyan);
+}
+
+.review-focus-tabs,
+.review-lesson-stepper {
+  background: rgba(3, 6, 18, 0.82);
+  border-color: rgba(0, 229, 255, 0.16);
+}
+
+.review-lesson-stepper button {
+  color: var(--nc-muted);
+}
+
+.review-lesson-stepper button.active {
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.16), rgba(112, 92, 255, 0.16));
+  box-shadow: inset 0 0 18px rgba(0, 229, 255, 0.08);
+  color: var(--nc-text);
+}
+
+.review-coach-summary {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(0, 229, 255, 0.12), transparent 34%),
+    rgba(9, 11, 29, 0.86);
+}
+
+.review-headline-score strong {
+  color: var(--nc-cyan);
+  font-size: 2.25rem;
+  text-shadow: 0 0 22px rgba(0, 229, 255, 0.28);
+}
+
+.review-coach-sentence,
+.review-coach-main,
+.review-coach-explanation p,
+.review-line-card p,
+.review-line-takeaway p,
+.review-opening-reality p,
+.review-section-reason,
+.review-practice-card p,
+.review-practice-explanation p {
+  color: #d9e5ff;
+}
+
+.review-score-comparison {
+  border-left: 3px solid var(--nc-cyan);
+}
+
+.review-coach-moment-positive,
+.review-coach-moment-neutral,
+.review-coach-moment-defense,
+.review-coach-moment-warning,
+.review-coach-moment-danger,
+.review-coach-moment-conversion,
+.review-coach-moment-book {
+  background:
+    linear-gradient(135deg, rgba(0, 229, 255, 0.07), transparent 38%),
+    rgba(9, 11, 29, 0.9);
+  border-color: rgba(0, 229, 255, 0.2);
+}
+
+.review-coach-type,
+.review-coach-badge,
+.review-tag,
+.history-badge,
+.review-block-title strong {
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  color: var(--nc-cyan);
+}
+
+.review-coach-badge-danger,
+.history-badge.warning {
+  background: rgba(255, 76, 120, 0.12);
+  border-color: rgba(255, 76, 120, 0.32);
+  color: #ff8aaa;
+}
+
+.review-coach-badge-warning,
+.review-coach-badge-conversion,
+.history-badge.category {
+  background: rgba(249, 180, 76, 0.12);
+  border-color: rgba(249, 180, 76, 0.32);
+  color: #ffd28b;
+}
+
+.review-coach-badge-positive,
+.history-badge.source {
+  background: rgba(48, 242, 164, 0.12);
+  border-color: rgba(48, 242, 164, 0.3);
+  color: #91ffd1;
+}
+
+.review-line-card-played {
+  border-color: rgba(0, 229, 255, 0.32);
+}
+
+.review-line-card-solution {
+  border-color: rgba(112, 92, 255, 0.42);
+}
+
+.review-impact-meter {
+  background: rgba(0, 0, 0, 0.26);
+}
+
+.review-impact-meter span {
+  background: linear-gradient(90deg, var(--nc-cyan), var(--nc-violet));
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.3);
+}
+
+.eval-shell,
+.eval-bar-track {
+  background: #070a18;
+  border-color: rgba(0, 229, 255, 0.22);
+  box-shadow: 0 0 26px rgba(0, 229, 255, 0.1);
+}
+
+.eval-bar-black {
+  background: #050713;
+}
+
+.eval-bar-white {
+  background: #dce8ff;
+}
+
+.eval-bar-cursor {
+  background: var(--nc-cyan);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.8);
+}
+
+.move-button,
+.pgn-history-button {
+  color: #d9e5ff;
+}
+
+.move-button:hover,
+.move-button.active,
+.review-compact-row:hover,
+.review-compact-row.active,
+.pgn-history-button:hover {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.34);
+}
+
+.import-form input,
+.import-form select,
+.import-form textarea,
+.review-analysis-profile select {
+  background: rgba(4, 8, 22, 0.86);
+  border-color: rgba(0, 229, 255, 0.2);
+  color: var(--nc-text);
+}
+
+.review-score-debug,
+.review-debug,
+.review-pv-contrast-debug {
+  background: rgba(4, 8, 22, 0.72);
+  border-color: rgba(0, 229, 255, 0.12);
+}
+
+.review-score-audit-table th,
+.review-score-audit-table td {
+  border-bottom-color: rgba(0, 229, 255, 0.12);
+}
+
+.spinner {
+  border-color: rgba(0, 229, 255, 0.22);
+  border-top-color: var(--nc-cyan);
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -2106,6 +2663,7 @@ button:focus-visible {
 
   .analysis-layout {
     grid-template-columns: 52px minmax(260px, 1fr);
+    max-width: 100%;
   }
 
   .right-panel {
@@ -2119,6 +2677,14 @@ button:focus-visible {
   .review-coach-grid,
   .review-line-comparison-grid,
   .review-coach-impact {
+    grid-template-columns: 1fr;
+  }
+
+  .review-lesson-stepper {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .review-step-status-actions {
     grid-template-columns: 1fr;
   }
 

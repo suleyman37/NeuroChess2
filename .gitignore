@@ -21,8 +21,14 @@ frontend/.vite/
 # Local DB / data
 neurochess.db
 neurochess.db-journal
+neurochess.db-shm
+neurochess.db-wal
 *.sqlite
 *.sqlite3
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3-shm
+*.sqlite3-wal
 
 # Logs / temp
 logs/
