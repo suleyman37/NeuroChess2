@@ -81,6 +81,14 @@ et les fichiers frontend/backend inspectes.
   completes legacy : `POST /games/{game_id}/review/rebuild-metrics` reconstruit
   Accuracy, NeuroScore, Diagnostic Gap et Evidence JSON depuis les
   `position_analyses` existantes, sans relancer Stockfish.
+- V5.4.DOC-1B cree la gouvernance formules, calibration, Learning Engine et
+  Research Backlog : `FORMULAS_AND_METRICS.md`,
+  `CALIBRATION_PROTOCOL.md`, `LEARNING_ENGINE_BLUEPRINT.md` et
+  `RESEARCH_BACKLOG.md`.
+- V5.4.MATH-ALIGN-1 aligne le NeuroScore public visible sur l'accuracy
+  Lichess-like, garde le Headline Score en legacy/audit, retire Diagnostic Gap
+  du resume principal et rend les domaines NeuroMonitor qualitatifs jusqu'a
+  calibration.
 - Detection d'ouverture V5 et import book local V5.1 depuis sources Lichess
   locales.
 - Import PGN manuel V5.2 : preview, import, deduplication, alias utilisateur,
@@ -558,3 +566,48 @@ A valider navigateur :
 - verifier que l'echiquier s'ouvre depuis le FEN header ;
 - lancer une Review depuis l'historique ;
 - verifier que l'ouverture non applicable ne bloque pas.
+
+## V5.4.REVIEW-UX-1 - Review Screen Contracts
+
+Etat : implemente.
+
+La Review applique les contrats produit : quatre onglets visibles maximum
+(`Resume`, `Apprendre`, `S'entrainer`, `Explorer`) et un onglet Apprendre reduit
+a trois etats publics (`Defi`, `Correction`, `Entrainement`).
+
+Les details techniques, les preuves PV, les options d'analyse et le debug
+restent disponibles dans Explorer, replie par defaut, pour garder le Resume et
+la lecon prescriptifs.
+
+## V5.4.REVIEW-SCORE-UX-R1 - Coach NeuroScore
+
+Etat : implemente.
+
+Le grand NeuroScore Review est restaure comme score coach composite
+severity-aware, via les alias `*_coach_neuro_score` adosses aux champs
+`*_headline_neurochess_score` existants. La precision Lichess-like reste visible
+separement comme `Precision de reference`.
+
+Diagnostic Gap, NeuroDiagnostic et details de fusion restent dans les details
+techniques/audit. NeuroMonitor utilise le score coach en overall et conserve des
+domaines qualitatifs jusqu'a calibration.
+
+## V5.4.REVIEW-UI-POLISH-1 - Premium Review UI Pass
+
+Etat : implemente.
+
+La Review applique une hierarchie visuelle plus premium sans changer le backend :
+colonne board compacte, colonne coach prioritaire, header plus net et onglets
+`Resume`, `Apprendre`, `S'entrainer`, `Explorer` conserves comme structure
+visible finale.
+
+Le Resume devient un dashboard court : hero NeuroScore coach, precision de
+reference, label qualitatif, une seule carte cognitive NeuroMonitor, trois
+priorites maximum, trois takeaways maximum et un CTA principal. La colonne board
+ne duplique plus le NeuroMonitor.
+
+`Apprendre` reste guide par `Defi`, `Correction`, `Entrainement`; la correction
+est presentee en cartes narratives et les comparaisons de lignes restent
+repliees par defaut. `S'entrainer` affiche toujours une action claire, meme
+quand aucune session n'est active. `Explorer` contient la complexite, les
+details techniques et les preuves PV sous disclosures.
