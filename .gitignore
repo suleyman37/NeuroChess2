@@ -15,6 +15,7 @@ env/
 # Node / frontend
 node_modules/
 frontend/dist/
+frontend/storybook-static/
 frontend/.vite/
 *.tsbuildinfo
 
