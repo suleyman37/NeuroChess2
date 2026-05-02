@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties, KeyboardEvent } from "react";
 import "./NeuroMonitorBrain3D.css";
 import {
@@ -11,6 +11,13 @@ import {
   type BrainDomainVisual,
   type NeuroMonitorBrainData,
 } from "./neuroBrainTypes";
+import {
+  NeuroBrainAtlas3D,
+  type BrainConnection,
+  type BrainDomainId,
+  type BrainDomainRegion,
+  type BrainPerformanceLevel,
+} from "../visual/NeuroBrainAtlas3D";
 
 type NeuroMonitorBrain3DProps = {
   data?: NeuroMonitorBrainData | null;
@@ -19,23 +26,33 @@ type NeuroMonitorBrain3DProps = {
   onDomainClick?: (domain: BrainDomainKey) => void;
 };
 
+const ATLAS_CONNECTIONS: BrainConnection[] = [
+  { source: "opening", target: "tactics", strength: 0.72 },
+  { source: "tactics", target: "calculation", strength: 0.84 },
+  { source: "calculation", target: "conversion", strength: 0.68 },
+  { source: "defense", target: "planning", strength: 0.66 },
+  { source: "planning", target: "conversion", strength: 0.58 },
+  { source: "tactics", target: "defense", strength: 0.48 },
+];
+
 export function NeuroMonitorBrain3D({
   data,
   compact = false,
   className = "",
   onDomainClick,
 }: NeuroMonitorBrain3DProps) {
-  const gradientId = useId().replace(/:/g, "");
   const [hoveredDomain, setHoveredDomain] = useState<BrainDomainKey | null>(null);
   const [webglAvailable, setWebglAvailable] = useState<boolean | null>(null);
   const brainData = useMemo(() => normalizeBrainData(data), [data]);
   const visuals = useMemo(() => buildBrainDomainVisuals(brainData), [brainData]);
+  const atlasRegions = useMemo(() => buildAtlasRegions(visuals), [visuals]);
   const priorityDomain =
     visuals.find((domain) => domain.key === brainData.priorityDomain) ??
     visuals.find((domain) => domain.priority) ??
     visuals.slice().sort((left, right) => left.score - right.score)[0];
   const activeDomain =
     visuals.find((domain) => domain.key === hoveredDomain) ?? priorityDomain ?? visuals[0];
+  const atlasVariant = atlasVariantFor(priorityDomain, atlasRegions);
 
   useEffect(() => {
     setWebglAvailable(detectWebGlSupport());
@@ -77,13 +94,16 @@ export function NeuroMonitorBrain3D({
             onSelect={handleDomainSelect}
           />
         ) : (
-          <NeuroBrainStage
-            domains={visuals}
-            activeDomainKey={activeDomain?.key ?? null}
-            gradientId={gradientId}
-            onHover={setHoveredDomain}
-            onSelect={handleDomainSelect}
-          />
+          <div className="neuro3d-stage neuro3d-atlas-stage" data-neuro-brain-atlas-monitor="true">
+            <NeuroBrainAtlas3D
+              regions={atlasRegions}
+              connections={ATLAS_CONNECTIONS}
+              height={compact ? 240 : 340}
+              variant={atlasVariant}
+              showLegend={!compact}
+              interactive={false}
+            />
+          </div>
         )}
 
         <aside className="neuro3d-domain-panel" aria-label="Domaines cognitifs">
@@ -317,6 +337,147 @@ function detectWebGlSupport(): boolean {
   } catch {
     return false;
   }
+}
+
+function buildAtlasRegions(domains: BrainDomainVisual[]): BrainDomainRegion[] {
+  const byKey = new Map(domains.map((domain) => [domain.key, domain]));
+  const opening = byKey.get("opening");
+  const tactics = byKey.get("tactical");
+  const conversion = byKey.get("conversion");
+  const defense = byKey.get("defense");
+  const planning = byKey.get("plan");
+  const calculation = blendAtlasRegion("calculation", "Calculation", [
+    [tactics, 0.62],
+    [conversion, 0.24],
+    [planning, 0.14],
+  ]);
+
+  return [
+    domainToAtlasRegion(opening, "opening", "Opening"),
+    domainToAtlasRegion(tactics, "tactics", "Tactics"),
+    calculation,
+    domainToAtlasRegion(conversion, "conversion", "Conversion"),
+    domainToAtlasRegion(defense, "defense", "Defense"),
+    domainToAtlasRegion(planning, "planning", "Planning"),
+  ];
+}
+
+function domainToAtlasRegion(
+  domain: BrainDomainVisual | undefined,
+  id: BrainDomainId,
+  label: string,
+): BrainDomainRegion {
+  if (!domain) {
+    return {
+      id,
+      label,
+      performance: "unknown",
+      weight: 0.42,
+      activity: 0.16,
+      confidence: 0.34,
+    };
+  }
+
+  const performance = atlasPerformanceFromDomain(domain);
+  const priorityBoost = domain.priority ? 0.2 : 0;
+  const weaknessBoost = (100 - domain.score) / 100 * 0.18;
+  return {
+    id,
+    label,
+    performance,
+    weight: clampAtlas01(0.42 + priorityBoost + weaknessBoost),
+    activity:
+      performance === "unknown"
+        ? 0.18
+        : clampAtlas01(0.2 + domain.activity * 0.58 + priorityBoost),
+    confidence: atlasConfidence(domain, performance),
+  };
+}
+
+function blendAtlasRegion(
+  id: BrainDomainId,
+  label: string,
+  sources: Array<[BrainDomainVisual | undefined, number]>,
+): BrainDomainRegion {
+  const available = sources.filter(
+    (source): source is [BrainDomainVisual, number] => Boolean(source[0]),
+  );
+  if (available.length === 0) {
+    return domainToAtlasRegion(undefined, id, label);
+  }
+
+  const totalWeight = available.reduce((sum, [, weight]) => sum + weight, 0);
+  const blendedScore = available.reduce(
+    (sum, [domain, weight]) => sum + domain.score * weight,
+    0,
+  ) / totalWeight;
+  const activity = available.reduce(
+    (max, [domain]) => Math.max(max, domain.activity),
+    0,
+  );
+  const priority = available.some(([domain]) => domain.priority);
+  const synthetic: BrainDomainVisual = {
+    ...available[0][0],
+    key: available[0][0].key,
+    label,
+    score: Math.round(blendedScore),
+    priority,
+    activity,
+    statusLabel: undefined,
+    status: "",
+  };
+
+  return domainToAtlasRegion(synthetic, id, label);
+}
+
+function atlasPerformanceFromDomain(domain: BrainDomainVisual): BrainPerformanceLevel {
+  const status = domain.status.toLowerCase();
+  if (status.includes("construction") || status.includes("preciser")) {
+    return "unknown";
+  }
+  if (domain.score >= 78) {
+    return "strong";
+  }
+  if (domain.score >= 60) {
+    return "stable";
+  }
+  if (domain.score >= 36) {
+    return "fragile";
+  }
+  return "weak";
+}
+
+function atlasConfidence(
+  domain: BrainDomainVisual,
+  performance: BrainPerformanceLevel,
+): number {
+  if (performance === "unknown") {
+    return 0.38;
+  }
+  return clampAtlas01(0.54 + domain.score / 240);
+}
+
+function atlasVariantFor(
+  priorityDomain: BrainDomainVisual | undefined,
+  regions: BrainDomainRegion[],
+): "calm" | "analysis" | "high-risk" | "construction" {
+  if (regions.filter((region) => region.performance === "unknown").length >= 3) {
+    return "construction";
+  }
+  if (regions.some((region) => region.performance === "weak" && region.activity > 0.55)) {
+    return "high-risk";
+  }
+  if ((priorityDomain?.activity ?? 0) > 0.58) {
+    return "analysis";
+  }
+  return "calm";
+}
+
+function clampAtlas01(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(1, Number(value.toFixed(2))));
 }
 
 export { demoNeuroMonitorBrainData };

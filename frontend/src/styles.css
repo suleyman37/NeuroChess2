@@ -4162,7 +4162,49 @@ body::before {
 }
 
 .neuro-monitor-stage {
+  display: grid;
+  gap: 10px;
   min-height: 220px;
+}
+
+.neuro-monitor-atlas {
+  min-width: 0;
+}
+
+.neuro-monitor-stage > .neuro-brain-visual {
+  display: none;
+}
+
+.neuro-monitor-domain-actions,
+.neuro-monitor-branch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.neuro-monitor-domain-button,
+.neuro-monitor-branch-button {
+  align-items: center;
+  background: rgba(4, 9, 22, 0.74);
+  border-radius: 999px;
+  color: rgba(238, 248, 255, 0.86);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 820;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0.32rem 0.58rem;
+}
+
+.neuro-monitor-domain-button.active {
+  border-color: rgba(238, 248, 255, 0.55);
+  box-shadow: 0 0 18px rgba(143, 191, 255, 0.16);
+}
+
+.neuro-monitor-branch-button strong {
+  color: rgba(196, 212, 232, 0.76);
+  font-size: 0.68rem;
+  font-weight: 720;
 }
 
 .neuro-brain-visual {
@@ -4387,11 +4429,16 @@ body::before {
 }
 
 .neuro-monitor-brain.compact .neuro-monitor-stage {
-  min-height: 150px;
+  min-height: 230px;
 }
 
 .neuro-monitor-brain.compact .neuro-brain-visual {
   height: 156px;
+}
+
+.neuro-monitor-brain.compact .neuro-monitor-domain-actions,
+.neuro-monitor-brain.compact .neuro-monitor-branch-row {
+  display: none;
 }
 
 .neuro-monitor-brain.compact .neuro-monitor-stats {
@@ -4979,6 +5026,15 @@ button:focus-visible {
 .review-neuro3d-monitor,
 .review-neuro3d-demo {
   display: grid;
+}
+
+.review-unavailable-atlas-layout {
+  display: grid;
+  gap: 12px;
+}
+
+.review-construction-atlas {
+  min-height: 300px;
 }
 
 .board-neuro3d-monitor {

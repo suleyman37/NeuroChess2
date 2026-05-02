@@ -1,4 +1,11 @@
 import type { CSSProperties, KeyboardEvent } from "react";
+import {
+  NeuroBrainAtlas3D,
+  type BrainConnection,
+  type BrainDomainId,
+  type BrainDomainRegion,
+  type BrainPerformanceLevel,
+} from "./visual/NeuroBrainAtlas3D";
 
 export type NeuroMonitorDomainKey =
   | "opening"
@@ -70,6 +77,15 @@ const DOMAIN_POINTS: Record<NeuroMonitorDomainKey, { x: number; y: number }> = {
   defense: { x: 260, y: 202 },
 };
 
+const ATLAS_CONNECTIONS: BrainConnection[] = [
+  { source: "opening", target: "tactics", strength: 0.7 },
+  { source: "tactics", target: "calculation", strength: 0.86 },
+  { source: "calculation", target: "conversion", strength: 0.7 },
+  { source: "defense", target: "planning", strength: 0.62 },
+  { source: "planning", target: "conversion", strength: 0.66 },
+  { source: "tactics", target: "defense", strength: 0.58 },
+];
+
 const BRAIN_NODES = [
   [122, 178],
   [166, 102],
@@ -107,6 +123,13 @@ export function NeuroMonitorBrain({
     strongest ??
     null;
   const brainTone = activeDomain?.tone ?? "analysis";
+  const atlasProfile = buildAtlasProfile(normalizedDomains, normalizedSignals, activeDomain);
+  const availableBranches = [
+    playedBranch,
+    solutionBranch,
+    openingExit,
+    openingLinkedMoment,
+  ].filter((item) => item?.available);
 
   return (
     <section
@@ -125,6 +148,49 @@ export function NeuroMonitorBrain({
       </div>
 
       <div className="neuro-monitor-stage">
+        <div className="neuro-monitor-atlas" data-neuro-brain-atlas-monitor="true">
+          <NeuroBrainAtlas3D
+            regions={atlasProfile.regions}
+            connections={ATLAS_CONNECTIONS}
+            height={compact ? 230 : 300}
+            variant={atlasProfile.variant}
+            showLegend={!compact}
+            interactive={false}
+          />
+        </div>
+
+        {onDomainSelect && (
+          <div className="neuro-monitor-domain-actions" aria-label="Domaines NeuroMonitor">
+            {normalizedDomains.map((domain) => (
+              <button
+                type="button"
+                className={`neuro-monitor-domain-button neuro-tone-${domain.tone} ${
+                  activeDomain?.key === domain.key ? "active" : ""
+                }`}
+                key={domain.key}
+                onClick={() => onDomainSelect(domain.key)}
+              >
+                <span>{domain.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {availableBranches.length > 0 && (
+          <div className="neuro-monitor-branch-row" aria-label="Actions NeuroMonitor">
+            {playedBranch?.available && (
+              <NeuroMonitorBranchButton branch={playedBranch} visibleLabel="Ligne jouee" />
+            )}
+            {solutionBranch?.available && (
+              <NeuroMonitorBranchButton branch={solutionBranch} visibleLabel="Solution" />
+            )}
+            {openingExit?.available && <NeuroMonitorActionButton action={openingExit} />}
+            {openingLinkedMoment?.available && (
+              <NeuroMonitorActionButton action={openingLinkedMoment} />
+            )}
+          </div>
+        )}
+
         <svg
           className="neuro-brain-visual"
           viewBox="0 0 680 320"
@@ -274,6 +340,48 @@ export function NeuroMonitorBrain({
   );
 }
 
+function NeuroMonitorBranchButton({
+  branch,
+  visibleLabel,
+}: {
+  branch?: NeuroMonitorBranch;
+  visibleLabel: string;
+}) {
+  if (!branch?.available) {
+    return null;
+  }
+  const visible = branch.visible ?? true;
+  return (
+    <button
+      type="button"
+      className={`neuro-monitor-branch-button neuro-tone-${branch.tone}`}
+      disabled={!visible || !branch.onSelect}
+      onClick={() => {
+        if (visible) {
+          branch.onSelect?.();
+        }
+      }}
+    >
+      <span>{visible ? visibleLabel : branch.label}</span>
+      {branch.preview && <strong>{branch.preview}</strong>}
+    </button>
+  );
+}
+
+function NeuroMonitorActionButton({ action }: { action: NeuroMonitorOpeningAction }) {
+  return (
+    <button
+      type="button"
+      className={`neuro-monitor-branch-button neuro-tone-${action.tone}`}
+      disabled={!action.onSelect}
+      aria-label={action.label}
+      onClick={() => action.onSelect?.()}
+    >
+      <span>{action.label}</span>
+    </button>
+  );
+}
+
 function NeuroMonitorBranchPath({
   branch,
   d,
@@ -350,6 +458,127 @@ function handleSvgKey(event: KeyboardEvent<SVGGElement>, action: () => void) {
     event.preventDefault();
     action();
   }
+}
+
+function buildAtlasProfile(
+  domains: NeuroMonitorDomain[],
+  signals: NeuroMonitorSignal[],
+  activeDomain: NeuroMonitorDomain | null,
+): {
+  regions: BrainDomainRegion[];
+  variant: "calm" | "analysis" | "high-risk" | "construction";
+} {
+  const byKey = new Map(domains.map((domain) => [domain.key, domain]));
+  const awaitingData =
+    signals.length === 0 ||
+    signals.every((signal) => signal.value.toLowerCase().includes("attente"));
+  const opening = byKey.get("opening");
+  const tactical = byKey.get("tactical");
+  const conversion = byKey.get("conversion");
+  const defense = byKey.get("defense");
+  const calculation = blendDomains("tactical", "Calculation", tactical, conversion);
+  const planning = blendDomains("conversion", "Planning", conversion, defense);
+  const baseRegions: Array<{
+    id: BrainDomainId;
+    label: string;
+    source?: NeuroMonitorDomain;
+  }> = [
+    { id: "opening", label: "Opening", source: opening },
+    { id: "tactics", label: "Tactics", source: tactical },
+    { id: "calculation", label: "Calculation", source: calculation },
+    { id: "conversion", label: "Conversion", source: conversion },
+    { id: "defense", label: "Defense", source: defense },
+    { id: "planning", label: "Planning", source: planning },
+  ];
+  const regions = baseRegions.map(({ id, label, source }) =>
+    toAtlasRegion(id, label, source, awaitingData, activeDomain),
+  );
+  const maxActivity = Math.max(0, ...regions.map((region) => region.activity));
+  const hasWeakness = regions.some((region) => region.performance === "weak");
+  const variant = awaitingData
+    ? "construction"
+    : hasWeakness
+      ? "high-risk"
+      : maxActivity >= 0.58
+        ? "analysis"
+        : "calm";
+
+  return { regions, variant };
+}
+
+function blendDomains(
+  key: NeuroMonitorDomainKey,
+  label: string,
+  primary?: NeuroMonitorDomain,
+  secondary?: NeuroMonitorDomain,
+): NeuroMonitorDomain {
+  const primaryIntensity = primary?.intensity ?? 0.18;
+  const secondaryIntensity = secondary?.intensity ?? 0.18;
+  const intensity = clamp01(primaryIntensity * 0.62 + secondaryIntensity * 0.38);
+  return {
+    key,
+    label,
+    tone: strongerTone(primary?.tone ?? "neutral", secondary?.tone ?? "neutral"),
+    intensity,
+    summary: primary?.summary ?? secondary?.summary ?? "profil qualitatif",
+  };
+}
+
+function toAtlasRegion(
+  id: BrainDomainId,
+  label: string,
+  source: NeuroMonitorDomain | undefined,
+  awaitingData: boolean,
+  activeDomain: NeuroMonitorDomain | null,
+): BrainDomainRegion {
+  const intensity = clamp01(source?.intensity ?? 0.18);
+  const active =
+    source?.key === activeDomain?.key ||
+    (source?.key === "tactical" && activeDomain?.key === "tactical" && id === "calculation");
+  return {
+    id,
+    label,
+    performance: awaitingData ? "unknown" : performanceFromTone(source?.tone ?? "neutral"),
+    weight: awaitingData ? 0.38 + intensity * 0.18 : 0.46 + intensity * 0.44,
+    activity: awaitingData
+      ? 0.12 + intensity * 0.16
+      : clamp01(0.2 + intensity * 0.55 + (active ? 0.18 : 0)),
+    confidence: awaitingData ? 0.28 : clamp01(0.54 + intensity * 0.36),
+  };
+}
+
+function performanceFromTone(tone: NeuroMonitorTone): BrainPerformanceLevel {
+  if (tone === "stable") {
+    return "strong";
+  }
+  if (tone === "watch") {
+    return "fragile";
+  }
+  if (tone === "critical") {
+    return "weak";
+  }
+  if (tone === "analysis") {
+    return "stable";
+  }
+  return "unknown";
+}
+
+function strongerTone(left: NeuroMonitorTone, right: NeuroMonitorTone): NeuroMonitorTone {
+  const rank: Record<NeuroMonitorTone, number> = {
+    critical: 4,
+    watch: 3,
+    analysis: 2,
+    stable: 1,
+    neutral: 0,
+  };
+  return rank[left] >= rank[right] ? left : right;
+}
+
+function clamp01(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(1, value));
 }
 
 function fallbackDomains(): NeuroMonitorDomain[] {
