@@ -36,6 +36,7 @@ logs/
 .tmp-tests/
 *.log
 *.err
+.claude/worktrees/
 
 # Secrets / local config
 .env
