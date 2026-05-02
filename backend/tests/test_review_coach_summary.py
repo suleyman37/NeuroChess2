@@ -39,30 +39,41 @@ class HeadlineScoreTests(unittest.TestCase):
 
 
 class ReviewSummarySentenceTests(unittest.TestCase):
-    def test_high_score_low_gap_sentence(self) -> None:
+    def test_high_public_score_sentence(self) -> None:
         sentence = _build_review_summary_sentence(
-            headline_score=91.0,
-            diagnostic_gap=2.0,
+            coach_score=91.0,
+            public_score=91.0,
             review_sections={"to_review": []},
             confidence="high",
         )
-        self.assertIn("Bonne partie", sentence)
+        self.assertIn("Partie solide", sentence)
 
-    def test_high_gap_sentence(self) -> None:
+    def test_public_high_but_coach_low_sentence(self) -> None:
         sentence = _build_review_summary_sentence(
-            headline_score=76.0,
-            diagnostic_gap=14.0,
+            coach_score=62.0,
+            public_score=87.0,
             review_sections={"to_review": []},
             confidence="high",
         )
-        self.assertIn("impact durable", sentence)
+        self.assertIn("précision moyenne", sentence)
+        self.assertIn("moments critiques", sentence)
+
+    def test_summary_does_not_depend_on_diagnostic_gap(self) -> None:
+        sentence = _build_review_summary_sentence(
+            coach_score=76.0,
+            public_score=76.0,
+            review_sections={"to_review": []},
+            confidence="high",
+        )
+        self.assertNotIn("impact durable", sentence)
+        self.assertNotIn("diagnostique", sentence.lower())
 
     def test_conversion_cluster_and_missed_opportunity_sentences(self) -> None:
         self.assertIn(
             "conversion",
             _build_review_summary_sentence(
-                headline_score=70.0,
-                diagnostic_gap=4.0,
+                coach_score=70.0,
+                public_score=70.0,
                 review_sections={
                     "to_review": [
                         {"tags": ["conversion_issue"]},
@@ -73,10 +84,10 @@ class ReviewSummarySentenceTests(unittest.TestCase):
             ),
         )
         self.assertIn(
-            "enchaînées",
+            "bascul",
             _build_review_summary_sentence(
-                headline_score=70.0,
-                diagnostic_gap=4.0,
+                coach_score=70.0,
+                public_score=70.0,
                 review_sections={
                     "to_review": [{"tags": ["cluster"]}, {"tags": ["cluster"]}]
                 },
@@ -86,8 +97,8 @@ class ReviewSummarySentenceTests(unittest.TestCase):
         self.assertIn(
             "opportunités",
             _build_review_summary_sentence(
-                headline_score=70.0,
-                diagnostic_gap=4.0,
+                coach_score=70.0,
+                public_score=70.0,
                 review_sections={
                     "to_review": [
                         {"tags": ["missed_opportunity"]},
@@ -100,8 +111,8 @@ class ReviewSummarySentenceTests(unittest.TestCase):
 
     def test_low_confidence_prefix(self) -> None:
         sentence = _build_review_summary_sentence(
-            headline_score=50.0,
-            diagnostic_gap=1.0,
+            coach_score=50.0,
+            public_score=50.0,
             review_sections={"to_review": []},
             confidence="low",
         )

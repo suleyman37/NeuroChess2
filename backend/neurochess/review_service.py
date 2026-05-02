@@ -79,6 +79,9 @@ REVIEW_SCORE_FORMULA_VERSION = DUAL_REVIEW_SCORE_FORMULA_VERSION
 REVIEW_SCORE_CACHE_SCHEMA_VERSION = "review_dual_score_cache_v1"
 REVIEW_EVIDENCE_SCHEMA_VERSION = "review_evidence_v1"
 REVIEW_PIPELINE_VERSION = "v5_3_a4c_complete_only_review_v1"
+PUBLIC_NEURO_SCORE_FORMULA_VERSION = "public_neuro_score_lichess_like_v1"
+COACH_NEURO_SCORE_FORMULA_VERSION = "coach_neuro_score_v1"
+QUALITATIVE_GAME_LABEL_VERSION = "qualitative_game_label_v1"
 MIN_ANALYZED_MOVES_FOR_REVIEW_SCORE = 5
 REVIEW_ANALYSIS_DEFAULT_PROFILE = "standard"
 REVIEW_ANALYSIS_PROFILES = {"cached", "quick", "standard", "deep"}
@@ -188,6 +191,19 @@ def _empty_review_score_payload(
         "black_lichess_like_accuracy": None,
         "user_lichess_like_accuracy": None,
         "opponent_lichess_like_accuracy": None,
+        "white_public_neuro_score": None,
+        "black_public_neuro_score": None,
+        "user_public_neuro_score": None,
+        "opponent_public_neuro_score": None,
+        "public_neuro_score": None,
+        "qualitative_game_label": "Partie à analyser",
+        "qualitative_game_label_formula_version": QUALITATIVE_GAME_LABEL_VERSION,
+        "white_coach_neuro_score": None,
+        "black_coach_neuro_score": None,
+        "user_coach_neuro_score": None,
+        "opponent_coach_neuro_score": None,
+        "coach_neuro_score": None,
+        "coach_score_formula_version": COACH_NEURO_SCORE_FORMULA_VERSION,
         "white_neuro_score": None,
         "black_neuro_score": None,
         "user_neuro_score": None,
@@ -211,6 +227,7 @@ def _empty_review_score_payload(
         "move_accuracy_formula_version": MOVE_ACCURACY_FORMULA_VERSION,
         "game_accuracy_formula_version": GAME_ACCURACY_FORMULA_VERSION,
         "neuro_score_formula_version": NEURO_SCORE_FORMULA_VERSION,
+        "public_score_formula_version": PUBLIC_NEURO_SCORE_FORMULA_VERSION,
         "headline_score_formula_version": HEADLINE_SCORE_FORMULA_VERSION,
         "formula_versions": formula_versions,
         "move_category_formula_version": MOVE_CATEGORY_FORMULA_VERSION,
@@ -288,6 +305,9 @@ def _review_score_formula_versions() -> dict[str, str]:
         "move_accuracy_formula_version": MOVE_ACCURACY_FORMULA_VERSION,
         "game_accuracy_formula_version": GAME_ACCURACY_FORMULA_VERSION,
         "neuro_score_formula_version": NEURO_SCORE_FORMULA_VERSION,
+        "public_score_formula_version": PUBLIC_NEURO_SCORE_FORMULA_VERSION,
+        "coach_score_formula_version": COACH_NEURO_SCORE_FORMULA_VERSION,
+        "qualitative_game_label_formula_version": QUALITATIVE_GAME_LABEL_VERSION,
         "headline_score_formula_version": HEADLINE_SCORE_FORMULA_VERSION,
         "move_category_formula_version": MOVE_CATEGORY_FORMULA_VERSION,
         "review_sections_version": REVIEW_SECTIONS_VERSION,
@@ -2531,10 +2551,20 @@ def _review_score_payload(
         white_confidence_payload,
         black_confidence_payload,
     )
-    summary_gap = user_gap if user_color in {"white", "black"} else _max_gap(white_gap, black_gap)
+    public_score = user_score if user_color in {"white", "black"} else (
+        white_score if white_score is not None else black_score
+    )
+    coach_score = headline_score
+    qualitative_game_label = _qualitative_game_label(
+        coach_score=coach_score,
+        public_score=public_score,
+        review_sections=review_sections,
+        game=game,
+        user_color=user_color,
+    )
     review_summary_sentence = _build_review_summary_sentence(
-        headline_score=headline_score,
-        diagnostic_gap=summary_gap,
+        coach_score=coach_score,
+        public_score=public_score,
         review_sections=review_sections,
         confidence=payload_confidence,
     )
@@ -2549,6 +2579,20 @@ def _review_score_payload(
         "black_lichess_like_accuracy": black_score,
         "user_lichess_like_accuracy": user_score,
         "opponent_lichess_like_accuracy": opponent_score,
+        "white_public_neuro_score": white_score,
+        "black_public_neuro_score": black_score,
+        "user_public_neuro_score": user_score,
+        "opponent_public_neuro_score": opponent_score,
+        "public_neuro_score": public_score,
+        "public_score_formula_version": PUBLIC_NEURO_SCORE_FORMULA_VERSION,
+        "qualitative_game_label": qualitative_game_label,
+        "qualitative_game_label_formula_version": QUALITATIVE_GAME_LABEL_VERSION,
+        "white_coach_neuro_score": white_headline,
+        "black_coach_neuro_score": black_headline,
+        "user_coach_neuro_score": user_headline,
+        "opponent_coach_neuro_score": opponent_headline,
+        "coach_neuro_score": coach_score,
+        "coach_score_formula_version": COACH_NEURO_SCORE_FORMULA_VERSION,
         "white_neuro_score": white_neuro_score,
         "black_neuro_score": black_neuro_score,
         "user_neuro_score": user_neuro_score,
@@ -2733,6 +2777,20 @@ def _score_cache_needs_update(
         "black_neuro_score",
         "white_diagnostic_gap",
         "black_diagnostic_gap",
+        "white_public_neuro_score",
+        "black_public_neuro_score",
+        "user_public_neuro_score",
+        "opponent_public_neuro_score",
+        "public_neuro_score",
+        "public_score_formula_version",
+        "qualitative_game_label",
+        "qualitative_game_label_formula_version",
+        "white_coach_neuro_score",
+        "black_coach_neuro_score",
+        "user_coach_neuro_score",
+        "opponent_coach_neuro_score",
+        "coach_neuro_score",
+        "coach_score_formula_version",
         "white_headline_neurochess_score",
         "black_headline_neurochess_score",
         "user_color",
@@ -2763,6 +2821,20 @@ def _score_cache_from_payload(payload: dict[str, Any]) -> dict[str, Any]:
         "black_lichess_like_accuracy",
         "user_lichess_like_accuracy",
         "opponent_lichess_like_accuracy",
+        "white_public_neuro_score",
+        "black_public_neuro_score",
+        "user_public_neuro_score",
+        "opponent_public_neuro_score",
+        "public_neuro_score",
+        "public_score_formula_version",
+        "qualitative_game_label",
+        "qualitative_game_label_formula_version",
+        "white_coach_neuro_score",
+        "black_coach_neuro_score",
+        "user_coach_neuro_score",
+        "opponent_coach_neuro_score",
+        "coach_neuro_score",
+        "coach_score_formula_version",
         "white_neuro_score",
         "black_neuro_score",
         "user_neuro_score",
@@ -3472,33 +3544,102 @@ def _max_gap(*gaps: float | None) -> float | None:
     return max(known) if known else None
 
 
+def _qualitative_game_label(
+    *,
+    coach_score: float | None,
+    public_score: float | None,
+    review_sections: dict[str, list[dict[str, Any]]],
+    game: Any | None,
+    user_color: str | None,
+) -> str:
+    priority_moves = review_sections.get("to_review") or []
+    tag_counts = _review_section_tag_counts(priority_moves)
+    critical_count = _critical_or_decisive_count(priority_moves)
+    score = float(coach_score) if coach_score is not None else (
+        float(public_score) if public_score is not None else None
+    )
+    reference_score = float(public_score) if public_score is not None else None
+
+    if score is None:
+        return "Partie à analyser"
+    if _user_result_is_win(game, user_color) and score < 65.0:
+        return "Partie gagnée malgré erreurs"
+    if critical_count >= 3 or tag_counts.get("cluster", 0) >= 2:
+        return "Partie à bascule"
+    if tag_counts.get("missed_opportunity", 0) >= 2 or tag_counts.get("tactical", 0) >= 2:
+        return "Partie tactique"
+    if tag_counts.get("conversion_issue", 0) >= 2:
+        return "Partie mal convertie"
+    if tag_counts.get("defensive_resource_missed", 0) >= 2:
+        return "Partie défensive difficile"
+    if reference_score is not None and reference_score >= 80.0 and score < 70.0:
+        return "Partie à bascule"
+    if score >= 80.0 and critical_count <= 1:
+        return "Partie solide"
+    if score >= 65.0:
+        return "Partie irrégulière"
+    return "Partie fragile"
+
+
+def _review_section_tag_counts(
+    annotations: list[dict[str, Any]],
+) -> dict[str, int]:
+    tag_counts: dict[str, int] = {}
+    for annotation in annotations:
+        for tag in annotation.get("tags") or []:
+            tag_counts[str(tag)] = tag_counts.get(str(tag), 0) + 1
+    return tag_counts
+
+
+def _critical_or_decisive_count(annotations: list[dict[str, Any]]) -> int:
+    count = 0
+    for annotation in annotations:
+        category = str(annotation.get("primary_category") or "").lower()
+        win_loss = _optional_float(annotation.get("win_loss")) or 0.0
+        if category in {"critical", "decisive"} or win_loss >= 15.0:
+            count += 1
+    return count
+
+
+def _user_result_is_win(game: Any | None, user_color: str | None) -> bool:
+    result = str(_row_get(game, "result") or "").strip()
+    if user_color == "white":
+        return result in {"1-0", "white", "white_won"}
+    if user_color == "black":
+        return result in {"0-1", "black", "black_won"}
+    return False
+
+
 def _build_review_summary_sentence(
     *,
-    headline_score: float | None,
-    diagnostic_gap: float | None,
+    coach_score: float | None,
+    public_score: float | None,
     review_sections: dict[str, list[dict[str, Any]]],
     confidence: str | None,
 ) -> str:
     priority_moves = review_sections.get("to_review") or []
-    tag_counts: dict[str, int] = {}
-    for annotation in priority_moves:
-        for tag in annotation.get("tags") or []:
-            tag_counts[str(tag)] = tag_counts.get(str(tag), 0) + 1
-
-    score = float(headline_score) if headline_score is not None else None
-    gap = float(diagnostic_gap) if diagnostic_gap is not None else 0.0
+    tag_counts = _review_section_tag_counts(priority_moves)
+    score = float(coach_score) if coach_score is not None else (
+        float(public_score) if public_score is not None else None
+    )
+    reference_score = float(public_score) if public_score is not None else None
+    critical_count = _critical_or_decisive_count(priority_moves)
     prefix = "Score indicatif : " if confidence == "low" else ""
 
-    if score is not None and score >= 85.0 and gap < 6.0:
-        return f"{prefix}Bonne partie : peu d'erreurs importantes détectées."
     if tag_counts.get("conversion_issue", 0) >= 2:
-        return f"{prefix}Tu as obtenu de bonnes positions, mais la conversion a coûté cher."
+        return f"{prefix}La conversion des positions favorables a coûté cher."
     if tag_counts.get("cluster", 0) >= 2:
-        return f"{prefix}Le point clé : plusieurs erreurs se sont enchaînées après un premier moment difficile."
+        return f"{prefix}La partie a basculé autour de plusieurs moments groupés."
     if tag_counts.get("missed_opportunity", 0) >= 2:
         return f"{prefix}Plusieurs opportunités tactiques ont été manquées."
-    if gap >= 10.0:
-        return f"{prefix}Partie correcte en moyenne, mais quelques erreurs ont eu un impact durable."
+    if tag_counts.get("defensive_resource_missed", 0) >= 2:
+        return f"{prefix}Les ressources défensives sont un axe prioritaire."
+    if tag_counts.get("opening", 0) >= 1:
+        return f"{prefix}Un problème apparaît après la sortie d'ouverture."
+    if reference_score is not None and reference_score >= 80.0 and score is not None and score < 70.0:
+        return f"{prefix}La précision moyenne est correcte, mais certains moments critiques coûtent cher."
+    if score is not None and score >= 80.0 and critical_count <= 1:
+        return f"{prefix}Partie solide : peu d'erreurs importantes détectées."
     if score is not None and score < 60.0:
         return f"{prefix}Partie difficile : plusieurs coups importants sont à revoir."
     if priority_moves:

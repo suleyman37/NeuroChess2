@@ -514,6 +514,12 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertEqual(payload["user_color"], "white")
         self.assertEqual(payload["white_lichess_like_accuracy"], 100.0)
         self.assertEqual(payload["black_lichess_like_accuracy"], 100.0)
+        self.assertEqual(payload["white_public_neuro_score"], payload["white_lichess_like_accuracy"])
+        self.assertEqual(payload["black_public_neuro_score"], payload["black_lichess_like_accuracy"])
+        self.assertEqual(payload["user_public_neuro_score"], payload["user_lichess_like_accuracy"])
+        self.assertEqual(payload["public_neuro_score"], payload["user_lichess_like_accuracy"])
+        self.assertEqual(payload["public_score_formula_version"], "public_neuro_score_lichess_like_v1")
+        self.assertEqual(payload["qualitative_game_label_formula_version"], "qualitative_game_label_v1")
         self.assertEqual(payload["white_neuro_score"], 100.0)
         self.assertEqual(payload["black_neuro_score"], 100.0)
         self.assertEqual(payload["white_diagnostic_gap"], 0.0)
@@ -534,6 +540,11 @@ class ReviewServiceTests(unittest.TestCase):
             payload["headline_neurochess_score"],
             payload["user_headline_neurochess_score"],
         )
+        self.assertEqual(payload["user_coach_neuro_score"], payload["user_headline_neurochess_score"])
+        self.assertEqual(payload["white_coach_neuro_score"], payload["white_headline_neurochess_score"])
+        self.assertEqual(payload["black_coach_neuro_score"], payload["black_headline_neurochess_score"])
+        self.assertEqual(payload["coach_neuro_score"], payload["headline_neurochess_score"])
+        self.assertEqual(payload["coach_score_formula_version"], "coach_neuro_score_v1")
         self.assertEqual(payload["headline_score_subject"], "user")
         self.assertEqual(
             payload["headline_score_formula_version"],
@@ -541,6 +552,7 @@ class ReviewServiceTests(unittest.TestCase):
         )
         self.assertIsInstance(payload["review_summary_sentence"], str)
         self.assertTrue(payload["review_summary_sentence"])
+        self.assertNotIn("diagnostique", payload["review_summary_sentence"].lower())
         self.assertEqual(payload["score_analyzed_moves_white"], 6)
         self.assertEqual(payload["score_analyzed_moves_black"], 5)
         self.assertEqual(payload["score_missing_moves_white"], 0)
@@ -841,6 +853,8 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertEqual(payload["review_score_alias_of"], "lichess_like_accuracy")
         self.assertTrue(payload["review_score_deprecated"])
         self.assertIsNotNone(payload["headline_neurochess_score"])
+        self.assertEqual(payload["coach_neuro_score"], payload["headline_neurochess_score"])
+        self.assertEqual(payload["coach_score_formula_version"], "coach_neuro_score_v1")
         self.assertEqual(
             payload["headline_score_formula_version"],
             "headline_neurochess_score_v1",
@@ -861,6 +875,10 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertEqual(
             payload["formula_versions"]["headline_score_formula_version"],
             "headline_neurochess_score_v1",
+        )
+        self.assertEqual(
+            payload["formula_versions"]["coach_score_formula_version"],
+            "coach_neuro_score_v1",
         )
         self.assertEqual(
             payload["formula_versions"]["pv_contrast_evidence_version"],
@@ -891,7 +909,18 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertIsNotNone(cached["white_neuro_score"])
         self.assertIsNotNone(cached["white_diagnostic_gap"])
         self.assertEqual(cached["review_score_alias_of"], "lichess_like_accuracy")
+        self.assertEqual(cached["public_neuro_score"], cached["white_lichess_like_accuracy"])
+        self.assertEqual(
+            cached["public_score_formula_version"],
+            "public_neuro_score_lichess_like_v1",
+        )
+        self.assertEqual(
+            cached["qualitative_game_label_formula_version"],
+            "qualitative_game_label_v1",
+        )
         self.assertIsNotNone(cached["headline_neurochess_score"])
+        self.assertEqual(cached["coach_neuro_score"], cached["headline_neurochess_score"])
+        self.assertEqual(cached["coach_score_formula_version"], "coach_neuro_score_v1")
         self.assertEqual(
             cached["headline_score_formula_version"],
             "headline_neurochess_score_v1",
