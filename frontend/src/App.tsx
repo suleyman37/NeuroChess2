@@ -2580,14 +2580,18 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     clearReviewOverlays("try_move_attempt", false);
     setReviewPvLineState(null);
     setGuidedPvIndex(null);
-    const evaluation = evaluateTryMoveAttempt(uci, annotation);
     const attempt = tryMoveFenAfter(annotation.fen_before, uci);
+    const feedback: NonNullable<TryMoveFeedback> = {
+      result: "attempted",
+      message: "Tentative jouée. Ouvre la correction pour comparer avec la réponse de Review.",
+      show_best_move: false,
+    };
     setSolutionRevealForAnnotation(annotation, "attempted");
     setReviewTryMoveState({
       ...reviewTryMoveState,
       attemptedUci: uci,
       attemptedSan: attempt.san,
-      feedback: evaluation,
+      feedback,
       solutionRevealed: false,
     });
     if (attempt.fenAfter) {
@@ -2956,7 +2960,6 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     }
     const annotation = practiceItemToAnnotation(item);
     clearReviewOverlays("practice_attempt", false);
-    const evaluation = evaluateTryMoveAttempt(uci, annotation);
     const attempt = tryMoveFenAfter(annotation.fen_before, uci);
     setSolutionRevealForAnnotation(annotation, "attempted");
     setReviewPvLineState(null);
@@ -2969,7 +2972,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             saving: true,
             attemptedUci: uci,
             attemptedSan: attempt.san,
-            feedback: evaluation,
+            feedback: null,
             solutionRevealed: false,
             itemState: "attempted",
             error: null,
@@ -2993,14 +2996,16 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       const summary = await recordReviewPracticeAttempt(state.sessionId ?? "", {
         ply: item.ply,
         attemptedUci: uci,
-        result: evaluation.result,
       });
+      const feedback = summary.attempt_feedback ?? null;
       setReviewPracticeState((current) =>
         current
           ? {
               ...current,
               summary,
               saving: false,
+              attemptedSan: feedback?.attempted_san ?? attempt.san,
+              feedback,
             }
           : current,
       );
@@ -5475,56 +5480,6 @@ function practiceItemToAnnotation(item: ReviewPracticeItem): ReviewMoveAnnotatio
     move_quality_label: item.move_quality_label ?? null,
     coach_card_title: item.coach_card_title ?? null,
     compact_label: item.compact_label ?? null,
-  };
-}
-
-function evaluateTryMoveAttempt(
-  attemptUci: string,
-  annotation: ReviewMoveAnnotation,
-): NonNullable<TryMoveFeedback> {
-  const attempt = tryMoveFenAfter(annotation.fen_before, attemptUci);
-  if (!attempt.legal) {
-    return {
-      result: "illegal",
-      message: "Ce coup est illégal dans cette position.",
-      show_best_move: false,
-    };
-  }
-  if (!annotation.best_move_uci) {
-    return {
-      result: "unknown",
-      message: "Coup joué. Les données disponibles ne permettent pas de l'évaluer précisément.",
-      show_best_move: false,
-    };
-  }
-  if (attemptUci === annotation.best_move_uci) {
-    return {
-      result: "best",
-      message: "Excellent : tu as trouvé le meilleur coup.",
-      show_best_move: false,
-    };
-  }
-  const accepted = annotation.acceptable_moves?.find(
-    (move) => move.uci === attemptUci,
-  );
-  if (accepted?.quality === "very_good") {
-    return {
-      result: "very_good",
-      message: "Très bon : ce coup garde presque autant de chances.",
-      show_best_move: false,
-    };
-  }
-  if (accepted?.quality === "acceptable") {
-    return {
-      result: "acceptable",
-      message: "Jouable : ce coup fonctionne, mais le meilleur coup était plus précis.",
-      show_best_move: false,
-    };
-  }
-  return {
-    result: "wrong",
-    message: "À revoir : ce coup ne résout pas le problème principal.",
-    show_best_move: true,
   };
 }
 

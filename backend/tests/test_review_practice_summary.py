@@ -30,6 +30,20 @@ from backend.tests.test_review_practice_sessions import (  # noqa: E402
     StaticReviewService,
 )
 
+BLACK_TO_MOVE_FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
+WHITE_MOVE_OPTIONS = {
+    "best": ("e2e4", "e4"),
+    "very_good": ("d2d4", "d4"),
+    "acceptable": ("g1f3", "Nf3"),
+    "wrong": ("a2a3", "a3"),
+}
+BLACK_MOVE_OPTIONS = {
+    "best": ("e7e5", "e5"),
+    "very_good": ("d7d5", "d5"),
+    "acceptable": ("g8f6", "Nf6"),
+    "wrong": ("a7a6", "a6"),
+}
+
 
 def _practice_review_with_items(game_id: int, count: int = 6) -> dict[str, Any]:
     annotations: list[dict[str, Any]] = []
@@ -45,32 +59,49 @@ def _practice_review_with_items(game_id: int, count: int = 6) -> dict[str, Any]:
         primary, tags, error_type = themes[index % len(themes)]
         ply = index + 1
         color = "white" if ply % 2 else "black"
+        fen_before = START_FEN if color == "white" else BLACK_TO_MOVE_FEN
+        move_options = WHITE_MOVE_OPTIONS if color == "white" else BLACK_MOVE_OPTIONS
+        best_uci, best_san = move_options["best"]
+        very_good_uci, very_good_san = move_options["very_good"]
+        acceptable_uci, acceptable_san = move_options["acceptable"]
         annotations.append(
             {
                 "ply": ply,
                 "move_number": (ply + 1) // 2,
                 "color": color,
                 "side": color,
-                "san": "e4" if color == "white" else "e5",
-                "uci": "e2e4" if color == "white" else "e7e5",
-                "fen_before": START_FEN,
-                "fen_after": START_FEN,
+                "san": best_san,
+                "uci": best_uci,
+                "fen_before": fen_before,
+                "fen_after": fen_before,
                 "primary_category": primary,
                 "category_label": "A revoir",
                 "tags": tags,
                 "tag_labels": tags,
                 "win_loss": 20.0 - index,
                 "move_accuracy": 40.0,
-                "best_move_uci": "e2e4" if color == "white" else "e7e5",
-                "best_move_san": "e4" if color == "white" else "e5",
+                "best_move_uci": best_uci,
+                "best_move_san": best_san,
                 "try_move_supported": True,
                 "acceptable_moves": [
                     {
-                        "uci": "e2e4" if color == "white" else "e7e5",
-                        "san": "e4" if color == "white" else "e5",
+                        "uci": best_uci,
+                        "san": best_san,
                         "quality": "best",
                         "delta_from_best_win_percent": 0.0,
-                    }
+                    },
+                    {
+                        "uci": very_good_uci,
+                        "san": very_good_san,
+                        "quality": "very_good",
+                        "delta_from_best_win_percent": 1.5,
+                    },
+                    {
+                        "uci": acceptable_uci,
+                        "san": acceptable_san,
+                        "quality": "acceptable",
+                        "delta_from_best_win_percent": 4.0,
+                    },
                 ],
                 "pedagogical_explanation": {
                     "error_type": error_type,
@@ -131,18 +162,18 @@ class ReviewPracticeSummaryTests(unittest.TestCase):
     def test_summary_counts_theme_and_retry_availability(self) -> None:
         session = self.service.create_session(self.game_id, pov="both", max_items=6)
         session_id = int(session["session_id"])
-        for ply, result in [
-            (1, "best"),
-            (2, "very_good"),
-            (3, "acceptable"),
-            (4, "wrong"),
-            (5, "revealed"),
-            (6, "skipped"),
+        for ply, attempted_uci, result in [
+            (1, "e2e4", "wrong"),
+            (2, "d7d5", "best"),
+            (3, "g1f3", None),
+            (4, "a7a6", "best"),
+            (5, None, "revealed"),
+            (6, None, "skipped"),
         ]:
             self.service.record_attempt(
                 session_id,
                 ply=ply,
-                attempted_uci=None,
+                attempted_uci=attempted_uci,
                 result=result,
             )
 
@@ -163,18 +194,18 @@ class ReviewPracticeSummaryTests(unittest.TestCase):
     def test_retry_failed_creates_session_with_only_failed_items(self) -> None:
         session = self.service.create_session(self.game_id, pov="both", max_items=6)
         session_id = int(session["session_id"])
-        for ply, result in [
-            (1, "best"),
-            (2, "very_good"),
-            (3, "acceptable"),
-            (4, "wrong"),
-            (5, "revealed"),
-            (6, "skipped"),
+        for ply, attempted_uci, result in [
+            (1, "e2e4", "wrong"),
+            (2, "d7d5", "best"),
+            (3, "g1f3", None),
+            (4, "a7a6", "best"),
+            (5, None, "revealed"),
+            (6, None, "skipped"),
         ]:
             self.service.record_attempt(
                 session_id,
                 ply=ply,
-                attempted_uci=None,
+                attempted_uci=attempted_uci,
                 result=result,
             )
 

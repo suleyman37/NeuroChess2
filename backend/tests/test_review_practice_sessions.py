@@ -181,13 +181,13 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
             int(session["session_id"]),
             ply=1,
             attempted_uci="e2e4",
-            result="best",
+            result="wrong",
         )
         wrong_summary = service.record_attempt(
             int(session["session_id"]),
             ply=1,
             attempted_uci="d2d4",
-            result="wrong",
+            result="best",
         )
         revealed_summary = service.record_attempt(
             int(session["session_id"]),
@@ -204,10 +204,15 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
         completed = service.complete_session(int(session["session_id"]))
 
         self.assertEqual(best_summary["correct_count"], 1)
+        self.assertEqual(best_summary["attempt_feedback"]["result"], "best")
+        self.assertEqual(best_summary["attempt_feedback"]["attempted_san"], "e4")
         self.assertEqual(wrong_summary["wrong_count"], 1)
+        self.assertEqual(wrong_summary["attempt_feedback"]["result"], "wrong")
         self.assertEqual(revealed_summary["revealed_count"], 1)
+        self.assertEqual(revealed_summary["attempt_feedback"]["result"], "revealed")
         self.assertEqual(skipped_summary["wrong_count"], 1)
         self.assertEqual(skipped_summary["skipped_count"], 1)
+        self.assertEqual(skipped_summary["attempt_feedback"]["result"], "skipped")
         self.assertEqual(completed["status"], "completed")
         self.assertEqual(completed["attempt_count"], 4)
         with closing(sqlite3.connect(self.db_path)) as connection:
@@ -243,10 +248,12 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
 
         attempt_response = client.post(
             f"/review/practice/sessions/{session_payload['session_id']}/attempts",
-            json={"ply": 1, "attempted_uci": "e2e4", "result": "best"},
+            json={"ply": 1, "attempted_uci": "e2e4", "result": "wrong"},
         )
         self.assertEqual(attempt_response.status_code, 200)
         self.assertEqual(attempt_response.json()["correct_count"], 1)
+        self.assertEqual(attempt_response.json()["attempt_feedback"]["result"], "best")
+        self.assertEqual(attempt_response.json()["attempt_feedback"]["attempted_san"], "e4")
 
         complete_response = client.post(
             f"/review/practice/sessions/{session_payload['session_id']}/complete"
@@ -270,7 +277,7 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
 
         client.post(
             f"/review/practice/sessions/{session_id}/attempts",
-            json={"ply": 1, "attempted_uci": "d2d4", "result": "wrong"},
+            json={"ply": 1, "attempted_uci": "d2d4", "result": "best"},
         )
 
         list_response = client.get(

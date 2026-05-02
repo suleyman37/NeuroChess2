@@ -152,6 +152,20 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertNotIn("NeuroScore ${formatHeadlineScore(publicScore)} / 100", self.summary)
         self.assertNotIn("active={selectedMovePly === selectedCoachAnnotation?.ply}\n            active=", self.panel)
 
+    def test_review_practice_grading_is_backend_authoritative(self) -> None:
+        self.assertIn("recordReviewPracticeAttempt", self.app)
+        self.assertIn("summary.attempt_feedback", self.app)
+        self.assertNotIn("function evaluateTryMoveAttempt", self.app)
+        self.assertNotIn("result: evaluation.result", self.app)
+        for local_result in (
+            'result: "best"',
+            'result: "very_good"',
+            'result: "acceptable"',
+            'result: "wrong"',
+            'result: "illegal"',
+        ):
+            self.assertNotIn(local_result, self.app)
+
     def test_reveal_gate_still_resets_and_hides_before_correction(self) -> None:
         self.assertIn('setSolutionRevealForAnnotation(annotation, "hidden")', self.app)
         self.assertIn('setSolutionRevealForAnnotation(annotation, "hint_shown")', self.app)

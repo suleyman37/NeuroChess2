@@ -13,6 +13,7 @@ from neurochess.data.database import (
     execute_sqlite_write_with_retry,
     get_connection,
 )
+from neurochess.metrics.try_move import TRY_MOVE_MODEL_VERSION, evaluate_try_move_attempt
 from neurochess.review_service import (
     REVIEW_SCHEMA_VERSION,
     SELECTION_ALGORITHM_VERSION,
@@ -235,9 +236,8 @@ class ReviewPracticeService:
         *,
         ply: int,
         attempted_uci: str | None = None,
-        result: str,
+        result: str | None = None,
     ) -> dict[str, Any]:
-        normalized_result = _normalize_result(result)
         with closing(get_connection(self.db_path)) as connection:
             session = _session_row(connection, session_id)
             if session is None:
@@ -259,7 +259,14 @@ class ReviewPracticeService:
                 )
             attempt_number = _next_attempt_number(connection, session_id, ply)
 
-        attempted_san = _attempted_san(item.get("fen_before"), attempted_uci)
+        feedback = _practice_attempt_feedback(
+            item,
+            attempted_uci=attempted_uci,
+            requested_result=result,
+        )
+        normalized_result = _normalize_result(feedback["result"])
+        attempted_uci = feedback.get("attempted_uci")
+        attempted_san = feedback.get("attempted_san")
         snapshot = _evidence_snapshot(item)
 
         def write_attempt() -> dict[str, Any]:
@@ -302,7 +309,20 @@ class ReviewPracticeService:
                 except Exception:
                     connection.rollback()
                     raise
-                return self.get_session_summary(session_id)
+                summary = self.get_session_summary(session_id)
+                summary["attempt_feedback"] = feedback
+                summary["latest_attempt"] = {
+                    "session_id": session_id,
+                    "game_id": int(session["game_id"]),
+                    "ply": int(ply),
+                    "color": str(item.get("color") or ""),
+                    "attempted_uci": attempted_uci,
+                    "attempted_san": attempted_san,
+                    "expected_best_uci": item.get("best_move_uci"),
+                    "result": normalized_result,
+                    "attempt_number": attempt_number,
+                }
+                return summary
 
         return execute_sqlite_write_with_retry(write_attempt)
 
@@ -566,6 +586,7 @@ def _practice_item_from_annotation(annotation: dict[str, Any]) -> dict[str, Any]
         "pv_line_message": annotation.get("pv_line_message"),
         "pv_contrast_evidence": annotation.get("pv_contrast_evidence"),
         "try_move_supported": bool(annotation.get("try_move_supported")),
+        "try_move_model_version": annotation.get("try_move_model_version"),
         "win_loss": annotation.get("win_loss"),
         "move_accuracy": annotation.get("move_accuracy"),
         "coach_priority_rank": annotation.get("coach_priority_rank"),
@@ -661,6 +682,55 @@ def _increment_session_counts(
         WHERE id = ?
         """,
         (session_id,),
+    )
+
+
+def _practice_attempt_feedback(
+    item: dict[str, Any],
+    *,
+    attempted_uci: str | None,
+    requested_result: str | None,
+) -> dict[str, Any]:
+    normalized_attempt_uci = str(attempted_uci).strip() if attempted_uci else None
+    attempted_san = _attempted_san(item.get("fen_before"), normalized_attempt_uci)
+    if normalized_attempt_uci:
+        feedback = dict(evaluate_try_move_attempt(normalized_attempt_uci, item))
+    else:
+        feedback = _explicit_practice_action_feedback(requested_result)
+    feedback["result"] = _normalize_result(str(feedback.get("result") or ""))
+    feedback["attempted_uci"] = normalized_attempt_uci
+    feedback["attempted_san"] = attempted_san
+    feedback["best_move_uci"] = item.get("best_move_uci")
+    feedback["best_move_san"] = item.get("best_move_san")
+    feedback["try_move_model_version"] = (
+        item.get("try_move_model_version") or TRY_MOVE_MODEL_VERSION
+    )
+    feedback["evidence"] = {
+        "ply": item.get("ply"),
+        "color": item.get("color"),
+        "accepted_move_count": len(item.get("acceptable_moves") or []),
+        "try_move_model_version": feedback["try_move_model_version"],
+    }
+    return feedback
+
+
+def _explicit_practice_action_feedback(result: str | None) -> dict[str, Any]:
+    normalized_result = _normalize_result(result)
+    if normalized_result == "revealed":
+        return {
+            "result": "revealed",
+            "message": "Solution révélée sans tentative.",
+            "show_best_move": True,
+        }
+    if normalized_result == "skipped":
+        return {
+            "result": "skipped",
+            "message": "Position passée.",
+            "show_best_move": False,
+        }
+    raise ReviewPracticeServiceError(
+        "practice result must be revealed or skipped without attempted move",
+        status_code=400,
     )
 
 
@@ -919,6 +989,7 @@ def _evidence_snapshot(item: dict[str, Any]) -> dict[str, Any]:
         "move_quality_label": item.get("move_quality_label"),
         "pv_line": item.get("pv_line") or [],
         "pv_contrast_evidence": item.get("pv_contrast_evidence"),
+        "try_move_model_version": item.get("try_move_model_version"),
     }
 
 

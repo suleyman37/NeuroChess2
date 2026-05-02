@@ -47,7 +47,7 @@ class StartReviewPracticeSessionRequest(BaseModel):
 class RecordReviewPracticeAttemptRequest(BaseModel):
     ply: int
     attempted_uci: str | None = None
-    result: str
+    result: str | None = None
 
 
 class EvaluationResponse(BaseModel):

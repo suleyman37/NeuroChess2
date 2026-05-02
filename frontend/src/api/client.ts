@@ -425,6 +425,7 @@ export type ReviewPracticeResult =
   | "acceptable"
   | "wrong"
   | "illegal"
+  | "attempted"
   | "skipped"
   | "revealed"
   | string;
@@ -487,6 +488,20 @@ export type ReviewPracticeSummary = {
   failed_plies?: number[];
   failed_count?: number;
   result_by_ply?: Record<string, ReviewPracticeResult>;
+  attempt_feedback?: ReviewPracticeAttemptFeedback | null;
+  latest_attempt?: Partial<ReviewPracticeAttempt> | null;
+};
+
+export type ReviewPracticeAttemptFeedback = {
+  result: ReviewPracticeResult;
+  message: string;
+  show_best_move: boolean;
+  attempted_uci?: string | null;
+  attempted_san?: string | null;
+  best_move_uci?: string | null;
+  best_move_san?: string | null;
+  try_move_model_version?: string | null;
+  evidence?: Record<string, unknown>;
 };
 
 export type ReviewPracticeAttempt = {
@@ -1184,18 +1199,25 @@ export function recordReviewPracticeAttempt(
   payload: {
     ply: number;
     attemptedUci?: string | null;
-    result: ReviewPracticeResult;
+    result?: ReviewPracticeResult | null;
   },
 ): Promise<ReviewPracticeSummary> {
+  const body: {
+    ply: number;
+    attempted_uci: string | null;
+    result?: ReviewPracticeResult | null;
+  } = {
+    ply: payload.ply,
+    attempted_uci: payload.attemptedUci ?? null,
+  };
+  if (payload.result !== undefined) {
+    body.result = payload.result;
+  }
   return request<ReviewPracticeSummary>(
     `/review/practice/sessions/${sessionId}/attempts`,
     {
       method: "POST",
-      body: JSON.stringify({
-        ply: payload.ply,
-        attempted_uci: payload.attemptedUci ?? null,
-        result: payload.result,
-      }),
+      body: JSON.stringify(body),
     },
   );
 }
