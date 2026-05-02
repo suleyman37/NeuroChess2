@@ -1028,6 +1028,66 @@ export type StartLiveAnalysisResponse = {
   status: string;
 };
 
+export type CapabilityProduct = {
+  name: string;
+};
+
+export type CapabilityTab = {
+  id: string;
+  label: string;
+  screen_id: string;
+};
+
+export type CapabilityMetric = {
+  metric_id: string;
+  label: string;
+  category: string;
+  visibility: string;
+  source_field?: string | null;
+  formula_version_field?: string | null;
+};
+
+export type CapabilityAction = {
+  action_id: string;
+  label: string;
+  screen_id: string;
+  type: string;
+};
+
+export type CapabilityPractice = {
+  enabled: boolean;
+  grading_authority: string;
+  default_scope: string;
+  default_max_items: number;
+  result_values: string[];
+};
+
+export type CapabilityUiContract = {
+  summary_max_priorities: number;
+  summary_max_takeaways: number;
+  prescriptive_max_primary_actions: number;
+  prescriptive_max_secondary_actions: number;
+  beginner_hides_raw_formulas: boolean;
+  beginner_hides_evidence_json: boolean;
+  technical_details_location: string;
+};
+
+export type CapabilityReview = {
+  tabs: CapabilityTab[];
+  visible_metrics: CapabilityMetric[];
+  advanced_metrics: CapabilityMetric[];
+  hidden_metrics: string[];
+  actions: CapabilityAction[];
+  practice: CapabilityPractice;
+  ui_contract: CapabilityUiContract;
+};
+
+export type ProductCapabilities = {
+  schema_version: string;
+  product: CapabilityProduct;
+  review: CapabilityReview;
+};
+
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
@@ -1057,6 +1117,10 @@ async function request<T>(
   }
 
   return response.json() as Promise<T>;
+}
+
+export function getCapabilities(): Promise<ProductCapabilities> {
+  return request<ProductCapabilities>("/capabilities");
 }
 
 export function createGame(): Promise<GameState> {

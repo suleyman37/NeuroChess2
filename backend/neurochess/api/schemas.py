@@ -33,6 +33,66 @@ class StopLiveAnalysisRequest(BaseModel):
     session_id: str
 
 
+class CapabilityProduct(BaseModel):
+    name: str
+
+
+class CapabilityTab(BaseModel):
+    id: str
+    label: str
+    screen_id: str
+
+
+class CapabilityMetric(BaseModel):
+    metric_id: str
+    label: str
+    category: str
+    visibility: str
+    source_field: str | None = None
+    formula_version_field: str | None = None
+
+
+class CapabilityAction(BaseModel):
+    action_id: str
+    label: str
+    screen_id: str
+    type: str
+
+
+class CapabilityPractice(BaseModel):
+    enabled: bool
+    grading_authority: str
+    default_scope: str
+    default_max_items: int
+    result_values: list[str]
+
+
+class CapabilityUiContract(BaseModel):
+    summary_max_priorities: int
+    summary_max_takeaways: int
+    prescriptive_max_primary_actions: int
+    prescriptive_max_secondary_actions: int
+    beginner_hides_raw_formulas: bool
+    beginner_hides_evidence_json: bool
+    technical_details_location: str
+
+
+class CapabilityReview(BaseModel):
+    tabs: list[CapabilityTab]
+    visible_metrics: list[CapabilityMetric]
+    advanced_metrics: list[CapabilityMetric]
+    hidden_metrics: list[str]
+    actions: list[CapabilityAction]
+    practice: CapabilityPractice
+    ui_contract: CapabilityUiContract
+
+
+class ProductCapabilitiesResponse(BaseModel):
+    schema_version: str
+    product: CapabilityProduct
+    review: CapabilityReview
+
+
 class StartReviewJobRequest(BaseModel):
     profile: str = "standard"
     force_reanalysis: bool = False

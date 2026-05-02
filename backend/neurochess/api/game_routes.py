@@ -15,12 +15,14 @@ from neurochess.api.schemas import (
     FinishGameRequest,
     GameStateResponse,
     PlayMoveRequest,
+    ProductCapabilitiesResponse,
     RecordReviewPracticeAttemptRequest,
     StartLiveAnalysisRequest,
     StartReviewPracticeSessionRequest,
     StartReviewJobRequest,
     StopLiveAnalysisRequest,
 )
+from neurochess.capabilities import get_capabilities_manifest
 from neurochess.core.evaluation_display import make_evaluation_display, to_json_safe
 from neurochess.core.game_recorder import GameRecorder, GameRecorderError
 from neurochess.core.game_session import GameSession, GameSessionError
@@ -120,6 +122,11 @@ def health() -> dict[str, str]:
         "app": "NeuroChess 2",
         "version": "v3",
     }
+
+
+@router.get("/capabilities", response_model=ProductCapabilitiesResponse)
+def get_capabilities() -> dict[str, Any]:
+    return get_capabilities_manifest()
 
 
 @router.post("/games", response_model=GameStateResponse)
