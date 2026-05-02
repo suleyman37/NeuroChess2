@@ -9,62 +9,79 @@ import {
 } from "./NeuroCognitiveMap3D";
 
 const calmNodes: NeuroCognitiveNode[] = [
-  { id: "calculation", label: "Calcul", value: 0.74, riskLevel: "low" },
-  { id: "attention", label: "Attention", value: 0.68, riskLevel: "low" },
-  { id: "timing", label: "Tempo", value: 0.48, riskLevel: "medium" },
-  { id: "conversion", label: "Conversion", value: 0.58, riskLevel: "medium" },
-  { id: "pattern", label: "Patterns", value: 0.81, riskLevel: "low" },
+  { id: "opening", label: "Ouverture", value: 0.62, riskLevel: "low" },
+  { id: "tactical", label: "Tactique", value: 0.58, riskLevel: "medium" },
+  { id: "calculation", label: "Calcul", value: 0.64, riskLevel: "low" },
+  { id: "conversion", label: "Conversion", value: 0.54, riskLevel: "medium" },
+  { id: "defense", label: "Défense", value: 0.6, riskLevel: "low" },
+  { id: "plan", label: "Plan", value: 0.56, riskLevel: "medium" },
 ];
 
 const focusedNodes: NeuroCognitiveNode[] = [
-  { id: "threats", label: "Menaces", value: 0.79, riskLevel: "low" },
-  { id: "candidate", label: "Candidats", value: 0.63, riskLevel: "medium" },
-  { id: "tactics", label: "Tactique", value: 0.72, riskLevel: "low" },
-  { id: "king", label: "Roi", value: 0.42, riskLevel: "medium" },
-  { id: "endgame", label: "Finale", value: 0.51, riskLevel: "medium" },
-  { id: "memory", label: "Mémoire", value: 0.67, riskLevel: "low" },
+  { id: "opening", label: "Ouverture", value: 0.5, riskLevel: "medium" },
+  { id: "tactical", label: "Tactique", value: 0.78, riskLevel: "medium" },
+  { id: "calculation", label: "Calcul", value: 0.82, riskLevel: "low" },
+  { id: "conversion", label: "Conversion", value: 0.66, riskLevel: "medium" },
+  { id: "defense", label: "Défense", value: 0.48, riskLevel: "medium" },
+  { id: "plan", label: "Plan", value: 0.7, riskLevel: "low" },
 ];
 
 const highRiskNodes: NeuroCognitiveNode[] = [
-  { id: "blunder", label: "Gaffe", value: 0.32, riskLevel: "high" },
-  { id: "tunnel", label: "Tunnel", value: 0.24, riskLevel: "high" },
-  { id: "clock", label: "Temps", value: 0.38, riskLevel: "high" },
-  { id: "forcing", label: "Forcing", value: 0.55, riskLevel: "medium" },
-  { id: "defense", label: "Défense", value: 0.44, riskLevel: "medium" },
+  { id: "opening", label: "Ouverture", value: 0.42, riskLevel: "medium" },
+  { id: "tactical", label: "Tactique", value: 0.88, riskLevel: "high" },
+  { id: "calculation", label: "Calcul", value: 0.76, riskLevel: "high" },
+  { id: "conversion", label: "Conversion", value: 0.68, riskLevel: "medium" },
+  { id: "defense", label: "Défense", value: 0.72, riskLevel: "medium" },
+  { id: "plan", label: "Plan", value: 0.58, riskLevel: "high" },
 ];
 
-const standardLinks: NeuroCognitiveLink[] = [
-  { source: "calculation", target: "attention", strength: 0.8 },
-  { source: "attention", target: "timing", strength: 0.52 },
-  { source: "timing", target: "conversion", strength: 0.44 },
-  { source: "conversion", target: "pattern", strength: 0.62 },
-  { source: "pattern", target: "calculation", strength: 0.72 },
+const constructionNodes: NeuroCognitiveNode[] = [
+  { id: "opening", label: "Ouverture", value: 0.44, riskLevel: "medium" },
+  { id: "tactical", label: "Tactique", value: 0.48, riskLevel: "medium" },
+  { id: "calculation", label: "Calcul", value: 0.46, riskLevel: "medium" },
+  { id: "conversion", label: "Conversion", value: 0.4, riskLevel: "medium" },
+  { id: "defense", label: "Défense", value: 0.42, riskLevel: "medium" },
+  { id: "plan", label: "Plan", value: 0.36, riskLevel: "medium" },
 ];
 
-const focusedLinks: NeuroCognitiveLink[] = [
-  { source: "threats", target: "candidate", strength: 0.78 },
-  { source: "candidate", target: "tactics", strength: 0.88 },
-  { source: "tactics", target: "king", strength: 0.66 },
-  { source: "king", target: "endgame", strength: 0.42 },
-  { source: "memory", target: "candidate", strength: 0.7 },
-  { source: "memory", target: "threats", strength: 0.5 },
+const cognitiveLinks: NeuroCognitiveLink[] = [
+  { source: "opening", target: "tactical", strength: 0.58 },
+  { source: "tactical", target: "calculation", strength: 0.84 },
+  { source: "calculation", target: "conversion", strength: 0.64 },
+  { source: "defense", target: "plan", strength: 0.48 },
+  { source: "conversion", target: "plan", strength: 0.56 },
 ];
 
 const highRiskLinks: NeuroCognitiveLink[] = [
-  { source: "blunder", target: "tunnel", strength: 0.9 },
-  { source: "tunnel", target: "clock", strength: 0.76 },
-  { source: "clock", target: "forcing", strength: 0.54 },
-  { source: "forcing", target: "defense", strength: 0.58 },
-  { source: "defense", target: "blunder", strength: 0.64 },
+  { source: "opening", target: "tactical", strength: 0.62 },
+  { source: "tactical", target: "calculation", strength: 0.92 },
+  { source: "calculation", target: "conversion", strength: 0.72 },
+  { source: "defense", target: "plan", strength: 0.7 },
+  { source: "conversion", target: "plan", strength: 0.66 },
 ];
 
-function VisualLabFrame(props: NeuroCognitiveMap3DProps) {
+const constructionLinks: NeuroCognitiveLink[] = cognitiveLinks.map((link) => ({
+  ...link,
+  strength: Math.max(0.22, link.strength * 0.52),
+}));
+
+type VisualControls = Pick<
+  Required<NeuroCognitiveMap3DProps>,
+  "nodeSize" | "linkOpacity" | "glowIntensity" | "cameraDistance" | "rotationSpeed" | "particleDensity"
+>;
+
+type VisualLabFrameProps = NeuroCognitiveMap3DProps & {
+  controls?: Partial<VisualControls>;
+};
+
+function VisualLabFrame({ controls, ...props }: VisualLabFrameProps) {
   const visualControls = useControls("Visual tuning", {
-    nodeSize: { value: 0.16, min: 0.08, max: 0.3, step: 0.01 },
-    linkOpacity: { value: 0.34, min: 0.08, max: 0.85, step: 0.01 },
-    glowIntensity: { value: 1, min: 0.45, max: 1.8, step: 0.05 },
-    cameraDistance: { value: 7.2, min: 4.8, max: 10, step: 0.1 },
-    rotationSpeed: { value: 0.07, min: 0, max: 0.22, step: 0.01 },
+    nodeSize: { value: controls?.nodeSize ?? 0.16, min: 0.08, max: 0.28, step: 0.01 },
+    linkOpacity: { value: controls?.linkOpacity ?? 0.28, min: 0.06, max: 0.7, step: 0.01 },
+    glowIntensity: { value: controls?.glowIntensity ?? 1, min: 0.4, max: 1.7, step: 0.05 },
+    cameraDistance: { value: controls?.cameraDistance ?? 7.6, min: 5.6, max: 10, step: 0.1 },
+    rotationSpeed: { value: controls?.rotationSpeed ?? 0.035, min: 0, max: 0.14, step: 0.005 },
+    particleDensity: { value: controls?.particleDensity ?? 1, min: 0, max: 1.7, step: 0.05 },
   });
 
   return (
@@ -88,17 +105,49 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Calm: Story = {
-  render: () => <VisualLabFrame nodes={calmNodes} links={standardLinks} variant="calm" />,
+  render: () => (
+    <VisualLabFrame
+      nodes={calmNodes}
+      links={cognitiveLinks}
+      variant="calm"
+      controls={{ rotationSpeed: 0.026, particleDensity: 0.82, glowIntensity: 0.9 }}
+    />
+  ),
 };
 
 export const Focused: Story = {
-  render: () => <VisualLabFrame nodes={focusedNodes} links={focusedLinks} variant="focused" />,
+  render: () => (
+    <VisualLabFrame
+      nodes={focusedNodes}
+      links={cognitiveLinks}
+      variant="focused"
+      controls={{ rotationSpeed: 0.042, particleDensity: 1.12, glowIntensity: 1.08 }}
+    />
+  ),
 };
 
 export const HighRisk: Story = {
-  render: () => <VisualLabFrame nodes={highRiskNodes} links={highRiskLinks} variant="high-risk" />,
+  render: () => (
+    <VisualLabFrame
+      nodes={highRiskNodes}
+      links={highRiskLinks}
+      variant="high-risk"
+      controls={{ linkOpacity: 0.32, rotationSpeed: 0.038, particleDensity: 1.08, glowIntensity: 1.12 }}
+    />
+  ),
 };
 
 export const Empty: Story = {
-  render: () => <VisualLabFrame nodes={[]} links={[]} variant="calm" />,
+  render: () => <VisualLabFrame nodes={[]} links={[]} variant="calm" controls={{ particleDensity: 0.45 }} />,
+};
+
+export const ProfileInConstruction: Story = {
+  render: () => (
+    <VisualLabFrame
+      nodes={constructionNodes}
+      links={constructionLinks}
+      variant="calm"
+      controls={{ nodeSize: 0.13, linkOpacity: 0.16, glowIntensity: 0.72, rotationSpeed: 0.018, particleDensity: 0.62 }}
+    />
+  ),
 };

@@ -1,7 +1,7 @@
 import { useMemo, useRef, type CSSProperties } from "react";
 import { Billboard, Line, Sparkles, Stars, Text } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { AdditiveBlending, Color, type Group } from "three";
+import { AdditiveBlending, Color, DoubleSide, type Group } from "three";
 
 export type NeuroCognitiveRiskLevel = "low" | "medium" | "high";
 
@@ -27,6 +27,19 @@ type PositionedNode = NeuroCognitiveNode & {
   glowColor: string;
   position: Point3;
   radius: number;
+  emphasis: number;
+};
+
+type VariantConfig = {
+  accent: string;
+  accentSoft: string;
+  link: string;
+  sceneBackground: string;
+  background: string;
+  fog: [string, number, number];
+  riskColors: Record<NeuroCognitiveRiskLevel, string>;
+  stars: number;
+  sparkles: number;
 };
 
 export type NeuroCognitiveMap3DProps = {
@@ -39,46 +52,65 @@ export type NeuroCognitiveMap3DProps = {
   glowIntensity?: number;
   cameraDistance?: number;
   rotationSpeed?: number;
+  particleDensity?: number;
 };
 
-const NODE_COLORS: Record<NeuroCognitiveRiskLevel, string> = {
-  low: "#52f3bd",
-  medium: "#ffd166",
-  high: "#ff5f7e",
+const DOMAIN_LAYOUT: Record<string, Point3> = {
+  opening: [-2.55, -0.28, -0.72],
+  tactical: [-1.12, 0.62, 0.38],
+  calculation: [0.18, 0.18, 0.94],
+  conversion: [1.38, 0.54, -0.08],
+  defense: [-0.62, -0.98, 0.12],
+  plan: [2.28, -0.42, 0.58],
 };
 
-const VARIANT_CONFIG: Record<
-  NeuroCognitiveMapVariant,
-  {
-    accent: string;
-    background: string;
-    sceneBackground: string;
-    starCount: number;
-    sparkles: number;
-  }
-> = {
+const VARIANT_CONFIG: Record<NeuroCognitiveMapVariant, VariantConfig> = {
   calm: {
-    accent: "#5fd7ff",
+    accent: "#8cc8ff",
+    accentSoft: "#6f7dff",
+    link: "#b8d7ff",
+    sceneBackground: "#060811",
     background:
-      "radial-gradient(circle at 28% 20%, rgba(83, 216, 255, 0.20), transparent 32%), radial-gradient(circle at 74% 76%, rgba(82, 243, 189, 0.16), transparent 34%), #060a12",
-    sceneBackground: "#060a12",
-    starCount: 70,
-    sparkles: 18,
+      "radial-gradient(circle at 24% 22%, rgba(107, 125, 255, 0.18), transparent 34%), radial-gradient(circle at 78% 72%, rgba(92, 220, 210, 0.12), transparent 32%), linear-gradient(145deg, #05070d 0%, #08101d 56%, #05070d 100%)",
+    fog: ["#060811", 6.5, 14.5],
+    riskColors: {
+      low: "#8ce6e0",
+      medium: "#b7b8ff",
+      high: "#f2c27a",
+    },
+    stars: 85,
+    sparkles: 20,
   },
   focused: {
-    accent: "#8ea7ff",
+    accent: "#6fa8ff",
+    accentSoft: "#65e1ff",
+    link: "#9bc4ff",
+    sceneBackground: "#050916",
     background:
-      "radial-gradient(circle at 42% 28%, rgba(142, 167, 255, 0.22), transparent 34%), radial-gradient(circle at 78% 70%, rgba(95, 215, 255, 0.13), transparent 30%), #070815",
-    sceneBackground: "#070815",
-    starCount: 95,
-    sparkles: 26,
+      "radial-gradient(circle at 42% 24%, rgba(91, 140, 255, 0.24), transparent 34%), radial-gradient(circle at 78% 66%, rgba(99, 225, 255, 0.10), transparent 32%), linear-gradient(145deg, #050712 0%, #091229 58%, #050712 100%)",
+    fog: ["#050916", 6, 14],
+    riskColors: {
+      low: "#72e9d5",
+      medium: "#8ea8ff",
+      high: "#ffc56e",
+    },
+    stars: 105,
+    sparkles: 28,
   },
   "high-risk": {
-    accent: "#ff7a9b",
+    accent: "#ffb56a",
+    accentSoft: "#ff6f8e",
+    link: "#ffd4a3",
+    sceneBackground: "#10070c",
     background:
-      "radial-gradient(circle at 32% 24%, rgba(255, 95, 126, 0.25), transparent 34%), radial-gradient(circle at 72% 72%, rgba(255, 209, 102, 0.14), transparent 32%), #100711",
-    sceneBackground: "#100711",
-    starCount: 115,
+      "radial-gradient(circle at 32% 22%, rgba(255, 111, 142, 0.20), transparent 34%), radial-gradient(circle at 70% 70%, rgba(255, 181, 106, 0.13), transparent 32%), linear-gradient(145deg, #09060b 0%, #170b13 58%, #06060a 100%)",
+    fog: ["#10070c", 6.2, 14.2],
+    riskColors: {
+      low: "#7bd8c7",
+      medium: "#f0bd69",
+      high: "#ff7f92",
+    },
+    stars: 95,
     sparkles: 34,
   },
 };
@@ -87,26 +119,32 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-function buildPositionedNodes(nodes: NeuroCognitiveNode[], nodeSize: number): PositionedNode[] {
+function buildPositionedNodes(
+  nodes: NeuroCognitiveNode[],
+  nodeSize: number,
+  config: VariantConfig,
+): PositionedNode[] {
   const count = Math.max(nodes.length, 1);
 
   return nodes.map((node, index) => {
-    const angle = (index / count) * Math.PI * 2;
+    const fallbackAngle = (index / count) * Math.PI * 2 - Math.PI * 0.72;
+    const fallbackRadius = 2.25 + (index % 2) * 0.26;
     const value = clamp(Number.isFinite(node.value) ? node.value : 0.5, 0, 1);
-    const radius = 2.35 + value * 0.9;
-    const position: Point3 = [
-      Math.cos(angle) * radius,
-      (value - 0.5) * 1.8 + Math.sin(angle * 2) * 0.24,
-      Math.sin(angle) * radius * 0.72,
+    const layout = DOMAIN_LAYOUT[node.id] ?? [
+      Math.cos(fallbackAngle) * fallbackRadius,
+      (value - 0.5) * 1.5,
+      Math.sin(fallbackAngle) * fallbackRadius * 0.58,
     ];
-    const color = NODE_COLORS[node.riskLevel] ?? NODE_COLORS.medium;
+    const depthLift = (index % 3 - 1) * 0.08;
+    const color = config.riskColors[node.riskLevel] ?? config.riskColors.medium;
 
     return {
       ...node,
       color,
-      glowColor: new Color(color).lerp(new Color("#ffffff"), 0.2).getStyle(),
-      position,
-      radius: nodeSize * (0.7 + value * 0.85),
+      glowColor: new Color(color).lerp(new Color(config.accent), 0.34).getStyle(),
+      position: [layout[0], layout[1], layout[2] + depthLift],
+      radius: nodeSize * (0.82 + value * 0.72),
+      emphasis: 0.65 + value * 0.55,
     };
   });
 }
@@ -119,11 +157,18 @@ function NeuroCognitiveMapScene({
   linkOpacity,
   glowIntensity,
   rotationSpeed,
+  particleDensity,
 }: Required<Omit<NeuroCognitiveMap3DProps, "height" | "cameraDistance">>) {
   const groupRef = useRef<Group | null>(null);
   const config = VARIANT_CONFIG[variant];
-  const positionedNodes = useMemo(() => buildPositionedNodes(nodes, nodeSize), [nodes, nodeSize]);
-  const nodesById = useMemo(() => new Map(positionedNodes.map((node) => [node.id, node])), [positionedNodes]);
+  const positionedNodes = useMemo(
+    () => buildPositionedNodes(nodes, nodeSize, config),
+    [config, nodes, nodeSize],
+  );
+  const nodesById = useMemo(
+    () => new Map(positionedNodes.map((node) => [node.id, node])),
+    [positionedNodes],
+  );
   const visibleLinks = useMemo(
     () =>
       links
@@ -135,93 +180,170 @@ function NeuroCognitiveMapScene({
         .filter((link): link is NeuroCognitiveLink & { source: PositionedNode; target: PositionedNode } => Boolean(link)),
     [links, nodesById],
   );
+  const density = clamp(particleDensity, 0, 2);
 
-  useFrame((_, delta) => {
-    if (groupRef.current && rotationSpeed > 0) {
-      groupRef.current.rotation.y += delta * rotationSpeed;
+  useFrame(({ clock }, delta) => {
+    if (!groupRef.current) {
+      return;
     }
+    groupRef.current.rotation.y += delta * rotationSpeed;
+    groupRef.current.rotation.x = -0.08 + Math.sin(clock.elapsedTime * 0.18) * 0.018;
+    groupRef.current.position.y = Math.sin(clock.elapsedTime * 0.24) * 0.035;
   });
 
   return (
     <>
       <color attach="background" args={[config.sceneBackground]} />
-      <fog attach="fog" args={[config.sceneBackground, 7, 15]} />
-      <ambientLight intensity={0.45} />
-      <pointLight position={[0, 3.5, 4]} intensity={1.2} color={config.accent} />
-      <pointLight position={[-3.5, -1.5, -2]} intensity={0.7} color="#52f3bd" />
-      <Stars radius={18} depth={8} count={config.starCount} factor={1.4} saturation={0.2} fade speed={0.18} />
+      <fog attach="fog" args={config.fog} />
+      <ambientLight intensity={0.34} />
+      <pointLight position={[0, 3.8, 4.2]} intensity={1.05} color={config.accent} />
+      <pointLight position={[-3.8, -1.2, -2.4]} intensity={0.58} color={config.accentSoft} />
+      <pointLight position={[3.8, 0.2, 2.4]} intensity={0.42} color="#ffffff" />
+      <Stars
+        radius={18}
+        depth={9}
+        count={Math.round(config.stars * density)}
+        factor={1.05}
+        saturation={0.1}
+        fade
+        speed={0.08}
+      />
       <Sparkles
-        count={config.sparkles}
-        scale={[6.8, 2.6, 4.8]}
-        size={1.5}
-        speed={0.22}
-        opacity={0.5}
+        count={Math.round(config.sparkles * density)}
+        scale={[7.4, 2.8, 5.2]}
+        size={1.15}
+        speed={0.14}
+        opacity={0.36}
         color={config.accent}
       />
-      <group ref={groupRef}>
+
+      <group ref={groupRef} scale={0.98}>
+        <CognitiveHorizon config={config} glowIntensity={glowIntensity} />
+
         {visibleLinks.map((link) => (
           <Line
             key={`${link.source.id}-${link.target.id}`}
             points={[link.source.position, link.target.position]}
-            color={config.accent}
+            color={config.link}
             transparent
-            opacity={clamp(link.strength, 0.1, 1) * linkOpacity}
-            lineWidth={1.15}
+            opacity={clamp(link.strength, 0.1, 1) * linkOpacity * 0.62}
+            lineWidth={0.62}
           />
         ))}
 
-        {positionedNodes.map((node) => (
-          <group key={node.id} position={node.position}>
-            <mesh>
-              <sphereGeometry args={[node.radius * 2.25 * glowIntensity, 32, 32]} />
-              <meshBasicMaterial
-                color={node.glowColor}
-                transparent
-                opacity={0.13}
-                blending={AdditiveBlending}
-                depthWrite={false}
-              />
-            </mesh>
-            <mesh>
-              <sphereGeometry args={[node.radius, 32, 32]} />
-              <meshStandardMaterial
-                color={node.color}
-                emissive={node.color}
-                emissiveIntensity={0.9 + glowIntensity * 0.25}
-                roughness={0.34}
-                metalness={0.18}
-              />
-            </mesh>
-            <Billboard position={[0, node.radius + 0.34, 0]}>
-              <Text
-                color="#e8f9ff"
-                fontSize={0.13}
-                maxWidth={1.4}
-                anchorX="center"
-                anchorY="middle"
-                outlineWidth={0.006}
-                outlineColor="#07101c"
-              >
-                {node.label}
-              </Text>
-            </Billboard>
-          </group>
+        {positionedNodes.map((node, index) => (
+          <CognitiveNode key={node.id} node={node} index={index} glowIntensity={glowIntensity} />
         ))}
       </group>
     </>
   );
 }
 
+function CognitiveHorizon({
+  config,
+  glowIntensity,
+}: {
+  config: VariantConfig;
+  glowIntensity: number;
+}) {
+  return (
+    <group rotation={[Math.PI / 2, 0, 0]} position={[0, -0.84, -0.08]}>
+      {[1.75, 2.55, 3.35].map((radius, index) => (
+        <mesh key={radius}>
+          <ringGeometry args={[radius, radius + 0.012, 144]} />
+          <meshBasicMaterial
+            color={index === 0 ? config.accentSoft : config.accent}
+            transparent
+            opacity={(0.06 - index * 0.012) * glowIntensity}
+            side={DoubleSide}
+            blending={AdditiveBlending}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function CognitiveNode({
+  node,
+  index,
+  glowIntensity,
+}: {
+  node: PositionedNode;
+  index: number;
+  glowIntensity: number;
+}) {
+  const nodeRef = useRef<Group | null>(null);
+
+  useFrame(({ clock }) => {
+    if (!nodeRef.current) {
+      return;
+    }
+    const pulse = 1 + Math.sin(clock.elapsedTime * (0.44 + index * 0.035) + index * 0.82) * 0.028;
+    nodeRef.current.scale.setScalar(pulse);
+  });
+
+  return (
+    <group ref={nodeRef} position={node.position}>
+      <mesh>
+        <sphereGeometry args={[node.radius * 3.05 * glowIntensity, 36, 36]} />
+        <meshBasicMaterial
+          color={node.glowColor}
+          transparent
+          opacity={0.075 * node.emphasis}
+          blending={AdditiveBlending}
+          depthWrite={false}
+        />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[node.radius * 1.74, 32, 32]} />
+        <meshBasicMaterial
+          color={node.color}
+          transparent
+          opacity={0.12}
+          blending={AdditiveBlending}
+          depthWrite={false}
+        />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[node.radius, 40, 40]} />
+        <meshStandardMaterial
+          color={node.color}
+          emissive={node.color}
+          emissiveIntensity={0.42 + glowIntensity * 0.18}
+          roughness={0.42}
+          metalness={0.12}
+        />
+      </mesh>
+      <Billboard position={[0, node.radius + 0.32, 0]}>
+        <Text
+          color="#edf7ff"
+          fontSize={0.12}
+          maxWidth={1.3}
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.004}
+          outlineColor="#050810"
+        >
+          {node.label}
+        </Text>
+      </Billboard>
+    </group>
+  );
+}
+
 export function NeuroCognitiveMap3D({
   nodes = [],
   links = [],
-  height = 420,
+  height = 440,
   variant = "calm",
   nodeSize = 0.16,
-  linkOpacity = 0.34,
+  linkOpacity = 0.28,
   glowIntensity = 1,
-  cameraDistance = 7.2,
-  rotationSpeed = 0.07,
+  cameraDistance = 7.6,
+  rotationSpeed = 0.035,
+  particleDensity = 1,
 }: NeuroCognitiveMap3DProps) {
   const safeNodes = Array.isArray(nodes) ? nodes.filter((node) => node.id && node.label) : [];
   const safeLinks = Array.isArray(links) ? links : [];
@@ -230,17 +352,32 @@ export function NeuroCognitiveMap3D({
   const containerStyle: CSSProperties = {
     width: "100%",
     height,
-    minHeight: 280,
+    minHeight: 300,
     overflow: "hidden",
-    borderRadius: 18,
+    borderRadius: 20,
     background: config.background,
-    boxShadow: "inset 0 0 0 1px rgba(184, 221, 255, 0.12), 0 28px 80px rgba(0, 0, 0, 0.35)",
+    boxShadow:
+      "inset 0 0 0 1px rgba(190, 220, 255, 0.11), inset 0 -80px 110px rgba(0, 0, 0, 0.24), 0 32px 90px rgba(0, 0, 0, 0.42)",
   };
 
   if (safeNodes.length === 0) {
     return (
-      <div style={{ ...containerStyle, display: "grid", placeItems: "center" }} role="img" aria-label="Carte cognitive vide">
-        <div style={{ color: "#c7d7e8", fontSize: 14, letterSpacing: 0, opacity: 0.82 }}>Carte cognitive indisponible</div>
+      <div
+        style={{
+          ...containerStyle,
+          display: "grid",
+          placeItems: "center",
+          color: "#c7d7e8",
+        }}
+        role="img"
+        aria-label="Carte cognitive vide"
+      >
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 13, letterSpacing: 0, opacity: 0.86 }}>Carte cognitive indisponible</div>
+          <div style={{ marginTop: 10, fontSize: 12, letterSpacing: 0, opacity: 0.52 }}>
+            Donnees qualitatives en attente.
+          </div>
+        </div>
       </div>
     );
   }
@@ -248,7 +385,7 @@ export function NeuroCognitiveMap3D({
   return (
     <div style={containerStyle} role="img" aria-label="Carte cognitive 3D NeuroChess">
       <Canvas
-        camera={{ position: [0, 0.8, cameraDistance], fov: 43 }}
+        camera={{ position: [0, 0.9, cameraDistance], fov: 39 }}
         dpr={[1, 1.7]}
         fallback={<div style={{ color: "#c7d7e8", padding: 24 }}>Rendu 3D indisponible</div>}
       >
@@ -260,6 +397,7 @@ export function NeuroCognitiveMap3D({
           linkOpacity={linkOpacity}
           glowIntensity={glowIntensity}
           rotationSpeed={rotationSpeed}
+          particleDensity={particleDensity}
         />
       </Canvas>
     </div>
