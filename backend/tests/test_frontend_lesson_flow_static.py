@@ -20,6 +20,7 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.practice = read(REVIEW_DIR / "ReviewPracticePanel.tsx")
         self.laboratory = read(REVIEW_DIR / "ReviewLaboratoryPanel.tsx")
         self.panel = read(REVIEW_DIR / "ReviewPanel.tsx")
+        self.focus_tabs = read(REVIEW_DIR / "ReviewFocusTabs.tsx")
         self.view_model = read(REVIEW_DIR / "reviewViewModel.ts")
         self.types = read(REVIEW_DIR / "reviewTypes.ts")
         self.step_status = read(REVIEW_DIR / "ReviewStepStatus.tsx")
@@ -42,6 +43,16 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertIn('aria-label="Explorer Review"', self.laboratory)
         self.assertIn("<strong>Explorer la partie en profondeur</strong>", self.laboratory)
         self.assertIn("Détails techniques", self.laboratory)
+
+    def test_review_tabs_load_from_capabilities_with_local_fallback(self) -> None:
+        self.assertIn('import { getCapabilities, type CapabilityTab } from "../../api/client"', self.focus_tabs)
+        self.assertIn("normalizeCapabilityReviewTabs(capabilities.review?.tabs)", self.focus_tabs)
+        self.assertIn('explorer: "lab"', self.focus_tabs)
+        self.assertIn("REVIEW_FOCUS_TABS", self.focus_tabs)
+        self.assertIn("catch(() => REVIEW_FOCUS_TABS)", self.focus_tabs)
+        self.assertIn("REQUIRED_REVIEW_FOCUS_KEYS", self.focus_tabs)
+        self.assertNotIn("getCapabilities", self.app)
+        self.assertNotIn("capabilities.review", self.app)
 
     def test_visible_lesson_flow_is_three_public_steps(self) -> None:
         self.assertIn('export type ReviewPublicLessonStep = "challenge" | "correction" | "training"', self.types)
