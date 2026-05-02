@@ -58,14 +58,21 @@ import {
   type EvaluationBarPlaceholder,
 } from "./components/EvaluationBar";
 import { MoveHistory } from "./components/MoveHistory";
+import { LandingPage } from "./components/LandingPage";
+import { NeuroChessLogo } from "./components/NeuroChessLogo";
 import {
   ReviewPanel,
   momentKey,
+  type ReviewFocusKey,
   type ReviewPov,
   type ReviewPvLineMode,
   type ReviewSolutionRevealViewState,
   type ReviewTryMoveViewState,
 } from "./components/ReviewPanel";
+import { ReviewStepStatus } from "./components/review/ReviewStepStatus";
+import {
+  annotationIndex,
+} from "./components/review/reviewViewModel";
 import { makeEvaluationDisplayFromEngineScore } from "./evaluationDisplay";
 import {
   INITIAL_REVIEW_STATE,
@@ -86,6 +93,20 @@ type BusyState = "idle" | "new-game" | "move" | "finish" | "load-game";
 type PositionMode = "LIVE" | "HISTORICAL" | "REVIEW";
 type ActiveTab = "moves" | "review" | "import" | "history" | "info";
 type HistoryScope = "mine" | "imported" | "local" | "ai" | "observed" | "all";
+
+function normalizeReviewFocusKey(value: string): ReviewFocusKey {
+  if (value === "learn" || value === "practice" || value === "lab") {
+    return value;
+  }
+  if (value === "lesson") {
+    return "learn";
+  }
+  if (value === "opening" || value === "explorer") {
+    return "lab";
+  }
+  return "summary";
+}
+
 type EvaluationBarState = {
   evaluation: Evaluation | null;
   source: EvaluationSource | null;
@@ -212,6 +233,7 @@ const REPLAY_PV_LINE_PAUSE_MS = 1200;
 const REVIEW_REPLAY_MOVE_ANIMATION_MS = REPLAY_MOVE_ANIMATION_MS;
 const REVIEW_PLAYED_ARROW_COLOR = "rgba(0, 229, 255, 0.88)";
 const REVIEW_BEST_ARROW_COLOR = "rgba(105, 92, 255, 0.9)";
+type NeuroChessRoute = "/" | "/app";
 
 const ANALYSIS_UNAVAILABLE_WARNINGS = new Set([
   "analysis_engine_unavailable",
@@ -247,6 +269,48 @@ const HISTORY_SCOPE_FILTERS: Array<{ scope: HistoryScope; label: string }> = [
 ];
 
 export default function App() {
+  const [currentRoute, setCurrentRoute] = useState<NeuroChessRoute>(() =>
+    normalizeRoute(readCurrentPath()),
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+    const handlePopState = () => {
+      setCurrentRoute(normalizeRoute(window.location.pathname));
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const navigateTo = (route: NeuroChessRoute) => {
+    if (typeof window !== "undefined") {
+      if (window.location.pathname !== route) {
+        window.history.pushState({ neurochessRoute: route }, "", route);
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    setCurrentRoute(route);
+  };
+
+  if (currentRoute === "/app") {
+    return <NeuroChessApp onNavigateHome={() => navigateTo("/")} />;
+  }
+
+  return (
+    <LandingPage
+      onNavigateApp={() => navigateTo("/app")}
+      onNavigateHome={() => navigateTo("/")}
+    />
+  );
+}
+
+type NeuroChessAppProps = {
+  onNavigateHome: () => void;
+};
+
+function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   const [gameId, setGameId] = useState<number | null>(null);
   const [currentFen, setCurrentFen] = useState<string | null>(null);
   const [viewedFen, setViewedFen] = useState<string | null>(null);
@@ -334,7 +398,7 @@ export default function App() {
   const [reviewAnalysisProfile, setReviewAnalysisProfile] =
     useState<ReviewAnalysisProfile>("standard");
   const [selectedReviewPov, setSelectedReviewPov] = useState<ReviewPov>("both");
-  const [reviewFocusKey, setReviewFocusKey] = useState<string>("summary");
+  const [reviewFocusKey, setReviewFocusKey] = useState<ReviewFocusKey>("summary");
   const [reviewPollingActiveDebug, setReviewPollingActiveDebug] =
     useState(false);
   const [reviewPendingStartedAtDebug, setReviewPendingStartedAtDebug] =
@@ -3275,9 +3339,10 @@ export default function App() {
   }
 
   function handleReviewFocusChange(focus: string) {
-    setReviewFocusKey(focus);
-    clearReviewOverlays(`review_focus_${focus}`);
-    resetSolutionReveal(`review_focus_${focus}`);
+    const nextFocus = normalizeReviewFocusKey(focus);
+    setReviewFocusKey(nextFocus);
+    clearReviewOverlays(`review_focus_${nextFocus}`);
+    resetSolutionReveal(`review_focus_${nextFocus}`);
   }
 
   function handleShowOpeningExit(evidence: OpeningRealityEvidence) {
@@ -3641,7 +3706,9 @@ export default function App() {
   const reviewStepStatusCanReplay =
     positionMode === "REVIEW" &&
     Boolean(reviewPvLineState?.active || selectedReviewAnnotation || selectedReviewMoment);
-
+  const activeReviewDisplayFocus: ReviewFocusKey = reviewPracticeState?.active
+    ? "practice"
+    : reviewFocusKey;
   const boardBadge = positionBadge(
     positionMode,
     displayedPositionPly,
@@ -3709,12 +3776,23 @@ export default function App() {
 
   return (
     <main className="app">
-      <header className="topbar">
-        <div>
-          <h1>NeuroChess 2</h1>
-          <p>{statusText}</p>
+      <header className="topbar app-header">
+        <div className="app-logo-stack app-brand">
+          <NeuroChessLogo
+            href="/"
+            onClick={(event) => {
+              event.preventDefault();
+              onNavigateHome();
+            }}
+            variant="header"
+            className="app-brand-logo"
+          />
+          <div className="app-brand-title">
+            <span>Chess · Decision Science</span>
+            <p>{statusText}</p>
+          </div>
         </div>
-        <div className="actions">
+        <div className="actions app-header-actions">
           <button onClick={handleNewGame} disabled={busy !== "idle"}>
             Nouvelle partie
           </button>
@@ -3724,7 +3802,10 @@ export default function App() {
           >
             Terminer partie
           </button>
-          <button onClick={() => setActiveTab("import")}>
+          <button
+            className={!canRequestReview ? "header-primary-action" : undefined}
+            onClick={() => setActiveTab("import")}
+          >
             Importer PGN
           </button>
           <button
@@ -3744,7 +3825,11 @@ export default function App() {
             Masquer l'évaluation
           </label>
           {canRequestReview && (
-            <button onClick={() => handleReview()} disabled={reviewLoading || reviewUiBusy}>
+            <button
+              className="header-primary-action"
+              onClick={() => handleReview()}
+              disabled={reviewLoading || reviewUiBusy}
+            >
               Voir la review
             </button>
           )}
@@ -3826,8 +3911,8 @@ export default function App() {
             )}
           </div>
           {activeTab === "review" && (
-            <ReviewStepStatusPanel
-              focusKey={reviewFocusKey}
+            <ReviewStepStatus
+              focusKey={activeReviewDisplayFocus}
               annotation={selectedReviewAnnotation}
               moment={selectedReviewMoment}
               guidedPhase={guidedReplayPhase}
@@ -3994,6 +4079,7 @@ export default function App() {
                 onPracticeViewSessionSummary={viewPracticeSessionSummary}
                 onPracticeRetryFailedSession={retryFailedPracticeSession}
                 selectedReviewPov={selectedReviewPov}
+                activeReviewFocus={activeReviewDisplayFocus}
                 onReviewPovChange={handleReviewPovChange}
                 onReviewFocusChange={handleReviewFocusChange}
                 selectedMovePly={selectedReviewMovePly}
@@ -4001,7 +4087,7 @@ export default function App() {
                 analysisProfile={reviewAnalysisProfile}
                 onAnalysisProfileChange={setReviewAnalysisProfile}
               />
-              {import.meta.env.DEV && (
+              {import.meta.env.DEV && activeReviewDisplayFocus === "lab" && (
                 <details className="review-debug" data-review-debug="true">
                   <summary>Debug Review</summary>
                   <div className="review-debug-title">Review debug:</div>
@@ -4348,6 +4434,17 @@ export default function App() {
   );
 }
 
+function readCurrentPath(): string {
+  if (typeof window === "undefined") {
+    return "/";
+  }
+  return window.location.pathname || "/";
+}
+
+function normalizeRoute(pathname: string): NeuroChessRoute {
+  return pathname.startsWith("/app") ? "/app" : "/";
+}
+
 function messageFromError(error: unknown): string {
   return error instanceof Error ? error.message : "Erreur inconnue";
 }
@@ -4545,6 +4642,14 @@ function makeShortGameReviewResponse(
     black_lichess_like_accuracy: null,
     user_lichess_like_accuracy: null,
     opponent_lichess_like_accuracy: null,
+    white_public_neuro_score: null,
+    black_public_neuro_score: null,
+    user_public_neuro_score: null,
+    opponent_public_neuro_score: null,
+    public_neuro_score: null,
+    public_score_formula_version: "public_neuro_score_lichess_like_v1",
+    qualitative_game_label: "Partie à analyser",
+    qualitative_game_label_formula_version: "qualitative_game_label_v1",
     white_neuro_score: null,
     black_neuro_score: null,
     user_neuro_score: null,
@@ -4894,7 +4999,7 @@ function evaluationBarStateForBoardFen(
           : "Mode entraînement"
         : selectedReviewAnnotation
           ? `Impact du moment : ${formatGuidedImpact(selectedReviewAnnotation.win_loss)}`
-          : "Mode Review",
+          : "Review guidée",
       sourceLabel: "review",
       sourceTitle: reviewPracticeState?.active
         ? "trouve le meilleur coup en mode entraînement"
@@ -5059,136 +5164,6 @@ function guidedReplayPhaseLabel(phase: GuidedReplayPhase): string {
   return "À retenir";
 }
 
-function ReviewStepStatusPanel({
-  focusKey,
-  annotation,
-  moment,
-  guidedPhase,
-  pvLineState,
-  practiceState,
-  openingFocusMessage,
-  canPrevious,
-  canNext,
-  canReplay,
-  onPrevious,
-  onNext,
-  onReplay,
-}: {
-  focusKey: string;
-  annotation: ReviewMoveAnnotation | null;
-  moment: ReviewMoment | null;
-  guidedPhase: GuidedReplayPhase | null;
-  pvLineState: ReviewPvLineState | null;
-  practiceState: ReviewPracticeState | null;
-  openingFocusMessage: string | null;
-  canPrevious: boolean;
-  canNext: boolean;
-  canReplay: boolean;
-  onPrevious: () => void;
-  onNext: () => void;
-  onReplay: () => void;
-}) {
-  const status = reviewStepStatusCopy(
-    focusKey,
-    annotation,
-    moment,
-    guidedPhase,
-    pvLineState,
-    practiceState,
-    openingFocusMessage,
-  );
-  if (!status) {
-    return null;
-  }
-  return (
-    <div className="review-step-status-panel" aria-label="Statut d'étape Review">
-      <div>
-        <strong>{status.title}</strong>
-        <span>{status.message}</span>
-      </div>
-      {status.detail && <span className="review-step-status-detail">{status.detail}</span>}
-      <div className="review-step-status-actions">
-        <button type="button" onClick={onPrevious} disabled={!canPrevious}>
-          Précédent
-        </button>
-        <button type="button" onClick={onNext} disabled={!canNext}>
-          Suivant
-        </button>
-        <button type="button" onClick={onReplay} disabled={!canReplay}>
-          Rejouer étape
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function reviewStepStatusCopy(
-  focusKey: string,
-  annotation: ReviewMoveAnnotation | null,
-  moment: ReviewMoment | null,
-  guidedPhase: GuidedReplayPhase | null,
-  pvLineState: ReviewPvLineState | null,
-  practiceState: ReviewPracticeState | null,
-  openingFocusMessage: string | null,
-): { title: string; message: string; detail?: string } | null {
-  if (focusKey === "summary" && !practiceState?.active && !pvLineState?.active) {
-    return {
-      title: "Synthèse",
-      message: "Sélectionne un moment pour voir la leçon.",
-    };
-  }
-  if (focusKey === "opening" && !practiceState?.active && !pvLineState?.active) {
-    return {
-      title: "Ouverture",
-      message: openingFocusMessage ?? "Position de sortie du livre.",
-    };
-  }
-  if (practiceState?.active) {
-    if (practiceState.itemState === "attempted") {
-      return {
-        title: "Tentative envoyée",
-        message: "Lis le feedback, puis retente ou révèle la solution.",
-      };
-    }
-    if (practiceState.itemState === "solution_revealed") {
-      return { title: "Solution affichée", message: "Compare ton essai au coup clé." };
-    }
-    return { title: "Position critique", message: "Cherche le meilleur coup." };
-  }
-  if (pvLineState?.active) {
-    return {
-      title: "Comparer les deux lignes",
-      message: "Compare les deux futurs.",
-      detail:
-        pvLineState.currentIndex < 0
-          ? `Départ / ${pvLineState.moves.length}`
-          : `Coup ${pvLineState.currentIndex + 1} / ${pvLineState.moves.length}`,
-    };
-  }
-  if (annotation && guidedPhase) {
-    if (guidedPhase === "played_move" || guidedPhase === "impact") {
-      return { title: "Coup joué", message: "Ton coup est affiché." };
-    }
-    if (guidedPhase === "best_move") {
-      return { title: "Solution", message: "Solution affichée." };
-    }
-    if (guidedPhase === "pv_line") {
-      return { title: "Comparer", message: "Compare les deux lignes." };
-    }
-    if (guidedPhase === "summary") {
-      return { title: "À retenir", message: "À retenir." };
-    }
-    return { title: "Position critique", message: "Position critique — cherche le meilleur coup." };
-  }
-  if (annotation) {
-    return { title: "Position critique", message: "Position critique — cherche le meilleur coup." };
-  }
-  if (moment) {
-    return { title: "Position critique", message: "Position critique — cherche le meilleur coup." };
-  }
-  return null;
-}
-
 function guidedReplayExplanation(
   annotation: ReviewMoveAnnotation,
   phase: GuidedReplayPhase,
@@ -5251,7 +5226,7 @@ function readReviewPovPreference(
   gameId: number | null,
   review: ReviewResponse | null,
 ): ReviewPov {
-  const fallback = normalizedReviewUserColor(review) ? "user" : "both";
+  const fallback = normalizedReviewUserColor(review) ? "user" : "white";
   if (typeof window === "undefined" || !gameId) {
     return fallback;
   }
@@ -5317,12 +5292,12 @@ function normalizeReviewPovForReview(
 ): ReviewPov {
   const userColor = normalizedReviewUserColor(review);
   if (value === "user") {
-    return userColor ? "user" : "both";
+    return userColor ? "user" : "white";
   }
   if (value === "white" || value === "black" || value === "both") {
     return value;
   }
-  return userColor ? "user" : "both";
+  return userColor ? "user" : "white";
 }
 
 function normalizedReviewUserColor(
