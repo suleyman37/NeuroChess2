@@ -1,0 +1,4 @@
+interface:
+  display_name: "NeuroChess Replay Debug"
+  short_description: "Debug PGN, FEN, review, or practice replay issues."
+  default_prompt: "Use this skill to debug NeuroChess PGN/FEN/review/practice issues with reproduction and minimal fixes."

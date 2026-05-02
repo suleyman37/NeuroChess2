@@ -1,0 +1,4 @@
+interface:
+  display_name: "NeuroChess Add Metric"
+  short_description: "Add a governed NeuroChess metric."
+  default_prompt: "Use this skill to add a NeuroChess metric while preserving formula governance."

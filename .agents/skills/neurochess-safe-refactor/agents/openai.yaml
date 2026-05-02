@@ -1,0 +1,4 @@
+interface:
+  display_name: "NeuroChess Safe Refactor"
+  short_description: "Refactor NeuroChess without hidden behavior changes."
+  default_prompt: "Use this skill to refactor NeuroChess safely with Serena mapping, small steps, and tests."

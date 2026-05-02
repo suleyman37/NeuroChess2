@@ -1,0 +1,4 @@
+interface:
+  display_name: "NeuroChess Add Action"
+  short_description: "Add a governed NeuroChess training action."
+  default_prompt: "Use this skill to add a NeuroChess training action while preserving action and screen contracts."
