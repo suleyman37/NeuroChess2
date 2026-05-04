@@ -85,42 +85,66 @@ Rules:
 
 ## 4. Practice Event Model
 
-Future `practice_result_event` fields:
+V1 `practice_result_event` fields:
 
 - `item_id`
 - `session_id`
+- `game_id`
+- `ply`
 - `result`
-- `move_played`
-- `time_spent`
+- `move_played` / `attempted_uci`
+- `time_spent_ms`
 - `hint_used`
 - `reveal_used`
 - `attempt_number`
-- `item_difficulty`
 - `source_context`
-- optional `self_confidence`
 - `timestamp`
+- `due_at`
 
-Current Review Practice already stores partial attempt events:
+Current Review Practice stores:
 
 - `session_id`
 - `game_id`
 - `ply`
+- `color`
 - `attempted_uci`
 - `attempted_san`
 - `expected_best_uci`
 - `result`
 - `attempt_number`
 - `evidence_snapshot_json`
+- `item_id`
+- `time_spent_ms`
+- `hint_used`
+- `reveal_used`
+- `source_context`
+- `due_at`
 - `created_at`
+
+Future optional fields:
+
+- `item_difficulty`
+- optional `self_confidence`
 
 Role:
 
 - future BKT;
 - future IRT;
-- future FSRS-like scheduling;
+- V1 simple revision scheduling, future FSRS-like scheduling;
 - future Learning Engine validation.
 
 This is event data, not a skill score by itself.
+
+V1 simple revision rules:
+
+- `wrong` / `illegal`: review tomorrow.
+- `revealed`: review tomorrow.
+- success with hint: review in 3 days.
+- success without help: review in 7 days.
+- `skipped`: no scheduled revision in V1.
+
+The UI may show due/scheduled counts and plain-language copy only. It must not
+show FSRS, ETV, SkillTrace, BKT, IRT, Transfer Gap, or mastery posteriors.
 
 ## 5. User Skill Model V1
 

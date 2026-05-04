@@ -528,6 +528,24 @@ def list_review_practice_sessions(
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
 
 
+@router.post("/games/{game_id}/review/practice/revisions")
+def start_due_review_practice_session(
+    game_id: int,
+    request: StartReviewPracticeSessionRequest,
+    practice_service: ReviewPracticeService = Depends(get_review_practice_service),
+) -> Any:
+    try:
+        return practice_service.create_due_review_session(
+            game_id,
+            pov=request.pov,
+            max_items=request.max_items,
+        )
+    except ReviewPracticeServiceError as exc:
+        if exc.payload is not None:
+            return JSONResponse(status_code=exc.status_code, content=exc.payload)
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+
 @router.get("/review/practice/sessions/{session_id}")
 def get_review_practice_session(
     session_id: int,
@@ -553,6 +571,10 @@ def record_review_practice_attempt(
             ply=request.ply,
             attempted_uci=request.attempted_uci,
             result=request.result,
+            time_spent_ms=request.time_spent_ms,
+            hint_used=request.hint_used,
+            reveal_used=request.reveal_used,
+            source_context=request.source_context,
         )
     except ReviewPracticeServiceError as exc:
         if exc.payload is not None:

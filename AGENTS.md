@@ -1,48 +1,85 @@
-# NeuroChess Codex Rules
+# NeuroChess Agent Rules
 
-Use these rules before and during AI work. Source docs remain authoritative:
-`docs/PROJECT_STATE.md`, `docs/AI_COLLABORATION_PROTOCOL.md`,
-`docs/METRIC_REGISTRY.md`, `docs/ACTION_REGISTRY.md`,
-`docs/FORMULAS_AND_METRICS.md`, `docs/FORMULA_IMPLEMENTATION_AUDIT.md`,
-`docs/data_model.md`, `docs/LEARNING_ENGINE_BLUEPRINT.md`, and
-`docs/SCREEN_CONTRACTS.md`.
+Use these rules before and during AI work. Source docs remain authoritative.
 
-## General
+## Source Of Truth
 
-- One agent modifies code at a time.
-- Codex is the primary implementer.
-- ChatGPT/Claude may help with strategy, audit, critique, or handoff, but must
-  not modify the repo at the same time.
-- Never put secrets, tokens, API keys, cookies, or `.env` content in prompts,
-  logs, docs, tests, or Serena memories.
-- Do not run a massive refactor as one mission.
-- Use a branch or worktree for each important mission when possible.
-- Start important missions with `git status --short --branch`.
-- Inspect the diff after each AI mission.
-- Use `/review` before merge or large modifications.
-- If a user-visible bug survives two fixes, stop feature work and reproduce the
-  real flow before another fix.
+The project is governed by:
 
-## Tool Use
+- `plan/Plan1.txt`
+- `plan/Plan2.txt`
+- `plan/Plan3.md`
+- `docs/PLAN_CONTEXT_MIN.md`
+- `docs/PLAN_FEATURE_BOUNDARIES.md`
+- `docs/NEXT_PLAN_ACTIONS.md`
 
-- Activate NeuroChess2 with Serena before multi-file edits.
-- Use Serena for symbol search, references, and architecture navigation.
-- Use Context7 only for recent external API/library documentation.
-- Use Playwright only for UI or browser-visible behavior changes.
-- Do not use MCP/tool outputs to expose secrets.
+Priority:
+
+1. Plan1, Plan2, and Plan3.
+2. Plan governance docs.
+3. Existing code.
+
+Existing code is implementation state, not product truth. If code contradicts
+Plan1, Plan2, or Plan3, treat the code as non-aligned.
+
+Plan roles:
+
+- Plan1 governs science, engine, metrics, formulas, and the user model.
+- Plan2 governs UX, screens, navigation, and user journeys.
+- Plan3 governs sprint order, technical roadmap, Codex governance, tests, and
+  V1 delivery.
+
+Never apply Plan3 as one large mission. Use it to execute only the explicitly
+requested sprint or narrowly scoped task.
+
+## Product Loop
+
+NeuroChess must follow:
+
+PGN import -> Stockfish analysis -> Win% -> win_loss -> NeuroScore coach -> key
+moments -> Review -> Practice -> revision -> progression.
+
+## V1 Boundaries
+
+Forbidden in V1 user-facing UI:
+
+- NeuroMonitor / brain / cortex / atlas
+- Candidate Trainer
+- deep Intent Layer
+- LLM coach
+- visible Transfer Gap
+- raw `criticality_score`
+- `diagnostic_gap`
+- `neuro_score_diag`
+- Stockfish WDL as public metric
+- domain score /100 without calibration
+
+V2, V3, and research features must be hidden, documented, or placed in backlog.
+Do not improve forbidden V1 UI features; remove, hide, or backlog them.
+
+## UX Rules
+
+Plan2 requires:
+
+- Aujourd'hui
+- Mes parties
+- Entrainement
+- Profile/settings outside main nav
+- Review opened from those flows, not a permanent main tab
+- one screen = one intent
+- one primary CTA per screen
+- no technical dashboard as main UX
+- beginner screens hide formulas, evidence JSON, debug panels, and engine internals
 
 ## Architecture
 
 - Frontend dumb, backend authoritative.
-- The frontend never decides final grading.
-- Chess rules, FEN/SAN, try-move grading, review scoring, and training decisions
-  must be backend-authoritative.
+- Chess rules, FEN/SAN/UCI, try-move grading, review scoring, and training
+  decisions must be backend-authoritative.
 - Do not put metric formulas in `frontend/src/App.tsx`.
 - Any new metric must be added to `docs/METRIC_REGISTRY.md`.
 - Any new action must be added to `docs/ACTION_REGISTRY.md`.
 - Any new screen or tab must respect `docs/SCREEN_CONTRACTS.md`.
-- Beginner screens must not show raw formulas, evidence JSON, debug panels, or
-  engine details.
 
 ## Data And Engine
 
@@ -68,14 +105,44 @@ Use these rules before and during AI work. Source docs remain authoritative:
 - Diagnostic Gap, NeuroDiagnostic, raw criticality, and raw domain scores belong
   in audit/debug/advanced contexts only unless docs say otherwise.
 
-## Actions And Screens
+## Work Protocol
 
-- One prescriptive screen gets one primary action.
-- Visible secondary actions are capped at two.
-- Advanced actions are hidden by default.
-- Debug actions are never visible in normal UI.
-- Destructive actions require confirmation.
-- Do not duplicate actions under different labels.
+Before coding:
+
+1. Read `docs/PLAN_CONTEXT_MIN.md`.
+2. Read `docs/NEXT_PLAN_ACTIONS.md`.
+3. Check `docs/PLAN_FEATURE_BOUNDARIES.md` if touching product behavior.
+4. If unsure, inspect `plan/Plan1.txt`, `plan/Plan2.txt`, or `plan/Plan3.md`.
+5. Start important missions with `git status --short --branch`.
+
+During coding:
+
+1. Do not add out-of-plan features.
+2. Do not improve forbidden V1 UI features; hide, remove, or backlog them.
+3. Do not expose internal metrics as user truth.
+4. Prefer small, verifiable missions.
+5. Do not run a massive refactor as one mission.
+6. Never put secrets, tokens, API keys, cookies, or `.env` content in prompts,
+   logs, docs, tests, or memories.
+
+After coding:
+
+1. Run frontend build/typecheck if frontend changed.
+2. Run backend tests if backend changed.
+3. Run `python tools/plan_guard.py` if available.
+4. Update `docs/PLAN_ALIGNMENT_AUDIT.md`.
+5. Update `docs/NEXT_PLAN_ACTIONS.md`.
+6. Inspect the diff.
+
+## Tool Use
+
+- Activate NeuroChess2 with Serena before multi-file edits when Serena is
+  available.
+- Use Serena for symbol search, references, and architecture navigation when
+  available.
+- Use Context7 only for recent external API/library documentation.
+- Use Playwright only for UI or browser-visible behavior changes.
+- Do not use MCP/tool outputs to expose secrets.
 
 ## Testing
 
@@ -87,6 +154,16 @@ Use these rules before and during AI work. Source docs remain authoritative:
 - Use Playwright for browser-visible changes.
 - Stop if base tests fail without a clear relation to the mission.
 
+## Done Means
+
+A task is not done until:
+
+- code compiles;
+- behavior matches Plan1/Plan2;
+- no forbidden V1 UI was added;
+- docs reflect the new state;
+- tests/checks were run or blockers are documented.
+
 ## Rollback
 
 - Before a large mission, record `git status --short --branch`.
@@ -95,4 +172,3 @@ Use these rules before and during AI work. Source docs remain authoritative:
 - If corruption or wrong direction appears, inspect `git status`, `git diff`,
   and `git reflog`, then choose targeted restore/reset/reflog recovery with
   human approval.
-

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { ReviewMoment, ReviewMoveAnnotation } from "../../api/client";
 import {
@@ -25,11 +25,6 @@ import {
   reviewJobStatusTitle,
 } from "./ReviewTechnicalDetails";
 import {
-  NeuroBrainAtlas3D,
-  type BrainConnection,
-  type BrainDomainRegion,
-} from "../visual/NeuroBrainAtlas3D";
-import {
   annotationIndex,
   countPracticeEligibleItems,
   filterSectionsByPov,
@@ -38,23 +33,6 @@ import {
 } from "./reviewViewModel";
 import type { GameStoryEvent, ReviewFocusKey, ReviewLessonStep, ReviewPanelProps, ReviewPov, ReviewSectionKey } from "./reviewTypes";
 
-const REVIEW_CONSTRUCTION_REGIONS: BrainDomainRegion[] = [
-  { id: "opening", label: "Opening", performance: "unknown", weight: 0.48, activity: 0.18, confidence: 0.32 },
-  { id: "tactics", label: "Tactics", performance: "unknown", weight: 0.54, activity: 0.22, confidence: 0.3 },
-  { id: "calculation", label: "Calculation", performance: "unknown", weight: 0.52, activity: 0.2, confidence: 0.3 },
-  { id: "conversion", label: "Conversion", performance: "unknown", weight: 0.48, activity: 0.18, confidence: 0.32 },
-  { id: "defense", label: "Defense", performance: "unknown", weight: 0.46, activity: 0.18, confidence: 0.3 },
-  { id: "planning", label: "Planning", performance: "unknown", weight: 0.5, activity: 0.2, confidence: 0.3 },
-];
-
-const REVIEW_CONSTRUCTION_CONNECTIONS: BrainConnection[] = [
-  { source: "opening", target: "tactics", strength: 0.42 },
-  { source: "tactics", target: "calculation", strength: 0.48 },
-  { source: "calculation", target: "conversion", strength: 0.36 },
-  { source: "defense", target: "planning", strength: 0.34 },
-  { source: "planning", target: "conversion", strength: 0.32 },
-  { source: "tactics", target: "defense", strength: 0.3 },
-];
 
 export function ReviewPanel({
   review,
@@ -513,7 +491,7 @@ export function ReviewPanel({
     review?.review_analysis_state === "incomplete"
   ) {
     return (
-      <ReviewUnavailableWithAtlas>
+      <ReviewUnavailableWithPlanCard>
         <ReviewAnalysisUnavailableMessage
           title="Analyse non disponible"
           detail={`Analyse incomplète · ${review.completed_position_count ?? review.deep_done_count ?? 0}/${
@@ -527,7 +505,7 @@ export function ReviewPanel({
           resetPicker={resetPicker}
           onToggleResetPicker={() => setResetPickerOpen((open) => !open)}
         />
-      </ReviewUnavailableWithAtlas>
+      </ReviewUnavailableWithPlanCard>
     );
   }
 
@@ -603,7 +581,7 @@ export function ReviewPanel({
 
   if (!review || review.status === "not_generated") {
     return (
-      <ReviewUnavailableWithAtlas>
+      <ReviewUnavailableWithPlanCard>
         <ReviewAnalysisUnavailableMessage
           title="Analyse non disponible"
           detail="L'analyse recommandée utilise un profil fiable pour construire la Review."
@@ -613,7 +591,7 @@ export function ReviewPanel({
           onRunStandard={() => onGenerate({ profile: "standard" })}
           onRunDeep={() => onGenerate({ profile: "deep" })}
         />
-      </ReviewUnavailableWithAtlas>
+      </ReviewUnavailableWithPlanCard>
     );
   }
 
@@ -635,23 +613,17 @@ export function ReviewPanel({
   );
 }
 
-function ReviewUnavailableWithAtlas({ children }: { children: ReactNode }) {
+function ReviewUnavailableWithPlanCard({ children }: { children: ReactNode }) {
   return (
-    <div className="review-unavailable-atlas-layout">
+    <div className="review-unavailable-plan-layout">
       {children}
-      <section
-        className="review-construction-atlas"
-        aria-label="Profil cognitif en construction"
-        data-neuro-brain-atlas-monitor="true"
-      >
-        <NeuroBrainAtlas3D
-          regions={REVIEW_CONSTRUCTION_REGIONS}
-          connections={REVIEW_CONSTRUCTION_CONNECTIONS}
-          height={300}
-          variant="construction"
-          showLegend
-          interactive={false}
-        />
+      <section className="review-construction-summary" aria-label="Review en preparation">
+        <span>Review en preparation</span>
+        <strong>Analyse recommandee</strong>
+        <p>
+          Lance une analyse standard pour construire un resume coach, trois
+          moments cles et une session d'entrainement fiable.
+        </p>
       </section>
     </div>
   );

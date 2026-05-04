@@ -87,6 +87,32 @@ class DatabaseTests(unittest.TestCase):
         self.assertIn("scope", columns)
         self.assertIn("items_json", columns)
 
+    def test_v5_5_learning_loop_practice_event_schema_exists(self) -> None:
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            attempt_columns = {
+                row[1]
+                for row in connection.execute(
+                    "PRAGMA table_info(review_practice_attempts)"
+                )
+            }
+            attempt_indexes = {
+                row[1]
+                for row in connection.execute(
+                    "PRAGMA index_list(review_practice_attempts)"
+                )
+            }
+
+        for column in (
+            "item_id",
+            "time_spent_ms",
+            "hint_used",
+            "reveal_used",
+            "source_context",
+            "due_at",
+        ):
+            self.assertIn(column, attempt_columns)
+        self.assertIn("idx_review_practice_attempts_game_due", attempt_indexes)
+
     def test_init_db_is_idempotent(self) -> None:
         init_db(self.db_path)
         init_db(self.db_path)
@@ -96,7 +122,7 @@ class DatabaseTests(unittest.TestCase):
                 "SELECT COUNT(*) FROM schema_migrations"
             ).fetchone()[0]
 
-        self.assertEqual(migration_count, 17)
+        self.assertEqual(migration_count, 18)
 
     def test_v5_2_2_history_category_schema_exists(self) -> None:
         with closing(sqlite3.connect(self.db_path)) as connection:

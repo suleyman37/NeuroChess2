@@ -26,6 +26,7 @@ import {
   retryFailedReviewPracticeSession,
   reconcileReviewJob,
   startReviewJob,
+  startDueReviewPracticeSession,
   startReviewPracticeSession,
   startLiveAnalysis,
   stopLiveAnalysis,
@@ -47,6 +48,7 @@ import {
   type ReviewMoveAnnotation,
   type ReviewJobResponse,
   type ReviewPracticeItem,
+  type ReviewPracticeLearningSummary,
   type ReviewPracticeSessionListItem,
   type ReviewPracticeSummary,
   type ReviewPvLineMove,
@@ -91,6 +93,8 @@ import {
 
 type BusyState = "idle" | "new-game" | "move" | "finish" | "load-game";
 type PositionMode = "LIVE" | "HISTORICAL" | "REVIEW";
+type AppShellPage = "today" | "games" | "training";
+type TodayHeroAction = "review" | "practice" | "revision" | "import" | "wait";
 type ActiveTab = "moves" | "review" | "import" | "history" | "info";
 type HistoryScope = "mine" | "imported" | "local" | "ai" | "observed" | "all";
 
@@ -165,6 +169,7 @@ type ReviewPracticeState = {
   feedback: NonNullable<TryMoveFeedback> | null;
   solutionRevealed: boolean;
   hintVisible: boolean;
+  itemStartedAt: number | null;
   summary: ReviewPracticeSummary | null;
   error: string | null;
   saving: boolean;
@@ -347,6 +352,8 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   const [reviewPracticeHistory, setReviewPracticeHistory] = useState<
     ReviewPracticeSessionListItem[]
   >([]);
+  const [reviewPracticeLearningSummary, setReviewPracticeLearningSummary] =
+    useState<ReviewPracticeLearningSummary | null>(null);
   const [reviewPracticeHistoryLoading, setReviewPracticeHistoryLoading] =
     useState(false);
   const [reviewPracticeHistoryError, setReviewPracticeHistoryError] =
@@ -411,6 +418,8 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<BusyState>("idle");
   const [activeTab, setActiveTab] = useState<ActiveTab>("moves");
+  const [activeShellPage, setActiveShellPage] =
+    useState<AppShellPage>("today");
   const [openingClassification, setOpeningClassification] =
     useState<OpeningClassification | null>(null);
   const [openingStatus, setOpeningStatus] =
@@ -601,12 +610,23 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   }, [gameId]);
 
   useEffect(() => {
-    if (!gameId || activeTab !== "review" || !reviewIsCompletedForPractice(review)) {
+    const canUsePracticeHistorySignal =
+      activeTab === "review" ||
+      activeShellPage === "today" ||
+      activeShellPage === "training";
+    if (!gameId || !canUsePracticeHistorySignal || !reviewIsCompletedForPractice(review)) {
       setReviewPracticeHistory([]);
+      setReviewPracticeLearningSummary(null);
       return;
     }
     void loadReviewPracticeHistory(gameId);
-  }, [activeTab, gameId, review?.status, review?.completed_position_count]);
+  }, [
+    activeShellPage,
+    activeTab,
+    gameId,
+    review?.status,
+    review?.completed_position_count,
+  ]);
 
   useEffect(() => {
     resetSolutionReveal("game_changed");
@@ -1604,6 +1624,39 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     }
   }
 
+  function openShellPage(page: AppShellPage) {
+    setActiveShellPage(page);
+    if (page === "today") {
+      if (activeTab === "review") {
+        setActiveTab("moves");
+      }
+      return;
+    }
+    if (page === "games") {
+      if (activeTab === "review" || activeTab === "moves" || activeTab === "info") {
+        setActiveTab("history");
+        void loadHistory();
+      }
+      return;
+    }
+    if (activeTab === "review") {
+      setActiveTab("moves");
+    }
+  }
+
+  function openGamesPanel(nextTab: Exclude<ActiveTab, "review">) {
+    setActiveShellPage("games");
+    setActiveTab(nextTab);
+    if (nextTab === "history") {
+      void loadHistory();
+    }
+  }
+
+  function openReviewContext(source: AppShellPage = activeShellPage) {
+    setActiveShellPage(source);
+    setActiveTab("review");
+  }
+
   async function handleReview(
     options: {
       forceRetryFailed?: boolean;
@@ -1914,6 +1967,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       });
       setPgnImportResult(result);
       await loadHistory();
+      setActiveShellPage("games");
       setActiveTab("history");
     } catch (err) {
       setPgnImportError(messageFromError(err));
@@ -1952,6 +2006,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     setHistoryOpeningGameId(item.game_id);
     setHistoryError(null);
     setSelectedHistoryGame(item);
+    setActiveShellPage("games");
     setReview(null);
     setReviewJob(null);
     setReviewError(null);
@@ -2837,6 +2892,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     try {
       const payload = await getReviewPracticeSessions(targetGameId);
       setReviewPracticeHistory(payload.sessions ?? []);
+      setReviewPracticeLearningSummary(payload.learning_summary ?? null);
     } catch (err) {
       setReviewPracticeHistoryError(messageFromError(err));
     } finally {
@@ -2871,6 +2927,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       feedback: null,
       solutionRevealed: false,
       hintVisible: false,
+      itemStartedAt: null,
       summary: session.summary,
       error: null,
       saving: false,
@@ -2914,6 +2971,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       feedback: null,
       solutionRevealed: false,
       hintVisible: false,
+      itemStartedAt: null,
       summary: null,
       error: null,
       saving: false,
@@ -2936,6 +2994,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         feedback: null,
         solutionRevealed: false,
         hintVisible: false,
+        itemStartedAt: null,
         summary: session.summary,
         error: null,
         saving: false,
@@ -2996,6 +3055,10 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       const summary = await recordReviewPracticeAttempt(state.sessionId ?? "", {
         ply: item.ply,
         attemptedUci: uci,
+        timeSpentMs: practiceTimeSpentMs(state),
+        hintUsed: state.hintVisible,
+        revealUsed: state.solutionRevealed,
+        sourceContext: "review_practice",
       });
       const feedback = summary.attempt_feedback ?? null;
       setReviewPracticeState((current) =>
@@ -3090,6 +3153,10 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         ply: item.ply,
         attemptedUci: null,
         result: "revealed",
+        timeSpentMs: practiceTimeSpentMs(state),
+        hintUsed: state.hintVisible,
+        revealUsed: true,
+        sourceContext: "review_practice",
       });
       setReviewPracticeState((current) =>
         current ? { ...current, summary, saving: false } : current,
@@ -3118,6 +3185,10 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         ply: item.ply,
         attemptedUci: null,
         result: "skipped",
+        timeSpentMs: practiceTimeSpentMs(state),
+        hintUsed: state.hintVisible,
+        revealUsed: false,
+        sourceContext: "review_practice",
       });
       setReviewPracticeState((current) =>
         current ? { ...current, summary, saving: false } : current,
@@ -3204,6 +3275,22 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     }
   }
 
+  async function startDueReviewPractice() {
+    if (!gameId) {
+      return;
+    }
+    try {
+      const dueSession = await startDueReviewPracticeSession(gameId, {
+        pov: selectedReviewPov,
+        maxItems: 5,
+      });
+      await startPracticeFromSession(dueSession, "running");
+      void loadReviewPracticeHistory(gameId);
+    } catch (err) {
+      setReviewError(messageFromError(err));
+    }
+  }
+
   async function redoPracticeSession() {
     if (!gameId) {
       return;
@@ -3284,6 +3371,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             feedback: null,
             solutionRevealed: false,
             hintVisible: false,
+            itemStartedAt: Date.now(),
             itemState: "awaiting_attempt",
             error: null,
             saving: false,
@@ -3779,8 +3867,286 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             ? "Analyse disponible"
             : "Prêt";
 
+  const reviewContextAvailable =
+    reviewTabVisible || reviewPracticeState?.active === true;
+  const practiceAvailable = reviewIsCompletedForPractice(review);
+  const reviewReady =
+    review?.status === "done" || review?.status === "completed";
+  const reviewAnalysisInProgress =
+    reviewLoading ||
+    reviewUiBusy ||
+    reviewJobRunning ||
+    review?.status === "pending";
+  const practiceHistorySessionCount = reviewPracticeHistory.length;
+  const practiceHistoryPositionCount = reviewPracticeHistory.reduce(
+    (total, session) =>
+      total +
+      (session.summary?.positions_worked_count ??
+        session.summary?.item_count ??
+        session.item_count ??
+        0),
+    0,
+  );
+  const practiceHistoryFailedCount = reviewPracticeHistory.reduce(
+    (total, session) => total + (session.summary?.failed_count ?? 0),
+    0,
+  );
+  const learningDueCount = reviewPracticeLearningSummary?.due_count ?? 0;
+  const learningScheduledCount = reviewPracticeLearningSummary?.scheduled_count ?? 0;
+  const learningWeekPositionCount =
+    reviewPracticeLearningSummary?.week_positions_worked_count ??
+    reviewPracticeLearningSummary?.positions_worked_count ??
+    practiceHistoryPositionCount;
+  const learningWeekSuccessWithoutHelpCount =
+    reviewPracticeLearningSummary?.week_success_without_help_count ??
+    reviewPracticeLearningSummary?.success_without_help_count ??
+    0;
+  const learningWeekSuccessWithHintCount =
+    reviewPracticeLearningSummary?.week_success_with_hint_count ??
+    reviewPracticeLearningSummary?.success_with_hint_count ??
+    0;
+  const failedPracticeSession = reviewPracticeHistory.find(
+    (session) => (session.summary?.failed_count ?? 0) > 0,
+  );
+  const latestPracticeSession = reviewPracticeHistory[0] ?? null;
+  const failedPracticeSessionId =
+    failedPracticeSession?.session_id ?? failedPracticeSession?.summary?.session_id ?? null;
+  const latestPracticeSessionId =
+    latestPracticeSession?.session_id ?? latestPracticeSession?.summary?.session_id ?? null;
+  const availablePracticePositionCount =
+    reviewPracticeState?.active && reviewPracticeState.items.length > 0
+      ? reviewPracticeState.items.length
+      : practiceAvailable
+        ? review?.moments.length ?? 0
+        : 0;
+  const trainingPrimaryLabel = reviewPracticeState?.active
+    ? "Reprendre"
+    : learningDueCount > 0
+      ? "Réviser"
+    : practiceAvailable
+      ? "Commencer"
+      : reviewAnalysisInProgress
+        ? "Analyse en cours"
+        : reviewContextAvailable
+          ? "Voir la Review"
+          : "Importer une partie";
+  const trainingPrimaryDisabled = reviewAnalysisInProgress && !reviewContextAvailable;
+  const trainingPlanStatus = reviewPracticeState?.active
+    ? "Session Practice en cours"
+    : learningDueCount > 0
+      ? `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} à consolider`
+    : practiceAvailable
+      ? `${availablePracticePositionCount} position${availablePracticePositionCount > 1 ? "s" : ""} prête${availablePracticePositionCount > 1 ? "s" : ""}`
+      : reviewAnalysisInProgress
+        ? "Analyse en cours"
+        : reviewContextAvailable
+          ? "Review à ouvrir"
+          : "profil en construction";
+  const trainingPlanDetail = reviewPracticeState?.active
+    ? "Reprends la session en cours avant de changer de tâche."
+    : learningDueCount > 0
+      ? "Commence par les positions qui reviennent aujourd'hui."
+    : practiceAvailable
+      ? "Commence une session courte depuis les positions de la Review."
+      : reviewAnalysisInProgress
+        ? "Le plan du jour apparaîtra quand la Review sera stabilisée."
+        : reviewContextAvailable
+          ? "Ouvre la Review pour transformer les moments clés en Practice."
+          : "Le plan sera disponible après une Review analysée.";
+  const failedPositionsLabel = practiceHistoryFailedCount > 0
+    ? `${practiceHistoryFailedCount} position${practiceHistoryFailedCount > 1 ? "s" : ""}`
+    : practiceHistorySessionCount > 0
+      ? "aucune ratée récente"
+      : "profil en construction";
+  const failedPositionsDetail = practiceHistoryFailedCount > 0
+    ? "Revois uniquement les positions ratées dans les sessions Practice existantes."
+    : practiceHistorySessionCount > 0
+      ? "Les dernières sessions ne contiennent pas de ratée à retravailler."
+      : "Les positions ratées apparaîtront après une session Practice.";
+  const failedPositionsActionLabel = practiceHistoryFailedCount > 0 ? "Revoir" : "Voir";
+  const canOpenFailedPositions = Boolean(
+    reviewPracticeState?.active || failedPracticeSessionId || latestPracticeSessionId,
+  );
+  const revisionsStatus = learningDueCount > 0
+    ? `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} prête${learningDueCount > 1 ? "s" : ""}`
+    : learningScheduledCount > 0
+      ? `${learningScheduledCount} position${learningScheduledCount > 1 ? "s" : ""} planifiée${learningScheduledCount > 1 ? "s" : ""}`
+      : practiceHistorySessionCount > 0
+        ? "pas encore de révision due"
+        : "profil en construction";
+  const revisionsDetail = learningDueCount > 0
+    ? "Revois les positions revenues au bon moment."
+    : learningScheduledCount > 0
+      ? "Les positions travaillées reviendront au bon moment."
+      : practiceHistorySessionCount > 0
+        ? "Continue Practice : les révisions apparaîtront après les prochains exercices."
+        : "Disponible après quelques exercices.";
+  const canOpenDueRevisions = Boolean(gameId && learningDueCount > 0);
+  const todayHero: {
+    kicker: string;
+    title: string;
+    detail: string;
+    label: string;
+    action: TodayHeroAction;
+    disabled?: boolean;
+  } = reviewPracticeState?.active
+    ? {
+        kicker: "Session en cours",
+        title: "Reprendre ton entraînement",
+        detail:
+          "Une session Practice est active. Reprends-la avant d'ajouter une nouvelle décision.",
+        label: "Reprendre Practice",
+        action: "practice",
+      }
+    : learningDueCount > 0
+      ? {
+          kicker: "Révisions prêtes",
+          title: `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} à consolider`,
+          detail:
+            "Commence par les positions qui reviennent aujourd'hui, puis poursuis la Review si besoin.",
+          label: "Réviser",
+          action: "revision",
+        }
+    : reviewReady
+      ? {
+          kicker: "Review prête",
+          title: "Ta Review est prête",
+          detail:
+            "Commence par comprendre les moments clés, puis passe à l'entraînement.",
+          label: "Voir la Review",
+          action: "review",
+        }
+      : reviewAnalysisInProgress
+        ? {
+            kicker: "Analyse en cours",
+            title: "Analyse en cours",
+            detail:
+              "La Review se prépare. Garde le cap, le résumé apparaîtra dès que les données seront stabilisées.",
+            label: "Analyse en cours",
+            action: "wait",
+            disabled: true,
+          }
+        : gameId && canRequestReview
+          ? {
+              kicker: "Partie prête",
+              title: "Construisons ta Review",
+              detail:
+                "Cette partie peut entrer dans la boucle Review puis Practice.",
+              label: "Voir la Review",
+              action: "review",
+            }
+          : {
+              kicker: "Profil en construction",
+              title: "Construisons ton profil",
+              detail:
+                "Importe une partie réelle pour lancer la boucle Review puis Practice.",
+              label: "Importer une partie",
+              action: "import",
+            };
+  const latestReviewText = review
+    ? review.status === "done" || review.status === "completed"
+      ? "Review prête"
+      : review.status === "partial"
+        ? "Review partielle"
+        : "Review en construction"
+    : gameId
+      ? "Partie sélectionnée, Review à construire"
+      : "profil en construction";
+  const weeklyProgressText = reviewPracticeHistoryLoading
+    ? "chargement..."
+    : learningWeekPositionCount > 0
+      ? `${learningWeekPositionCount} position${learningWeekPositionCount > 1 ? "s" : ""} travaillée${learningWeekPositionCount > 1 ? "s" : ""} · ${learningWeekSuccessWithoutHelpCount} sans aide · ${learningWeekSuccessWithHintCount} avec indice`
+      : "profil en construction";
+  const reviewQueueText = reviewPracticeState?.active
+    ? "Session Practice en cours"
+    : learningDueCount > 0
+      ? `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} prête${learningDueCount > 1 ? "s" : ""} à consolider`
+      : learningScheduledCount > 0
+        ? `${learningScheduledCount} position${learningScheduledCount > 1 ? "s" : ""} ${learningScheduledCount > 1 ? "reviendront" : "reviendra"} au bon moment`
+    : availablePracticePositionCount > 0
+      ? `${availablePracticePositionCount} position${availablePracticePositionCount > 1 ? "s" : ""} issue${availablePracticePositionCount > 1 ? "s" : ""} de la Review`
+      : "profil en construction";
+
+  function handleTodayPrimaryAction() {
+    if (todayHero.action === "wait") {
+      return;
+    }
+    if (todayHero.action === "practice") {
+      openReviewContext("today");
+      setReviewFocusKey("practice");
+      return;
+    }
+    if (todayHero.action === "revision") {
+      openReviewContext("today");
+      setReviewFocusKey("practice");
+      void startDueReviewPractice();
+      return;
+    }
+    if (todayHero.action === "review") {
+      openReviewContext("today");
+      return;
+    }
+    openGamesPanel("import");
+  }
+
+  function handleTrainingPrimaryAction() {
+    if (trainingPrimaryDisabled) {
+      return;
+    }
+    if (reviewPracticeState?.active) {
+      openReviewContext("training");
+      setReviewFocusKey("practice");
+      return;
+    }
+    if (learningDueCount > 0) {
+      openReviewContext("training");
+      setReviewFocusKey("practice");
+      void startDueReviewPractice();
+      return;
+    }
+    if (practiceAvailable) {
+      openReviewContext("training");
+      setReviewFocusKey("practice");
+      void handleStartReviewPractice();
+      return;
+    }
+    if (reviewContextAvailable) {
+      openReviewContext("training");
+      return;
+    }
+    openGamesPanel("import");
+  }
+
+  function handleTrainingFailedPositionsAction() {
+    if (reviewPracticeState?.active) {
+      openReviewContext("training");
+      setReviewFocusKey("practice");
+      return;
+    }
+    if (failedPracticeSessionId) {
+      openReviewContext("training");
+      setReviewFocusKey("practice");
+      void retryFailedPracticeSession(failedPracticeSessionId);
+      return;
+    }
+    if (latestPracticeSessionId) {
+      openReviewContext("training");
+      setReviewFocusKey("practice");
+      void viewPracticeSessionSummary(latestPracticeSessionId);
+    }
+  }
+
+  function handleTrainingRevisionsAction() {
+    if (!canOpenDueRevisions) {
+      return;
+    }
+    openReviewContext("training");
+    setReviewFocusKey("practice");
+    void startDueReviewPractice();
+  }
+
   return (
-    <main className="app">
+    <main className={`app app-shell-page-${activeShellPage}${activeTab === "review" ? " app-shell-review-open" : ""}`}>
       <header className="topbar app-header">
         <div className="app-logo-stack app-brand">
           <NeuroChessLogo
@@ -3797,30 +4163,34 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             <p>{statusText}</p>
           </div>
         </div>
-        <div className="actions app-header-actions">
-          <button onClick={handleNewGame} disabled={busy !== "idle"}>
-            Nouvelle partie
+        <nav className="app-shell-nav" aria-label="Navigation principale">
+          <button
+            type="button"
+            className={activeShellPage === "today" && activeTab !== "review" ? "active" : ""}
+            aria-current={activeShellPage === "today" && activeTab !== "review" ? "page" : undefined}
+            onClick={() => openShellPage("today")}
+          >
+            Aujourd'hui
           </button>
           <button
-            onClick={handleFinishGame}
-            disabled={!gameId || busy !== "idle" || isGameCompleted}
+            type="button"
+            className={activeShellPage === "games" && activeTab !== "review" ? "active" : ""}
+            aria-current={activeShellPage === "games" && activeTab !== "review" ? "page" : undefined}
+            onClick={() => openShellPage("games")}
           >
-            Terminer partie
+            Mes parties
           </button>
           <button
-            className={!canRequestReview ? "header-primary-action" : undefined}
-            onClick={() => setActiveTab("import")}
+            type="button"
+            className={activeShellPage === "training" && activeTab !== "review" ? "active" : ""}
+            aria-current={activeShellPage === "training" && activeTab !== "review" ? "page" : undefined}
+            onClick={() => openShellPage("training")}
           >
-            Importer PGN
+            Entraînement
           </button>
-          <button
-            onClick={() => {
-              setActiveTab("history");
-              void loadHistory();
-            }}
-          >
-            Voir l'historique
-          </button>
+        </nav>
+        <div className="app-header-tools">
+          <span className="profile-status">Profil en construction</span>
           <label className="evaluation-toggle">
             <input
               type="checkbox"
@@ -3829,15 +4199,6 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             />
             Masquer l'évaluation
           </label>
-          {canRequestReview && (
-            <button
-              className="header-primary-action"
-              onClick={() => handleReview()}
-              disabled={reviewLoading || reviewUiBusy}
-            >
-              Voir la review
-            </button>
-          )}
         </div>
       </header>
 
@@ -3865,6 +4226,122 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         </div>
       )}
 
+      {activeTab !== "review" && activeShellPage === "today" && (
+        <section className="plan2-page today-page" aria-labelledby="today-title">
+          <div className="plan2-hero">
+            <span className="plan2-kicker">{todayHero.kicker}</span>
+            <h1 id="today-title">Aujourd'hui</h1>
+            <strong className="plan2-hero-title">{todayHero.title}</strong>
+            <p>{todayHero.detail}</p>
+            <button
+              type="button"
+              className="plan2-primary-action"
+              onClick={handleTodayPrimaryAction}
+              disabled={todayHero.disabled === true}
+            >
+              {todayHero.label}
+            </button>
+          </div>
+          <div className="plan2-card-grid">
+            <article className="plan2-card">
+              <span>Dernière Review</span>
+              <strong>{latestReviewText}</strong>
+              <p>
+                {reviewContextAvailable
+                  ? "Ouvre la Review pour comprendre les moments clés ou poursuivre Practice."
+                  : "Importe une partie pour créer ta première Review."}
+              </p>
+            </article>
+            <article className="plan2-card">
+              <span>Progression cette semaine</span>
+              <strong>{weeklyProgressText}</strong>
+              <p>
+                {learningWeekPositionCount > 0
+                  ? "Compteurs issus des tentatives Practice réelles."
+                  : "Commence avec une Review pour construire ta progression."}
+              </p>
+            </article>
+            <article className="plan2-card">
+              <span>À revoir</span>
+              <strong>{reviewQueueText}</strong>
+              <p>
+                {learningDueCount > 0
+                  ? "Ces positions sont prêtes à être consolidées."
+                  : learningScheduledCount > 0
+                    ? "Les positions ratées reviendront au bon moment."
+                    : practiceHistoryFailedCount > 0
+                      ? `${practiceHistoryFailedCount} position${practiceHistoryFailedCount > 1 ? "s" : ""} ratée${practiceHistoryFailedCount > 1 ? "s" : ""} à retravailler.`
+                      : "Disponible après quelques exercices."}
+              </p>
+            </article>
+          </div>
+        </section>
+      )}
+
+      {activeTab !== "review" && activeShellPage === "training" && (
+        <section className="plan2-page training-page" aria-labelledby="training-title">
+          <div className="plan2-hero compact">
+            <span className="plan2-kicker">Session recommandée</span>
+            <h1 id="training-title">Entraînement</h1>
+            <p>
+              V1 reste volontairement simple : un plan du jour, les positions
+              ratées et les révisions, sans mode supplémentaire.
+            </p>
+            <button
+              type="button"
+              className="plan2-primary-action"
+              onClick={handleTrainingPrimaryAction}
+              disabled={trainingPrimaryDisabled}
+            >
+              {trainingPrimaryLabel}
+            </button>
+          </div>
+          <div className="plan2-card-grid training-grid">
+            <article className="plan2-card">
+              <span>Plan du jour</span>
+              <strong>{trainingPlanStatus}</strong>
+              <p>{trainingPlanDetail}</p>
+              <span className="training-card-cta">{trainingPrimaryLabel}</span>
+            </article>
+            <article className="plan2-card">
+              <span>Mes positions ratées</span>
+              <strong>{failedPositionsLabel}</strong>
+              <p>{failedPositionsDetail}</p>
+              {canOpenFailedPositions ? (
+                <button
+                  type="button"
+                  className="plan2-secondary-action"
+                  onClick={handleTrainingFailedPositionsAction}
+                >
+                  {failedPositionsActionLabel}
+                </button>
+              ) : (
+                <span className="training-card-cta muted">
+                  {learningScheduledCount > 0 ? "À venir" : "Profil en construction"}
+                </span>
+              )}
+            </article>
+            <article className="plan2-card">
+              <span>Révisions</span>
+              <strong>{revisionsStatus}</strong>
+              <p>{revisionsDetail}</p>
+              {canOpenDueRevisions ? (
+                <button
+                  type="button"
+                  className="plan2-secondary-action"
+                  onClick={handleTrainingRevisionsAction}
+                >
+                  Réviser
+                </button>
+              ) : (
+                <span className="training-card-cta muted">Profil en construction</span>
+              )}
+            </article>
+          </div>
+        </section>
+      )}
+
+      {(activeTab === "review" || activeShellPage === "games") && (
       <section className="analysis-layout">
         <EvaluationBar
           evaluation={evaluationBarState.evaluation}
@@ -3935,60 +4412,108 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         </section>
 
         <aside className="right-panel">
-          <div className="tabs" role="tablist" aria-label="Panneau de partie">
-            <button
-              id="tab-moves"
-              role="tab"
-              aria-selected={activeTab === "moves"}
-              aria-controls="panel-moves"
-              onClick={() => setActiveTab("moves")}
-            >
-              Coups
-            </button>
-            {reviewTabVisible && (
+          {activeTab === "review" ? (
+            <div className="review-context-header">
+              <div>
+                <span>Review contextuelle</span>
+                <strong>Review</strong>
+              </div>
               <button
-                id="tab-review"
-                role="tab"
-                aria-selected={activeTab === "review"}
-                aria-controls="panel-review"
-                onClick={() => setActiveTab("review")}
+                type="button"
+                className="secondary"
+                onClick={() => {
+                  if (activeShellPage === "training") {
+                    openShellPage("training");
+                    return;
+                  }
+                  if (activeShellPage === "today") {
+                    openShellPage("today");
+                    return;
+                  }
+                  openGamesPanel("history");
+                }}
               >
-                Review
+                {activeShellPage === "training"
+                  ? "Retour entraînement"
+                  : activeShellPage === "today"
+                    ? "Retour aujourd'hui"
+                    : "Retour aux parties"}
               </button>
-            )}
-            <button
-              id="tab-import"
-              role="tab"
-              aria-selected={activeTab === "import"}
-              aria-controls="panel-import"
-              onClick={() => setActiveTab("import")}
-            >
-              Import PGN
-            </button>
-            <button
-              id="tab-history"
-              role="tab"
-              aria-selected={activeTab === "history"}
-              aria-controls="panel-history"
-              onClick={() => {
-                setActiveTab("history");
-                void loadHistory();
-              }}
-            >
-              Historique
-            </button>
-            {import.meta.env.DEV && (
+            </div>
+          ) : (
+            <>
+              <div className="games-page-actions" aria-label="Actions Mes parties">
+                <div>
+                  <span>Mes parties</span>
+                  <strong>Importer, analyser ou revoir</strong>
+                </div>
+                <button type="button" onClick={() => openGamesPanel("import")}>
+                  Importer PGN
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => openGamesPanel("history")}
+                >
+                  Voir historique
+                </button>
+              </div>
+              <div className="tabs" role="tablist" aria-label="Panneau Mes parties">
+                <button
+                  id="tab-moves"
+                  role="tab"
+                  aria-selected={activeTab === "moves"}
+                  aria-controls="panel-moves"
+                  onClick={() => setActiveTab("moves")}
+                >
+                  Coups
+                </button>
+                <button
+                  id="tab-import"
+                  role="tab"
+                  aria-selected={activeTab === "import"}
+                  aria-controls="panel-import"
+                  onClick={() => setActiveTab("import")}
+                >
+                  Import PGN
+                </button>
+                <button
+                  id="tab-history"
+                  role="tab"
+                  aria-selected={activeTab === "history"}
+                  aria-controls="panel-history"
+                  onClick={() => {
+                    setActiveTab("history");
+                    void loadHistory();
+                  }}
+                >
+                  Historique
+                </button>
+                {import.meta.env.DEV && (
+                  <button
+                    id="tab-info"
+                    role="tab"
+                    aria-selected={activeTab === "info"}
+                    aria-controls="panel-info"
+                    onClick={() => setActiveTab("info")}
+                  >
+                    Infos
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {import.meta.env.DEV && activeTab === "review" && (
               <button
                 id="tab-info"
-                role="tab"
-                aria-selected={activeTab === "info"}
-                aria-controls="panel-info"
+                type="button"
+                className="debug-tab-link"
                 onClick={() => setActiveTab("info")}
               >
                 Infos
               </button>
-            )}
-          </div>
+          )}
 
           <section
             id="panel-moves"
@@ -4016,7 +4541,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             <section
               id="panel-review"
               role="tabpanel"
-              aria-labelledby="tab-review"
+              aria-label="Review contextuelle"
               hidden={activeTab !== "review"}
               className="tab-panel"
             >
@@ -4435,6 +4960,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
           )}
         </aside>
       </section>
+      )}
     </main>
   );
 }
@@ -5405,6 +5931,13 @@ function currentPracticeItem(
     return null;
   }
   return state.items[state.currentIndex] ?? null;
+}
+
+function practiceTimeSpentMs(state: ReviewPracticeState): number | null {
+  if (!state.itemStartedAt) {
+    return null;
+  }
+  return Math.max(0, Date.now() - state.itemStartedAt);
 }
 
 function reviewIsCompletedForPractice(review: ReviewResponse | null): boolean {

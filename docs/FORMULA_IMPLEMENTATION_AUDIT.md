@@ -134,7 +134,8 @@ technical details, or legacy compatibility.
 | `tail_mean_topk_v1` | Mean of top diagnostic losses; current docs say top 10% with min 3 behavior. | `metrics/review_metrics.py neuro_diagnostic_score` | `tail_count = min(max(3, ceil(0.10*n)), n)` for diagnostic and win losses. | yes | info | debug/details | no | Avoid CVaR naming in UI; add bootstrap CI later. | No `CVaR_90` implementation found. |
 | `domain_scores_v1` | Future Bayesian domain estimates; visible only when data sufficient. | No backend skill model; frontend heuristics in `neuroBrainVisualModel.ts`, `NeuroFlowPanel.tsx`, `reviewViewModel.ts`. | Domain visuals score opening/tactical/conversion/defense/plan via counts/loss heuristics. | no for future target | high | yes | indirect | Move visible domain scores to qualitative/status display or mark as heuristic until calibrated. | NeuroMonitor 3D shows `/100` domain scores. |
 | `domain_calculation_score_v1` | Research/planned, requires candidate logs. | No calibrated calculation score found. | No candidate-log model; some plan/positional heuristics exist in UI. | yes as unimplemented | info | no | no | Keep unimplemented until candidate logs exist. | Calculation score is not currently exposed as a normal domain. |
-| `practice_result_event_v1` | Event with item/session/result/move/time/hint/reveal/attempt/difficulty/context. | `review_practice_service.py`, `api/game_routes.py`, `api/client.ts`, `App.tsx`. | Stores session_id, game_id, ply, color, attempted_uci/san, expected_best_uci, result, attempt_number, evidence_snapshot_json, created_at. | partial | medium | yes | yes future | Add time_spent, hint_used, reveal_used, item_difficulty, source_context in a future logging mission. | Current event is good foundation but incomplete for BKT/IRT/FSRS. |
+| `practice_result_event_v1` | Event with item/session/result/move/time/hint/reveal/attempt/difficulty/context. | `review_practice_service.py`, `api/game_routes.py`, `api/client.ts`, `App.tsx`. | Stores session_id, game_id, ply, color, attempted_uci/san, expected_best_uci, result, attempt_number, evidence_snapshot_json, item_id, time_spent_ms, hint_used, reveal_used, source_context, due_at, created_at. | implemented_v1 | medium | yes | yes future | Keep item_difficulty and self_confidence future-only until needed. | Current event supports V1 learning loop but remains not a skill diagnosis. |
+| `revision_due_simple_v1` | Simple V1 scheduling from latest Practice result per item. | `review_practice_service.py`, `api/client.ts`, `App.tsx`. | Computes due/scheduled counts and due Review Practice sessions from result, hint/reveal flags, and due_at. | implemented_v1 | medium | yes | yes | Keep plain counts only; do not expose FSRS/ETV/SkillTrace or mastery. | Useful V1 bridge, not a calibrated memory model. |
 | `transfer_gap_beta_v1` | Future Bayesian train vs practical posterior gap. | No implementation or placeholder found. | Not present. | yes as future/unimplemented | info | no | no | None now; introduce only with corpus and uncertainty. | No false Transfer Gap UI found. |
 | `priority_score_additive_v1` | Future additive ranking over criticality, weakness, transfer, difficulty, memory, information, fatigue, redundancy. | No ETV implementation; `review_practice_service._practice_item_sort_key` exists. | Current Practice sort uses primary/tag priority, coach_priority_rank, `-win_loss`, ply. | partial/future | medium | no | yes | Do not call current sort ETV; later replace or wrap with additive priority once calibrated. | Current sort is simple and auditable. |
 | `expected_training_value_additive_v1` | Future additive item usefulness score. | No implementation found. | Not present. | yes as future/unimplemented | info | no | no | None now. | No multiplicative ETV found. |
@@ -272,19 +273,20 @@ Current attempt storage covers:
 - expected best move;
 - session/game/ply/color;
 - evidence snapshot;
+- item id;
+- time spent;
+- hint/reveal flags;
+- source context;
+- due_at;
 - created timestamp.
 
-Missing for future `practice_result_event_v1`:
+Remaining future fields for `practice_result_event_v1`:
 
-- time spent;
-- hint used;
-- reveal used;
 - item difficulty;
-- explicit source context field;
 - optional self-confidence.
 
-Risk: medium. The current event is enough for basic Practice summaries, but not
-enough for future BKT/IRT/FSRS/Learning Engine calibration.
+Risk: medium. The V1 event now supports simple revisions and compact progress,
+but it is still not enough for future BKT/IRT/FSRS/Learning Engine calibration.
 
 ### Accepted moves
 

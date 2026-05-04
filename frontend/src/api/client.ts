@@ -417,7 +417,12 @@ export type OpeningRealityEvidence = {
 
 export type ReviewPracticePov = "user" | "white" | "black" | "both" | string;
 
-export type ReviewPracticeScope = "top_priority" | "all_to_review" | string;
+export type ReviewPracticeScope =
+  | "top_priority"
+  | "all_to_review"
+  | "retry_failed"
+  | "due_review"
+  | string;
 
 export type ReviewPracticeResult =
   | "best"
@@ -487,6 +492,11 @@ export type ReviewPracticeSummary = {
   retry_failed_available?: boolean;
   failed_plies?: number[];
   failed_count?: number;
+  success_without_help_count?: number;
+  success_with_hint_count?: number;
+  due_count?: number;
+  scheduled_count?: number;
+  next_due_at?: string | null;
   result_by_ply?: Record<string, ReviewPracticeResult>;
   attempt_feedback?: ReviewPracticeAttemptFeedback | null;
   latest_attempt?: Partial<ReviewPracticeAttempt> | null;
@@ -515,6 +525,12 @@ export type ReviewPracticeAttempt = {
   expected_best_uci?: string | null;
   result: ReviewPracticeResult;
   attempt_number: number;
+  item_id?: string | null;
+  time_spent_ms?: number | null;
+  hint_used?: boolean;
+  reveal_used?: boolean;
+  source_context?: string | null;
+  due_at?: string | null;
   created_at: string;
 };
 
@@ -541,7 +557,28 @@ export type ReviewPracticeSessionListItem = Omit<
 
 export type ReviewPracticeSessionListResponse = {
   game_id: number;
+  learning_summary?: ReviewPracticeLearningSummary | null;
   sessions: ReviewPracticeSessionListItem[];
+};
+
+export type ReviewPracticeLearningSummary = {
+  game_id: number;
+  schema_version: string;
+  session_count: number;
+  practice_event_count: number;
+  positions_worked_count: number;
+  week_positions_worked_count?: number;
+  week_success_without_help_count?: number;
+  week_success_with_hint_count?: number;
+  week_failed_count?: number;
+  week_revealed_count?: number;
+  success_without_help_count: number;
+  success_with_hint_count: number;
+  failed_count: number;
+  revealed_count: number;
+  due_count: number;
+  scheduled_count: number;
+  next_due_at?: string | null;
 };
 
 export type ReviewResponse = {
@@ -1250,6 +1287,26 @@ export function getReviewPracticeSessions(
   );
 }
 
+export function startDueReviewPracticeSession(
+  gameId: number,
+  options: {
+    pov?: ReviewPracticePov;
+    maxItems?: number;
+  } = {},
+): Promise<ReviewPracticeSessionResponse> {
+  return request<ReviewPracticeSessionResponse>(
+    `/games/${gameId}/review/practice/revisions`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        pov: options.pov ?? "user",
+        scope: "due_review",
+        max_items: options.maxItems ?? 5,
+      }),
+    },
+  );
+}
+
 export function getReviewPracticeSession(
   sessionId: number | string,
 ): Promise<ReviewPracticeSessionResponse> {
@@ -1264,18 +1321,38 @@ export function recordReviewPracticeAttempt(
     ply: number;
     attemptedUci?: string | null;
     result?: ReviewPracticeResult | null;
+    timeSpentMs?: number | null;
+    hintUsed?: boolean;
+    revealUsed?: boolean;
+    sourceContext?: string | null;
   },
 ): Promise<ReviewPracticeSummary> {
   const body: {
     ply: number;
     attempted_uci: string | null;
     result?: ReviewPracticeResult | null;
+    time_spent_ms?: number | null;
+    hint_used?: boolean;
+    reveal_used?: boolean;
+    source_context?: string | null;
   } = {
     ply: payload.ply,
     attempted_uci: payload.attemptedUci ?? null,
   };
   if (payload.result !== undefined) {
     body.result = payload.result;
+  }
+  if (payload.timeSpentMs !== undefined) {
+    body.time_spent_ms = payload.timeSpentMs;
+  }
+  if (payload.hintUsed !== undefined) {
+    body.hint_used = payload.hintUsed;
+  }
+  if (payload.revealUsed !== undefined) {
+    body.reveal_used = payload.revealUsed;
+  }
+  if (payload.sourceContext !== undefined) {
+    body.source_context = payload.sourceContext;
   }
   return request<ReviewPracticeSummary>(
     `/review/practice/sessions/${sessionId}/attempts`,

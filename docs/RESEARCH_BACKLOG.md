@@ -18,14 +18,17 @@ Promotion requires:
 
 - research_id: `research.neuromonitor_3d_full`
 - title: NeuroMonitor 3D full version
+- status: RESEARCH / not V1 / not user-facing
 - description: Rich visual identity for understanding progress and cognitive
   patterns in a spatial view.
 - potential_value: strong product identity and memorable progression surface.
-- why_not_now: validate simpler 2D/structured feedback first.
+- why_not_now: Plan1 says "Neuro" is a metaphor, not direct measurement; Plan2
+  prioritizes a calm, actionable Review over spectacular visuals.
 - dependencies: stable domain metrics, screen contracts, calibrated signals.
 - possible_version: future after 2D validation.
-- risk_level: medium
-- notes: visual identity only after metrics are honest.
+- risk_level: high
+- notes: removed from V1 normal UI on 2026-05-03; any future version needs an
+  explicit product decision, user testing, calibrated signals, and careful copy.
 
 ### 2. Plan Score
 

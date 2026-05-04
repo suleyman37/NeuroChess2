@@ -978,6 +978,51 @@ def _apply_v5_3_d2_review_practice_session_items(connection: sqlite3.Connection)
     )
 
 
+def _apply_v5_5_learning_loop_practice_event_fields(connection: sqlite3.Connection) -> None:
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "item_id",
+        "TEXT NULL",
+    )
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "time_spent_ms",
+        "INTEGER NULL",
+    )
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "hint_used",
+        "INTEGER NOT NULL DEFAULT 0",
+    )
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "reveal_used",
+        "INTEGER NOT NULL DEFAULT 0",
+    )
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "source_context",
+        "TEXT NOT NULL DEFAULT 'review_practice'",
+    )
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "due_at",
+        "TEXT NULL",
+    )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_review_practice_attempts_game_due
+        ON review_practice_attempts(game_id, due_at)
+        """
+    )
+
+
 MIGRATIONS: tuple[tuple[str, MigrationBody], ...] = (
     (
         "0001_v0_schema",
@@ -1093,6 +1138,10 @@ MIGRATIONS: tuple[tuple[str, MigrationBody], ...] = (
     (
         "0017_v5_3_d2_review_practice_session_items",
         _apply_v5_3_d2_review_practice_session_items,
+    ),
+    (
+        "0018_v5_5_learning_loop_practice_event_fields",
+        _apply_v5_5_learning_loop_practice_event_fields,
     ),
 )
 

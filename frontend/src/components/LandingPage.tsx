@@ -1,10 +1,5 @@
 import type { MouseEvent } from "react";
 import { NeuroChessLogo } from "./NeuroChessLogo";
-import {
-  NeuroMonitorBrain,
-  type NeuroMonitorDomain,
-  type NeuroMonitorSignal,
-} from "./NeuroMonitorBrain";
 
 type LandingPageProps = {
   onNavigateApp?: () => void;
@@ -13,109 +8,43 @@ type LandingPageProps = {
 
 const featureCards = [
   {
-    title: "Review Coach",
-    text: "Une leçon guidée qui montre le moment où la partie bascule.",
+    title: "Review coach",
+    text: "Un resume clair, trois moments cles et une suite d'apprentissage.",
   },
   {
     title: "NeuroScore",
-    text: "Un score lisible qui relie qualité moyenne et impact réel.",
+    text: "Un score coach lisible, separe de la precision de reference.",
   },
   {
-    title: "Practice Mode",
-    text: "Transformez les erreurs de votre partie en exercices immédiats.",
+    title: "Practice Review",
+    text: "Les erreurs de tes parties deviennent des positions a rejouer.",
   },
   {
-    title: "Opening Reality",
-    text: "Voyez où vous sortez du livre et ce qui arrive juste après.",
+    title: "Import PGN",
+    text: "Colle une partie ou importe tes PGN pour lancer une Review.",
   },
   {
-    title: "PV Contrast",
-    text: "Comparez la ligne après votre coup et la ligne de la solution.",
-  },
-  {
-    title: "Coach IA ready",
-    text: "Préparé pour un futur coach basé sur preuves, sans hallucination libre.",
+    title: "Stockfish local",
+    text: "Le moteur calcule, l'interface traduit l'analyse en action.",
   },
 ];
 
 const methodCards = [
   {
-    title: "Win% plutôt que centipions",
-    text: "NeuroChess raisonne en impact sur vos chances, pas seulement en centipions bruts.",
+    title: "Win% plutot que centipions",
+    text: "NeuroChess raisonne en chances perdues pour garder le diagnostic lisible.",
   },
   {
-    title: "Transfer Gap",
-    text: "Le but est de lire l'écart entre ce que vous trouvez à l'entraînement et ce qui sort en partie.",
+    title: "Moments prioritaires",
+    text: "La Review met en avant ce qui explique vraiment la partie.",
   },
   {
-    title: "Evidence JSON",
-    text: "Chaque explication future peut s'ancrer dans la position, le coup joué, la solution, la ligne et votre tentative.",
+    title: "Essayer avant de voir",
+    text: "L'entrainement privilegie la tentative, puis le feedback utile.",
   },
   {
-    title: "Pas de magie noire",
-    text: "Stockfish calcule. NeuroChess structure. Le coach explique.",
-  },
-];
-
-const homeMonitorDomains: NeuroMonitorDomain[] = [
-  {
-    key: "opening",
-    label: "Ouverture",
-    tone: "analysis",
-    intensity: 0.48,
-    summary: "sortie du livre suivie",
-  },
-  {
-    key: "tactical",
-    label: "Tactique",
-    tone: "watch",
-    intensity: 0.72,
-    summary: "charge active",
-  },
-  {
-    key: "conversion",
-    label: "Conversion",
-    tone: "stable",
-    intensity: 0.42,
-    summary: "contrôle correct",
-  },
-  {
-    key: "defense",
-    label: "Défense",
-    tone: "critical",
-    intensity: 0.82,
-    summary: "zone de vigilance",
-  },
-];
-
-const homeMonitorSignals: NeuroMonitorSignal[] = [
-  {
-    key: "stability",
-    label: "Stabilité",
-    value: "élevée",
-    tone: "stable",
-    intensity: 0.68,
-  },
-  {
-    key: "tension",
-    label: "Tension",
-    value: "moyenne",
-    tone: "watch",
-    intensity: 0.58,
-  },
-  {
-    key: "tactical",
-    label: "Focus tactique",
-    value: "fort",
-    tone: "critical",
-    intensity: 0.78,
-  },
-  {
-    key: "sync",
-    label: "Synchronisation",
-    value: "78 %",
-    tone: "analysis",
-    intensity: 0.78,
+    title: "Progression sobre",
+    text: "Le produit garde les signaux avances hors de l'interface normale.",
   },
 ];
 
@@ -152,258 +81,212 @@ export function LandingPage({
             />
           </div>
           <div className="landing-nav-links" aria-label="Sections">
-            <a href="#features">Fonctionnalités</a>
-            <a href="#how-it-works">Comment ça marche</a>
-            <a href="#science">Méthode</a>
+            <a href="#features">Fonctionnalites</a>
+            <a href="#how-it-works">Parcours</a>
+            <a href="#science">Methode</a>
           </div>
           <div className="landing-nav-actions">
             <a className="landing-link-button" href="/app" onClick={handleAppClick}>
               Ouvrir l'app
             </a>
             <a className="landing-button landing-button-primary" href="/app" onClick={handleAppClick}>
-              Commencer - Gratuit
+              Commencer
             </a>
           </div>
         </div>
       </nav>
 
       <section className="landing-hero home-hero">
-        <NeuralHeroVisual />
+        <DecisionHeroVisual />
         <div className="landing-hero-content home-hero-content">
           <div className="landing-monitor-pill">
             <span className="landing-monitor-dot" aria-hidden="true" />
-            Neuro-Monitor actif · 4 axes décisionnels
+            Review guidee - entrainement depuis tes parties
           </div>
           <h1>
-            Jouez aux échecs
+            Comprends ta partie.
             <br />
-            avec votre{" "}
-            <span className="landing-gradient-text">cerveau entier</span>
+            Travaille le <span className="landing-gradient-text">prochain coup utile</span>.
           </h1>
           <p className="landing-hero-copy">
-            NeuroChess cartographie vos décisions et transforme vos vraies
-            parties en diagnostic d'entraînement : détectez vos failles, rejouez
-            vos moments clés et progressez avec un coach basé sur preuves.
+            NeuroChess transforme une vraie partie en Review calme, en moments
+            cles et en session Practice. Pas de tableau technique permanent :
+            une action utile a chaque etape.
           </p>
           <div className="landing-hero-actions">
             <a className="landing-button landing-button-primary" href="/app" onClick={handleAppClick}>
-              Essayer gratuitement
+              Importer une partie
             </a>
             <a className="landing-button landing-button-secondary" href="#how-it-works">
-              Voir comment ça marche
+              Voir le parcours
             </a>
           </div>
-          <div className="landing-stat-grid" aria-label="Capacités produit">
+          <div className="landing-stat-grid" aria-label="Capacites produit">
             <article>
-              <strong>4 axes</strong>
-              <span>Ouverture · Tactique · Conversion · Défense</span>
+              <strong>3 moments</strong>
+              <span>maximum dans le resume</span>
             </article>
             <article>
-              <strong>3-5 moments</strong>
-              <span>extraits de vos parties</span>
+              <strong>3 min</strong>
+              <span>lecture rapide cible</span>
             </article>
             <article>
-              <strong>Moteur local</strong>
-              <span>Stockfish sur votre machine</span>
+              <strong>8-12 min</strong>
+              <span>session Practice</span>
             </article>
             <article>
-              <strong>Practice</strong>
-              <span>entraînement depuis vos erreurs</span>
+              <strong>Local</strong>
+              <span>analyse Stockfish controlee</span>
             </article>
           </div>
-          <HomeNeuroMonitor />
         </div>
         <a className="landing-scroll-cue" href="#how-it-works">
-          Découvrir
+          Decouvrir
           <span aria-hidden="true" />
         </a>
       </section>
 
       <div className="home-continuum">
-      <section className="landing-section landing-steps home-section" id="how-it-works">
-        <p className="landing-kicker">Comment ça marche</p>
-        <h2>Quatre étapes vers la maîtrise de vos décisions</h2>
-        <div className="landing-step-grid">
-          <article>
-            <span>01</span>
-            <h3>Importez ou jouez</h3>
-            <p>Importez vos PGN Chess.com/Lichess ou jouez localement.</p>
-          </article>
-          <article>
-            <span>02</span>
-            <h3>Analysez</h3>
-            <p>NeuroChess construit une Review fiable avec Stockfish local.</p>
-          </article>
-          <article>
-            <span>03</span>
-            <h3>Comprenez</h3>
-            <p>Le coach identifie vos moments critiques par domaine.</p>
-          </article>
-          <article>
-            <span>04</span>
-            <h3>Entraînez-vous</h3>
-            <p>Rejouez les positions clés, tentez le bon coup, puis recommencez.</p>
-          </article>
-        </div>
-      </section>
-
-      <section className="landing-section home-section" id="features">
-        <p className="landing-kicker">Fonctionnalités</p>
-        <h2>Pas une autre accuracy. Un diagnostic d'entraînement.</h2>
-        <div className="landing-card-grid">
-          {featureCards.map(card => (
-            <article className="landing-card" key={card.title}>
-              <span className="landing-card-node" aria-hidden="true" />
-              <h3>{card.title}</h3>
-              <p>{card.text}</p>
+        <section className="landing-section landing-steps home-section" id="how-it-works">
+          <p className="landing-kicker">Parcours V1</p>
+          <h2>Une boucle courte : importer, comprendre, pratiquer.</h2>
+          <div className="landing-step-grid">
+            <article>
+              <span>01</span>
+              <h3>Importer</h3>
+              <p>Colle une partie PGN ou ouvre une partie deja enregistree.</p>
             </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-section landing-method home-section" id="science">
-        <p className="landing-kicker">Méthode</p>
-        <h2>La méthode : transformer chaque partie en preuve</h2>
-        <div className="landing-method-grid">
-          {methodCards.map(card => (
-            <article className="landing-card" key={card.title}>
-              <h3>{card.title}</h3>
-              <p>{card.text}</p>
+            <article>
+              <span>02</span>
+              <h3>Analyser</h3>
+              <p>Stockfish construit une Review fiable et versionnee.</p>
             </article>
-          ))}
-        </div>
-      </section>
+            <article>
+              <span>03</span>
+              <h3>Comprendre</h3>
+              <p>Le resume explique la partie avec trois moments maximum.</p>
+            </article>
+            <article>
+              <span>04</span>
+              <h3>Pratiquer</h3>
+              <p>Les positions utiles deviennent une session d'entrainement.</p>
+            </article>
+          </div>
+        </section>
 
-      <section className="landing-final-cta home-section">
-        <h2>Vos parties contiennent déjà votre programme d'entraînement.</h2>
-        <p>NeuroChess vous aide à l'extraire.</p>
-        <div className="landing-hero-actions">
-          <a className="landing-button landing-button-primary" href="/app" onClick={handleAppClick}>
-            Commencer gratuitement
-          </a>
-          <a className="landing-button landing-button-secondary" href="/app" onClick={handleAppClick}>
-            Ouvrir l'application
-          </a>
-        </div>
-      </section>
+        <section className="landing-section home-section" id="features">
+          <p className="landing-kicker">Fonctionnalites V1</p>
+          <h2>Une Review lisible avant tout.</h2>
+          <div className="landing-card-grid">
+            {featureCards.map((card) => (
+              <article className="landing-card" key={card.title}>
+                <span className="landing-card-node" aria-hidden="true" />
+                <h3>{card.title}</h3>
+                <p>{card.text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-section landing-method home-section" id="science">
+          <p className="landing-kicker">Methode</p>
+          <h2>Le moteur dit vrai. Le coach rend l'action claire.</h2>
+          <div className="landing-method-grid">
+            {methodCards.map((card) => (
+              <article className="landing-card" key={card.title}>
+                <h3>{card.title}</h3>
+                <p>{card.text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-final-cta home-section">
+          <h2>Tes parties contiennent deja ton prochain entrainement.</h2>
+          <p>NeuroChess t'aide a l'extraire sans t'ecraser sous les details.</p>
+          <div className="landing-hero-actions">
+            <a className="landing-button landing-button-primary" href="/app" onClick={handleAppClick}>
+              Commencer
+            </a>
+            <a className="landing-button landing-button-secondary" href="/app" onClick={handleAppClick}>
+              Ouvrir l'application
+            </a>
+          </div>
+        </section>
       </div>
 
       <footer className="landing-footer home-footer">
         <NeuroChessLogo href="/" onClick={handleHomeClick} variant="compact" />
         <nav aria-label="Navigation de pied de page">
-          <a href="#features">Fonctionnalités</a>
-          <a href="#how-it-works">Comment ça marche</a>
-          <a href="#science">Méthode</a>
+          <a href="#features">Fonctionnalites</a>
+          <a href="#how-it-works">Parcours</a>
+          <a href="#science">Methode</a>
           <a href="/app" onClick={handleAppClick}>Application</a>
         </nav>
         <p>
-          NeuroChess est un outil d'entraînement échiquéen basé sur analyse
-          moteur et données de jeu. Il ne fournit pas de mesure médicale ou
-          neurologique.
+          NeuroChess analyse des decisions et des parties d'echecs. Le nom est
+          une metaphore produit, pas une mesure medicale ou biologique.
         </p>
       </footer>
     </main>
   );
 }
 
-function HomeNeuroMonitor() {
+function DecisionHeroVisual() {
   return (
-    <div className="home-neuro-monitor" aria-label="Aperçu du Neuro-Monitor">
-      <NeuroMonitorBrain
-        concept
-        eyebrow="Neuro-Monitor"
-        title="Cerveau connecté à la partie"
-        subtitle="Aperçu visuel : les signaux s'activent autour des décisions clés."
-        modeLabel="Aperçu produit"
-        domains={homeMonitorDomains}
-        signals={homeMonitorSignals}
-        activeDomainKey="defense"
-        playedBranch={{
-          available: true,
-          label: "Coup joué",
-          preview: "ligne sous tension",
-          tone: "watch",
-          intensity: 0.64,
-        }}
-        solutionBranch={{
-          available: true,
-          visible: true,
-          label: "Solution",
-          preview: "ligne stabilisée",
-          tone: "stable",
-          intensity: 0.58,
-        }}
-      />
-    </div>
-  );
-}
-
-export function NeuralHeroVisual() {
-  return (
-    <div className="neural-visual" aria-hidden="true">
-      <div className="neural-visual-halo" />
-      <div className="neural-visual-orbit neural-visual-orbit-one" />
-      <div className="neural-visual-orbit neural-visual-orbit-two" />
-      <svg className="neural-visual-map" viewBox="0 0 900 620" role="img">
+    <div className="decision-visual" aria-hidden="true">
+      <div className="decision-visual-halo" />
+      <svg className="decision-visual-map" viewBox="0 0 900 620" role="img">
         <defs>
-          <radialGradient id="neuralCore" cx="50%" cy="45%" r="56%">
-            <stop offset="0%" stopColor="#69f5ff" stopOpacity="0.78" />
-            <stop offset="42%" stopColor="#336dff" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="#050713" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="neuralStroke" x1="0%" x2="100%" y1="0%" y2="100%">
+          <linearGradient id="decisionLine" x1="0%" x2="100%" y1="0%" y2="100%">
             <stop offset="0%" stopColor="#00e5ff" />
             <stop offset="55%" stopColor="#3480ff" />
-            <stop offset="100%" stopColor="#8b5cf6" />
+            <stop offset="100%" stopColor="#30f2a4" />
           </linearGradient>
         </defs>
+        <g className="decision-board">
+          {Array.from({ length: 16 }).map((_, index) => {
+            const x = 292 + (index % 4) * 72;
+            const y = 178 + Math.floor(index / 4) * 72;
+            return <rect key={index} x={x} y={y} width="72" height="72" />;
+          })}
+        </g>
         <path
-          className="neural-brain-mass"
-          d="M186 330C156 222 242 128 354 146c42-58 155-58 207 2 118-8 196 86 174 194-19 92-112 148-220 124-50 54-157 52-204-2-70 12-111-34-125-134Z"
-          fill="url(#neuralCore)"
+          className="decision-path decision-path-main"
+          d="M184 438 C268 326 320 374 364 286 S492 166 620 236 S700 374 748 210"
         />
         <path
-          className="neural-brain-grid"
-          d="M250 252h104v-76M354 252h122v-84M476 252h114v-66M250 252v108h104m0-108v146m122-146v142m114-142v104M250 360h226m0 34h114"
-        />
-        <path
-          className="neural-thread neural-thread-slow"
-          d="M174 320C250 188 372 136 511 162c119 22 197 92 244 204"
-        />
-        <path
-          className="neural-thread"
-          d="M160 378c106-70 206-95 301-74 108 24 188 8 282-92"
-        />
-        <path
-          className="neural-thread neural-thread-soft"
-          d="M218 220c80 104 174 150 282 136 92-12 151 12 202 72"
-        />
-        <path
-          className="neural-thread neural-thread-slow"
-          d="M244 456c45-124 124-198 236-222 118-24 198-8 240 48"
+          className="decision-path decision-path-soft"
+          d="M164 256 C262 214 320 232 390 298 S536 406 706 348"
         />
         {[
-          [214, 318],
-          [252, 236],
-          [304, 412],
-          [358, 178],
-          [416, 326],
-          [486, 230],
-          [544, 398],
-          [614, 190],
-          [666, 310],
-          [722, 426],
+          [184, 438],
+          [304, 348],
+          [390, 270],
+          [520, 210],
+          [620, 236],
+          [748, 210],
         ].map(([cx, cy], index) => (
           <circle
-            className="neural-node"
+            className={index === 3 ? "decision-node decision-node-active" : "decision-node"}
             cx={cx}
             cy={cy}
             key={`${cx}-${cy}`}
-            r={index % 3 === 0 ? 7 : 5}
+            r={index === 3 ? 10 : 7}
           />
         ))}
+        <g className="decision-card decision-card-score">
+          <rect x="142" y="150" width="170" height="74" rx="12" />
+          <text x="164" y="180">NeuroScore</text>
+          <text x="164" y="206">78 / 100</text>
+        </g>
+        <g className="decision-card decision-card-practice">
+          <rect x="594" y="414" width="176" height="78" rx="12" />
+          <text x="616" y="444">Practice</text>
+          <text x="616" y="470">5 positions</text>
+        </g>
       </svg>
-      <div className="neural-visual-grid" />
+      <div className="decision-visual-grid" />
     </div>
   );
 }

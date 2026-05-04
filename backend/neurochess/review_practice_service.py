@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from contextlib import closing
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +38,9 @@ PRACTICE_ALLOWED_RESULTS = {
     "revealed",
 }
 PRACTICE_FAILED_RETRY_RESULTS = {"wrong", "illegal", "revealed", "skipped"}
+PRACTICE_SUCCESS_RESULTS = {"best", "very_good", "acceptable"}
+PRACTICE_DUE_REVIEW_SCOPE = "due_review"
+LEARNING_LOOP_SUMMARY_SCHEMA_VERSION = "learning_loop_v1"
 
 PRACTICE_PRIMARY_PRIORITY = {
     "decisive": 0,
@@ -237,6 +240,10 @@ class ReviewPracticeService:
         ply: int,
         attempted_uci: str | None = None,
         result: str | None = None,
+        time_spent_ms: int | None = None,
+        hint_used: bool | None = None,
+        reveal_used: bool | None = None,
+        source_context: str | None = None,
     ) -> dict[str, Any]:
         with closing(get_connection(self.db_path)) as connection:
             session = _session_row(connection, session_id)
@@ -268,6 +275,18 @@ class ReviewPracticeService:
         attempted_uci = feedback.get("attempted_uci")
         attempted_san = feedback.get("attempted_san")
         snapshot = _evidence_snapshot(item)
+        created_at = _utc_now()
+        normalized_hint_used = bool(hint_used)
+        normalized_reveal_used = bool(reveal_used) or normalized_result == "revealed"
+        normalized_time_spent_ms = _normalize_time_spent_ms(time_spent_ms)
+        normalized_source_context = _normalize_source_context(source_context)
+        item_id = _practice_item_id(int(session["game_id"]), int(ply))
+        due_at = practice_revision_due_at(
+            normalized_result,
+            created_at,
+            hint_used=normalized_hint_used,
+            reveal_used=normalized_reveal_used,
+        )
 
         def write_attempt() -> dict[str, Any]:
             with closing(get_connection(self.db_path)) as connection:
@@ -286,9 +305,15 @@ class ReviewPracticeService:
                             result,
                             attempt_number,
                             evidence_snapshot_json,
+                            item_id,
+                            time_spent_ms,
+                            hint_used,
+                            reveal_used,
+                            source_context,
+                            due_at,
                             created_at
                         )
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (
                             session_id,
@@ -301,7 +326,13 @@ class ReviewPracticeService:
                             normalized_result,
                             attempt_number,
                             json.dumps(snapshot, ensure_ascii=False, sort_keys=True),
-                            _utc_now(),
+                            item_id,
+                            normalized_time_spent_ms,
+                            1 if normalized_hint_used else 0,
+                            1 if normalized_reveal_used else 0,
+                            normalized_source_context,
+                            due_at,
+                            created_at,
                         ),
                     )
                     _increment_session_counts(connection, session_id, normalized_result)
@@ -321,6 +352,13 @@ class ReviewPracticeService:
                     "expected_best_uci": item.get("best_move_uci"),
                     "result": normalized_result,
                     "attempt_number": attempt_number,
+                    "item_id": item_id,
+                    "time_spent_ms": normalized_time_spent_ms,
+                    "hint_used": normalized_hint_used,
+                    "reveal_used": normalized_reveal_used,
+                    "source_context": normalized_source_context,
+                    "due_at": due_at,
+                    "created_at": created_at,
                 }
                 return summary
 
@@ -388,14 +426,95 @@ class ReviewPracticeService:
                 """,
                 (game_id,),
             ).fetchall()
+            attempts = _game_practice_attempt_rows(connection, game_id)
+            learning_summary = _learning_summary_payload(
+                game_id,
+                attempts,
+                session_count=len(rows),
+            )
 
         return {
             "game_id": game_id,
+            "learning_summary": learning_summary,
             "sessions": [
                 self._session_payload(row, include_items=False)
                 for row in rows
             ],
         }
+
+    def build_learning_summary_for_game(self, game_id: int) -> dict[str, Any]:
+        with closing(get_connection(self.db_path)) as connection:
+            session_count = connection.execute(
+                """
+                SELECT COUNT(*)
+                FROM review_practice_sessions
+                WHERE game_id = ?
+                """,
+                (game_id,),
+            ).fetchone()[0]
+            attempts = _game_practice_attempt_rows(connection, game_id)
+        return _learning_summary_payload(
+            game_id,
+            attempts,
+            session_count=int(session_count or 0),
+        )
+
+    def create_due_review_session(
+        self,
+        game_id: int,
+        *,
+        pov: str = "user",
+        max_items: int = PRACTICE_DEFAULT_MAX_ITEMS,
+    ) -> dict[str, Any]:
+        review = self.review_service.get_review(game_id)
+        _ensure_review_completed(review)
+        normalized_pov = _normalize_pov(pov)
+        max_count = _normalized_max_items(max_items)
+        review_items = build_review_practice_items_from_review(
+            review,
+            pov=normalized_pov,
+            scope="all_to_review",
+            max_items=PRACTICE_MAX_ITEMS_LIMIT,
+        )
+        for item in review_items:
+            item["game_id"] = game_id
+        with closing(get_connection(self.db_path)) as connection:
+            attempts = _game_practice_attempt_rows(connection, game_id)
+            due_by_ply = _due_ply_map(attempts)
+            review_id = _current_review_id(connection, game_id)
+        due_items = [
+            item
+            for item in review_items
+            if int(item.get("ply") or 0) in due_by_ply
+        ]
+        due_items.sort(
+            key=lambda item: (
+                due_by_ply.get(int(item.get("ply") or 0)) or "",
+                int(item.get("ply") or 0),
+            )
+        )
+        due_items = due_items[:max_count]
+        if not due_items:
+            raise ReviewPracticeServiceError(
+                "no due review items",
+                status_code=409,
+                payload={
+                    "status": "no_due_items",
+                    "game_id": game_id,
+                    "pov": normalized_pov,
+                    "scope": PRACTICE_DUE_REVIEW_SCOPE,
+                    "items": [],
+                    "summary": _empty_summary(),
+                    "learning_summary": self.build_learning_summary_for_game(game_id),
+                },
+            )
+        return self._create_session_from_items(
+            game_id,
+            review_id=review_id,
+            pov=normalized_pov,
+            scope=PRACTICE_DUE_REVIEW_SCOPE,
+            items=due_items,
+        )
 
     def get_session(self, session_id: int) -> dict[str, Any]:
         with closing(get_connection(self.db_path)) as connection:
@@ -748,6 +867,7 @@ def _summary_payload(
         for ply, row in latest_attempts.items()
         if str(row["result"]) in PRACTICE_FAILED_RETRY_RESULTS
     )
+    learning_counts = _learning_counts_for_latest_attempts(latest_attempts)
     theme = _practice_theme(list(latest_attempts.values()), failed_plies=set(failed_plies))
     very_good_count = counts.get("very_good", 0)
     acceptable_count = counts.get("acceptable", 0)
@@ -789,6 +909,11 @@ def _summary_payload(
         "retry_failed_available": bool(failed_plies),
         "failed_plies": failed_plies,
         "failed_count": len(failed_plies),
+        "success_without_help_count": learning_counts["success_without_help_count"],
+        "success_with_hint_count": learning_counts["success_with_hint_count"],
+        "due_count": learning_counts["due_count"],
+        "scheduled_count": learning_counts["scheduled_count"],
+        "next_due_at": learning_counts["next_due_at"],
         "result_by_ply": {
             str(ply): str(row["result"])
             for ply, row in sorted(latest_attempts.items())
@@ -818,6 +943,11 @@ def _empty_summary() -> dict[str, Any]:
         "retry_failed_available": False,
         "failed_plies": [],
         "failed_count": 0,
+        "success_without_help_count": 0,
+        "success_with_hint_count": 0,
+        "due_count": 0,
+        "scheduled_count": 0,
+        "next_due_at": None,
         "result_by_ply": {},
     }
 
@@ -941,6 +1071,159 @@ def _result_counts(attempts_by_ply: dict[int, sqlite3.Row]) -> dict[str, int]:
     return counts
 
 
+def _game_practice_attempt_rows(
+    connection: sqlite3.Connection,
+    game_id: int,
+) -> list[sqlite3.Row]:
+    return connection.execute(
+        """
+        SELECT *
+        FROM review_practice_attempts
+        WHERE game_id = ?
+        ORDER BY id
+        """,
+        (game_id,),
+    ).fetchall()
+
+
+def _latest_learning_attempts_by_item(
+    attempts: list[sqlite3.Row],
+) -> dict[str, sqlite3.Row]:
+    latest: dict[str, sqlite3.Row] = {}
+    for row in attempts:
+        item_id = str(_row_get(row, "item_id") or _practice_item_id(row["game_id"], row["ply"]))
+        latest[item_id] = row
+    return latest
+
+
+def _learning_summary_payload(
+    game_id: int,
+    attempts: list[sqlite3.Row],
+    *,
+    session_count: int,
+) -> dict[str, Any]:
+    latest = _latest_learning_attempts_by_item(attempts)
+    counts = _learning_counts_for_attempt_rows(list(latest.values()))
+    now = _parse_utc_datetime(_utc_now())
+    week_cutoff = now - timedelta(days=7)
+    week_attempts = [
+        row
+        for row in attempts
+        if _parse_utc_datetime(str(_row_get(row, "created_at") or _utc_now())) >= week_cutoff
+    ]
+    latest_week_attempts = _latest_learning_attempts_by_item(week_attempts)
+    week_counts = _learning_counts_for_attempt_rows(list(latest_week_attempts.values()))
+    return {
+        "game_id": int(game_id),
+        "schema_version": LEARNING_LOOP_SUMMARY_SCHEMA_VERSION,
+        "session_count": int(session_count),
+        "practice_event_count": len(attempts),
+        "positions_worked_count": len(latest),
+        "week_positions_worked_count": len(latest_week_attempts),
+        "week_success_without_help_count": week_counts["success_without_help_count"],
+        "week_success_with_hint_count": week_counts["success_with_hint_count"],
+        "week_failed_count": week_counts["failed_count"],
+        "week_revealed_count": week_counts["revealed_count"],
+        **counts,
+    }
+
+
+def _learning_counts_for_latest_attempts(
+    latest_attempts: dict[int, sqlite3.Row],
+) -> dict[str, Any]:
+    return _learning_counts_for_attempt_rows(list(latest_attempts.values()))
+
+
+def _learning_counts_for_attempt_rows(attempts: list[sqlite3.Row]) -> dict[str, Any]:
+    now = _parse_utc_datetime(_utc_now())
+    success_without_help_count = 0
+    success_with_hint_count = 0
+    failed_count = 0
+    revealed_count = 0
+    due_count = 0
+    scheduled_count = 0
+    next_due_at: str | None = None
+    for row in attempts:
+        result = str(_row_get(row, "result") or "")
+        hint_used = _bool_row_value(_row_get(row, "hint_used", 0))
+        reveal_used = _bool_row_value(_row_get(row, "reveal_used", 0))
+        if result in PRACTICE_SUCCESS_RESULTS:
+            if hint_used:
+                success_with_hint_count += 1
+            elif not reveal_used:
+                success_without_help_count += 1
+        elif result in {"wrong", "illegal"}:
+            failed_count += 1
+        elif result == "revealed":
+            revealed_count += 1
+
+        due_at = _due_at_for_row(row)
+        if not due_at:
+            continue
+        due_dt = _parse_utc_datetime(due_at)
+        if due_dt <= now:
+            due_count += 1
+        else:
+            scheduled_count += 1
+            if next_due_at is None or due_dt < _parse_utc_datetime(next_due_at):
+                next_due_at = due_at
+    return {
+        "success_without_help_count": success_without_help_count,
+        "success_with_hint_count": success_with_hint_count,
+        "failed_count": failed_count,
+        "revealed_count": revealed_count,
+        "due_count": due_count,
+        "scheduled_count": scheduled_count,
+        "next_due_at": next_due_at,
+    }
+
+
+def _due_ply_map(attempts: list[sqlite3.Row]) -> dict[int, str]:
+    now = _parse_utc_datetime(_utc_now())
+    due: dict[int, str] = {}
+    for row in _latest_learning_attempts_by_item(attempts).values():
+        due_at = _due_at_for_row(row)
+        if not due_at:
+            continue
+        if _parse_utc_datetime(due_at) <= now:
+            due[int(row["ply"])] = due_at
+    return due
+
+
+def practice_revision_delay_days(
+    result: str,
+    *,
+    hint_used: bool = False,
+    reveal_used: bool = False,
+) -> int | None:
+    normalized_result = str(result or "").lower()
+    if normalized_result in {"wrong", "illegal", "revealed"} or reveal_used:
+        return 1
+    if normalized_result in PRACTICE_SUCCESS_RESULTS:
+        return 3 if hint_used else 7
+    if normalized_result == "skipped":
+        return None
+    return None
+
+
+def practice_revision_due_at(
+    result: str,
+    attempted_at: str,
+    *,
+    hint_used: bool = False,
+    reveal_used: bool = False,
+) -> str | None:
+    delay_days = practice_revision_delay_days(
+        result,
+        hint_used=hint_used,
+        reveal_used=reveal_used,
+    )
+    if delay_days is None:
+        return None
+    due_dt = _parse_utc_datetime(attempted_at) + timedelta(days=delay_days)
+    return due_dt.isoformat(timespec="seconds")
+
+
 def _items_from_session_row(
     session: sqlite3.Row | dict[str, Any],
 ) -> list[dict[str, Any]] | None:
@@ -968,6 +1251,12 @@ def _attempt_payload(row: sqlite3.Row) -> dict[str, Any]:
         "expected_best_uci": row["expected_best_uci"],
         "result": row["result"],
         "attempt_number": int(row["attempt_number"]),
+        "item_id": _row_get(row, "item_id") or _practice_item_id(row["game_id"], row["ply"]),
+        "time_spent_ms": _row_get(row, "time_spent_ms"),
+        "hint_used": _bool_row_value(_row_get(row, "hint_used", 0)),
+        "reveal_used": _bool_row_value(_row_get(row, "reveal_used", 0)),
+        "source_context": _row_get(row, "source_context") or "review_practice",
+        "due_at": _due_at_for_row(row),
         "created_at": row["created_at"],
     }
 
@@ -1033,6 +1322,25 @@ def _normalize_result(value: str | None) -> str:
     return normalized
 
 
+def _normalize_time_spent_ms(value: int | None) -> int | None:
+    if value is None:
+        return None
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return None
+    if parsed < 0:
+        return None
+    return min(parsed, 2 * 60 * 60 * 1000)
+
+
+def _normalize_source_context(value: str | None) -> str:
+    normalized = str(value or "review_practice").strip().lower()
+    if not normalized:
+        return "review_practice"
+    return normalized[:80]
+
+
 def _normalized_max_items(value: int) -> int:
     try:
         parsed = int(value)
@@ -1076,6 +1384,39 @@ def _row_get(row: sqlite3.Row | dict[str, Any], key: str, default: Any = None) -
     if isinstance(row, dict):
         return row.get(key, default)
     return row[key] if key in row.keys() else default
+
+
+def _practice_item_id(game_id: Any, ply: Any) -> str:
+    return f"review:{int(game_id)}:ply:{int(ply)}"
+
+
+def _bool_row_value(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    try:
+        return int(value or 0) != 0
+    except (TypeError, ValueError):
+        return False
+
+
+def _due_at_for_row(row: sqlite3.Row) -> str | None:
+    due_at = _row_get(row, "due_at")
+    if due_at:
+        return str(due_at)
+    return practice_revision_due_at(
+        str(_row_get(row, "result") or ""),
+        str(_row_get(row, "created_at") or _utc_now()),
+        hint_used=_bool_row_value(_row_get(row, "hint_used", 0)),
+        reveal_used=_bool_row_value(_row_get(row, "reveal_used", 0)),
+    )
+
+
+def _parse_utc_datetime(value: str) -> datetime:
+    raw = str(value or _utc_now()).replace("Z", "+00:00")
+    parsed = datetime.fromisoformat(raw)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 def _utc_now() -> str:

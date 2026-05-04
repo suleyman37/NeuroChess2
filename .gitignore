@@ -5,6 +5,9 @@ __pycache__/
 *.so
 .Python
 .venv/
+.venv_repair*/
+.manual_pydeps/
+.wheelhouse/
 venv/
 env/
 *.egg-info/

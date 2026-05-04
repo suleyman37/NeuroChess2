@@ -1,31 +1,22 @@
 import type { ReviewMoveAnnotation, ReviewResponse, ReviewSections } from "../../api/client";
-import {
-  NeuroMonitorBrain3D,
-} from "../neuro3d/NeuroMonitorBrain3D";
-import type { BrainDomainKey } from "../neuro3d/neuroBrainTypes";
-import {
-  buildNeuroMonitorBrainData,
-  findNeuroMonitorAnnotationForDomain,
-} from "../neuro3d/neuroBrainVisualModel";
 import { errorTypeLabel, reviewScoreConfidenceLabel } from "./reviewLabels";
 import { ReviewPovSelector } from "./ReviewScoreDetails";
-import { formatHeadlineScore, formatImpact, hasReviewScoreValue } from "./reviewUtils";
+import { formatHeadlineScore, hasReviewScoreValue } from "./reviewUtils";
 import {
   coachNeuroScoreForReview,
   coachScoreLabelForPov,
   coachScoreUsesReferenceFallback,
   comparisonLabelForPov,
+  humanReason,
   qualitativeGameLabelForPov,
   referencePrecisionLabelForPov,
-  reviewCockpitIndicators,
   reviewCockpitPriorities,
-  reviewCockpitTakeaways,
   reviewCompactAnalysisLabel,
   reviewMetricsNeedRebuild,
-  reviewSummaryForPov,
   reviewScoreAvailabilityReason,
+  reviewSummaryForPov,
 } from "./reviewViewModel";
-import type { GameStoryEvent, ReviewCockpitIndicator, ReviewFocusKey, ReviewPov, ReviewPovContext } from "./reviewTypes";
+import type { ReviewFocusKey, ReviewPov, ReviewPovContext } from "./reviewTypes";
 
 export function ReviewCockpitSummary({
   review,
@@ -37,7 +28,6 @@ export function ReviewCockpitSummary({
   onStartPractice,
   onOpenLesson,
   onFocusChange,
-  onTimelineEventSelect,
 }: {
   review: ReviewResponse | null;
   povContext: ReviewPovContext;
@@ -48,18 +38,15 @@ export function ReviewCockpitSummary({
   onStartPractice: () => void;
   onOpenLesson: (annotation: ReviewMoveAnnotation | null) => void;
   onFocusChange: (focus: ReviewFocusKey) => void;
-  onTimelineEventSelect: (event: GameStoryEvent) => void;
+  onTimelineEventSelect: unknown;
 }) {
   if (!review) {
     return null;
   }
 
-  const indicators = reviewCockpitIndicators(review, filteredSections);
   const priorities = reviewCockpitPriorities(filteredSections);
-  const takeaways = reviewCockpitTakeaways(indicators, review, filteredSections);
-  const mainMoment = selectedCoachAnnotation ?? priorities[0] ?? filteredSections.all[0] ?? null;
-  const reviewForBrain = { ...review, review_sections: filteredSections };
-  const brainData = buildNeuroMonitorBrainData(reviewForBrain, selectedCoachAnnotation, "summary");
+  const visibleMoments = priorities.slice(0, 3);
+  const mainMoment = selectedCoachAnnotation ?? visibleMoments[0] ?? filteredSections.all[0] ?? null;
   const confidenceLabel = reviewScoreConfidenceLabel(review.review_score_confidence);
   const metricsNeedRebuild = reviewMetricsNeedRebuild(review);
   const coachScore = coachNeuroScoreForReview(review, povContext);
@@ -74,20 +61,8 @@ export function ReviewCockpitSummary({
         : "Score indisponible";
   const qualitativeLabel = qualitativeGameLabelForPov(review, povContext, filteredSections);
   const summarySentence = reviewSummaryForPov(review, povContext, filteredSections);
-  const handleBrainDomainClick = (domain: BrainDomainKey) => {
-    if (domain === "opening") {
-      onFocusChange("lab");
-      return;
-    }
-    const annotation =
-      findNeuroMonitorAnnotationForDomain(reviewForBrain, domain, selectedCoachAnnotation) ??
-      annotationForMonitorDomain(domain, filteredSections, priorities);
-    if (annotation) {
-      onOpenLesson(annotation);
-      return;
-    }
-    onFocusChange("lab");
-  };
+  const practicePositionCount = Math.min(5, practiceEligibleCount);
+  const estimatedPracticeMinutes = estimatePracticeMinutes(practicePositionCount);
 
   return (
     <section className="review-cockpit-summary review-summary-simple" aria-label="Résumé Review">
@@ -95,224 +70,89 @@ export function ReviewCockpitSummary({
         <div className="review-cockpit-score">
           <span>{coachScoreLabel}</span>
           <strong>{headlineDisplay}</strong>
-          <small>{referencePrecisionLabel}</small>
           <em>{qualitativeLabel}</em>
           <p>{summarySentence}</p>
         </div>
         <div className="review-cockpit-meta">
           <span>{comparisonLabelForPov(review, povContext)}</span>
-          <span>{reviewCompactAnalysisLabel(review)} · confiance {confidenceLabel}</span>
           <ReviewPovSelector povContext={povContext} onChange={onPovChange} />
         </div>
       </div>
 
-      <div className="review-cockpit-actions">
-        {practiceEligibleCount > 0 ? (
-          <button
-            type="button"
-            className="primary"
-            onClick={onStartPractice}
-            title="Démarrer une session courte sur les moments prioritaires"
-          >
-            S'entraîner sur cette Review
-          </button>
-        ) : mainMoment ? (
-          <button
-            type="button"
-            className="primary"
-            onClick={() => onOpenLesson(mainMoment)}
-          >
-            Voir la leçon clé
-          </button>
-        ) : null}
-        {practiceEligibleCount > 0 && mainMoment && (
-          <button type="button" onClick={() => onOpenLesson(mainMoment)}>
-            Voir la leçon clé
-          </button>
-        )}
-        <button type="button" className="ghost" onClick={() => onFocusChange("lab")}>
-          Explorer
-        </button>
-      </div>
+      <details className="review-reference-details">
+        <summary>Voir le détail du score</summary>
+        <p>{referencePrecisionLabel}</p>
+        <p>Le Score coach combine précision et gravité des moments critiques.</p>
+        <small>{reviewCompactAnalysisLabel(review)} - confiance {confidenceLabel}</small>
+      </details>
 
       {metricsNeedRebuild && (
         <div className="review-score-rebuild">
-          <span>
-            Cette analyse complète peut être mise à jour depuis Explorer.
-          </span>
+          <span>Cette analyse complète peut être mise à jour depuis Explorer.</span>
           <small>{reviewScoreAvailabilityReason(review)}</small>
         </div>
       )}
 
-      <div className="review-summary-dashboard">
-        {brainData && (
-          <div className="review-neuro3d-monitor" aria-label="NeuroMonitorBrain3D Review">
-            <NeuroMonitorBrain3D
-              data={brainData}
-              onDomainClick={handleBrainDomainClick}
-            />
-          </div>
+      <section className="review-cockpit-section review-key-moments" aria-label="Moments clés">
+        <div className="review-block-title">
+          <span>Moments clés</span>
+          <strong>{visibleMoments.length}/3</strong>
+        </div>
+        {visibleMoments.length === 0 ? (
+          <p className="review-cockpit-empty">Aucun moment prioritaire détecté.</p>
+        ) : (
+          <ol className="review-key-moment-list">
+            {visibleMoments.map((annotation, index) => (
+              <li key={`${annotation.ply}-${annotation.uci}-${index}`}>
+                <button type="button" onClick={() => onOpenLesson(annotation)}>
+                  <span>Coup {annotation.move_number}</span>
+                  <strong>
+                    {errorTypeLabel(annotation.pedagogical_explanation?.error_type, annotation)}
+                  </strong>
+                  <p>{humanReason(annotation)}</p>
+                  <small>Voir</small>
+                </button>
+              </li>
+            ))}
+          </ol>
         )}
+      </section>
 
-        <div className="review-summary-insights">
-          <section className="review-cockpit-section" aria-label="3 priorités">
-            <div className="review-block-title">
-              <span>3 priorités</span>
-              <strong>{priorities.length}</strong>
-            </div>
-            {priorities.length === 0 ? (
-              <p className="review-cockpit-empty">Aucun moment prioritaire détecté.</p>
-            ) : (
-              <ol className="review-cockpit-priority-list">
-                {priorities.map((annotation, index) => (
-                  <li key={`${annotation.ply}-${annotation.uci}-${index}`}>
-                    <button type="button" onClick={() => onOpenLesson(annotation)}>
-                      <span>#{index + 1}</span>
-                      <strong>
-                        {errorTypeLabel(annotation.pedagogical_explanation?.error_type, annotation)}
-                      </strong>
-                      <em>Coup {annotation.move_number}</em>
-                      <b>{formatImpact(annotation.win_loss)}</b>
-                      <small className="review-priority-action">Voir</small>
-                    </button>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </section>
-
-          <section className="review-cockpit-section" aria-label="3 choses à retenir">
-            <div className="review-block-title">
-              <span>3 choses à retenir</span>
-              <strong>Coach</strong>
-            </div>
-            <ul className="review-cockpit-takeaways">
-              {takeaways.map((takeaway) => (
-                <li key={takeaway}>{takeaway}</li>
-              ))}
-            </ul>
-          </section>
+      <section className="review-training-card" aria-label="Entraînement Review">
+        <div>
+          <span>Entraînement</span>
+          <strong>S'entraîner sur cette Review</strong>
+          <p>
+            {practiceEligibleCount > 0
+              ? `${practicePositionCount} position${practicePositionCount > 1 ? "s" : ""} - environ ${estimatedPracticeMinutes} minutes.`
+              : "Aucune position fiable prête pour une session courte."}
+          </p>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function annotationForMonitorDomain(
-  domain: BrainDomainKey,
-  filteredSections: ReviewSections,
-  priorities: ReviewMoveAnnotation[],
-): ReviewMoveAnnotation | null {
-  if (domain === "opening") {
-    return null;
-  }
-  const seen = new Set<string>();
-  const candidates = [...priorities, ...filteredSections.all].filter((annotation) => {
-    const key = `${annotation.ply ?? "?"}:${annotation.uci ?? ""}`;
-    if (seen.has(key)) {
-      return false;
-    }
-    seen.add(key);
-    return true;
-  });
-  return candidates.find((annotation) => annotationMatchesDomain(annotation, domain)) ?? null;
-}
-
-function annotationMatchesDomain(
-  annotation: ReviewMoveAnnotation,
-  domain: Exclude<BrainDomainKey, "opening">,
-): boolean {
-  const tags = new Set(annotation.tags ?? []);
-  const errorType = annotation.pedagogical_explanation?.error_type;
-  const primary = String(annotation.primary_category ?? "").toLowerCase();
-  const category = String(annotation.category_label ?? "").toLowerCase();
-  const before = annotation.player_win_percent_before ?? annotation.player_percent_before ?? null;
-  if (domain === "tactical") {
-    return (
-      errorType === "tactical" ||
-      tags.has("missed_opportunity") ||
-      annotation.primary_category === "critical" ||
-      annotation.primary_category === "decisive"
-    );
-  }
-  if (domain === "conversion") {
-    return (
-      errorType === "conversion" ||
-      tags.has("conversion_issue") ||
-      (Number(before ?? 0) >= 75 && Number(annotation.win_loss ?? 0) >= 10)
-    );
-  }
-  if (domain === "plan") {
-    return (
-      errorType === "positional" ||
-      primary === "plan" ||
-      primary === "positional" ||
-      category.includes("plan") ||
-      category.includes("position") ||
-      tags.has("persistent_loss")
-    );
-  }
-  return (
-    errorType === "defensive" ||
-    tags.has("defensive_resource_missed") ||
-    (Number(before ?? 100) <= 35 &&
-      (Number(annotation.missed_gain ?? 0) >= 8 || Number(annotation.win_loss ?? 0) >= 8))
-  );
-}
-
-function ReviewCockpitIndicatorRow({
-  indicators,
-}: {
-  indicators: ReviewCockpitIndicator[];
-}) {
-  return (
-    <div className="review-cockpit-indicators" aria-label="Indicateurs synthétiques">
-      {indicators.map((indicator) => (
-        <div
-          key={indicator.key}
-          className={`review-cockpit-indicator review-cockpit-indicator-${indicator.tone}`}
-          title={indicator.detail}
-        >
-          <span>{indicator.label}</span>
-          <strong>{indicator.statusLabel}</strong>
-          <em>{indicator.detail}</em>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function GameStoryTimeline({
-  events,
-  onSelectEvent,
-}: {
-  events: GameStoryEvent[];
-  onSelectEvent: (event: GameStoryEvent) => void;
-}) {
-  if (events.length === 0) {
-    return null;
-  }
-  return (
-    <section className="review-game-story" aria-label="Frise narrative de la partie">
-      <div className="review-block-title">
-        <span>Frise narrative</span>
-        <strong>{events.length}</strong>
-      </div>
-      <div className="review-game-story-track">
-        {events.map((event) => (
-          <button
-            key={event.id}
-            type="button"
-            className={`review-game-story-event review-game-story-${event.tone}`}
-            onClick={() => onSelectEvent(event)}
-          >
-            <span>{event.label}</span>
-            <strong>{event.moveLabel}</strong>
-            <em>{event.impactLabel}</em>
+        {practiceEligibleCount > 0 ? (
+          <button type="button" className="primary" onClick={onStartPractice}>
+            Commencer
           </button>
-        ))}
-      </div>
+        ) : (
+          <button type="button" className="primary" onClick={() => onOpenLesson(mainMoment)}>
+            Voir
+          </button>
+        )}
+      </section>
+
+      <button
+        type="button"
+        className="review-advanced-link"
+        onClick={() => onFocusChange("lab")}
+      >
+        Explorer les détails
+      </button>
     </section>
   );
 }
 
+function estimatePracticeMinutes(positionCount: number): number {
+  if (positionCount <= 0) {
+    return 0;
+  }
+  return Math.max(3, Math.min(10, positionCount * 2));
+}

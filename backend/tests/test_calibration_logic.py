@@ -196,9 +196,16 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertNotIn("eval_pov_side_to_move_cp", evaluation_bar_source)
 
     def test_review_panel_has_no_visible_mojibake(self) -> None:
-        review_panel_source = read_review_panel_source()
-        neuroflow_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroFlowPanel.tsx"
+        review_panel_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "review" / "ReviewPanel.tsx"
+        ).read_text(encoding="utf-8")
+        cockpit_source = (
+            PROJECT_ROOT
+            / "frontend"
+            / "src"
+            / "components"
+            / "review"
+            / "ReviewCockpitSummary.tsx"
         ).read_text(encoding="utf-8")
         landing_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "LandingPage.tsx"
@@ -206,26 +213,12 @@ class CalibrationLogicTests(unittest.TestCase):
         logo_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroChessLogo.tsx"
         ).read_text(encoding="utf-8")
-        monitor_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroMonitorBrain.tsx"
-        ).read_text(encoding="utf-8")
-        neuro3d_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d" / "NeuroMonitorBrain3D.tsx"
-        ).read_text(encoding="utf-8")
-        neuro3d_model_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d" / "neuroBrainVisualModel.ts"
-        ).read_text(encoding="utf-8")
-        neuro3d_types_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d" / "neuroBrainTypes.ts"
-        ).read_text(encoding="utf-8")
 
         for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
             self.assertNotIn(marker, review_panel_source)
-            self.assertNotIn(marker, neuroflow_source)
+            self.assertNotIn(marker, cockpit_source)
             self.assertNotIn(marker, landing_source)
             self.assertNotIn(marker, logo_source)
-            self.assertNotIn(marker, monitor_source)
-            self.assertNotIn(marker, neuro3d_source + neuro3d_model_source + neuro3d_types_source)
 
     def test_frontend_review_sections_contract_is_staticly_present(self) -> None:
         review_panel_source = read_review_panel_source()
@@ -749,25 +742,22 @@ class CalibrationLogicTests(unittest.TestCase):
             self.assertIn(guard, normalized_panel)
 
         self.assertIn("ReviewCockpitSummary", review_panel_source)
-        self.assertIn("reviewCockpitIndicators", review_panel_source)
-        self.assertIn("reviewCockpitOpeningIndicator", review_panel_source)
-        self.assertIn("isTacticalCockpitMoment", review_panel_source)
-        self.assertIn("isConversionCockpitMoment", review_panel_source)
-        self.assertIn("isDefenseCockpitMoment", review_panel_source)
-        self.assertIn("GameStoryTimeline", review_panel_source)
-        self.assertIn("gameStoryTimeline", review_panel_source)
-        self.assertIn("3 priorités", review_panel_source)
-        self.assertIn("3 choses à retenir", review_panel_source)
+        self.assertIn("reviewCockpitPriorities", review_panel_source)
+        self.assertIn("visibleMoments = priorities.slice(0, 3)", review_panel_source)
+        self.assertIn("Moments clés", review_panel_source)
         self.assertIn("S'entraîner sur cette Review", review_panel_source)
-        self.assertIn("Voir la leçon clé", review_panel_source)
-        self.assertIn("Lancer l'analyse recommandée", review_panel_source)
+        self.assertIn("Explorer les détails", review_panel_source)
+        self.assertIn("Le Score coach combine précision et gravité", review_panel_source)
+        self.assertIn("L'analyse recommandée utilise un profil fiable", review_panel_source)
         self.assertIn('data-review-incomplete-single-cta="true"', review_panel_source)
 
         summary_start = normalized_panel.index("function ReviewCockpitSummary")
-        indicator_start = normalized_panel.index("function ReviewCockpitIndicatorRow")
-        summary_body = normalized_panel[summary_start:indicator_start]
-        for token in ("NeuroScore", "NeuroMonitorBrain", "reviewCockpitIndicators", "reviewCockpitPriorities"):
+        summary_end = normalized_panel.index("function estimatePracticeMinutes", summary_start)
+        summary_body = normalized_panel[summary_start:summary_end]
+        for token in ("NeuroScore", "reviewCockpitPriorities", "review-key-moment-list", "review-training-card"):
             self.assertIn(token, summary_body)
+        for forbidden_token in ("NeuroMonitor", "NeuroBrain", "BrainAtlas", "CognitiveMap", "neuro3d", "cortex"):
+            self.assertNotIn(forbidden_token, summary_body)
         self.assertNotIn("ReviewAnalysisOptions", summary_body)
         self.assertNotIn("ReviewPvContrastTechnicalDetails", summary_body)
 
@@ -780,6 +770,9 @@ class CalibrationLogicTests(unittest.TestCase):
 
         self.assertNotIn('<details className="review-score-details">', summary_body)
         self.assertNotIn("Écart diagnostique", summary_body)
+        self.assertNotIn("criticality_score", summary_body)
+        self.assertNotIn("diagnostic_gap", summary_body)
+        self.assertNotIn("neuro_score_diag", summary_body)
         self.assertIn('<details className="review-analysis-options">', normalized_panel)
         self.assertNotIn('<details className="review-analysis-options" open', normalized_panel)
         self.assertIn("ReviewTechnicalDetails", normalized_panel)
@@ -796,93 +789,66 @@ class CalibrationLogicTests(unittest.TestCase):
 
         self.assertIn(".review-cockpit-summary", styles_source)
         self.assertIn(".review-main-navigation", styles_source)
-        self.assertIn(".review-brain-map-v2", styles_source)
-        self.assertIn("grid-template-columns: repeat(4, minmax(0, 1fr));", styles_source)
+        self.assertIn(".review-summary-simple", styles_source)
+        self.assertIn(".review-key-moment-list", styles_source)
+        self.assertIn(".review-training-card", styles_source)
+        self.assertNotIn(".review-brain-map-v2", styles_source)
 
         self.assertNotIn("Meilleur choix", review_panel_source)
         self.assertNotIn("best branch", review_panel_source.lower())
         self.assertNotIn("best branch", app_source.lower())
 
-    def test_v5_4_ui_3d1_neuroflow_panel_contract_is_staticly_present(self) -> None:
+    def test_v5_4_ui_3d1_neuroflow_panel_is_removed_from_v1_ui(self) -> None:
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
-        neuroflow_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroFlowPanel.tsx"
+        cockpit_source = (
+            PROJECT_ROOT
+            / "frontend"
+            / "src"
+            / "components"
+            / "review"
+            / "ReviewCockpitSummary.tsx"
+        ).read_text(encoding="utf-8")
+        landing_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "LandingPage.tsx"
         ).read_text(encoding="utf-8")
         styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
             encoding="utf-8"
         )
         normalized_app = app_source.replace("\r\n", "\n")
-        normalized_flow = neuroflow_source.replace("\r\n", "\n")
 
-        self.assertIn("export function NeuroFlowPanel", neuroflow_source)
-        self.assertIn("export type NeuroFlowState", neuroflow_source)
-        self.assertIn("buildNeuroFlowState", neuroflow_source)
-        self.assertIn("data-neuroflow-panel=\"true\"", neuroflow_source)
-        self.assertIn("data-neuroflow-fallback=\"true\"", neuroflow_source)
-        self.assertNotIn("import { NeuroMonitorBrain3D }", app_source)
-        self.assertNotIn("boardNeuroBrainData", app_source)
-        self.assertNotIn("board-neuro3d-monitor", app_source)
+        removed_paths = [
+            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroFlowPanel.tsx",
+            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroMonitorBrain.tsx",
+            PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d" / "NeuroMonitorBrain3D.tsx",
+            PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d" / "neuroBrainVisualModel.ts",
+            PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d" / "neuroBrainTypes.ts",
+        ]
+        for path in removed_paths:
+            self.assertFalse(path.exists(), str(path))
+
+        for forbidden in (
+            "NeuroFlowPanel",
+            "NeuroMonitorBrain",
+            "NeuroMonitorBrain3D",
+            "boardNeuroBrainData",
+            "board-neuro3d-monitor",
+            "review-neuro3d-monitor",
+            "neuro3d",
+        ):
+            self.assertNotIn(forbidden, app_source)
+            self.assertNotIn(forbidden, cockpit_source)
+            self.assertNotIn(forbidden, landing_source)
+            self.assertNotIn(forbidden, styles_source)
+
         self.assertIn("<ReviewStepStatus", app_source)
         self.assertIn('activeTab === "review" && (', normalized_app)
-
-        for token in (
-            '"opening"',
-            '"tactical"',
-            '"conversion"',
-            '"defense"',
-            "Ouverture",
-            "Tactique",
-            "Conversion",
-            "Défense",
-        ):
-            self.assertIn(token, neuroflow_source)
-
-        self.assertIn("const hiddenSolution =", normalized_flow)
-        self.assertIn(
-            "state.branches.solution.available && state.currentMoment.solutionVisible",
-            normalized_flow,
-        )
-        self.assertIn('revealState === "attempted"', normalized_flow)
-        self.assertIn('revealState === "solution_revealed"', normalized_flow)
-        self.assertIn('revealState === "pv_line"', normalized_flow)
-        self.assertIn('revealState === "played_move_shown"', normalized_flow)
-        self.assertNotIn("best_move_san", neuroflow_source)
-        self.assertNotIn("best_move_uci", neuroflow_source)
-
-        self.assertIn("NeuroFlowOpeningMap", neuroflow_source)
-        self.assertIn("Sortie du livre", neuroflow_source)
-        self.assertIn("onShowOpeningExit", neuroflow_source)
-        self.assertIn('onFocusChange("lab")', neuroflow_source)
-        self.assertIn("onShowOpeningLinkedMoment", neuroflow_source)
-
-        self.assertIn("NeuroFlowPracticeMap", neuroflow_source)
-        self.assertIn("practiceState?.active", neuroflow_source)
-        self.assertIn("practiceNodeResult", neuroflow_source)
-        self.assertIn("Position ${index + 1}/${items.length}", neuroflow_source)
-
-        self.assertIn("onShowPvLineAnnotation", neuroflow_source)
-        self.assertIn('onShowBranch("played")', neuroflow_source)
-        self.assertIn('onShowBranch("solution")', neuroflow_source)
-        self.assertIn('onFocusChange("learn")', neuroflow_source)
-        self.assertNotIn('onFocusChange("opening")', neuroflow_source)
-        self.assertNotIn('onFocusChange("lesson")', neuroflow_source)
-        self.assertNotIn('onFocusChange("explorer")', neuroflow_source)
-        self.assertIn("pv_contrast_evidence ?? null", neuroflow_source)
-
-        self.assertIn(".neuroflow-panel", styles_source)
-        self.assertIn(".neuroflow-stage", styles_source)
+        self.assertIn("S'entraîner sur cette Review", cockpit_source)
+        self.assertIn("DecisionHeroVisual", landing_source)
+        self.assertNotIn("cerveau réel", landing_source.lower())
+        self.assertNotIn("mesure neurologique", landing_source.lower())
         self.assertIn("@media (prefers-reduced-motion: reduce)", styles_source)
-        self.assertIn("@keyframes neuroflow-flow", styles_source)
-
-        for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
-            self.assertNotIn(marker, neuroflow_source)
-        self.assertNotIn("cerveau réel", neuroflow_source.lower())
-        self.assertNotIn("mesure neurologique", neuroflow_source.lower())
-        self.assertNotIn("startLiveAnalysis", neuroflow_source)
-        self.assertNotIn("Stockfish", neuroflow_source)
-        self.assertNotIn("LLM", neuroflow_source)
 
     def test_v5_4_ui_4_review_clarity_contract_is_staticly_present(self) -> None:
         review_dir = PROJECT_ROOT / "frontend" / "src" / "components" / "review"
@@ -891,25 +857,6 @@ class CalibrationLogicTests(unittest.TestCase):
         panel_source = (review_dir / "ReviewPanel.tsx").read_text(encoding="utf-8")
         pov_source = (review_dir / "ReviewScoreDetails.tsx").read_text(encoding="utf-8")
         lab_source = (review_dir / "ReviewLaboratoryPanel.tsx").read_text(encoding="utf-8")
-        monitor_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroMonitorBrain.tsx"
-        ).read_text(encoding="utf-8")
-        neuro3d_source = (
-            PROJECT_ROOT
-            / "frontend"
-            / "src"
-            / "components"
-            / "neuro3d"
-            / "NeuroMonitorBrain3D.tsx"
-        ).read_text(encoding="utf-8")
-        neuro3d_model_source = (
-            PROJECT_ROOT
-            / "frontend"
-            / "src"
-            / "components"
-            / "neuro3d"
-            / "neuroBrainVisualModel.ts"
-        ).read_text(encoding="utf-8")
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
@@ -928,21 +875,17 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("{open && (", pov_source)
         self.assertNotIn("<span>Analyser :</span>", pov_source)
 
-        self.assertIn("NeuroMonitorBrain3D Review", cockpit_source)
-        self.assertIn("<NeuroMonitorBrain", cockpit_source)
-        self.assertIn("Carte cognitive", neuro3d_source)
-        self.assertIn("3 priorités", cockpit_source)
-        self.assertIn("3 choses à retenir", cockpit_source)
+        self.assertIn("NeuroScore", cockpit_source)
+        self.assertIn("S'entraîner sur cette Review", cockpit_source)
+        self.assertIn("Moments clés", cockpit_source)
+        self.assertIn("visibleMoments = priorities.slice(0, 3)", cockpit_source)
+        self.assertIn("Explorer les détails", cockpit_source)
         self.assertIn(".slice(0, 3)", (review_dir / "reviewViewModel.ts").read_text(encoding="utf-8"))
         self.assertNotIn("solutionBranch", cockpit_source)
 
-        monitor_contract_source = monitor_source + cockpit_source + neuro3d_source + neuro3d_model_source
-        for domain in ("Ouverture", "Tactique", "Plan", "Conversion", "Défense"):
-            self.assertIn(domain, monitor_contract_source)
-        self.assertIn("Stable", monitor_contract_source)
-        self.assertIn("Fragile", monitor_contract_source)
-        self.assertIn("Critique", monitor_contract_source)
-        self.assertIn("Non applicable", monitor_contract_source)
+        for forbidden in ("NeuroMonitor", "NeuroBrain", "BrainAtlas", "CognitiveMap", "neuro3d", "cortex"):
+            self.assertNotIn(forbidden, cockpit_source)
+            self.assertNotIn(forbidden, panel_source)
 
         self.assertIn('{effectiveFocus === "learn" && (', normalized_panel)
         self.assertIn('{effectiveFocus === "practice" && (', normalized_panel)
@@ -963,6 +906,9 @@ class CalibrationLogicTests(unittest.TestCase):
         summary_body = cockpit_source[cockpit_source.index("export function ReviewCockpitSummary") :]
         self.assertNotIn("ReviewTechnicalDetails", summary_body)
         self.assertNotIn("Options d'analyse", summary_body)
+        self.assertNotIn("criticality_score", summary_body)
+        self.assertNotIn("diagnostic_gap", summary_body)
+        self.assertNotIn("neuro_score_diag", summary_body)
 
         self.assertIn(
             "const activeReviewDisplayFocus: ReviewFocusKey = reviewPracticeState?.active",
@@ -972,166 +918,67 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertNotIn('activeReviewDisplayFocus === "summary"', app_source)
         self.assertNotIn('activeReviewDisplayFocus !== "summary"', app_source)
         self.assertIn(".review-main-navigation", styles_source)
-        self.assertIn(".review-brain-map-v2", styles_source)
+        self.assertIn(".review-summary-simple", styles_source)
+        self.assertIn(".review-training-card", styles_source)
+        self.assertNotIn(".review-brain-map-v2", styles_source)
         self.assertIn(".review-laboratory", styles_source)
 
         for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
-            self.assertNotIn(marker, labels_source + cockpit_source + panel_source + pov_source + lab_source + monitor_source)
+            self.assertNotIn(marker, cockpit_source + panel_source + pov_source + lab_source)
 
-    def test_v5_4_neuro3d_1_demo_component_contract_is_staticly_present(self) -> None:
+    def test_v5_5_neuro_visuals_are_research_only_not_v1_ui(self) -> None:
         neuro3d_dir = PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d"
-        component_source = (neuro3d_dir / "NeuroMonitorBrain3D.tsx").read_text(
+        frontend_src = PROJECT_ROOT / "frontend" / "src"
+        research_backlog = (PROJECT_ROOT / "docs" / "RESEARCH_BACKLOG.md").read_text(
             encoding="utf-8"
         )
-        model_source = (neuro3d_dir / "neuroBrainVisualModel.ts").read_text(
-            encoding="utf-8"
-        )
-        types_source = (neuro3d_dir / "neuroBrainTypes.ts").read_text(
-            encoding="utf-8"
-        )
-        css_source = (neuro3d_dir / "NeuroMonitorBrain3D.css").read_text(
-            encoding="utf-8"
-        )
-        cockpit_source = (
-            PROJECT_ROOT
-            / "frontend"
-            / "src"
-            / "components"
-            / "review"
-            / "ReviewCockpitSummary.tsx"
+        feature_boundaries = (
+            PROJECT_ROOT / "docs" / "PLAN_FEATURE_BOUNDARIES.md"
         ).read_text(encoding="utf-8")
 
-        self.assertTrue(neuro3d_dir.exists())
-        self.assertIn("export function NeuroMonitorBrain3D", component_source)
-        self.assertIn("data-neuro-monitor-brain3d=\"true\"", component_source)
-        self.assertIn("demoNeuroMonitorBrainData", types_source + component_source)
-        self.assertIn("<NeuroMonitorBrain3D", cockpit_source)
-        self.assertIn("review-neuro3d-monitor", cockpit_source)
+        self.assertFalse((frontend_src / "components" / "NeuroMonitorBrain.tsx").exists())
+        self.assertFalse((frontend_src / "components" / "NeuroFlowPanel.tsx").exists())
+        self.assertFalse((neuro3d_dir / "NeuroMonitorBrain3D.tsx").exists())
+        self.assertFalse((neuro3d_dir / "neuroBrainVisualModel.ts").exists())
+        self.assertFalse((neuro3d_dir / "neuroBrainTypes.ts").exists())
+        self.assertIn("RESEARCH / not V1 / not user-facing", research_backlog)
+        self.assertIn("NeuroMonitor / brain visual", feature_boundaries)
+        self.assertIn("research", feature_boundaries.lower())
+        self.assertIn("hide", feature_boundaries.lower())
 
-        for domain in ("opening", "tactical", "plan", "conversion", "defense"):
-            self.assertIn(f'"{domain}"', types_source + model_source)
-        for label in ("Ouverture", "Tactique", "Plan", "Conversion", "Défense"):
-            self.assertIn(label, types_source + model_source)
-
-        self.assertIn("scoreToColor", model_source)
-        for band in ("value <= 20", "value <= 40", "value <= 60", "value <= 80"):
-            self.assertIn(band, model_source)
-        self.assertIn("coach_neuro_score", model_source)
-        self.assertIn("headline_neurochess_score", model_source)
-        self.assertIn("public_neuro_score", model_source)
-        self.assertIn("Plan (exploratoire)", model_source + types_source)
-        self.assertIn("Profil en construction", model_source + types_source)
-        for helper in (
-            "scoreToStatus",
-            "scoreToGlow",
-            "scoreToPulse",
-            "scoreToActivity",
-        ):
-            self.assertIn(helper, model_source)
-
-        self.assertIn("onDomainClick", component_source)
-        self.assertIn("NeuroBrainFallbackMap", component_source)
-        self.assertIn("detectWebGlSupport", component_source)
-        self.assertIn("data-neuro3d-fallback", component_source)
-        self.assertIn("Indice heuristique", component_source)
-        self.assertNotIn("{domain.score} / 100", component_source)
-        self.assertNotIn("sur 100", component_source)
-        self.assertIn("@media (prefers-reduced-motion: reduce)", css_source)
-        self.assertIn("@keyframes neuro3d-flow", css_source)
-        self.assertIn("Carte cognitive exploratoire", component_source)
-        self.assertIn("les domaines seront affinés avec plus de données", component_source)
-        self.assertIn("Score coach", component_source)
-
-        combined = component_source + model_source + types_source + css_source
-        for forbidden_claim in (
-            "EEG",
-            "activité neurologique réelle mesurée",
-            "mesure du cerveau en temps réel",
-            "Stockfish",
-            "LLM",
-        ):
-            self.assertNotIn(forbidden_claim.lower(), combined.lower())
-        for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
-            self.assertNotIn(marker, combined)
-
-    def test_v5_4_neuro3d_2_real_review_metrics_contract_is_staticly_present(self) -> None:
-        neuro3d_dir = PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d"
-        model_source = (neuro3d_dir / "neuroBrainVisualModel.ts").read_text(
-            encoding="utf-8"
-        )
-        types_source = (neuro3d_dir / "neuroBrainTypes.ts").read_text(
-            encoding="utf-8"
-        )
-        component_source = (neuro3d_dir / "NeuroMonitorBrain3D.tsx").read_text(
-            encoding="utf-8"
-        )
-        cockpit_source = (
-            PROJECT_ROOT
-            / "frontend"
-            / "src"
-            / "components"
-            / "review"
-            / "ReviewCockpitSummary.tsx"
-        ).read_text(encoding="utf-8")
+    def test_v5_5_review_summary_has_no_neuro_visual_contract(self) -> None:
+        review_dir = PROJECT_ROOT / "frontend" / "src" / "components" / "review"
+        cockpit_source = (review_dir / "ReviewCockpitSummary.tsx").read_text(encoding="utf-8")
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
-        normalized_app = app_source.replace("\r\n", "\n")
+        styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
+            encoding="utf-8"
+        )
 
-        self.assertIn("export function buildNeuroMonitorBrainData", model_source)
-        self.assertIn("ReviewResponse", model_source)
-        self.assertIn("ReviewMoveAnnotation", model_source)
-        self.assertIn("return null;", model_source)
-        self.assertIn("BRAIN_DOMAIN_ORDER.map", model_source)
-        for domain in ("opening", "tactical", "plan", "conversion", "defense"):
-            self.assertIn(f'"{domain}"', types_source + model_source)
-
-        self.assertIn('tags.has("missed_opportunity")', model_source)
-        self.assertIn('tags.has("conversion_issue")', model_source)
-        self.assertIn('tags.has("defensive_resource_missed")', model_source)
-        self.assertIn('errorType === "positional"', model_source)
-        self.assertIn('tags.has("persistent_loss")', model_source)
-        self.assertIn("critical_moment_after_exit", model_source)
-        self.assertIn("score = clampScore(40", model_source)
-        self.assertIn("player_win_percent_before", model_source)
-        self.assertIn("win_loss", model_source)
-
-        self.assertIn("dominantThemeToDomain(extractDominantTheme(review)) ??", model_source)
-        self.assertIn("weakestDomain(domainStats, hasSignals)", model_source)
-        self.assertIn("leftMetric.metric.score - rightMetric.metric.score", model_source)
-        self.assertIn("recommendedExerciseLabel(priorityDomain)", model_source)
-        for label in (
-            "3 positions tactiques",
-            "1 sortie d'ouverture",
-            "profil en construction",
-            "2 positions de conversion",
-            "2 ressources",
+        self.assertIn("NeuroScore", cockpit_source)
+        self.assertIn("S'entraîner sur cette Review", cockpit_source)
+        self.assertIn("visibleMoments = priorities.slice(0, 3)", cockpit_source)
+        self.assertIn("review-reference-details", cockpit_source)
+        self.assertIn("review-training-card", cockpit_source)
+        for forbidden in (
+            "buildNeuroMonitorBrainData",
+            "findNeuroMonitorAnnotationForDomain",
+            "handleBrainDomainClick",
+            "review-neuro3d-monitor",
+            "brainData",
+            "NeuroFlowPanel",
         ):
-            self.assertIn(label, model_source)
-
-        self.assertIn("buildNeuroMonitorBrainData(reviewForBrain, selectedCoachAnnotation", cockpit_source)
-        self.assertIn("findNeuroMonitorAnnotationForDomain(reviewForBrain, domain", cockpit_source)
-        self.assertIn("const handleBrainDomainClick", cockpit_source)
-        self.assertIn('if (domain === "opening")', cockpit_source)
-        self.assertIn('onFocusChange("lab")', cockpit_source)
-        self.assertIn("onOpenLesson(annotation)", cockpit_source)
-        self.assertIn("review-neuro3d-monitor", cockpit_source)
-        self.assertIn("brainData &&", cockpit_source)
-
-        self.assertNotIn("boardReviewForBrain", app_source)
-        self.assertNotIn("boardNeuroBrainData", app_source)
-        self.assertNotIn("function handleNeuroMonitorDomainClick", app_source)
-        self.assertNotIn("findNeuroMonitorAnnotationForDomain(", app_source)
-        self.assertNotIn('className="board-neuro3d-monitor"', app_source)
-        self.assertIn("<ReviewStepStatus", app_source)
-        self.assertNotIn("<NeuroFlowPanel", app_source)
-
-        self.assertIn("onDomainClick", component_source)
-        self.assertIn("data-neuro3d-fallback", component_source)
-        self.assertNotIn("best_move_san", model_source + component_source)
-        self.assertNotIn("best_move_uci", model_source + component_source)
-        for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
-            self.assertNotIn(marker, model_source + types_source + component_source + cockpit_source)
+            self.assertNotIn(forbidden, cockpit_source)
+            self.assertNotIn(forbidden, app_source)
+        for forbidden_selector in (
+            ".review-brain-map-v2",
+            ".neuroflow-panel",
+            ".neuro-monitor-brain",
+            ".neuro-brain-visual",
+            "@keyframes neuro3d-flow",
+        ):
+            self.assertNotIn(forbidden_selector, styles_source)
 
     def test_v5_4_landing_1_landing_page_navigation_contract_is_staticly_present(self) -> None:
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
@@ -1150,7 +997,7 @@ class CalibrationLogicTests(unittest.TestCase):
         normalized_app = app_source.replace("\r\n", "\n")
 
         self.assertIn("export function LandingPage", landing_source)
-        self.assertIn("export function NeuralHeroVisual", landing_source)
+        self.assertIn("function DecisionHeroVisual", landing_source)
         self.assertIn("export function NeuroChessLogo", logo_source)
         self.assertIn("import { LandingPage }", app_source)
         self.assertIn("import { NeuroChessLogo }", app_source)
@@ -1168,20 +1015,19 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn('variant = "light"', logo_source)
         self.assertIn('"compact"', logo_source)
         self.assertIn('href="/app"', landing_source)
-        self.assertIn("Commencer - Gratuit", landing_source)
-        self.assertIn("Essayer gratuitement", landing_source)
+        self.assertIn("Commencer", landing_source)
+        self.assertIn("Importer une partie", landing_source)
         self.assertIn("Ouvrir l'app", landing_source)
         for token in (
-            "Fonctionnalités",
-            "Comment ça marche",
-            "Méthode",
-            "Jouez aux échecs",
-            "Review Coach",
+            "Fonctionnalites",
+            "Parcours",
+            "Methode",
+            "Comprends ta partie",
+            "Review coach",
             "NeuroScore",
-            "Practice Mode",
-            "Opening Reality",
-            "PV Contrast",
-            "Neuro-Monitor actif",
+            "Practice Review",
+            "Import PGN",
+            "Stockfish local",
         ):
             self.assertIn(token, landing_source)
         for section_id in (
@@ -1194,10 +1040,22 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertNotIn('id="pricing"', landing_source)
         self.assertNotIn("landing-price-card", landing_source)
 
-        self.assertIn("neural-visual", landing_source)
-        self.assertIn("neural-thread", landing_source)
+        self.assertIn("decision-visual", landing_source)
+        self.assertIn("DecisionHeroVisual", landing_source)
         self.assertIn("Stockfish local", landing_source)
-        self.assertIn("cartographie", landing_source.lower())
+        self.assertIn("une action utile", landing_source.lower())
+        for forbidden_user_facing in (
+            "NeuroMonitor",
+            "Neuro-Monitor",
+            "NeuroBrain",
+            "BrainAtlas",
+            "CognitiveMap",
+            "neuro3d",
+            "cortex",
+            "cartographie",
+            "brain",
+        ):
+            self.assertNotIn(forbidden_user_facing, landing_source)
         for forbidden_claim in (
             "EEG",
             "mesure neurologique",
@@ -1208,10 +1066,10 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn(".landing-page", styles_source)
         self.assertIn(".landing-nav", styles_source)
         self.assertIn(".landing-hero", styles_source)
-        self.assertIn(".neural-visual", styles_source)
+        self.assertIn(".decision-visual", styles_source)
         self.assertIn(".landing-card", styles_source)
         self.assertIn(".neuro-logo", styles_source)
-        self.assertIn("@keyframes landing-neural-flow", styles_source)
+        self.assertIn("@keyframes landing-decision-flow", styles_source)
         self.assertIn("@media (prefers-reduced-motion: reduce)", styles_source)
         self.assertNotIn(".landing-page", review_panel_source)
         self.assertIn("ReviewPanel", app_source)
@@ -1220,7 +1078,7 @@ class CalibrationLogicTests(unittest.TestCase):
             self.assertNotIn(marker, landing_source)
             self.assertNotIn(marker, logo_source)
 
-    def test_v5_4_home_ux1_home_header_monitor_contract_is_staticly_present(self) -> None:
+    def test_v5_5_home_ux_removes_monitor_and_keeps_calm_entry_contract(self) -> None:
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
@@ -1230,27 +1088,17 @@ class CalibrationLogicTests(unittest.TestCase):
         logo_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroChessLogo.tsx"
         ).read_text(encoding="utf-8")
-        neuroflow_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroFlowPanel.tsx"
-        ).read_text(encoding="utf-8")
-        monitor_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroMonitorBrain.tsx"
-        ).read_text(encoding="utf-8")
         styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
             encoding="utf-8"
         )
 
-        self.assertIn("export function NeuroMonitorBrain", monitor_source)
-        self.assertIn('data-neuro-monitor-brain="true"', monitor_source)
-        self.assertIn("type NeuroMonitorSignal", monitor_source)
-        self.assertIn("type NeuroMonitorDomain", monitor_source)
-
-        self.assertIn("<HomeNeuroMonitor", landing_source)
-        self.assertIn("<NeuroMonitorBrain", landing_source)
         self.assertIn("home-shell", landing_source)
         self.assertIn("home-continuum", landing_source)
-        self.assertIn("home-neuro-monitor", landing_source)
-        self.assertIn("Aperçu visuel", landing_source)
+        self.assertIn("DecisionHeroVisual", landing_source)
+        self.assertIn("Review guidee", landing_source)
+        self.assertIn("Importer une partie", landing_source)
+        self.assertIn("entrainement depuis tes parties", landing_source)
+        self.assertIn("une action utile a chaque etape", landing_source)
 
         self.assertIn('"header"', logo_source)
         self.assertIn('variant="header"', landing_source)
@@ -1259,36 +1107,36 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("onNavigateHome()", app_source)
         self.assertIn("app-brand-title", app_source)
 
-        self.assertIn("buildNeuroMonitorSignals", neuroflow_source)
-        self.assertIn("<NeuroMonitorBrain", neuroflow_source)
-        self.assertIn("Stabilité", neuroflow_source)
-        self.assertIn("Tension", neuroflow_source)
-        self.assertIn("Focus tactique", neuroflow_source)
-        self.assertIn("Synchronisation", neuroflow_source)
-        self.assertIn("en attente", neuroflow_source)
-
         for selector in (
             ".home-shell",
             ".home-continuum",
-            ".home-neuro-monitor",
+            ".decision-visual",
             ".app-header",
             ".app-brand",
             ".app-brand-logo",
             ".app-brand-title",
-            ".neuro-monitor-brain",
-            ".neuro-brain-visual",
-            ".neuro-monitor-stats",
-            "@keyframes neuro-monitor-flow",
+            "@keyframes landing-decision-flow",
         ):
             self.assertIn(selector, styles_source)
 
-        for forbidden_claim in ("cerveau réel", "mesure neurologique", "LLM", "Stockfish"):
-            self.assertNotIn(forbidden_claim.lower(), monitor_source.lower())
-            self.assertNotIn(forbidden_claim.lower(), neuroflow_source.lower())
+        for forbidden in (
+            "HomeNeuroMonitor",
+            "NeuroMonitorBrain",
+            "NeuroFlowPanel",
+            "home-neuro-monitor",
+            "neuro-monitor-brain",
+            "neuro-brain-visual",
+            "neuro-monitor-flow",
+            "brain",
+            "cortex",
+        ):
+            self.assertNotIn(forbidden, landing_source)
+            self.assertNotIn(forbidden, styles_source)
+
+        for forbidden_claim in ("cerveau réel", "mesure neurologique", "LLM"):
+            self.assertNotIn(forbidden_claim.lower(), landing_source.lower())
 
         for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
-            self.assertNotIn(marker, monitor_source)
-            self.assertNotIn(marker, neuroflow_source)
             self.assertNotIn(marker, landing_source)
             self.assertNotIn(marker, logo_source)
 
@@ -1516,7 +1364,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("handleCancelReviewJob", app_source)
         self.assertIn("export const MIN_REVIEW_HALF_MOVES = 10", review_state_source)
         self.assertIn("const canRequestReview = isGameCompleted", app_source)
-        self.assertIn("Voir la review", app_source)
+        self.assertIn("Voir la Review", app_source)
         self.assertIn("Moments à revoir", review_panel_source)
         self.assertIn("Analyse approfondie en cours", review_panel_source)
         self.assertIn("L'analyse approfondie continue en arrière-plan", review_state_source)

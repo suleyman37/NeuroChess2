@@ -836,7 +836,7 @@ No implemented formula now. Required instrumentation:
 
 - formula_id: `practice_result_event_v1`
 - version: `review_practice_attempt_event_v1`
-- implementation_status: `partial`
+- implementation_status: `implemented_v1`
 - purpose: action event log
 - inputs: practice attempt and item context
 - output: event record, not a score
@@ -856,16 +856,17 @@ Current stored fields:
 - `result`
 - `attempt_number`
 - `evidence_snapshot_json`
+- `item_id`
+- `time_spent_ms`
+- `hint_used`
+- `reveal_used`
+- `source_context`
+- `due_at`
 - `created_at`
 
 Recommended future fields:
 
-- `item_id`
-- `time_spent`
-- `hint_used`
-- `reveal_used`
 - `item_difficulty`
-- `source_context`
 - optional `self_confidence`
 
 Allowed results:
@@ -883,12 +884,44 @@ Allowed results:
 - calibration_status: `heuristic_v0`
 - limitations:
   - One event is not a skill diagnosis.
-  - Current event lacks time and hint/reveal telemetry.
+  - V1 timing and hint/reveal telemetry are stored for Review Practice only.
+  - `item_difficulty` and self-confidence remain future fields.
 - example: `result=wrong`, `attempt_number=1`.
 - registry_link: `practice_result_v1`
 - source_semantics: implemented in `review_practice_service`.
 
-### 23. transfer_gap_beta_v1
+### 23. revision_due_simple_v1
+
+- formula_id: `revision_due_simple_v1`
+- version: `revision_due_simple_v1`
+- implementation_status: `implemented_v1`
+- purpose: simple V1 revision scheduling
+- inputs: latest Practice result per `item_id`, `hint_used`, `reveal_used`,
+  `created_at`
+- output: `due_at`, `due_count`, `scheduled_count`, not a mastery score
+- formula:
+
+```text
+wrong or illegal -> due in 1 day
+revealed -> due in 1 day
+best/very_good/acceptable with hint -> due in 3 days
+best/very_good/acceptable without help -> due in 7 days
+skipped -> no scheduled revision in V1
+```
+
+- interpretation: a small Review/Practice memory loop, not full FSRS.
+- used_by: Aujourd'hui `A revoir`, Training `Revisions`, due Review Practice
+  session creation.
+- calibration_status: `heuristic_v0`
+- limitations:
+  - No ETV, SkillTrace, BKT, IRT, or posterior Beta is exposed.
+  - The UI may show counts and honest copy only, never a calibrated mastery
+    claim.
+- example: `result=wrong` on Monday becomes due Tuesday.
+- registry_link: `revision_due_simple_v1`
+- source_semantics: implemented in `review_practice_service`.
+
+### 24. transfer_gap_beta_v1
 
 - formula_id: `transfer_gap_beta_v1`
 - version: `bayesian_transfer_gap_v1`

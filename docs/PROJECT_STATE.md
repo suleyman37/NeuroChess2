@@ -16,6 +16,21 @@ et les fichiers frontend/backend inspectes.
   prochaines versions.
 - V6 : non demarree.
 
+## Mise a jour QA du 2026-05-04
+
+- `P0.BROWSER-SMOKE-FLOW` est implemente via
+  `scripts/browser_v1_flow_smoke.mjs`.
+- Le smoke demarre un backend avec DB temporaire, le fake engine existant, Vite
+  et Edge via CDP. Il ne modifie pas Stockfish, les formules ni les metriques.
+- Dernier resultat connu: PASS.
+- Flow prouve: `/app` charge, navigation Plan2 visible, Entrainement a
+  exactement trois entrees, import PGN UI fonctionne, une Review devient prete,
+  le Summary Review est visible, Practice se lance, `Voir la correction`
+  enregistre un `practice_attempt`, `due_at` J+1 est cree, et
+  `learning_summary.scheduled_count=1`.
+- Prochaine mission recommandee: `P1.PROFILE-PRIVACY` pour couvrir les
+  exigences Plan3 privacy/export/delete avant utilisateurs externes.
+
 ## Features livrees
 
 - Backend SQLite avec migrations idempotentes.
@@ -589,8 +604,8 @@ severity-aware, via les alias `*_coach_neuro_score` adosses aux champs
 separement comme `Precision de reference`.
 
 Diagnostic Gap, NeuroDiagnostic et details de fusion restent dans les details
-techniques/audit. NeuroMonitor utilise le score coach en overall et conserve des
-domaines qualitatifs jusqu'a calibration.
+techniques/audit. Les domaines heuristiques ne doivent pas etre affiches comme
+scores calibres dans la Review normale.
 
 ## V5.4.REVIEW-UI-POLISH-1 - Premium Review UI Pass
 
@@ -601,13 +616,230 @@ colonne board compacte, colonne coach prioritaire, header plus net et onglets
 `Resume`, `Apprendre`, `S'entrainer`, `Explorer` conserves comme structure
 visible finale.
 
-Le Resume devient un dashboard court : hero NeuroScore coach, precision de
-reference, label qualitatif, une seule carte cognitive NeuroMonitor, trois
-priorites maximum, trois takeaways maximum et un CTA principal. La colonne board
-ne duplique plus le NeuroMonitor.
+Le Resume devient une synthese courte : hero NeuroScore coach, precision de
+reference repliee, label qualitatif, trois moments maximum et un CTA principal
+vers l'entrainement. La colonne board ne duplique pas le resume coach.
 
 `Apprendre` reste guide par `Defi`, `Correction`, `Entrainement`; la correction
 est presentee en cartes narratives et les comparaisons de lignes restent
 repliees par defaut. `S'entrainer` affiche toujours une action claire, meme
 quand aucune session n'est active. `Explorer` contient la complexite, les
 details techniques et les preuves PV sous disclosures.
+
+## V5.5.PLAN-GOVERNANCE-NEUROMONITOR-REMOVAL
+
+Etat : implemente.
+
+Plan1 et Plan2 sont ancres comme source de verite locale via les documents
+`PLAN_SOURCE_OF_TRUTH.md`, `PLAN_CONTEXT_MIN.md`,
+`PLAN_FEATURE_BOUNDARIES.md`, `PLAN_ALIGNMENT_AUDIT.md` et
+`NEXT_PLAN_ACTIONS.md`.
+
+Le NeuroMonitor, les visualisations de type cerveau/atlas/cortex/carte
+cognitive et les dependances Three.js associees sont retires de `frontend/src`
+et des manifests frontend. Les concepts visuels futurs restent uniquement dans
+`RESEARCH_BACKLOG.md`.
+
+Le Resume Review est simplifie selon Plan2 : NeuroScore coach principal, detail
+du score replie, trois moments cles maximum, carte unique d'entrainement et lien
+discret vers Explorer.
+
+## V5.5.APP-SHELL-PLAN2-1
+
+Etat : implemente partiellement.
+
+L'application expose maintenant la navigation principale Plan2 :
+`Aujourd'hui`, `Mes parties`, `Entrainement`. Le statut Profil/Parametres reste
+hors navigation principale sous forme de placeholder en haut a droite.
+
+`Aujourd'hui` repond a "que faire maintenant ?" avec un hero prioritaire, un CTA
+unique, une carte Derniere Review, une carte Progression cette semaine et une
+carte A revoir. Les donnees non productisees affichent explicitement "profil en
+construction".
+
+`Mes parties` reutilise l'espace existant board + import PGN + historique +
+analyse + acces Review. La Review n'est plus un onglet permanent de navigation
+principale ; elle s'ouvre depuis un contexte et propose un retour vers le flux
+d'origine.
+
+`Entrainement` reste volontairement V1 : Plan du jour, Mes positions ratees,
+Revisions. La page utilise Practice quand une Review terminee le permet et
+affiche des fallbacks honnetes quand les files de revision ne sont pas encore
+productisees.
+
+Cette mission ne change pas Stockfish, les formules, les metriques backend, ni
+les features research/V2.
+
+## V5.5.SERENA-AND-APP-SHELL-STABILITY-GATE
+
+Etat : implemente.
+
+Serena MCP etait indisponible au debut de cette session, puis est redevenu
+expose apres decouverte d'outils. Le projet s'active et l'onboarding est deja
+fait, mais la navigation semantique TypeScript restait indisponible car Serena
+rapportait seulement `python` comme langage actif.
+
+`P0.FIX-SERENA-TYPESCRIPT-LANGUAGE` corrige `.serena/project.yml` pour declarer
+`typescript` puis `python`. La configuration MCP globale Codex n'a pas ete
+modifiee. La session Serena courante peut necessiter un redemarrage complet
+Codex/MCP avant que `get_symbols_overview` fonctionne sur `frontend/src/App.tsx`.
+
+Apres redemarrage Codex/MCP, Serena rapporte les langages actifs `typescript`
+et `python`. La navigation semantique TypeScript est OK sur `frontend/src/App.tsx`,
+`AppShellPage`, `ReviewCockpitSummary`, `ReviewPanel`,
+`ReviewPracticeSessionPanel`, et `ReviewPracticePanel`.
+
+L'integrite App Shell Plan2 a ete controlee : navigation `Aujourd'hui` /
+`Mes parties` / `Entrainement`, Review contextuelle, page Entrainement limitee
+a `Plan du jour`, `Mes positions ratees`, `Revisions`, et aucune reintroduction
+NeuroMonitor/brain/cortex/atlas.
+
+Le test statique App Shell a ete deplace de
+`backend/tests/test_calibration_logic.py` vers
+`backend/tests/test_frontend_app_shell_static.py`, avec la faute `staticly`
+corrigee en `statically`. La couverture est conservee.
+
+## V5.5.APP-SHELL-PLAN2-2
+
+Etat : implemente partiellement.
+
+`Aujourd'hui` garde une seule intention et un seul CTA principal. Le hero est
+maintenant derive de signaux existants : Practice en cours, Review prete,
+analyse en cours, partie terminee prete a entrer en Review, ou profil en
+construction avec import PGN.
+
+`Mes parties` reste le conteneur de l'import PGN, de l'historique, de l'analyse
+et de l'acces Review. Son header ne met plus les actions de partie locale au
+premier plan ; il priorise `Importer PGN` et `Voir historique`.
+
+`Entrainement` expose toujours exactement trois entrees V1 : Plan du jour,
+Mes positions ratees, Revisions. Les cartes reutilisent les signaux Practice
+deja disponibles quand ils existent, sans inventer de progression ni afficher
+de formule.
+
+La Review reste contextuelle depuis Aujourd'hui, Mes parties ou Entrainement,
+avec retour vers le flux d'origine. Aucun changement Stockfish, formule
+scientifique ou metrique backend.
+
+## P0.RESTORE-PYTHON-TEST-ENV
+
+Etat : restaure via environnement local de reparation.
+
+Le `python` global et le launcher `py` ne sont pas disponibles dans cette
+session Codex. L'ancienne `.venv` existe, mais son `pyvenv.cfg` pointe vers
+`C:\Users\bahij\AppData\Local\Programs\Python\Python312\python.exe`; ce chemin
+existe encore mais retourne `Access denied`, donc `.venv\Scripts\python.exe`
+echoue avec `Unable to create process using Python312`.
+
+Un environnement local `.venv_repair_local` base sur le Python bundle Codex
+3.12.13 est utilisable avec les dependances extraites dans
+`.manual_pydeps\site-packages` depuis `requirements.txt`. La commande fiable de
+test backend dans cette session est :
+
+```powershell
+$env:PYTHONPATH=(Resolve-Path .manual_pydeps\site-packages).Path
+$env:TEMP=(Resolve-Path .tmp\test-run-local).Path
+$env:TMP=$env:TEMP
+$env:TMPDIR=$env:TEMP
+.venv_repair_local\Scripts\python.exe -m unittest discover backend/tests
+```
+
+Le smoke Review utilise le meme environnement :
+
+```powershell
+.venv_repair_local\Scripts\python.exe scripts\review_regression_smoke.py
+```
+
+Statut validation 2026-05-03 : `python tools/plan_guard.py` OK, backend full
+suite OK (`453 tests`), smoke Review OK, frontend build OK hors sandbox. Aucun
+changement Stockfish, formule scientifique, metrique backend ou UI n'a ete fait.
+
+## P1.TRAINING-V1
+
+Etat : implemente.
+
+La page `Entrainement` reste limitee aux trois entrees V1 de Plan2 :
+`Plan du jour`, `Mes positions ratees`, `Revisions`. Aucun Candidate Trainer,
+Intent Layer, LLM coach, Transfer Gap visible ou quatrieme mode n'a ete ajoute.
+
+`Plan du jour` utilise les signaux existants : session Practice active,
+Review prete pour Practice, Review contextuelle, analyse en cours ou fallback
+import. Le hero conserve une seule action principale avec libelle
+`Reprendre`, `Commencer`, `Voir la Review`, `Analyse en cours` ou
+`Importer une partie` selon l'etat reel.
+
+`Mes positions ratees` reutilise l'historique Practice existant :
+nombre de positions ratees, action `Revoir` quand une session avec echecs existe,
+action `Voir` quand seul un resume de session existe, sinon `Profil en
+construction`.
+
+`Revisions` reste un etat honnete non productise : `profil en construction` ou
+`disponible apres plus de Reviews`. Aucune file due/FSRS n'est simulee.
+
+## P1.LEARNING-LOOP-MINIMUM
+
+Etat : implemente.
+
+La boucle minimale est maintenant branchee sans modele avance visible :
+Practice enregistre des tentatives enrichies (`item_id`, temps passe,
+indice/correction, contexte source, `due_at`), puis le backend calcule des
+compteurs simples `due` / `scheduled` a partir des derniers evenements par
+position.
+
+Regles V1 appliquees : erreur ou illegal = revoir demain, correction revelee =
+revoir demain, reussite avec indice = 3 jours, reussite sans aide = 7 jours,
+skip = pas de revision planifiee en V1.
+
+`Aujourd'hui` affiche une progression compacte et `A revoir` a partir de vrais
+compteurs Practice. `Entrainement` garde exactement trois entrees : Plan du jour,
+Mes positions ratees, Revisions. Les revisions peuvent lancer une session
+Practice due quand des positions sont pretes.
+
+Restent caches/non exposes en UI normale : FSRS, ETV, SkillTrace, BKT, IRT,
+Transfer Gap, posterior Beta et scores de domaine calibres.
+
+## P0.INTEGRATE-PLAN3-MD
+
+Etat : implemente le 2026-05-04.
+
+`plan/Plan3.md` est integre comme troisieme document maitre officiel. Plan1
+reste la source science/moteur/metriques/modele utilisateur. Plan2 reste la
+source UX/ecrans/parcours. Plan3 gouverne l'ordre d'execution, les sprints, la
+gouvernance Codex, les tests et la livraison V1.
+
+Regle ajoutee : Plan3 ne doit jamais etre applique en entier d'un coup. Une
+mission Codex doit rester un objectif precis, un diff controle, des tests et un
+rapport.
+
+Impact sur la suite : `P1.LEARNING-LOOP-MINIMUM` doit etre lu sous le vocabulaire
+Plan3 : `simple_spaced_repetition_v1`, Daily Plan deterministe, SkillTrace
+shadow seulement, pas de FSRS visible, pas de score de maitrise visible, pas de
+Transfer Gap visible.
+
+## P0.FULL-APP-EVIDENCE-QA-AUDIT-V1
+
+Etat : implemente le 2026-05-04.
+
+Mission QA uniquement : aucune feature produit, aucun changement Stockfish,
+aucune formule scientifique et aucune metrique backend n'ont ete modifies.
+
+Documents crees : `docs/FULL_APPLICATION_QA_AUDIT.md`,
+`docs/TEST_COVERAGE_MATRIX.md`, `docs/V1_READINESS_REPORT.md` et
+`docs/QA_CHECKLIST.md`.
+
+Preuves obtenues : Serena actif avec `typescript` et `python`; plan guard PASS;
+backend full suite PASS (`459 tests`); Review smoke PASS; PGN import smoke PASS;
+Sindarov real-flow smoke PASS; frontend build PASS; fallback typecheck
+`npx tsc --noEmit` PASS. `npm run typecheck` et `npm run lint` ne sont pas
+disponibles comme scripts npm.
+
+Browser smoke reel initial : backend temporaire `/health` OK, Vite `/app` OK,
+nav `Aujourd'hui` / `Mes parties` / `Entrainement` visible, page Entrainement
+limitee aux trois entrees V1, import PGN via UI OK, aucun label interdit V1 dans
+les snapshots testes, et aucun log console applicatif majeur. Cette preuve a
+ensuite ete completee par `P0.BROWSER-SMOKE-FLOW`, qui valide Review prete,
+Summary, Practice et attempt reveal avec `due_at`.
+
+Readiness apres browser smoke : alpha interne estimee a 84%, V1 externe estimee
+a 62%, decision NO-GO pour premiers utilisateurs externes. Prochaine mission
+prioritaire : `P1.PROFILE-PRIVACY`.

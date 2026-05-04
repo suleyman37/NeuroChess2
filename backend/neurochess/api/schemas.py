@@ -108,6 +108,10 @@ class RecordReviewPracticeAttemptRequest(BaseModel):
     ply: int
     attempted_uci: str | None = None
     result: str | None = None
+    time_spent_ms: int | None = None
+    hint_used: bool = False
+    reveal_used: bool = False
+    source_context: str | None = None
 
 
 class EvaluationResponse(BaseModel):

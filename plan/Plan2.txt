@@ -1,0 +1,1839 @@
+DOCUMENT MAÎTRE — PLAN 2/3 NEUROCHESS
+ARCHITECTURE VISUELLE, UX, PÉDAGOGIE, PARCOURS UTILISATEUR ET DESIGN OPÉRATIONNEL
+
+Version : Plan UX / Produit / Interface v1.0
+Objectif : permettre à n’importe quelle IA ou développeur de comprendre précisément comment construire l’expérience utilisateur de NeuroChess, écran par écran, état par état, bouton par bouton.
+
+============================================================
+0. DÉFINITION DU PLAN 2
+=======================
+
+Le Plan 1 définit comment NeuroChess pense scientifiquement :
+
+* Stockfish ;
+* Win% ;
+* perte de chances ;
+* NeuroScore coach ;
+* criticality_score ;
+* taxonomie ;
+* Practice events ;
+* SkillTrace Beta ;
+* ETV ;
+* Transfer Gap ;
+* Intent Layer ;
+* sciences cognitives de l’apprentissage.
+
+Le Plan 2 définit comment l’utilisateur vit concrètement l’application.
+
+Le but du Plan 2 est de transformer un moteur mathématique complexe en une expérience :
+
+* claire ;
+* belle ;
+* motivante ;
+* pédagogique ;
+* non humiliante ;
+* addictive dans le bon sens ;
+* respectueuse de la mémoire, de l’attention et de l’émotion ;
+* orientée action.
+
+NeuroChess ne doit pas ressembler à un dashboard de métriques.
+
+NeuroChess doit ressembler à un coach calme, exigeant, intelligent et humain.
+
+L’utilisateur ne doit jamais se demander :
+
+“Qu’est-ce que je dois faire maintenant ?”
+
+L’application doit toujours répondre :
+
+“Voici la prochaine action utile.”
+
+============================================================
+
+1. PRINCIPES UX FONDAMENTAUX
+   ============================================================
+
+1.1 Une interface fondée sur les moments utilisateur
+
+L’utilisateur ne pense pas en pages.
+
+Il pense en moments :
+
+* Je viens d’arriver.
+* J’ai une partie à analyser.
+* J’ai perdu et je suis frustré.
+* Je veux comprendre ce qui s’est passé.
+* Je veux savoir quoi travailler.
+* Je veux m’entraîner vite.
+* Je veux vérifier si je progresse.
+* Je reviens après plusieurs jours.
+* Je suis débutant et je ne comprends pas les concepts.
+* Je suis avancé et je veux aller plus loin.
+
+Chaque écran doit répondre à un moment émotionnel et cognitif.
+
+1.2 Une page = une intention principale
+
+Chaque écran doit répondre à une question unique.
+
+Aujourd’hui :
+“Qu’est-ce que je fais maintenant ?”
+
+Mes parties :
+“Quelle partie je veux analyser ou revoir ?”
+
+Review :
+“Qu’est-ce que cette partie révèle ?”
+
+Leçon complète :
+“Qu’est-ce que je n’ai pas vu ?”
+
+Practice :
+“Comment ne plus refaire cette erreur ?”
+
+Entraînement :
+“Quelle session je dois faire maintenant ?”
+
+Progression :
+“Est-ce que je progresse vraiment ?”
+
+Profil :
+“Comment je contrôle mon expérience et mes données ?”
+
+1.3 Complexité cachée, action visible
+
+L’utilisateur ne doit pas voir :
+
+* raw criticality_score ;
+* diagnostic_gap ;
+* transition_weight ;
+* persistence_weight ;
+* reliability_weight ;
+* raw PV ;
+* ETV ;
+* BKT ;
+* IRT ;
+* FSRS ;
+* Evidence JSON ;
+* posterior Beta ;
+* raw Stockfish WDL.
+
+L’utilisateur doit voir :
+
+* NeuroScore ;
+* une phrase claire ;
+* une priorité ;
+* une leçon ;
+* un exercice ;
+* une progression ;
+* une action.
+
+1.4 Hiérarchie simple des actions
+
+Pour chaque écran :
+
+* une action principale ;
+* zéro à deux actions secondaires ;
+* tout le reste replié, masqué ou dans un menu.
+
+Niveaux visibles :
+
+1. Action principale
+   Exemple : “Commencer”, “Voir la Review”, “S’entraîner”.
+
+2. Action secondaire
+   Exemple : “Voir le détail”, “Importer une autre partie”.
+
+3. Actions avancées
+   Exemple : “Réanalyser deep”, “Voir PGN”, “Debug”, “Supprimer”.
+
+Les actions avancées ne doivent jamais concurrencer l’action principale.
+
+1.5 Respect du temps utilisateur
+
+Objectifs de temps :
+
+* première valeur : moins de 90 secondes ;
+* onboarding : moins de 60 secondes ;
+* importer/coller une partie : moins de 30 secondes d’action utilisateur ;
+* Review rapide : environ 3 minutes ;
+* Leçon complète : environ 15–20 minutes ;
+* Practice : environ 8–12 minutes ;
+* Intent Light : moins de 15 secondes ;
+* première compréhension après Review : moins de 10 secondes.
+
+Si une action prend du temps :
+
+* afficher une progression ;
+* permettre de quitter ;
+* permettre de revenir plus tard ;
+* ne jamais bloquer l’utilisateur devant un spinner seul.
+
+1.6 Pédagogie active
+
+NeuroChess doit toujours privilégier :
+
+* essayer avant de voir ;
+* comprendre son erreur ;
+* rejouer ;
+* revoir plus tard ;
+* transférer en partie réelle.
+
+Flux pédagogique fondamental :
+
+Défi
+→ Tentative
+→ Micro-pause
+→ Correction
+→ À retenir
+→ Répétition
+→ Révision future
+→ Transfert en partie réelle
+
+1.7 Dopamine saine
+
+La motivation doit venir de :
+
+* petites victoires ;
+* progression visible ;
+* continuité ;
+* sentiment de maîtrise ;
+* erreurs corrigées ;
+* réduction de motifs récurrents ;
+* encouragements sincères.
+
+Ne pas utiliser :
+
+* lootboxes ;
+* XP arbitraire partout ;
+* culpabilisation ;
+* feux d’artifice cheap ;
+* streaks punitifs ;
+* notifications agressives.
+
+============================================================
+2. DÉCISIONS UX FINALES
+=======================
+
+2.1 Navigation principale
+
+Navigation V1 :
+
+1. Aujourd’hui
+2. Mes parties
+3. Entraînement
+
+Profil / Paramètres :
+icône en haut à droite.
+
+Review :
+ouverte depuis une partie, Aujourd’hui ou une session, mais pas onglet principal permanent.
+
+Progression :
+carte compacte dans Aujourd’hui, puis vue détaillée accessible via lien.
+
+2.2 Score principal
+
+Score principal visible :
+
+NeuroScore coach
+
+Ne pas afficher deux grands scores concurrents.
+
+La précision de référence existe, mais dans le détail replié.
+
+UI principale :
+
+NeuroScore 77 / 100
+Ta précision moyenne était bonne, mais trois moments critiques pèsent sur la note.
+
+Lien :
+Voir le détail du score
+
+Dans le détail :
+
+* Précision de référence : 87 %
+* Score coach : précision + gravité des moments critiques
+* détails techniques repliés
+
+2.3 Review
+
+La Review n’est pas un espace à quatre onglets équivalents.
+
+Elle est un parcours :
+
+Résumé
+→ Lecture rapide ou Leçon complète
+→ S’entraîner
+→ Explorer seulement si besoin
+
+2.4 Entraînement V1
+
+Trois entrées seulement :
+
+1. Plan du jour
+2. Mes positions ratées
+3. Révisions
+
+Pas 8 modes en V1.
+
+2.5 Intent Layer
+
+L’Intent Layer est optionnel.
+
+Modes :
+
+* Silencieux ;
+* Coach ;
+* Candidats.
+
+Jamais permanent.
+Jamais obligatoire en Review normale.
+
+2.6 Foundations
+
+Le segment 400–800 est un module spécifique futur.
+
+Pas V1 core.
+
+2.7 Candidate Trainer
+
+Fonction différenciante, mais V2.
+
+Pas V1 core.
+
+============================================================
+3. DESIGN SYSTEM VISUEL
+=======================
+
+3.1 Ambiance
+
+Style :
+
+* premium ;
+* sombre ;
+* calme ;
+* moderne ;
+* légèrement futuriste ;
+* lisible ;
+* non flashy ;
+* non jeu vidéo cheap ;
+* non dashboard de debug.
+
+Inspiration visuelle :
+
+* fond navy / near-black ;
+* cartes bleu nuit ;
+* accents cyan / bleu ;
+* glow très subtil ;
+* typographie claire ;
+* spacing généreux ;
+* hiérarchie forte.
+
+3.2 Variables CSS recommandées
+
+Couleurs :
+
+--bg-main: #050A14;
+--bg-grid: #07111F;
+--panel: #0A1224;
+--panel-elevated: #101B33;
+--panel-soft: #0D172B;
+--border-subtle: rgba(94, 234, 255, 0.14);
+--border-strong: rgba(94, 234, 255, 0.36);
+
+--text-main: #F4F7FB;
+--text-secondary: #A9B4C7;
+--text-muted: #667085;
+
+--cyan: #19D9FF;
+--blue: #2E7BFF;
+--purple: #7C5CFF;
+
+--success: #35D48B;
+--warning: #F6B94C;
+--danger: #FF5C7A;
+--neutral: #7B8499;
+
+--cta-gradient: linear-gradient(135deg, #19D9FF 0%, #2E7BFF 100%);
+--panel-gradient: linear-gradient(180deg, rgba(16,27,51,0.96), rgba(7,13,27,0.96));
+
+3.3 Typographie
+
+Police recommandée :
+Inter, Satoshi ou équivalent sans-serif moderne.
+
+Tailles :
+
+* Header app logo : 20–22 px ;
+* Navigation : 14–15 px ;
+* Hero title Aujourd’hui : 28–32 px ;
+* Score Review : 32–36 px ;
+* Titre carte : 18–22 px ;
+* Texte principal : 15–16 px ;
+* Texte secondaire : 13–14 px ;
+* Badge : 11–12 px ;
+* Debug : 11–12 px, replié.
+
+Ne pas mettre le score Review à 56 px.
+56 px réservé à la landing marketing.
+
+3.4 Spacing
+
+Global app padding desktop :
+24–32 px.
+
+Card padding principale :
+20–24 px.
+
+Card padding compacte :
+14–16 px.
+
+Gap principal :
+20–24 px.
+
+Gap secondaire :
+12–16 px.
+
+Gap compact :
+8 px.
+
+3.5 Border radius
+
+Panels :
+18–22 px.
+
+Cards :
+16–18 px.
+
+Buttons :
+10–12 px.
+
+Badges :
+999 px.
+
+3.6 Ombres et glow
+
+Utiliser glow avec parcimonie.
+
+CTA principal :
+box-shadow: 0 0 24px rgba(25,217,255,0.22);
+
+Panel actif :
+box-shadow: 0 0 0 1px rgba(25,217,255,0.22);
+
+Ne jamais mettre glow sur toutes les cartes.
+
+3.7 Boutons
+
+Bouton principal :
+
+* hauteur : 44–48 px ;
+* padding horizontal : 18–22 px ;
+* fond gradient cyan/blue ;
+* texte dark ou white selon contraste ;
+* font-weight 700 ;
+* border-radius 12 px.
+
+Bouton secondaire :
+
+* hauteur : 40–44 px ;
+* fond transparent ou panel-soft ;
+* border subtle ;
+* texte main.
+
+Bouton tertiaire :
+
+* texte ou petit bouton ;
+* faible poids visuel ;
+* jamais en compétition avec CTA.
+
+Bouton destructif :
+
+* couleur danger ;
+* confirmation modale obligatoire.
+
+3.8 États hover/focus
+
+Hover :
+légère montée de luminosité + border cyan.
+
+Focus clavier :
+outline cyan 2 px, visible.
+
+Disabled :
+opacity 0.45, cursor not-allowed.
+
+============================================================
+4. STRUCTURE GLOBALE APP SHELL
+==============================
+
+4.1 Desktop layout
+
+Largeur app :
+max-width 1440 px, centré.
+
+Header :
+height 72 px.
+
+Contenu :
+padding top 24 px.
+
+Navigation principale :
+dans header, ou latérale compacte selon design final.
+
+Header desktop :
+
+Gauche :
+Logo NeuroChess + sous-label “Chess · Decision Science”
+
+Centre :
+Aujourd’hui
+Mes parties
+Entraînement
+
+Droite :
+Importer
+Profil avatar
+Paramètres
+
+4.2 Mobile layout
+
+Bottom navigation :
+
+Aujourd’hui
+Parties
+Entraînement
+
+Profil en haut à droite ou dans tab “Plus” si nécessaire.
+
+Board / Review :
+stack vertical.
+
+Practice :
+mode full-screen focus.
+
+4.3 Breakpoints
+
+Mobile :
+0–767 px.
+
+Tablet :
+768–1023 px.
+
+Desktop :
+1024–1439 px.
+
+Wide :
+1440 px+.
+
+============================================================
+5. ONBOARDING V1
+================
+
+Objectif :
+amener l’utilisateur à sa première valeur en moins de 90 secondes.
+
+Pas plus de deux écrans.
+
+---
+
+## 5.1 Écran 1 : niveau
+
+Layout :
+
+Fond sombre avec gradient léger.
+Card centrée largeur 520 px desktop, 90 % mobile.
+
+Contenu :
+
+Logo NeuroChess.
+
+Titre :
+Bienvenue dans NeuroChess
+
+Sous-titre :
+On va transformer tes parties en entraînement ciblé.
+
+Question :
+Quel est ton niveau approximatif ?
+
+Options en grille :
+
+* Je débute
+* 400–800
+* 800–1200
+* 1200–1600
+* 1600–2000
+* 2000+
+* Je ne sais pas
+
+Chaque option :
+card pill 100 % width mobile, grille 2 colonnes desktop.
+
+Sélection :
+border cyan + fond cyan transparent.
+
+Bouton :
+Continuer
+
+Bouton secondaire discret :
+Passer
+
+Si “Je ne sais pas” :
+message :
+Pas grave, on calibrera avec tes premières parties.
+
+Données créées :
+user_initial_level_bucket
+onboarding_completed_step_1
+
+---
+
+## 5.2 Écran 2 : première action
+
+Titre :
+Commence avec une partie
+
+Sous-titre :
+NeuroChess a besoin d’une partie pour construire ta première Review.
+
+Cartes :
+
+1. Importer une partie
+   Texte :
+   Depuis Lichess, Chess.com ou un fichier PGN.
+   CTA :
+   Importer
+
+2. Coller un PGN
+   Texte :
+   Colle directement une partie.
+   CTA :
+   Coller
+
+3. Voir un exemple
+   Texte :
+   Découvre une Review complète sans rien importer.
+   CTA :
+   Voir exemple
+
+Ordre :
+Importer en premier.
+
+Pas de cadence.
+Pas d’objectif.
+Pas d’Intent Layer.
+Pas de notification.
+Pas de compte obligatoire si local-first.
+
+============================================================
+6. PAGE AUJOURD’HUI
+===================
+
+Objectif :
+répondre à “qu’est-ce que je fais maintenant ?”
+
+C’est l’écran le plus important de l’app.
+
+6.1 Structure desktop
+
+Header app.
+
+Main container :
+max-width 1180 px.
+
+Layout :
+colonne principale 720 px + colonne secondaire 360 px.
+
+Sur mobile :
+une seule colonne.
+
+6.2 Hero unique
+
+La page Aujourd’hui a toujours un seul Hero principal.
+
+Règle de priorité :
+
+1. Session Practice interrompue < 7 jours
+2. Plan du jour disponible non commencé
+3. Review prête récente < 24h
+4. Analyse en cours
+5. Révisions dues > 5
+6. Profil en construction
+7. Plan terminé aujourd’hui
+8. Invitation à importer
+
+Les autres états deviennent cartes secondaires.
+
+---
+
+## 6.3 Hero : session interrompue
+
+Titre :
+On reprend ?
+
+Phrase :
+Tu étais à la position 3 sur 5.
+
+Info :
+Session : Tactique personnelle · 8 min restantes
+
+CTA principal :
+Reprendre
+
+Lien discret :
+Abandonner la session
+
+Émotion :
+continuité, pas culpabilité.
+
+---
+
+## 6.4 Hero : plan du jour
+
+Titre :
+Aujourd’hui — 12 minutes
+
+Phrase :
+On travaille les moments qui t’ont coûté le plus récemment.
+
+Liste :
+
+* 3 tactiques issues de tes parties
+* 2 conversions
+* 1 défense sous pression
+
+CTA :
+Commencer
+
+Sous-texte :
+Session courte. Tu peux arrêter quand tu veux.
+
+Lien discret :
+Changer de format
+
+Changer de format ouvre un mini-menu :
+
+* Session courte 5 min
+* Réviser mes erreurs
+* Choisir une partie
+* Session libre
+
+Cela préserve l’autonomie sans diluer le CTA.
+
+---
+
+## 6.5 Hero : Review prête
+
+Titre :
+Ta Review est prête
+
+Phrase :
+Deux moments expliquent l’essentiel de cette partie.
+
+CTA :
+Voir la Review
+
+Secondaire :
+Importer une autre partie
+
+Mini info :
+Analyse terminée il y a 4 min.
+
+---
+
+## 6.6 Hero : analyse en cours
+
+Titre :
+Analyse en cours
+
+Phrase :
+On prépare ta Review. Tu peux continuer à explorer pendant ce temps.
+
+Progress :
+34 / 78 positions
+
+CTA :
+Voir l’exemple
+
+Secondaire :
+Voir la file d’analyse
+
+---
+
+## 6.7 Hero : profil en construction
+
+Titre :
+Construisons ton profil
+
+Phrase :
+Importe 3 parties pour obtenir un premier plan personnalisé.
+
+CTA :
+Importer une partie
+
+Secondaire :
+Voir un exemple
+
+---
+
+## 6.8 Hero : plan terminé
+
+Titre :
+Plan terminé pour aujourd’hui
+
+Phrase :
+Tu as travaillé 12 minutes sur tes priorités.
+
+CTA :
+Voir ma progression
+
+Secondaire :
+Session bonus
+
+Message :
+Bien joué. Tu as fait ce qu’il fallait aujourd’hui.
+
+Animation :
+petite coche, pas feu d’artifice.
+
+---
+
+## 6.9 Carte Progression compacte
+
+Titre :
+Cette semaine
+
+Lignes :
+
+* 4 jours actifs
+* 27 positions revues
+* Tactique : 12 réussies / 18 tentatives
+* 3 erreurs récurrentes moins fréquentes
+
+CTA discret :
+Détails
+
+Règle :
+ratios bruts autorisés.
+Pas de faux score calibré.
+
+Phrase prioritaire sélectionnée selon :
+
+1. milestone atteint ;
+2. amélioration mesurable ;
+3. streak ;
+4. volume.
+
+---
+
+## 6.10 Carte Révisions dues
+
+Visible si positions dues.
+
+Titre :
+À revoir
+
+Phrase :
+5 positions prêtes à être consolidées.
+
+CTA :
+Réviser maintenant
+
+---
+
+## 6.11 Carte Dernière Review
+
+Titre :
+Dernière Review
+
+Contenu :
+
+* joueurs ;
+* résultat ;
+* NeuroScore ;
+* phrase courte ;
+* mini position clé.
+
+CTA :
+Ouvrir
+
+============================================================
+7. PAGE MES PARTIES
+===================
+
+Objectif :
+gérer les parties.
+
+Header :
+
+Titre :
+Mes parties
+
+Sous-titre :
+X parties · Y Reviews prêtes
+
+Actions :
+Importer
+Coller PGN
+
+Filtres :
+
+* Toutes
+* Non analysées
+* Review prête
+* Entraînement disponible
+* Importées
+
+Recherche :
+placeholder :
+Rechercher joueur, ouverture, date
+
+Tri :
+
+* plus récentes
+* plus instructives
+* score bas
+* score haut
+
+Carte partie :
+
+* joueurs ;
+* date ;
+* cadence ;
+* résultat ;
+* source ;
+* statut ;
+* NeuroScore si disponible ;
+* phrase courte.
+
+Exemples de phrase :
+
+“Deux moments critiques.”
+“Partie solide.”
+“Entraînement disponible.”
+“Analyse en cours.”
+
+Actions :
+
+Non analysée :
+Analyser
+
+Analyse en cours :
+Voir progression
+
+Review prête :
+Voir Review
+
+Entraînement disponible :
+S’entraîner
+
+Menu :
+
+* Voir PGN
+* Exporter
+* Réanalyser
+* Supprimer
+
+État vide :
+
+Titre :
+Aucune partie pour le moment
+
+Phrase :
+Importe une partie pour obtenir ta première Review.
+
+CTA :
+Importer une partie
+
+Secondaire :
+Voir un exemple
+
+============================================================
+8. REVIEW — STRUCTURE FINALE
+============================
+
+Objectif :
+comprendre une partie et choisir une profondeur d’engagement.
+
+Review n’est pas d’abord un onglet.
+C’est un parcours.
+
+8.1 Layout desktop
+
+Deux colonnes :
+
+Gauche :
+
+* échiquier ;
+* barre d’évaluation ;
+* coups ;
+* navigation.
+
+Droite :
+
+* contenu Review.
+
+Largeurs :
+gauche 52–58 % ;
+droite 42–48 %.
+
+Échiquier sticky.
+Colonne droite scrollable.
+
+Mobile :
+board en haut, contenu en dessous.
+
+8.2 Header Review
+
+Contenu :
+
+← retour
+Review — Toi vs Adversaire
+Date / cadence
+Menu “...”
+
+Menu :
+
+* Réanalyser
+* Exporter
+* Voir PGN
+* Supprimer
+
+8.3 Résumé immédiat
+
+Bloc score :
+
+NeuroScore 77 / 100
+
+Phrase principale :
+Tu étais bien jusqu’au coup 23, où une tactique manquée a changé la partie.
+
+Phrase secondaire :
+Ta précision moyenne était bonne, mais trois moments critiques pèsent sur la note.
+
+Lien :
+Voir le détail du score
+
+Détail replié :
+
+* Précision de référence : 87 %
+* Score coach : précision + gravité des moments
+* détails techniques masqués.
+
+8.4 Choix d’engagement
+
+Deux boutons :
+
+Lecture rapide — 3 min
+Comprendre la partie sans exercice.
+
+Leçon complète — 15 min
+Rejouer les moments clés.
+
+Design :
+Leçon complète peut être accentuée si le but est entraînement.
+Lecture rapide reste visible.
+
+8.5 Moments clés
+
+Liste de 3 cartes max :
+
+Carte :
+
+Coup 23 — Tactique manquée
+Phrase :
+Une fourchette pouvait gagner une pièce.
+
+CTA :
+Voir
+
+Badge :
+Moment clé
+
+Deuxième :
+Défense passive
+
+Troisième :
+Conversion
+
+8.6 CTA entraînement
+
+Carte :
+
+S’entraîner sur cette Review
+
+Phrase :
+5 positions · environ 8 minutes
+
+CTA :
+Commencer
+
+8.7 Détails avancés
+
+Lien :
+Voir tous les détails
+
+Ouvre Explorer :
+
+* tous les coups ;
+* filtres ;
+* PV ;
+* ouverture ;
+* détails techniques ;
+* debug replié.
+
+============================================================
+9. REVIEW — LECTURE RAPIDE
+==========================
+
+Objectif :
+comprendre en 3 minutes.
+
+Pas de défi.
+Pas d’exercice obligatoire.
+Pas d’Intent Layer.
+Pas de Candidate Trainer.
+
+Flux :
+
+Moment 1 :
+
+* coup joué ;
+* meilleur coup ;
+* une phrase ;
+* impact.
+
+Moment 2 :
+idem.
+
+Moment 3 :
+idem.
+
+À la fin :
+
+Texte :
+Tu veux transformer cette lecture en entraînement ?
+
+Boutons :
+
+* M’entraîner maintenant
+* Me le rappeler demain
+* Terminer
+
+Si “Me le rappeler demain” :
+créer rappel doux.
+
+Si “Terminer” :
+Aujourd’hui peut proposer 24–48h plus tard :
+Tu as lu cette Review. Tu veux rejouer les 2 moments clés ?
+
+But :
+éviter que Lecture rapide devienne un divertissement sans apprentissage.
+
+============================================================
+10. REVIEW — LEÇON COMPLÈTE
+===========================
+
+Objectif :
+apprentissage actif.
+
+Flux par moment :
+
+1. Défi
+2. Tentative
+3. Micro-pause
+4. Correction
+5. À retenir
+6. Entraînement / moment suivant
+
+10.1 Défi
+
+Visible :
+
+* échiquier ;
+* coup / position ;
+* phrase courte ;
+* boutons Indice, Voir correction, Passer.
+
+Texte :
+Coup 23 — à toi de jouer
+Trouve l’idée qui change la position.
+
+Pas visible :
+
+* solution ;
+* PV ;
+* score ;
+* difficulté ;
+* diagnostic ;
+* source longue.
+
+Intent Mode toggle :
+
+* Silencieux
+* Coach
+* Candidats
+
+Silencieux :
+aucune question.
+
+Coach :
+question légère, skippable.
+
+Candidats :
+active Candidate Trainer pour ce moment.
+
+10.2 Tentative
+
+L’utilisateur joue sur le board.
+
+Si bon coup :
+feedback positif.
+
+Si mauvais :
+micro-pause.
+
+10.3 Micro-pause
+
+Si coup incorrect :
+
+Pause 2–3 secondes.
+
+Message :
+Observe ce que ton coup permet à l’adversaire.
+
+Puis correction.
+
+10.4 Correction
+
+Structure :
+
+Ton coup
+
+* notation ;
+* conséquence.
+
+Meilleure idée
+
+* notation ;
+* idée.
+
+À retenir
+
+* règle courte.
+
+Boutons :
+
+* Continuer
+* Réessayer
+* Rejouer la ligne
+
+Comparer lignes :
+replié.
+
+10.5 Entraînement
+
+Texte :
+Cette idée mérite d’être ancrée.
+
+CTA :
+S’entraîner maintenant
+
+Secondaire :
+Moment suivant
+
+============================================================
+11. PRACTICE
+============
+
+Mode focus.
+
+La nav globale disparaît.
+
+11.1 Écran avant tentative
+
+Visible :
+
+* Position X / Y
+* progress bar discrète
+* échiquier
+* phrase :
+  Trouve le meilleur coup.
+* boutons :
+  Indice
+  Voir la correction
+  Passer
+
+Caché :
+
+* timer ;
+* source ;
+* thème détaillé ;
+* difficulté ;
+* diagnostic ;
+* score ;
+* PV.
+
+Pourquoi :
+respect de la charge cognitive.
+
+11.2 Timer
+
+Mesuré en interne.
+Caché par défaut.
+
+Préférence :
+Afficher chrono, optionnelle.
+
+11.3 Indices
+
+Indice 1 :
+oriente sans révéler.
+
+Indice 2 :
+plus précis.
+
+Indice 3 :
+proche solution.
+
+Après indice 3 :
+Voir la solution.
+
+11.4 Après tentative
+
+Si correct :
+“Bien joué. Tu as trouvé l’idée.”
+
+Si incorrect :
+micro-pause, puis correction.
+
+11.5 Fin session
+
+Résumé :
+
+Session terminée
+
+* 5 positions tentées
+* 3 réussies sans aide
+* 1 avec indice
+* 1 à revoir
+
+Message :
+Les positions ratées vont revenir. C’est exactement comme ça qu’on consolide.
+
+CTA :
+Revoir les ratées
+
+Secondaire :
+Retour à Aujourd’hui
+
+============================================================
+12. RÉPÉTITION ESPACÉE
+======================
+
+V1 = FSRS-lite simple.
+
+Règles :
+
+Raté :
+revoir demain.
+
+Réussi avec indice :
+revoir dans 3 jours.
+
+Réussi sans aide :
+revoir dans 7 jours.
+
+Réussi plusieurs fois :
+intervalle plus long.
+
+UI :
+Prochaine révision : dans 3 jours.
+
+Très important :
+réviser aussi par motif, pas seulement position exacte.
+
+Si motif = fork :
+proposer plus tard :
+
+* position exacte ;
+* position similaire ;
+* autre position avec même motif.
+
+V1 :
+au moins position exacte.
+
+V2 :
+ajout positions similaires par tag.
+
+============================================================
+13. ENTRAÎNEMENT V1
+===================
+
+Page Entraînement avec 3 entrées.
+
+1. Plan du jour
+   Recommandé automatiquement.
+
+2. Mes positions ratées
+   Toutes les positions personnelles à retravailler.
+
+3. Révisions
+   Positions dues.
+
+Pas 8 modes.
+
+Chaque carte :
+
+Titre
+Phrase
+Nombre d’items
+CTA
+
+Exemple :
+
+Plan du jour
+12 minutes · 6 positions
+CTA : Commencer
+
+Mes positions ratées
+17 positions à retravailler
+CTA : Voir
+
+Révisions
+5 positions dues
+CTA : Réviser
+
+============================================================
+14. CANDIDATE TRAINER V2
+========================
+
+Mode opt-in.
+
+Objectif :
+savoir si le problème vient de :
+
+* génération ;
+* sélection ;
+* calcul.
+
+Flux :
+
+1. Position.
+2. Entrer candidats.
+3. Choisir coup préféré.
+4. Confiance.
+5. Validation.
+6. Diagnostic.
+
+Cas :
+
+A :
+bon coup présent + choisi.
+Très bon.
+
+B :
+bon coup présent mais rejeté.
+Problème de sélection.
+
+C :
+bon coup absent.
+Problème de génération.
+
+D :
+ligne mal évaluée.
+Problème de calcul.
+
+Métrique V1/V2 :
+candidate_signal qualitatif.
+
+Pas de candidate_topk_recall numérique au début.
+
+============================================================
+15. INTENT LAYER UX
+===================
+
+Modes :
+
+1. Silencieux
+2. Coach
+3. Candidats
+
+Coach :
+1–2 questions max.
+Toujours skippable.
+
+Exemples :
+
+* Tu avais vu cette menace ?
+* Tu voulais attaquer, défendre ou développer ?
+* Tu avais confiance dans ce coup ?
+
+Réponses :
+chips rapides + option texte.
+
+Candidats :
+mode profond.
+
+Règle :
+Intent Layer jamais forcé.
+
+============================================================
+16. AUJOURD’HUI — PHRASES CONTEXTUELLES
+=======================================
+
+Bibliothèque de phrases obligatoire.
+
+Après défaite :
+“On reprend calmement. Deux moments suffisent pour progresser.”
+
+Après victoire :
+“Belle victoire. Voyons ce qui peut encore devenir plus propre.”
+
+Après absence :
+“Content de te revoir. On repart sur une session courte.”
+
+Après progression :
+“Tu rates ce motif moins souvent qu’il y a 30 jours.”
+
+Après mauvaise session :
+“Ces positions étaient difficiles. Elles reviendront.”
+
+Début session :
+“On commence par une position claire. Prends ton temps.”
+
+Position challenge :
+“Cette position est faite pour te challenger.”
+
+But :
+régulation émotionnelle + dopamine saine.
+
+============================================================
+17. ANTI-TILT
+=============
+
+Si l’utilisateur importe une défaite récente :
+
+Message :
+Tu viens de perdre cette partie. On peut la regarder maintenant ou la reprendre plus tard.
+
+Boutons :
+
+* Voir calmement maintenant
+* Me le rappeler plus tard
+* Juste enregistrer
+
+Si voir maintenant :
+ton doux.
+
+Phrase :
+On va se concentrer sur deux moments utiles, pas sur toute la partie.
+
+But :
+ne pas associer NeuroChess à la douleur brute de la défaite.
+
+============================================================
+18. PROGRESSION
+===============
+
+En V1 :
+carte compacte dans Aujourd’hui.
+
+En V2 :
+page détaillée.
+
+Carte V1 :
+
+Cette semaine
+
+* 4 jours actifs
+* 27 positions revues
+* Tactique : 12 réussies / 18 tentatives
+* 3 erreurs récurrentes moins fréquentes
+
+CTA :
+Détails
+
+Règle :
+ratios bruts, pas de faux scores calibrés.
+
+Page V2 :
+
+* activité ;
+* révisions ;
+* domaines ;
+* milestones ;
+* tendances ;
+* Transfer Gap si données suffisantes.
+
+============================================================
+19. PROFIL / PARAMÈTRES
+=======================
+
+Accessible par icône.
+
+Sections :
+
+* compte ;
+* niveau ;
+* comptes connectés ;
+* apparence ;
+* coach ;
+* Intent Layer ;
+* confidentialité ;
+* export ;
+* suppression ;
+* moteur ;
+* IA ;
+* debug caché.
+
+Préférences coach :
+
+* aide détaillée / standard / minimale ;
+* ton encourageant / neutre / direct ;
+* sessions 5 / 10 / 15 min ;
+* activer mode coach ;
+* activer mode candidats.
+
+============================================================
+20. FOUNDATIONS V2/V3
+=====================
+
+Module distinct.
+
+Pour 400–800.
+
+Objectif :
+perception.
+
+UI :
+
+* flèches attaque/défense ;
+* pièces en danger ;
+* questions oui/non ;
+* pas de PV ;
+* pas d’Intent deep ;
+* pas de Candidate Trainer.
+
+Nom :
+NeuroChess Foundations.
+
+Pas V1 core.
+
+============================================================
+21. PAGE JOUER LOCALE
+=====================
+
+Pas pilier produit.
+
+Usage :
+
+* sandbox ;
+* sparring sur position ;
+* support Try Move ;
+* support Practice.
+
+Promesse produit V1 :
+importer ses parties et s’entraîner.
+
+Pas :
+remplacer Lichess/Chess.com.
+
+============================================================
+22. ÉTATS DÉGRADÉS
+==================
+
+Obligatoires.
+
+1. PGN invalide.
+2. Stockfish absent.
+3. Analyse lente.
+4. Analyse partielle.
+5. App fermée pendant analyse.
+6. Connexion perdue.
+7. Session interrompue.
+8. IA indisponible.
+9. Cache obsolète.
+10. Trop de parties en file.
+
+Chaque état doit avoir :
+
+* message clair ;
+* action de récupération ;
+* pas de jargon.
+
+============================================================
+23. MODE HORS LIGNE
+===================
+
+Hors ligne possible :
+
+* voir Reviews calculées ;
+* faire Practice téléchargé ;
+* voir progression locale ;
+* importer PGN en attente.
+
+Hors ligne impossible :
+
+* sync Lichess/Chess.com ;
+* cloud ;
+* LLM cloud.
+
+UI :
+badge discret.
+Pas de blocage brutal.
+
+============================================================
+24. ACCESSIBILITÉ
+=================
+
+Obligatoire :
+
+* contraste ;
+* mode daltonien ;
+* navigation clavier ;
+* textes lisibles ;
+* animations réduites ;
+* labels ARIA ;
+* board utilisable sans couleur seule.
+
+============================================================
+25. FREEMIUM
+============
+
+Pas forcément codé V1 mais anticipé.
+
+Gratuit :
+
+* Reviews limitées ;
+* Practice basique ;
+* stockage local.
+
+Premium :
+
+* analyses illimitées ;
+* plans ;
+* révisions ;
+* cloud ;
+* modes avancés.
+
+Pro :
+
+* deep analysis ;
+* Candidate Trainer ;
+* IA coach vérifiée ;
+* stats avancées.
+
+Paywall :
+vendre le progrès, pas les boutons.
+
+============================================================
+26. ROADMAP UX FINALE
+=====================
+
+V1 — 3 à 4 mois :
+
+* Onboarding 2 écrans.
+* Aujourd’hui.
+* Mes parties.
+* Import PGN.
+* Review : Lecture rapide / Leçon complète.
+* Practice linéaire.
+* FSRS-lite simple.
+* Profil + RGPD + Stockfish config.
+* Tonalité émotionnelle.
+* Anti-tilt.
+* États dégradés.
+* Offline partiel.
+* Progression compacte.
+* NeuroScore principal provisoire.
+
+V2 — 3 à 4 mois :
+
+* Progression détaillée.
+* Intent Layer opt-in.
+* Candidate Trainer.
+* Modes spécifiques comme filtres.
+* Notifications.
+* Freemium.
+* Partage Review.
+* Mobile premium.
+* Motif-based repetition.
+
+V3 :
+
+* Foundations complet.
+* LLM coach vérifié.
+* Club/coach.
+* Social.
+* Offline complet.
+* Accessibilité avancée.
+
+============================================================
+27. TESTS UTILISATEUR À FAIRE AVANT CODE MASSIF
+===============================================
+
+Prototype cliquable de 3 écrans :
+
+1. Aujourd’hui
+2. Review Résumé
+3. Practice Correction
+
+Tester sur 5 personnes.
+
+Questions :
+
+Aujourd’hui :
+Qu’est-ce que tu fais maintenant ?
+
+Review :
+Qu’est-ce que cette page te dit sur ta partie ?
+
+Practice :
+Qu’est-ce que tu dois faire ici ?
+
+Succès :
+3/5 répondent correctement sans explication.
+
+A/B futur :
+NeuroScore vs Précision.
+
+============================================================
+28. VERDICT FINAL
+=================
+
+NeuroChess ne doit pas être seulement clair.
+Il doit être aligné avec la cognition humaine.
+
+L’utilisateur doit :
+
+* comprendre vite ;
+* se sentir guidé ;
+* essayer avant de voir ;
+* recevoir un feedback au bon moment ;
+* ne pas être humilié ;
+* revoir avant d’oublier ;
+* revoir le motif dans plusieurs contextes ;
+* sentir une progression réelle ;
+* garder un minimum d’autonomie.
+
+La différence entre une app propre et une app révolutionnaire se joue dans :
+
+* le timing du feedback ;
+* la charge cognitive ;
+* la répétition ;
+* la régulation émotionnelle ;
+* l’autonomie ;
+* la preuve de progression.
+
+Formule finale :
+
+NeuroChess doit être clair en 5 secondes,
+utile en 90 secondes,
+actif en 3 minutes,
+consolidant en 48 heures,
+motivant en 7 jours,
+mesurable en 30 jours,
+transformateur en 6 mois.
