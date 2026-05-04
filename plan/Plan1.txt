@@ -1,44 +1,62 @@
 DOCUMENT MAÎTRE FINAL — PLAN 1/3 NEUROCHESS
-DIRECTION MATHÉMATIQUE, STATISTIQUE, SCIENCES COGNITIVES, INTENT LAYER, VALIDATION ET MODÈLE DE PROGRESSION
+CONSTITUTION SCIENTIFIQUE, MATHÉMATIQUE, COGNITIVE, ÉCHIQUÉENNE ET PÉDAGOGIQUE
 
-Version : Constitution scientifique v1.0
-Statut : document à geler comme base scientifique du projet.
-Objectif : conserver l’intégralité du contexte mathématique, statistique, cognitif et produit de NeuroChess même si l’historique des conversations est supprimé.
+Version : Constitution scientifique v3.0 FINAL — Codex-ready
+Statut : source de vérité scientifique de NeuroChess
+Remplace : Plan1 v1.0 et Plan1 v2.0
+Compatibilité : à lire avec Plan2 UX/Produit et Plan3 Exécution Technique
+Langue produit V1 : français
+Doctrine centrale : ambition maximale, promesse prudente, validation empirique obligatoire
 
 ============================================================
-0. DÉFINITION GLOBALE DE NEUROCHESS
+AVERTISSEMENT D’USAGE POUR CODEX ET TOUT AGENT IA
 ============================================================
 
-NeuroChess est une plateforme d’entraînement aux échecs qui transforme les vraies parties d’un joueur en diagnostic mathématique, en expérience pédagogique guidée, puis en programme de progression personnalisé.
+Ce document est une constitution scientifique, pas une mission unique.
 
-NeuroChess n’est pas seulement un analyseur de parties.
+Règles absolues :
 
-NeuroChess doit devenir un système longitudinal d’entraînement échiquéen capable de :
+1. Ne jamais appliquer tout ce Plan 1 d’un coup.
+2. Ne jamais transformer une section V2/V3 en fonctionnalité V1 sans demande explicite.
+3. Ne jamais modifier Stockfish, les formules ou les métriques sans mission dédiée.
+4. Ne jamais exposer une métrique interne comme vérité utilisateur.
+5. Ne jamais ajouter Candidate Trainer, LLM Coach, Intent Layer profond, Transfer Gap visible, ETV visible, FSRS visible, NeuroMonitor, brain, cortex ou atlas en V1.
+6. Une mission Codex = un objectif précis = un diff contrôlé = tests = rapport.
+7. Ce document doit guider la science, pas provoquer du scope creep.
 
-1. analyser les parties réelles du joueur ;
-2. mesurer l’impact objectif de chaque décision ;
-3. identifier les moments pédagogiquement importants ;
-4. comprendre l’intention déclarée du joueur quand elle est disponible ;
-5. comparer intention, coup joué, meilleure ligne et conséquence réelle ;
-6. transformer les erreurs en exercices personnalisés ;
-7. mesurer les tentatives d’apprentissage ;
-8. mettre à jour un modèle probabiliste du joueur ;
-9. recommander le prochain entraînement ;
-10. vérifier si la compétence apprise se transfère dans les futures parties.
+Si Codex reçoit ce document sans mission explicite, il doit répondre :
 
-La promesse de NeuroChess n’est pas :
+« Plan 1 compris. Quelle mission précise dois-je exécuter ? »
 
-“Voici le meilleur coup.”
+============================================================
+0. THÈSE CENTRALE DE NEUROCHESS
+============================================================
 
-La promesse est :
+NeuroChess n’est pas un simple analyseur Stockfish.
 
-“Voici ce que tes parties révèlent sur ta manière de décider.
-Voici ce que tu dois travailler maintenant.
-Voici l’exercice.
-Voici si tu l’as appris.
-Voici si ça se transfère dans tes vraies parties.”
+NeuroChess n’est pas une app de puzzles génériques.
 
-La boucle complète visée est :
+NeuroChess n’est pas un chatbot d’échecs.
+
+NeuroChess est un système longitudinal d’entraînement échiquéen qui transforme les vraies parties d’un joueur en :
+
+1. diagnostic objectif ;
+2. diagnostic pédagogique ;
+3. exercices personnalisés ;
+4. tentatives mesurées ;
+5. révisions espacées ;
+6. plan d’entraînement ;
+7. validation du transfert en partie réelle.
+
+Phrase fondatrice :
+
+Tes vraies parties révèlent tes décisions.
+Tes décisions deviennent des exercices.
+Tes exercices deviennent des révisions.
+Tes révisions deviennent des compétences.
+Tes futures parties vérifient si ces compétences se transfèrent.
+
+Boucle scientifique complète :
 
 PARTIE RÉELLE
 → POSITIONS
@@ -47,341 +65,999 @@ PARTIE RÉELLE
 → WIN%
 → PERTE DE CHANCES
 → PRÉCISION
-→ NEUROSCORE COACH
+→ SCORE COACH
 → MOMENTS CRITIQUES
-→ INTENTION UTILISATEUR
 → DIAGNOSTIC
 → TRAINING ITEMS
 → TENTATIVES
+→ RÉPÉTITION ESPACÉE
 → MODÈLE UTILISATEUR
 → PLAN RECOMMANDÉ
 → FUTURES PARTIES
-→ VALIDATION DU TRANSFERT
+→ OPPORTUNITÉS DE TRANSFERT
+→ VALIDATION OU NON DU TRANSFERT
+→ ADAPTATION DU PLAN
 
-La révolution n’est pas une formule unique.
+La révolution n’est pas une formule.
+
 La révolution est la boucle fermée :
 
-diagnostiquer → entraîner → mesurer → prescrire → vérifier.
+diagnostiquer
+→ entraîner
+→ mesurer
+→ prescrire
+→ vérifier
+→ adapter
 
 ============================================================
-0.1 STATUTS DES COUCHES SCIENTIFIQUES
+0.1 PROMESSE EXACTE DE NEUROCHESS
 ============================================================
 
-Il faut distinguer cinq familles :
+La promesse de NeuroChess n’est pas :
 
-1. V1 implémentable immédiatement
-Métriques simples, robustes, claires, ou déjà présentes dans le code.
+« Nous garantissons 2400 Elo. »
 
-2. V1 heuristique
-Métriques utilisables en produit mais non calibrées scientifiquement.
+Cette promesse est interdite.
 
-3. V2 différée
-Métriques nécessaires mais dépendantes de données ou d’instrumentation.
+Un rating autour de 2400 est déjà un niveau extrêmement élevé dans l’écosystème FIDE, associé notamment au niveau de rating requis pour le titre d’International Master, avec des normes et conditions supplémentaires.
 
-4. V3 recherche
-Concepts puissants mais nécessitant corpus, validation, LLM verifier, ou volume utilisateur.
+La promesse correcte est :
 
-5. Jamais visible comme vérité utilisateur
-Métriques audit/debug seulement.
+NeuroChess maximise la qualité et la vitesse de progression de chaque joueur en réduisant le temps perdu entre jouer, comprendre, s’entraîner, réviser et transférer en partie réelle.
 
-Table de synthèse :
+Formulation ambitieuse autorisée :
 
-| Élément | Statut | Rôle |
-|---|---|---|
-| white_percent_lichess_v1 | V1 immédiat | Base publique |
-| player_win_percent_lichess_v1 | V1 immédiat | Point de vue joueur |
-| win_loss_lichess_v1 | V1 immédiat | Perte de chances |
-| move_accuracy_lichess_v1 | V1 immédiat | Précision coup |
-| game_accuracy_lichess_like_v1 | V1 immédiat si code aligné | Précision de référence |
-| coach_neuro_score_v1 | V1 heuristique | Score coach visible |
-| neuro_score_diag_v1 | Audit interne | Diagnostic non calibré |
-| diagnostic_gap_v1 | Audit interne | Écart interne |
-| criticality_score_heuristic_v1 | V1 action interne | Sélection moments |
-| criticality_log_additive_v2 | V2 calibration | Version robuste |
-| taxonomy_v0_8tags | V1 prioritaire | Tags initiaux |
-| taxonomy_extended_v1 | V2 | Taxonomie élargie |
-| practice_result_event_v1 | V1 prioritaire | Données apprentissage |
-| SkillTrace_Beta_v1 | V1 prioritaire | Modèle utilisateur simple |
-| BKT | V2/V3 | Maîtrise séquentielle |
-| IRT/MIRT | V2/V3 | Aptitude + difficulté |
-| FSRS-lite | V2 | Révision espacée |
-| transfer_gap_beta_v1 | V2 | Transfert entraînement → partie |
-| ETV_3term_v1 | V1/V2 | Priorisation simple |
-| ETV_full_v2 | V2 | Priorisation enrichie |
-| contextual_bandit | V3 | Recommandation apprise |
-| intent_event_v1 | V2 opt-in | Intent Layer |
-| candidate_topk_recall | V3 | Candidats avancés |
-| opening_association_trace | V2/V3 | Ouverture prudente |
-| position_similarity_embedding | V3 recherche | Retrieval puzzles |
-| Stockfish WDL expected_score | Audit/V2 | Moteur interne |
-| CVaR_90 | Rejet UI V1 | Trop instable |
-| tail_mean_topk_v1 | Audit V1 | Queue robuste simple |
+NeuroChess donne à chaque joueur un système d’entraînement personnalisé pour exploiter son potentiel le plus vite et le plus profondément possible.
+
+Formulations interdites :
+
+- Tout le monde atteindra 2400.
+- NeuroChess garantit un titre.
+- Le NeuroScore prédit ton Elo futur.
+- NeuroChess mesure ton cerveau.
+- NeuroChess mesure ton intelligence.
+- NeuroChess mesure directement ta neuroplasticité.
+
+Doctrine finale :
+
+Ambition maximale : oui.
+Garantie universelle : non.
+Mesure rigoureuse : oui.
+Fausse promesse neuroscientifique : non.
+
+============================================================
+0.2 FORMULE FONDATRICE DE LA PROGRESSION
+============================================================
+
+La progression utile dans NeuroChess est modélisée conceptuellement par :
+
+Progression utile =
+qualité_du_diagnostic
+× pertinence_pédagogique
+× effort_actif
+× répétition_espacée
+× transfert_réel
+× motivation_durable
+
+Si un facteur tombe à zéro, l’efficacité globale chute.
+
+Exemples :
+
+- Un bon diagnostic sans exercice = analyse passive.
+- Un exercice sans tentative active = consommation.
+- Une tentative sans révision = oubli.
+- Une réussite en exercice sans transfert = progression fragile.
+- Un système efficace mais humiliant = abandon.
+- Une app agréable mais non mesurée = divertissement.
+
+NeuroChess doit optimiser simultanément :
+
+1. vérité échiquéenne ;
+2. science de l’apprentissage ;
+3. charge cognitive ;
+4. motivation ;
+5. mesure longitudinale ;
+6. transfert en vraie partie.
+
+============================================================
+0.3 STATUTS SCIENTIFIQUES
+============================================================
+
+Chaque métrique, modèle, score ou signal doit avoir un statut.
+
+Statuts possibles :
+
+V1_IMMEDIATE
+V1_HEURISTIC
+V1_SHADOW
+V1_INTERNAL_ONLY
+V1_VISIBLE_SAFE
+V1_REJECTED_VISIBLE
+V1_1_SHADOW_TO_ACTION
+V2_CALIBRATION
+V2_USER_VISIBLE_PRUDENT
+V3_RESEARCH
+DEPRECATED
+FORBIDDEN
+
+Règles :
+
+1. Une métrique peut être stockée sans être visible.
+2. Une métrique peut être utilisée en interne sans être présentée comme vérité.
+3. Une métrique non calibrée ne doit jamais être affichée comme score de compétence.
+4. Une métrique visible doit avoir une explication simple et non humiliante.
+5. Une métrique qui pilote l’entraînement doit avoir des tests de non-régression.
+6. Une métrique qui prétend prédire quelque chose doit avoir une validation prédictive.
+
+============================================================
+0.4 TABLE DE SYNTHÈSE DES COUCHES SCIENTIFIQUES
+============================================================
+
+| Élément | Statut | Visible utilisateur | Pilote entraînement | Rôle |
+|---|---|---:|---:|---|
+| eval_cp_white_pov | V1_IMMEDIATE | non | oui indirect | vérité moteur brute |
+| white_percent_lichess_v1 | V1_IMMEDIATE | indirect | oui indirect | rendre l’éval lisible |
+| player_win_percent_v1 | V1_IMMEDIATE | indirect | oui | point de vue joueur |
+| raw_win_delta_v1 | V1_IMMEDIATE | non | oui | variation brute |
+| win_loss_lichess_v1 | V1_IMMEDIATE | indirect | oui | perte de chances |
+| positive_gain_v1 | V1_IMMEDIATE | indirect prudent | oui futur | bonnes décisions |
+| move_accuracy_lichess_v1 | V1_IMMEDIATE | indirect | non seul | précision coup |
+| game_accuracy_lichess_like_v1 | V1_HEURISTIC | secondaire | non seul | référence lisible |
+| coach_neuro_score_v1 | V1_VISIBLE_SAFE | oui | non | score coach émotionnel |
+| neuro_score_diag_v1 | V1_INTERNAL_ONLY | non | non calibré | diagnostic interne |
+| diagnostic_gap_v1 | V1_INTERNAL_ONLY | non | non | audit |
+| criticality_score_heuristic_v1 | V1_INTERNAL_ONLY | non | oui | sélection moments |
+| criticality_log_additive_v2 | V2_CALIBRATION | non | oui après validation | version robuste |
+| taxonomy_v0_8tags | V1_IMMEDIATE | oui prudemment | oui | tags simples |
+| taxonomy_multiaxis_v2 | V2_CALIBRATION | oui prudemment | oui | modèle complet |
+| practice_result_event_v2 | V1_IMMEDIATE | non brut | oui | apprentissage |
+| exploration_event_v1 | V1_IMMEDIATE | non brut | non V1 | exploration locale |
+| simple_spaced_repetition_v1 | V1_IMMEDIATE | non technique | oui | révision |
+| exact_position_queue | V1_IMMEDIATE | non technique | oui | mémoire position |
+| motif_queue | V2_CALIBRATION | prudent | oui | motif |
+| transfer_variant_queue | V2_CALIBRATION | prudent | oui | transfert |
+| SkillTrace_Beta_v1 | V1_SHADOW | non | non fort | modèle simple |
+| SkillTrace_Hierarchical_v2 | V2_CALIBRATION | non numérique | oui | modèle avancé |
+| transfer_opportunity_event_v1 | V1_1_SHADOW | non | non fort | opportunités réelles |
+| transfer_gap_beta_v2 | V2_CALIBRATION | prudent | oui | transfert |
+| ETV_v1 | V1_INTERNAL_ONLY | non | oui | priorisation |
+| ETV_full_v2 | V2_CALIBRATION | non | oui | priorisation avancée |
+| intent_event_v1 | V2 opt-in | parfois | oui prudent | intention déclarée |
+| candidate_topk_recall | V2/V3 | prudent | oui futur | candidats |
+| LLM coach | V3 | oui après verifier | non vérité | explication |
+| Transfer Gap visible | V2/V3 | prudent | oui | différenciation |
+| NeuroMonitor / brain / cortex / atlas | FORBIDDEN V1 | non | non | hors V1 |
+| FSRS exposé utilisateur | FORBIDDEN V1 | non | non | jargon interdit |
+| ETV exposé utilisateur | FORBIDDEN | non | non | jargon interdit |
 
 ============================================================
 1. POSITIONNEMENT SCIENTIFIQUE
 ============================================================
 
-Le mot “Neuro” est une marque et une métaphore produit.
+Le mot “Neuro” est une marque et une métaphore.
 
 NeuroChess ne mesure pas directement le cerveau.
 NeuroChess ne mesure pas l’activité neuronale.
 NeuroChess ne mesure pas l’intelligence générale.
+NeuroChess ne mesure pas directement la neuroplasticité.
 
-NeuroChess mesure :
+NeuroChess mesure des signaux observables :
 
-- des décisions ;
-- des erreurs ;
-- des intentions déclarées ;
-- des écarts entre intention et réalité ;
-- des tentatives d’apprentissage ;
-- des temps de réponse ;
-- des indices utilisés ;
-- des solutions révélées ;
-- des réussites et échecs ;
-- des progrès ;
-- des transferts en vraie partie.
+- décisions ;
+- erreurs ;
+- bonnes décisions ;
+- pertes de chances ;
+- gains de chances ;
+- coups candidats déclarés ;
+- intentions déclarées ;
+- temps de réponse ;
+- indices utilisés ;
+- solutions révélées ;
+- réussites ;
+- échecs ;
+- coups illégaux ;
+- répétitions ;
+- exploration locale ;
+- transferts ;
+- retours en partie réelle.
 
-Dans les documents scientifiques internes, le terme exact est :
+Le terme scientifique interne correct est :
 
-SCIENCES COGNITIVES DE L’APPRENTISSAGE
+SCIENCES COGNITIVES DE L’APPRENTISSAGE ÉCHIQUÉEN
 
-plutôt que “neurosciences”.
+Le terme “neurosciences” peut inspirer la marque, mais ne doit pas servir à faire des claims biologiques non mesurés.
 
-Les principes mobilisés sont :
+============================================================
+1.1 SOCLE SCIENTIFIQUE COGNITIF
+============================================================
 
-- retrieval practice / testing effect ;
-- feedback contrastif ;
-- error-based learning ;
-- desirable difficulty ;
-- spaced repetition ;
-- interleaving ;
-- self-explanation ;
-- metacognitive calibration ;
-- cognitive load management ;
-- transfer learning.
+NeuroChess s’appuie sur des principes robustes :
 
-NeuroChess peut utiliser une identité visuelle “neuro”, mais ses claims scientifiques doivent rester prudents.
+1. retrieval practice / testing effect ;
+2. spaced repetition / distributed practice ;
+3. feedback contrastif ;
+4. error-based learning ;
+5. desirable difficulty ;
+6. interleaving ;
+7. self-explanation ;
+8. metacognitive calibration ;
+9. cognitive load management ;
+10. transfer learning ;
+11. motivation autonome ;
+12. expertise par reconnaissance de patterns.
 
-À dire :
+Doctrine NeuroChess :
 
-“Nous analysons vos décisions.”
-“Nous mesurons des signaux d’apprentissage.”
-“Nous identifions des axes de travail.”
-“Nous vérifions si l’entraînement se transfère en partie réelle.”
+- faire essayer avant de révéler ;
+- faire revenir au bon moment ;
+- varier les contextes ;
+- doser la difficulté ;
+- mesurer les tentatives ;
+- éviter la surcharge ;
+- préserver la motivation ;
+- vérifier le transfert réel.
 
-À ne pas dire :
+============================================================
+1.2 SOCLE SCIENTIFIQUE ÉCHIQUÉEN
+============================================================
 
-“Nous mesurons votre cerveau.”
-“Nous mesurons votre intelligence.”
-“Nous garantissons 2400 Elo.”
-“Nous mesurons directement la neuroplasticité.”
-“Le score mesure vos capacités cognitives globales.”
+L’expertise aux échecs ne se réduit pas au calcul brut.
+
+Elle repose sur :
+
+- reconnaissance de configurations ;
+- chunks ;
+- templates ;
+- calcul sélectif ;
+- génération de candidats ;
+- évaluation positionnelle ;
+- mémoire de structures ;
+- adaptation au contexte ;
+- décision sous contrainte ;
+- gestion du temps ;
+- résistance émotionnelle après erreur.
+
+Conclusion NeuroChess :
+
+NeuroChess doit entraîner à la fois :
+
+- voir ;
+- reconnaître ;
+- calculer ;
+- choisir ;
+- évaluer ;
+- convertir ;
+- défendre ;
+- transférer.
+
+============================================================
+1.3 PRUDENCE SUR LE TRANSFERT
+============================================================
+
+Le transfert est difficile.
+
+Réussir un puzzle ne signifie pas automatiquement réussir en partie.
+Réussir une position exacte ne signifie pas maîtriser le motif.
+Réussir sans pression ne signifie pas réussir en zeitnot.
+Réussir un motif après indice ne signifie pas le reconnaître spontanément.
+
+Doctrine NeuroChess :
+
+1. On ne déclare jamais un transfert sans opportunités détectées.
+2. On ne déclare jamais une maîtrise sur une seule réussite.
+3. On distingue mémoire, compétence, reconnaissance, exécution et transfert.
+4. On distingue transfert proche et transfert lointain.
+5. On affiche des signaux prudents, pas des pourcentages trompeurs.
+
+============================================================
+1.4 MOTIVATION ET PLAISIR
+============================================================
+
+Une app scientifiquement efficace mais désagréable échoue.
+
+Le joueur doit revenir.
+
+NeuroChess doit préserver :
+
+- sentiment de compétence ;
+- autonomie ;
+- sécurité émotionnelle ;
+- confiance ;
+- plaisir d’explorer ;
+- envie de rejouer ;
+- fierté des progrès ;
+- absence d’humiliation.
+
+Doctrine NeuroChess :
+
+Pas de honte.
+Pas de culpabilisation.
+Pas de score humiliant.
+Pas de streak punitif.
+Pas de dopamine cheap.
+Pas de surcharge cognitive.
+Une action utile à la fois.
+Une erreur = une donnée d’apprentissage, pas un jugement.
 
 ============================================================
 2. DIFFÉRENCIATION STRATÉGIQUE
 ============================================================
 
-Question centrale :
+Un LLM générique peut expliquer ponctuellement une position.
+Stockfish peut donner le meilleur coup.
+Une app de puzzles peut répéter des motifs.
 
-Pourquoi NeuroChess plutôt que ChatGPT + Stockfish dans deux ans ?
+NeuroChess doit faire autre chose :
 
-Réponse :
-
-Un LLM générique peut expliquer une position ponctuelle.
-NeuroChess construit un système longitudinal de progression.
-
-ChatGPT + Stockfish peut répondre :
-
-“Pourquoi ce coup est mauvais ?”
-
-NeuroChess doit répondre :
-
-“Tu rates ce type de décision depuis trois semaines.
-Tu le réussis en exercice mais tu ne le transfères pas encore en vraie partie.
-Voici trois positions issues de tes propres parties pour le travailler.
-On vérifiera dans tes dix prochaines parties si le motif revient.”
-
-Les cinq défenses stratégiques de NeuroChess sont :
-
-1. Vérité moteur intégrée
-Stockfish est intégré, versionné, contrôlé.
-Le LLM ne devine pas les lignes.
-
-2. Mémoire longitudinale
-NeuroChess stocke l’historique des parties, erreurs, exercices, tentatives, intentions et progrès.
-
-3. Modèle utilisateur probabiliste
-Le système estime progressivement les forces, faiblesses et incertitudes du joueur.
-
-4. Orchestration pédagogique
-Le système choisit quoi travailler, quand le revoir et comment le mesurer.
-
-5. Validation du transfert
-Le système vérifie si ce qui est réussi en entraînement réapparaît dans les vraies parties.
+- comprendre ton historique ;
+- identifier tes erreurs récurrentes ;
+- identifier aussi tes bonnes décisions ;
+- transformer tes erreurs en exercices ;
+- mesurer tes tentatives ;
+- faire revenir les positions ;
+- détecter les opportunités futures ;
+- vérifier le transfert ;
+- adapter le plan.
 
 Formulation stratégique :
 
-Un LLM générique explique une position.
-NeuroChess construit un historique, mesure les faiblesses, prescrit l’entraînement, suit les tentatives et vérifie le transfert.
+Un analyseur dit : “ce coup est mauvais.”
+NeuroChess dit : “ce type de décision revient dans tes parties. Tu l’as réussi en exercice, mais pas encore transféré. On va le retravailler différemment.”
 
-NeuroChess ne doit pas chercher à être “un chatbot d’échecs”.
-NeuroChess doit devenir un Personal Chess Learning Operating System.
+Les cinq défenses stratégiques :
+
+1. vérité moteur versionnée ;
+2. mémoire longitudinale ;
+3. modèle utilisateur probabiliste ;
+4. orchestration pédagogique ;
+5. validation du transfert en vraie partie.
+
+NeuroChess doit devenir :
+
+Personal Chess Learning Operating System
+
+Mais sans jargon utilisateur inutile.
 
 ============================================================
-3. ARCHITECTURE GLOBALE DES DONNÉES
+3. MODÈLE GLOBAL DES DONNÉES
 ============================================================
 
-NeuroChess repose sur trois familles de données.
+NeuroChess repose sur huit familles de données.
 
 ------------------------------------------------------------
 3.1 Données objectives de partie
 ------------------------------------------------------------
 
+Pour chaque partie :
+
+game_id
+source
+source_id
+pgn_raw
+white
+black
+white_rating
+black_rating
+user_color
+result
+time_control
+time_control_class
+opening_name
+eco
+created_at
+imported_at
+status
+duplicate_key
+
 Pour chaque coup :
 
-- game_id ;
-- ply ;
-- player_color ;
-- side_to_move ;
-- FEN avant le coup ;
-- FEN après le coup ;
-- coup UCI ;
-- coup SAN ;
-- legal_moves ;
-- eval_before_cp ;
-- eval_after_cp ;
-- mate_before ;
-- mate_after ;
-- best_move ;
-- top_moves ;
-- PV ;
-- depth ;
-- nodes ;
-- engine_version ;
-- analysis_profile ;
-- formula_version ;
-- cache_key ;
-- created_at.
-
-UCI = notation machine.
-Exemples :
-e2e4, g1f3, e7e8q.
-
-SAN = notation humaine.
-Exemples :
-e4, Nf3, Bxf7+, O-O, Qxe8#.
+move_id
+game_id
+ply
+move_number
+side_to_move
+player_color
+fen_before
+fen_after
+san
+uci
+legal_moves
+is_book
+clock_before
+clock_after
+time_spent_on_move
+created_at
 
 ------------------------------------------------------------
-3.2 Données d’intention utilisateur
+3.2 Données moteur
 ------------------------------------------------------------
 
-Capturées via fenêtres de chat, chips, choix rapides ou Candidate Mode.
+Pour chaque position analysée :
 
-Exemples de questions :
-
-- “Quelle idée avais-tu avec ce coup ?”
-- “Quelle ouverture voulais-tu jouer ?”
-- “Quels coups candidats avais-tu envisagés ?”
-- “Quelle réponse adverse avais-tu prévue ?”
-- “Quelle menace pensais-tu éviter ?”
-- “À quel point étais-tu confiant ?”
-- “As-tu joué ce coup par plan, par réflexe ou par manque de temps ?”
-
-Ces données sont subjectives.
-Elles ne remplacent jamais l’évaluation moteur.
-Elles doivent être horodatées, versionnées, classées pre/post engine, et protégées.
+analysis_id
+fen
+fen_key
+engine_name
+engine_version_string
+engine_hash
+stockfish_binary_hash
+nnue_hash
+analysis_profile
+depth
+nodes
+multipv
+eval_cp_white_pov
+mate_in
+wdl_w
+wdl_d
+wdl_l
+top_moves_json
+pv_json
+cache_key
+quality_status
+cache_validity_status
+formula_version
+metric_version
+created_at
 
 ------------------------------------------------------------
-3.3 Données d’apprentissage
+3.3 Données de décision
 ------------------------------------------------------------
 
-Issues de Practice, Try Move, Review, Candidate Trainer.
+game_id
+ply
+move_played
+best_move
+player_win_percent_before
+player_win_percent_after
+raw_win_delta
+win_loss
+positive_gain
+move_accuracy
+criticality_score_internal
+decision_context
+created_at
 
-Pour chaque tentative :
+------------------------------------------------------------
+3.4 Données d’intention
+------------------------------------------------------------
 
-- item_id ;
-- session_id ;
-- result ;
-- move_played ;
-- time_spent ;
-- hint_used ;
-- reveal_used ;
-- attempt_number ;
-- item_difficulty ;
-- source_context ;
-- self_confidence éventuelle ;
-- explanation_attempt éventuelle ;
-- timestamp.
+Capturées uniquement quand l’utilisateur accepte.
 
-Ces données alimentent :
+intent_event_id
+user_id
+game_id
+ply
+fen_before
+move_played
+capture_timing
+prompt_type
+user_text
+quick_choice_response
+self_confidence
+candidate_moves_declared
+expected_opponent_reply
+claimed_goal
+claimed_plan
+non_response_reason
+parse_confidence
+bias_risk
+source_spans_json
+intent_alignment_category
+privacy_level
+created_at
 
-- SkillTrace Beta ;
-- BKT futur ;
-- IRT futur ;
-- FSRS futur ;
-- Transfer Gap ;
-- ETV ;
-- plan recommandé.
+------------------------------------------------------------
+3.5 Données d’apprentissage
+------------------------------------------------------------
+
+practice_event_id
+user_id
+session_id
+item_id
+item_version
+source_context
+fen_before
+side_to_move
+best_move
+accepted_moves_json
+move_played
+result
+time_spent_ms
+time_to_first_move_ms
+hint_used
+hint_level
+reveal_used
+attempt_number
+confidence_pre_attempt
+confidence_post_feedback
+explanation_attempt
+due_at
+interval_days
+created_at
+
+------------------------------------------------------------
+3.6 Données d’exploration locale
+------------------------------------------------------------
+
+Exploration ne veut pas dire Practice.
+
+exploration_event_id
+user_id
+source_context
+game_id
+review_moment_id
+fen_start
+moves_played_json
+undo_count
+reset_used
+time_spent_ms
+created_at
+
+Règle V1 :
+
+exploration_event drives_training = false
+
+Elle peut être stockée pour comprendre l’usage, mais ne doit pas être interprétée comme maîtrise.
+
+------------------------------------------------------------
+3.7 Données de transfert
+------------------------------------------------------------
+
+transfer_opportunity_id
+user_id
+game_id
+ply
+fen
+trained_skill_tag
+trained_item_ids_json
+opportunity_confidence
+expected_action
+player_action
+success
+miss_type
+engine_evidence_json
+created_at
+
+------------------------------------------------------------
+3.8 Données affectives et motivationnelles
+------------------------------------------------------------
+
+NeuroChess ne mesure pas l’émotion directement.
+Il observe des signaux comportementaux prudents.
+
+affective_signal_id
+user_id
+session_id
+signal_type
+wrong_streak_count
+rapid_wrong_attempts
+repeated_reveal
+session_abandoned
+long_time_no_move
+low_score_after_loss
+anti_tilt_message_shown
+created_at
+
+Interdit :
+
+“Tu es frustré”
+“Tu es stressé”
+“Tu es mauvais”
+
+Autorisé :
+
+“Cette position est difficile.”
+“On peut ralentir.”
+“L’objectif est d’apprendre, pas de réussir du premier coup.”
 
 ============================================================
-4. CONVENTION MOTEUR : eval_cp POV BLANCS
+4. MODÈLE D’EXPERTISE ÉCHIQUÉENNE
 ============================================================
 
-Règle absolue :
+NeuroChess doit modéliser la compétence échiquéenne selon douze axes.
 
-eval_cp stocké dans NeuroChess doit toujours être du point de vue des Blancs.
+------------------------------------------------------------
+4.1 Axe 1 — Perception
+------------------------------------------------------------
+
+Question :
+
+Vois-tu ce qui est attaqué ?
+
+Signaux :
+
+hanging_piece_missed
+free_capture_missed
+attacked_more_than_defended
+king_in_danger
+simple_threat_missed
+
+Niveaux concernés :
+
+400–1200 priorité forte
+1200+ audit résiduel
+
+------------------------------------------------------------
+4.2 Axe 2 — Règles et légalité
+------------------------------------------------------------
+
+Question :
+
+Comprends-tu les coups possibles ?
+
+Signaux :
+
+illegal_move
+promotion_confusion
+castle_rule_confusion
+en_passant_confusion
+check_evasion_failure
+
+Important pour :
+
+débutants
+Practice board
+exploration locale
+
+------------------------------------------------------------
+4.3 Axe 3 — Sécurité matérielle
+------------------------------------------------------------
+
+Question :
+
+Donnes-tu du matériel sans compensation ?
+
+Signaux :
+
+piece_hung
+free_capture_allowed
+material_drop_without_compensation
+simple_recapture_missed
+
+------------------------------------------------------------
+4.4 Axe 4 — Tactique
+------------------------------------------------------------
+
+Question :
+
+Vois-tu les motifs forcés ?
+
+Tags :
+
+fork
+pin
+skewer
+discovered_attack
+deflection
+decoy
+overloaded_defender
+mating_net
+zwischenzug
+forcing_sequence
+
+------------------------------------------------------------
+4.5 Axe 5 — Calcul
+------------------------------------------------------------
+
+Question :
+
+Peux-tu calculer assez loin et dans la bonne branche ?
+
+Signaux :
+
+line_too_short
+wrong_branch_evaluation
+missed_reply
+failed_forcing_sequence
+sacrifice_miscalculated
+
+------------------------------------------------------------
+4.6 Axe 6 — Génération de candidats
+------------------------------------------------------------
+
+Question :
+
+As-tu envisagé les bons coups ?
+
+Signaux :
+
+best_move_not_in_candidates
+forcing_move_not_considered
+quiet_move_not_considered
+candidate_set_too_narrow
+
+------------------------------------------------------------
+4.7 Axe 7 — Évaluation
+------------------------------------------------------------
+
+Question :
+
+Évalues-tu correctement la position ?
+
+Signaux :
+
+initiative_misevaluated
+material_overvalued
+king_safety_undervalued
+pawn_structure_misread
+endgame_transition_misjudged
+
+------------------------------------------------------------
+4.8 Axe 8 — Défense
+------------------------------------------------------------
+
+Question :
+
+Trouves-tu les ressources défensives ?
+
+Tags :
+
+only_move_defense
+damage_limitation
+counterplay_resource
+perpetual_resource
+exchange_to_survive
+king_safety_resource
+
+------------------------------------------------------------
+4.9 Axe 9 — Conversion
+------------------------------------------------------------
+
+Question :
+
+Sais-tu gagner une position favorable ?
+
+Tags :
+
+simplify_when_winning
+reduce_counterplay
+convert_material
+maintain_initiative
+avoid_unnecessary_risk
+technical_conversion
+
+------------------------------------------------------------
+4.10 Axe 10 — Stratégie et structures
+------------------------------------------------------------
+
+Question :
+
+Comprends-tu le plan positionnel ?
+
+Tags :
+
+weak_square
+outpost
+bishop_pair
+bad_bishop
+open_file
+pawn_break
+isolated_queen_pawn
+hanging_pawns
+minority_attack
+king_side_attack
+opposite_side_castling
+
+------------------------------------------------------------
+4.11 Axe 11 — Finales
+------------------------------------------------------------
+
+Question :
+
+Convertis-tu techniquement ?
+
+Tags :
+
+king_activity
+opposition
+rook_endgame
+pawn_race
+passed_pawn
+piece_activity_endgame
+fortress
+zugzwang
+
+------------------------------------------------------------
+4.12 Axe 12 — Métacognition et temps
+------------------------------------------------------------
+
+Question :
+
+Sais-tu quand tu ne sais pas ?
+
+Signaux :
+
+overconfidence
+underconfidence
+panic_move
+time_pressure_blunder
+fast_wrong_move
+long_think_wrong_branch
+confidence_result_mismatch
+
+============================================================
+5. MODÈLE DE PROGRESSION 400 → 2400+
+============================================================
+
+NeuroChess ne promet pas 2400.
+NeuroChess construit des trajectoires adaptées.
+
+------------------------------------------------------------
+5.1 Niveau 400–800 — Perception et survie
+------------------------------------------------------------
+
+Objectif :
+
+arrêter les erreurs massives et rendre le board lisible
+
+Priorités :
+
+pièces attaquées
+échecs
+mats simples
+coups légaux
+menaces immédiates
+sécurité du roi
+ne pas donner de pièces
+
+NeuroChess doit :
+
+montrer simplement
+répéter souvent
+éviter les longues variantes
+limiter le jargon
+renforcer la confiance
+
+Métriques :
+
+illegal_move_rate
+hanging_piece_rate
+simple_threat_detection_rate
+mate_threat_detection_rate
+
+------------------------------------------------------------
+5.2 Niveau 800–1200 — Motifs de base
+------------------------------------------------------------
+
+Objectif :
+
+reconnaître les motifs tactiques fréquents
+
+Priorités :
+
+fork
+pin
+skewer
+discovered_attack
+undefended_piece
+basic_opening_principles
+king_safety
+development
+
+Métriques :
+
+motif_recognition_success
+same_motif_retry_success
+basic_blunder_reduction
+
+------------------------------------------------------------
+5.3 Niveau 1200–1600 — Calcul court et discipline
+------------------------------------------------------------
+
+Objectif :
+
+calculer 2–3 coups et éviter les erreurs récurrentes
+
+Priorités :
+
+forcing_moves
+candidate_moves
+conversion_simple
+defense_simple
+opening_exit
+avoid_counterplay
+
+Métriques :
+
+forcing_sequence_success
+candidate_generation_quality
+conversion_error_rate
+defensive_resource_rate
+
+------------------------------------------------------------
+5.4 Niveau 1600–2000 — Transfert et décision pratique
+------------------------------------------------------------
+
+Objectif :
+
+réussir en partie ce qui est réussi en exercice
+
+Priorités :
+
+transfer_gap
+time_pressure
+calculation_depth
+middlegame_plans
+practical_defense
+endgame_basics
+opening_plans
+
+Métriques :
+
+transfer_opportunity_success
+time_pressure_error_rate
+repeated_error_reduction
+near_transfer_success
+
+------------------------------------------------------------
+5.5 Niveau 2000–2400+ — Audit avancé
+------------------------------------------------------------
+
+Objectif :
+
+réduire les erreurs rares mais coûteuses
+
+Priorités :
+
+deep_calculation
+candidate_trainer
+opening_repertoire
+structure_specific_plans
+technical_endgames
+risk_management
+preparation
+defensive_precision
+
+Métriques :
+
+high_leverage_decision_quality
+critical_transition_accuracy
+opening_structure_transfer
+endgame_conversion_rate
+candidate_topk_recall
+
+============================================================
+6. CONVENTION MOTEUR ABSOLUE
+============================================================
+
+Règle :
+
+eval_cp est toujours stocké du point de vue des Blancs.
 
 Donc :
 
-+100 = avantage Blancs.
--100 = avantage Noirs.
++100 = avantage Blancs
+-100 = avantage Noirs
 
-Si une source moteur fournit une évaluation du point de vue du camp au trait, elle doit être convertie avant stockage.
+Si une source fournit une évaluation du point de vue du camp au trait, elle doit être convertie avant stockage.
 
-Cette convention est indispensable pour :
+Cette convention est obligatoire pour :
 
-- white_percent ;
-- player_win_percent ;
-- win_loss ;
-- move_accuracy ;
-- game_accuracy ;
-- NeuroScore ;
-- criticality ;
-- comparaison Blancs/Noirs ;
-- Practice ;
-- Transfer Gap ;
-- domain signals.
+white_percent
+player_win_percent
+win_loss
+move_accuracy
+game_accuracy
+NeuroScore
+criticality
+practice
+transfer_gap
 
-Sans cette convention, les scores peuvent être inversés silencieusement.
+Sans cette règle, l’app peut inverser silencieusement les scores.
 
 ============================================================
-5. POURQUOI NE PAS UTILISER DIRECTEMENT LES CENTIPIONS
+7. WIN% LICHESS-LIKE
 ============================================================
 
 Stockfish parle en centipions.
-
-Mais les centipions sont difficiles à interpréter hors contexte.
-
-Exemples :
-
-- perdre 300 cp en position égale peut être catastrophique ;
-- perdre 300 cp dans une position gagnante à +8 peut être presque sans importance ;
-- perdre 300 cp dans une position déjà perdue peut ne presque rien changer.
-
-L’unité utile pour le joueur est donc :
-
-“Combien de chances de gain ce coup a-t-il fait perdre ?”
-
-C’est pourquoi NeuroChess utilise une sémantique Win% puis Accuracy%.
-
-============================================================
-6. WIN% LICHESS-LIKE
-============================================================
+Les centipions ne sont pas intuitifs pour l’utilisateur.
+NeuroChess utilise une transformation Win% lisible.
 
 Formule :
 
 white_percent_lichess_v1 =
-100 / (1 + exp(-0.00368208 * eval_cp))
+100 / (1 + exp(-0.00368208 * eval_cp_white_pov))
 
 Forme équivalente :
 
@@ -397,84 +1073,65 @@ Statut :
 
 metric_id: white_percent_lichess_v1
 purpose: communication / base metric
-source_semantics: Lichess-like
-calibration_status: external_reference
 visible_user: indirect
-drives_training: false alone
+drives_training: yes indirect
+calibration_status: external_reference
 
 Attention :
 
 Ce n’est pas une probabilité universelle parfaite.
-C’est une courbe empirique utile pour rendre l’évaluation moteur lisible.
+C’est une transformation pratique pour rendre l’évaluation moteur lisible.
 
 ============================================================
-7. PLAYER WIN%
+8. PLAYER WIN%
 ============================================================
 
-Pour un joueur donné :
+Pour analyser du point de vue du joueur :
 
-Si joueur = Blanc :
-
-player_win_percent =
-white_percent
-
-Si joueur = Noir :
-
-player_win_percent =
-100 - white_percent
-
-Cela permet d’analyser toujours du point de vue du joueur.
+if player_color == white:
+    player_win_percent = white_percent
+else:
+    player_win_percent = 100 - white_percent
 
 Exemple :
 
 white_percent = 70
+joueur blanc => player_win_percent = 70
+joueur noir  => player_win_percent = 30
 
-Si le joueur est Blanc :
-P = 70
+Statut :
 
-Si le joueur est Noir :
-P = 30
+metric_id: player_win_percent_v1
+visible_user: indirect
+drives_training: yes
 
 ============================================================
-8. WIN_LOSS : PERTE DE CHANCES
+9. WIN LOSS, GAIN ET DELTA
 ============================================================
 
-Pour chaque coup du joueur analysé :
+Pour chaque coup du joueur :
 
-win_loss =
-max(0, P_before - P_after)
+raw_win_delta = P_after - P_before
+win_loss = max(0, P_before - P_after)
+positive_gain = max(0, P_after - P_before)
 
-Exemple :
+Pourquoi trois valeurs ?
 
-P_before = 70
-P_after = 68
-win_loss = 2
+raw_win_delta mesure la variation brute.
+win_loss mesure l’erreur.
+positive_gain mesure une bonne décision.
 
-Autre exemple :
-
-P_before = 55
-P_after = 20
-win_loss = 35
+NeuroChess ne doit pas apprendre seulement des erreurs.
+Il doit aussi identifier les bonnes décisions reproductibles.
 
 Statut :
 
 metric_id: win_loss_lichess_v1
-purpose: base metric
 visible_user: indirect
-drives_training: input to accuracy, criticality, diagnostic
-
-Cette métrique est la base de :
-
-- move_accuracy ;
-- game_accuracy ;
-- NeuroScore ;
-- criticality ;
-- domain signals ;
-- Practice ;
-- Transfer Gap.
+drives_training: yes
 
 ============================================================
-9. MOVE ACCURACY LICHESS-LIKE
+10. MOVE ACCURACY LICHESS-LIKE
 ============================================================
 
 Formule :
@@ -488,214 +1145,152 @@ clamp(
   100
 )
 
-Interprétation :
+La constante +1 agit comme bonus/incertitude avant clamp.
+À win_loss = 0, la formule dépasse légèrement 100, puis est clampée à 100.
 
-- win_loss faible → accuracy haute ;
-- win_loss moyenne → accuracy moyenne ;
-- win_loss forte → accuracy basse.
+Exemples approximatifs :
+
+| win_loss | accuracy |
+|---:|---:|
+| 0 | 100 |
+| 1 | 96.6 |
+| 2 | 92.4 |
+| 5 | 80.8 |
+| 10 | 64.6 |
+| 20 | 41.0 |
+| 40 | 15.9 |
+| 60 | 5.4 |
+| 80 | 1.0 |
+| 100 | 0 |
 
 Statut :
 
 metric_id: move_accuracy_lichess_v1
 purpose: communication
 visible_user: indirect
-drives_training: false alone
+drives_training: no alone
 
 Limite :
 
-L’accuracy pure peut être trop optimiste, surtout si une partie contient beaucoup de coups corrects mais quelques moments critiques très graves.
+Une moyenne d’accuracy peut cacher quelques moments très graves.
 
 ============================================================
-10. GAME ACCURACY
+11. GAME ACCURACY
 ============================================================
 
-La précision de partie ne doit pas être une moyenne naïve.
+La précision de partie ne doit jamais être une moyenne naïve sans mention.
 
-Elle doit idéalement suivre la sémantique Lichess-like :
+Trois statuts possibles :
 
-- move accuracies ;
-- fenêtres glissantes ;
-- volatilité locale ;
-- weighted mean ;
-- harmonic mean ;
-- combinaison finale.
-
-Si exact :
-
-metric_id: game_accuracy_lichess_v1
-
-Si inspiré mais non exact :
-
-metric_id: game_accuracy_lichess_like_v1
+game_accuracy_lichess_exact_v1
+game_accuracy_lichess_like_v1
+neurochess_reference_accuracy_v1
 
 Règle :
 
 Ne pas prétendre à un clone exact de Lichess si l’implémentation ne l’est pas.
 
+Usage :
+
+visible_user: secondaire
+drives_training: no alone
+
 ============================================================
-11. NEUROSCORE COACH VISIBLE
+12. NEUROSCORE COACH
 ============================================================
 
-Décision produit finale :
+Le score visible principal est :
 
-NeuroScore visible =
 coach_neuro_score_v1
 
 Formule V1 :
 
 coach_neuro_score_v1 =
-0.55 * lichess_like_precision_v1
-+ 0.45 * neuro_score_diag_v1
-
-Pourquoi ?
-
-La précision Lichess-like pure est trop flatteuse.
-Le diagnostic pur peut être trop démotivant.
-Le mix donne une note coach plus équilibrée.
-
-Exemple :
-
-Précision de référence = 87
-NeuroDiagnostic = 65
-
-NeuroScore =
-0.55 * 87 + 0.45 * 65
-= 47.85 + 29.25
-= 77.1
-
-UI :
-
-NeuroScore 77 / 100
-Score coach
-
-Précision de référence : 87 %
-
-Classification :
-
-metric_id: coach_neuro_score_v1
-purpose: communication
-visible_user: always
-drives_training: false
-calibration_status: heuristic_v1
-formula_version: coach_neuro_score_v1
-
-Important :
-
-Ce score ne doit PAS piloter les futurs calculs du Learning Engine.
-Il est pour l’humain.
-
-Les décisions d’entraînement doivent utiliser :
-
-- win_loss ;
-- criticality ;
-- tags ;
-- practice events ;
-- transfer_gap_beta ;
-- difficulty_fit ;
-- ETV.
-
-Calibration future :
-
-Critère primaire :
-pouvoir prédictif sur la performance future.
-
-Le score doit prédire :
-
-- accuracy future ;
-- blunder rate futur ;
-- missed opportunity rate futur ;
-- conversion failure futur ;
-- defensive resource missed futur.
-
-Critère secondaire :
-ressenti utilisateur, seulement comme garde-fou.
-
-Ne jamais calibrer ce score sur Chess.com, dont la formule exacte n’est pas publique.
-
-============================================================
-12. PRÉCISION DE RÉFÉRENCE
-============================================================
-
-La précision pure doit rester affichée en secondaire.
-
-UI :
-
-Précision de référence : 87 %
+0.55 * reference_accuracy
++ 0.45 * neuro_score_diag
 
 Rôle :
 
-- repère comparable ;
-- transparence ;
-- distinction entre accuracy pure et score coach.
+donner une lecture coach de la partie
 
-Elle ne remplace pas le NeuroScore coach.
+À afficher :
+
+NeuroScore 77 / 100
+Score coach de cette partie
+
+À ne pas afficher :
+
+Ton niveau réel
+Ton intelligence
+Ton potentiel
+Ton Elo prédit
+
+Le NeuroScore ne pilote pas le Learning Engine.
+
+Les décisions d’entraînement utilisent :
+
+win_loss
+criticality
+tags
+practice_events
+difficulty_fit
+transfer_opportunity
+ETV internal
+
+Statut :
+
+metric_id: coach_neuro_score_v1
+visible_user: yes
+drives_training: no
+calibration_status: heuristic_v1
 
 ============================================================
-13. NEURODIAGNOSTIC / NEUROSEVERITY
+13. NEURODIAGNOSTIC INTERNE
 ============================================================
 
 Objectif :
 
-capturer ce que l’accuracy pure ne voit pas assez :
-
-- moments critiques ;
-- clusters ;
-- conversion ratée ;
-- défense manquée ;
-- perte persistante ;
-- sévérité pédagogique.
+capturer ce que la précision pure cache :
+- moments critiques
+- clusters
+- conversion ratée
+- défense manquée
+- sévérité pédagogique
 
 Forme conceptuelle :
 
-Pour chaque coup t :
+D_t = L_t * Omega_t
 
-D_t =
-L_t * Omega_t
-
-où :
+avec :
 
 L_t = win_loss
+Omega_t = facteur pédagogique
 
-Omega_t = facteur de gravité pédagogique
+Omega peut intégrer :
 
-Omega_t peut intégrer :
+persistence
+cluster
+conversion_issue
+defensive_resource_missed
+transition
+criticality
+post_blunder_degradation
 
-- persistence ;
-- cluster ;
-- conversion issue ;
-- defensive resource missed ;
-- transition ;
-- criticality ;
-- post-blunder degradation.
+Agrégation :
 
-Puis :
+Z = 0.65 * mean_diagnostic_loss + 0.35 * tail_loss
+neuro_score_diag = 100 * exp(-0.035 * Z)
 
-Z =
-0.65 * mu + 0.35 * tau
-
-où :
-
-mu = moyenne des pertes diagnostiques
-tau = perte de queue / moments sévères
-
-Puis :
-
-neuro_score_diag =
-100 * exp(-0.035 * Z)
-
-Classification :
+Statut :
 
 metric_id: neuro_score_diag_v1
-purpose: audit / internal diagnostic
-visible_user: debug_only
-drives_training: false until calibrated
+visible_user: no
+drives_training: no until calibrated
 calibration_status: needs_corpus
 
-Limite :
+Règle :
 
-Cette famille est fragile tant qu’elle n’est pas calibrée.
-Elle empile plusieurs hyperparamètres.
-Elle ne doit pas être présentée comme vérité scientifique brute.
+Ne jamais présenter ce score comme vérité scientifique brute.
 
 ============================================================
 14. DIAGNOSTIC GAP
@@ -704,36 +1299,29 @@ Elle ne doit pas être présentée comme vérité scientifique brute.
 Formule :
 
 diagnostic_gap =
-lichess_like_accuracy - neuro_score_diag
-
-Exemple :
-
-accuracy = 87
-neuro_score_diag = 65
-diagnostic_gap = 22
+reference_accuracy - neuro_score_diag
 
 Interprétation :
 
-la précision moyenne est flatteuse, mais le diagnostic interne détecte des moments graves.
+la précision moyenne est flatteuse,
+mais le diagnostic interne détecte des moments sévères.
 
-Classification :
+Statut :
 
 metric_id: diagnostic_gap_v1
+visible_user: no
+drives_training: no
 purpose: audit
-visible_user: debug_only
-drives_training: false
-
-Ne pas afficher en UI principale.
 
 ============================================================
-15. CRITICALITY_SCORE
+15. CRITICALITY SCORE V1
 ============================================================
 
 Rôle :
 
 sélectionner les moments pédagogiquement importants.
 
-Ne sert pas à noter publiquement le joueur.
+Ce n’est pas un score utilisateur.
 
 Formule V1 :
 
@@ -744,90 +1332,65 @@ win_loss
 * persistence_weight
 * reliability_weight
 
-Classification :
+Statut :
 
 metric_id: criticality_score_heuristic_v1
-purpose: action
-drives_training: true
 visible_user: never
-calibration_status: needs_corpus
+drives_training: yes
+calibration_status: heuristic_v1
 
 ------------------------------------------------------------
-15.1 leverage_weight
+15.1 Leverage
 ------------------------------------------------------------
-
-Formule :
 
 leverage_weight =
 0.75 + 0.5 * (P_before * (100 - P_before) / 2500)
 
-Rôle :
-augmenter le poids des erreurs en position équilibrée.
-
-Maximum autour de P = 50.
-
-À calibrer.
+Maximum autour de P_before = 50.
 
 ------------------------------------------------------------
-15.2 transition_weight
+15.2 Transition
 ------------------------------------------------------------
 
-Rôle :
-pondérer les bascules de zone.
+Augmente le poids d’une bascule :
 
-Exemples :
-
-better → balanced
 balanced → worse
-winning → lost
-
-Statut :
-heuristic_v1.
+winning → equal
+winning → losing
+defensible → lost
 
 ------------------------------------------------------------
-15.3 observed_persistence_weight
+15.3 Persistence
 ------------------------------------------------------------
 
-Formule :
+Mesure si la perte reste visible après plusieurs coups.
 
 future_avg =
-moyenne de player_win_percent sur les prochains 6–10 demi-coups
+moyenne player_win_percent sur 6–10 demi-coups
 
 persistent_loss =
 max(0, P_before - future_avg)
 
 persistence_weight =
-0.75 + 0.5 * clamp(persistent_loss / max(L, 1), 0, 1)
+0.75 + 0.5 * clamp(persistent_loss / max(win_loss, 1), 0, 1)
 
-Important :
+Attention :
 
-C’est une persistance observée.
-Elle dépend du comportement de l’adversaire.
-Elle n’est pas causale.
-
-Future :
-
-counterfactual_persistence_v2
-uniquement sur top-3 moments
-avec budget Stockfish limité.
+persistence observée ≠ causalité parfaite
 
 ------------------------------------------------------------
-15.4 reliability_weight
+15.4 Reliability
 ------------------------------------------------------------
 
-Rôle :
-éviter d’utiliser une analyse trop faible.
+Évite de choisir des moments basés sur une analyse faible.
 
-Cible :
-
-- profil requis satisfait : 1.0 ;
-- analyse faible : 0.8 ;
-- legacy compatible : faible ;
-- live/shallow only : non candidat ;
-- missing analysis : non candidat.
+strict_valid analysis => 1.0
+weak analysis => 0.8
+legacy => low
+missing => not candidate
 
 ============================================================
-16. VERSION LOG-ADDITIVE FUTURE DE CRITICALITY
+16. CRITICALITY V2 LOG-ADDITIVE
 ============================================================
 
 La formule multiplicative peut amplifier le bruit.
@@ -835,39 +1398,64 @@ La formule multiplicative peut amplifier le bruit.
 Version future :
 
 log_criticality =
-log(win_loss + epsilon)
-+ a1 * log(leverage)
-+ a2 * log(transition)
-+ a3 * log(persistence)
-+ a4 * log(reliability)
+theta0
++ theta1 * log1p(win_loss)
++ theta2 * leverage_feature
++ theta3 * transition_feature
++ theta4 * persistence_feature
++ theta5 * teachability_feature
++ theta6 * recurrence_feature
++ theta7 * transfer_relevance_feature
+- theta8 * noise_risk_feature
+- theta9 * redundancy_feature
 
-Avantages :
+Puis :
 
-- plus stable ;
-- calibrable terme par terme ;
-- compatible avec régression sur corpus annoté.
+criticality_internal =
+100 * sigmoid(log_criticality)
 
-Test de stabilité :
+Nouvelles features :
 
-Pour chaque partie :
+teachability_feature
+recurrence_feature
+transfer_relevance_feature
+noise_risk_feature
+redundancy_feature
 
-- perturber légèrement profondeur/évaluation ;
-- recalculer top-5 moments ;
-- mesurer Jaccard similarity.
+Doctrine :
 
-Jaccard(A, B) =
-|A ∩ B| / |A ∪ B|
-
-Si Jaccard < 0.6 :
-sélection trop instable.
+Un moment utile n’est pas seulement grave.
+Il doit être grave, enseignable, récurrent ou transférable.
 
 ============================================================
-17. TEMPORAL NON-MAXIMUM SUPPRESSION
+17. TESTS DE STABILITÉ CRITICALITY
+============================================================
+
+Avant de faire confiance à criticality :
+
+stability_depth_test
+stability_engine_version_test
+human_coach_agreement_test
+retry_success_prediction_test
+future_error_prediction_test
+
+Critères cibles :
+
+top5_jaccard_depth >= 0.60
+coach_agreement_kappa >= 0.60 minimum
+coach_agreement_kappa >= 0.70 cible
+
+Tant que non validé :
+
+criticality_score = signal interne uniquement
+
+============================================================
+18. TEMPORAL NON-MAXIMUM SUPPRESSION
 ============================================================
 
 But :
 
-éviter d’afficher plusieurs moments presque identiques.
+éviter plusieurs moments presque identiques
 
 Paramètres V1 :
 
@@ -875,1141 +1463,1281 @@ window = 2 plies
 override_ratio = 1.5
 max_moments = 5
 
-Exemple :
+Règle :
 
-coup 17 : erreur
-coup 18 : conséquence
-coup 19 : aggravation
-
-NeuroChess doit choisir le vrai tournant, pas tout afficher.
+Choisir le tournant pédagogique, pas toutes les conséquences.
 
 ============================================================
-18. TAXONOMIE V0 — VERSION MINIMALE D’IMPLÉMENTATION
+19. TAXONOMIE V0
 ============================================================
 
-La taxonomie est chemin critique.
+V1 démarre avec une taxonomie courte.
 
-Mais la version complète à 40+ tags est trop large pour démarrer.
+Tags V0 :
 
-Décision :
+TACTIQUE
+- fork
+- pin
+- forcing_sequence
 
-Taxonomy V0 initiale = 8 tags maximum.
+CONVERSION
+- simplify_when_winning
+- reduce_counterplay
 
-Répartition :
+DÉFENSE
+- only_move_defense
+- damage_limitation
 
-TACTIQUE — 3 tags :
-1. fork
-2. pin
-3. forcing_sequence
+OUVERTURE
+- early_book_exit
 
-CONVERSION — 2 tags :
-4. simplify_when_winning
-5. reduce_counterplay
+Chaque item :
 
-DÉFENSE — 2 tags :
-6. only_move_defense
-7. damage_limitation
+primary_tag
+secondary_tags
+domain
+tag_confidence
+tag_source
 
-OUVERTURE — 1 tag :
-8. early_book_exit
+Sources possibles :
 
-Chaque position peut avoir :
-
-- primary_tag ;
-- secondary_tags ;
-- tag_confidence ;
-- tag_source.
-
-tag_source :
-- rule_engine ;
-- human_annotation ;
-- future_llm_verified.
-
-Règle de démarrage :
-
-On n’implémente pas 47 tags au départ.
-On commence par 8 tags bien définis.
-
-============================================================
-19. TAXONOMIE ÉTENDUE FUTURE
-============================================================
-
-Après validation, étendre vers :
-
-Tactique :
-- skewer ;
-- discovered_attack ;
-- overloaded_defender ;
-- deflection ;
-- mating_threat.
-
-Conversion :
-- convert_material ;
-- maintain_initiative.
-
-Défense :
-- counterplay_resource ;
-- perpetual_resource.
-
-Ouverture :
-- development_delay ;
-- king_safety ;
-- center_control ;
-- misplaced_piece.
-
-Foundations :
-- hanging_piece ;
-- undefended_piece ;
-- simple_threat_missed ;
-- attacked_more_than_defended ;
-- king_in_danger ;
-- free_capture_missed.
-
-Calcul :
-- best_move_not_in_candidates ;
-- best_move_rejected ;
-- line_too_short ;
-- wrong_branch_evaluation.
-
-Intention / métacognition :
-- wrong_plan ;
-- good_plan_bad_execution ;
-- threat_misread ;
-- overconfidence ;
-- opening_confusion ;
-- vague_intent ;
-- played_by_instinct.
-
-============================================================
-20. PROTOCOLE D’ANNOTATION DE LA TAXONOMIE
-============================================================
-
-Avant d’étendre la taxonomie :
-
-Corpus initial :
-200 positions.
-
-Annotateurs :
-2 personnes si possible.
-
-Mesure :
-κ de Cohen.
-
-Formule :
-
-κ =
-(p_o - p_e) / (1 - p_e)
-
-où :
-
-p_o = accord observé
-p_e = accord attendu par hasard
-
-Seuils :
-
-κ > 0.70 :
-taxonomie utilisable.
-
-κ entre 0.50 et 0.70 :
-taxonomie ambiguë, définitions à améliorer.
-
-κ < 0.50 :
-taxonomie trop confuse, simplifier.
+rule_engine
+human_annotation
+future_llm_verified
 
 Règle :
 
-Si deux tags sont possibles, définir une règle de désambiguïsation.
-
-Exemple :
-Si fork et forcing_sequence sont tous les deux vrais :
-primary_tag = forcing_sequence si la séquence complète est nécessaire ;
-secondary_tag = fork.
+8 tags bien définis valent mieux que 50 tags flous.
 
 ============================================================
-21. DOMAIN SIGNALS BAYÉSIENS
+20. TAXONOMIE MULTI-AXES V2
 ============================================================
 
-Ne pas afficher trop tôt :
+La taxonomie ultime ne doit pas être une simple liste de tags.
+Chaque position est décrite par plusieurs axes.
 
-Tactique : 62 %
-Défense : 48 %
+TrainingItemLabel =
+domain
++ tactical_pattern
++ failure_mode
++ game_phase
++ position_structure
++ time_context
++ transfer_scope
++ confidence_level
 
-Utiliser des postérieurs bayésiens.
+------------------------------------------------------------
+20.1 Domain
+------------------------------------------------------------
+
+perception
+material_safety
+tactics
+calculation
+candidate_generation
+evaluation
+defense
+conversion
+positional_strategy
+opening
+endgame
+time_management
+metacognition
+
+------------------------------------------------------------
+20.2 Tactical pattern
+------------------------------------------------------------
+
+fork
+pin
+skewer
+discovered_attack
+deflection
+decoy
+overloaded_defender
+zwischenzug
+mating_net
+sacrifice
+
+------------------------------------------------------------
+20.3 Failure mode
+------------------------------------------------------------
+
+not_seen
+seen_but_rejected
+miscalculated
+line_too_short
+wrong_branch
+misevaluated
+good_plan_bad_execution
+time_pressure
+overconfidence
+panic
+memory_gap
+rule_confusion
+
+------------------------------------------------------------
+20.4 Game phase
+------------------------------------------------------------
+
+opening
+early_middlegame
+middlegame
+transition
+endgame
+
+------------------------------------------------------------
+20.5 Structure
+------------------------------------------------------------
+
+open_center
+closed_center
+isolated_queen_pawn
+hanging_pawns
+minority_attack
+opposite_side_castling
+bishop_pair
+knight_outpost
+weak_color_complex
+passed_pawn
+rook_endgame
+
+------------------------------------------------------------
+20.6 Transfer scope
+------------------------------------------------------------
+
+exact_position
+near_variant
+same_pattern_different_position
+same_structure
+real_game_opportunity
+
+============================================================
+21. PROTOCOLE D’ANNOTATION
+============================================================
+
+Avant extension taxonomique :
+
+corpus_initial = 200 positions
+annotators = 2 minimum
+measure = Cohen_kappa
+
+Formule :
+
+kappa = (p_o - p_e) / (1 - p_e)
+
+Seuils :
+
+kappa > 0.70 => taxonomie utilisable
+0.50 <= kappa <= 0.70 => définitions à améliorer
+kappa < 0.50 => taxonomie trop confuse
+
+Règle :
+
+Une taxonomie non annotable n’est pas une taxonomie produit.
+
+============================================================
+22. DOMAIN SIGNALS BAYÉSIENS
+============================================================
 
 Pour un domaine d :
 
-theta_d ~ Beta(alpha, beta)
+theta_d ~ Beta(alpha_d, beta_d)
 
 Après observations :
 
-theta_d | data ~ Beta(alpha + successes, beta + failures)
+success => alpha += weight
+failure => beta += weight
 
-Cela donne :
+Poids V1 :
 
-- moyenne ;
-- incertitude ;
-- intervalle de crédibilité.
+success_without_help => +1.0 alpha
+success_with_hint => +0.5 alpha
+wrong => +1.0 beta
+illegal => +1.2 beta
+revealed => +0.8 beta
+skipped => no-op or soft beta
 
-Domaines V1 :
-- opening ;
-- tactical ;
-- conversion ;
-- defense.
+Affichage utilisateur interdit :
 
-Calculation :
-pas de score continu sans logs candidats.
+Tactique : 62 %
 
-Affichage :
+Affichage utilisateur autorisé :
 
-Tactique : prioritaire
+Tactique : priorité actuelle
 Défense : profil en construction
-Conversion : stable
-
-Pas de faux pourcentage si données insuffisantes.
-
-Seuils de visibilité prudents :
-
-opening :
->= 10 sessions rehearsal et >= 8 occurrences réelles
-
-tactical :
->= 50 items practice et >= 30 opportunités réelles
-
-conversion :
->= 15 positions gagnantes
-
-defense :
->= 15 positions difficiles
-
-calculation :
->= 100 items avec logs candidats
-
-Sinon :
-profil en construction.
+Conversion : stable récemment
 
 ============================================================
-22. PRACTICE_RESULT_EVENT
+23. PRACTICE RESULT EVENT V3
 ============================================================
 
-Ne pas stocker seulement correct / wrong.
+Chaque tentative doit être riche.
 
-Structure :
-
-practice_result_event_v1:
-- item_id
+practice_result_event_v3:
+- event_id
+- user_id
 - session_id
-- result
-- move_played
-- time_spent
-- hint_used
-- reveal_used
-- attempt_number
-- item_difficulty
+- item_id
+- item_version
 - source_context
-- self_confidence optional
-- explanation_attempt optional
-- timestamp
+- fen_before
+- side_to_move
+- best_move
+- accepted_moves_json
+- move_played
+- move_format
+- result
+- time_spent_ms
+- time_to_first_move_ms
+- hint_used
+- hint_level
+- reveal_used
+- correction_viewed
+- attempt_number
+- confidence_pre_attempt
+- confidence_post_feedback
+- candidate_moves_declared
+- expected_reply
+- explanation_attempt
+- explanation_quality
+- due_at
+- interval_days
+- repetition_count
+- scheduling_policy
+- wrong_streak_count
+- anti_tilt_message_shown
+- created_at
+- schema_version
 
-Résultats :
+Résultats possibles :
 
-- best ;
-- very_good ;
-- acceptable ;
-- wrong ;
-- illegal ;
-- revealed ;
-- skipped.
+best
+very_good
+acceptable
+wrong_legal
+illegal
+revealed
+skipped
+timeout
+abandoned
 
-Ce flux alimente :
+Règle :
 
-- SkillTrace Beta ;
-- BKT futur ;
-- IRT futur ;
-- FSRS futur ;
-- Transfer Gap ;
-- ETV.
+Une tentative réussie après 90 secondes n’est pas équivalente à une reconnaissance immédiate.
+Une réussite avec indice n’est pas équivalente à une réussite autonome.
+Un reveal n’est pas une maîtrise.
+Un coup illégal est une donnée pédagogique, pas un échec moral.
 
 ============================================================
-23. SKILLTRACE BETA V1
+24. EXPLORATION LOCALE REVIEW
 ============================================================
 
-Modèle utilisateur V1 simple.
+L’utilisateur doit pouvoir explorer une position sans IA et sans adversaire.
 
-Pour chaque concept_tag :
+Ce mode est distinct de Practice.
 
-alpha_tag
-beta_tag
+------------------------------------------------------------
+24.1 Contrat
+------------------------------------------------------------
 
-Prior :
+Review Local Exploration Mode :
 
-alpha = 2
-beta = 2
+- jouer des coups légaux pour les deux camps ;
+- pas d’IA ;
+- pas d’adversaire ;
+- pas d’analyse Stockfish obligatoire ;
+- pas de sauvegarde comme tentative ;
+- pas de due_at ;
+- pas de learning_summary update ;
+- undo disponible ;
+- reset disponible ;
+- illegal move rejeté calmement.
+
+Copie utilisateur :
+
+Exploration locale
+Tu peux tester des coups. Rien n’est enregistré comme exercice.
+
+Événements possibles :
+
+exploration_event
+drives_training: false in V1
+
+V2/V3 :
+
+peut aider à comprendre curiosité, confusion, candidats explorés,
+mais jamais comme vérité brute.
+
+============================================================
+25. RÉPÉTITION ESPACÉE
+============================================================
+
+V1 utilise :
+
+simple_spaced_repetition_v1
+
+Règles V1 :
+
+wrong / illegal => demain
+revealed => demain
+success with hint => 3 jours
+success without help => 7 jours
+skipped => no due V1
+
+Ne pas appeler cela FSRS.
+FSRS réel est V2/V3.
+
+------------------------------------------------------------
+25.1 Trois queues futures
+------------------------------------------------------------
+
+Aux échecs, il faut distinguer :
+
+exact_position_queue
+motif_queue
+transfer_variant_queue
+
+Exact position :
+
+te souviens-tu de cette position ?
+
+Motif :
+
+reconnais-tu le même motif ailleurs ?
+
+Transfer variant :
+
+vois-tu l’idée dans un contexte différent ?
+
+Règle :
+
+mémoire d’une position ≠ maîtrise échiquéenne
+
+============================================================
+26. ITEM DIFFICULTY MODEL — VERSION OPÉRATIONNELLE
+============================================================
+
+Le verrou central est :
+
+P_success(user, item, context)
+
+Formule conceptuelle :
+
+P_success = sigmoid(
+  theta_global_user
+  + theta_domain_user[domain]
+  + theta_tag_user[tag]
+  - b_item
+  + familiarity_bonus
+  - time_pressure_penalty
+  - cognitive_load_penalty
+)
+
+------------------------------------------------------------
+26.1 Features item
+------------------------------------------------------------
+
+engine_win_loss
+solution_depth
+number_of_forcing_moves
+number_of_plausible_candidates
+tactic_visibility
+motif_frequency
+material_complexity
+piece_count
+phase
+requires_quiet_move
+requires_sacrifice
+requires_defensive_resource
+promotion_or_special_rule
+prior_similarity
+
+------------------------------------------------------------
+26.2 Cibles de réussite
+------------------------------------------------------------
+
+| Niveau | Target success |
+|---|---:|
+| 400–800 | 0.75–0.85 |
+| 800–1200 | 0.70–0.80 |
+| 1200–1600 | 0.65–0.75 |
+| 1600–2000 | 0.60–0.70 |
+| 2000+ | 0.55–0.70 |
+
+Justification :
+
+Les débutants ont besoin de plus de réussite pour rester engagés.
+Les joueurs avancés tolèrent davantage de difficulté.
+
+------------------------------------------------------------
+26.3 Sortie utilisateur
+------------------------------------------------------------
+
+Interdit :
+
+Difficulté : 0.73
+
+Autorisé :
+
+Facile pour toi
+Bien calibré
+Difficile mais utile
+Trop dur aujourd’hui
+
+------------------------------------------------------------
+26.4 Validation
+------------------------------------------------------------
+
+Un item difficulty model est acceptable seulement si :
+
+- il prédit mieux que baseline rating-only ;
+- son Brier score est mesuré ;
+- la calibration est testée par niveau ;
+- il ne dégrade pas completion_rate ;
+- il ne provoque pas wrong_streak excessif chez les débutants.
+
+============================================================
+27. SKILLTRACE BETA V1
+============================================================
+
+V1 :
+
+tag -> Beta(alpha, beta)
+
+Initialisation :
+
+alpha = prior_success
+beta = prior_failure
 
 Mise à jour :
 
-succès sans aide :
-alpha += 1.0
+best => alpha += 1.0
+success_with_hint => alpha += 0.5
+wrong => beta += 1.0
+illegal => beta += 1.2
+revealed => beta += 0.8
+skipped => no-op
 
-succès avec indice :
-alpha += 0.5
-beta += 0.3
+Sortie :
 
-acceptable :
-alpha += 0.4
-beta += 0.2
+mastery_mean = alpha / (alpha + beta)
+uncertainty = function(alpha + beta)
 
-échec :
-beta += 1.0
+Statut :
 
-solution révélée :
-beta += 0.7
+visible_user: no numeric
+shadow_mode_v1: yes
+drives_daily_plan_v1: no strong influence
 
-skipped :
-beta += 0.3 ou no-op
+Règle :
 
-illegal :
-beta += 0.5 si lié à incompréhension
-
-Maîtrise :
-
-mastery_mean =
-alpha / (alpha + beta)
-
-Incertitude :
-intervalle de crédibilité Beta.
-
-Ce n’est pas encore BKT.
-C’est une V1 robuste, simple et bayésienne.
+SkillTrace V1 prépare la calibration.
+Il ne doit pas être vendu comme vérité.
 
 ============================================================
-24. BKT FUTUR
+28. SKILLTRACE HIÉRARCHIQUE V2
 ============================================================
 
-Bayesian Knowledge Tracing modélise un état latent de maîtrise.
+Version future :
 
-Paramètres :
+theta_global
+theta_domain
+theta_tag
+theta_context
+theta_transfer
 
-p(L0) = probabilité de connaissance initiale
-p(T) = probabilité d’apprendre
-p(S) = slip
-p(G) = guess
+Exemple :
 
-Usage futur :
-après stabilisation de la taxonomie.
+theta_tactics
+theta_fork
+theta_fork_under_time_pressure
+theta_fork_in_defensive_position
+theta_fork_in_real_game
 
-============================================================
-25. IRT / MIRT FUTUR
-============================================================
+Pourquoi ?
 
-IRT sépare :
+Un joueur peut réussir un motif :
 
-- capacité du joueur ;
-- difficulté de l’item.
+en puzzle
+mais pas en vraie partie
+mais pas sous pression
+mais pas dans une structure différente
 
-Modèle simple :
+Donc :
 
-P(success) =
-1 / (1 + exp(-(theta_user - b_item)))
-
-Mais les échecs sont multidimensionnels.
-
-Donc futur :
-
-MIRT :
-- theta_tactical ;
-- theta_conversion ;
-- theta_defense ;
-- theta_opening ;
-- theta_calculation.
+mastery(tag) alone is insufficient
 
 ============================================================
-26. FSRS / RÉPÉTITION ESPACÉE
+29. BKT, IRT, MIRT
 ============================================================
 
-FSRS ou équivalent doit décider quand revoir une position.
+------------------------------------------------------------
+29.1 BKT
+------------------------------------------------------------
 
-V1 :
-simple spaced repetition.
+BKT est utile pour modéliser un apprentissage séquentiel.
 
-Règles :
+Mais aux échecs :
 
-raté :
-revoir bientôt.
+les compétences ne sont pas binaires
+les items sont multidimensionnels
+le contexte change fortement
 
-réussi avec indice :
-revoir assez bientôt.
+Statut :
 
-réussi sans aide :
-revoir plus tard.
+V2/V3 research
 
-V2 :
-FSRS-lite.
+------------------------------------------------------------
+29.2 IRT
+------------------------------------------------------------
 
-V3 :
-révision par motif, pas seulement par position exacte.
+IRT modélise :
+
+aptitude utilisateur
+difficulté item
+
+Forme simple :
+
+P(success) = sigmoid(theta_user - b_item)
+
+Limite :
+
+une position d’échecs n’a pas une seule difficulté universelle
+
+------------------------------------------------------------
+29.3 MIRT
+------------------------------------------------------------
+
+MIRT est plus adapté :
+
+P(success) = sigmoid(theta_user_vector · item_skill_vector - b_item)
+
+Statut :
+
+V3 calibration
 
 ============================================================
-27. EXPECTED TRAINING VALUE V1
+30. EXPECTED TRAINING VALUE — VERSION OPÉRATIONNELLE
 ============================================================
 
-Ne pas commencer avec 8 termes.
-
-V1 :
+V1 simple :
 
 ETV_v1 =
 w1 * criticality
 + w2 * difficulty_fit
 - w3 * redundancy_penalty
 
-Pourquoi ?
+V2 complet :
 
-- criticality : moment important ;
-- difficulty_fit : bon niveau ;
-- redundancy_penalty : éviter répétition excessive.
+ExpectedTrainingValue =
+ExpectedLearningGain
+× TransferRelevance
+× RetentionNeed
+× MotivationFit
+× EvidenceReliability
+- FatigueCost
+- RedundancyCost
+- FrustrationRisk
 
-Les autres signaux sont loggés mais non utilisés au début :
+Décomposition :
 
-- weakness_match ;
-- transfer_relevance ;
-- memory_need ;
-- information_gain ;
-- fatigue_cost ;
-- intent_alignment ;
-- metacognitive_gap.
+ExpectedLearningGain =
+P_improve_after_item × importance_of_skill
 
-V2 future :
+TransferRelevance =
+probability_skill_will_reappear_in_user_games
 
-ETV_v2 =
-w1 criticality
-+ w2 weakness_match
-+ w3 transfer_relevance
-+ w4 difficulty_fit
-+ w5 memory_need
-+ w6 information_gain
-+ w7 intent_signal
-- w8 fatigue
-- w9 redundancy
+RetentionNeed =
+probability_of_forgetting_or_decay
 
-Future :
-learning-to-rank / contextual bandit.
+MotivationFit =
+will_this_item_keep_user_engaged_today
+
+EvidenceReliability =
+engine_depth × tag_confidence × data_volume
+
+FatigueCost =
+cognitive_load × session_length × wrong_streak
+
+Statut :
+
+visible_user: never
+drives_training: yes internal
+
+L’utilisateur voit :
+
+On travaille les positions les plus utiles aujourd’hui.
+
+Jamais :
+
+ETV = 0.73
+
+------------------------------------------------------------
+30.1 Conditions pour utiliser ETV_full_v2
+------------------------------------------------------------
+
+ETV_full_v2 ne peut piloter fortement le plan que si :
+
+- difficulté item calibrée ;
+- tags validés ;
+- transfer opportunities détectées ;
+- completion_rate non dégradé ;
+- retry_success amélioré ;
+- aucune hausse de churn liée à frustration.
 
 ============================================================
-28. DIFFICULTY_FIT
+31. TRANSFER OPPORTUNITY MODEL — VERSION OPÉRATIONNELLE
 ============================================================
 
-Objectif :
+C’est le cœur révolutionnaire.
 
-P_success autour de 0.60–0.75.
+On ne peut pas dire qu’un joueur n’a pas transféré si aucune opportunité ne s’est présentée.
 
-Formule conceptuelle :
+------------------------------------------------------------
+31.1 Définition
+------------------------------------------------------------
 
-DifficultyFit =
-exp(-((P_success - target)^2) / (2 * sigma^2))
-
-target ≈ 0.65
-
-Trop facile :
-peu d’apprentissage.
-
-Trop dur :
-frustration.
-
-Bon niveau :
-effort utile.
-
-============================================================
-29. TRANSFER GAP BAYÉSIEN
-============================================================
-
-Mesure :
-
-réussite en entraînement
--
-réussite en vraie partie.
-
-Pour domaine d :
-
-theta_train_d ~ Beta(alpha + s_train, beta + f_train)
-
-theta_practical_d ~ Beta(alpha + s_practical, beta + f_practical)
-
-Delta_d =
-theta_train_d - theta_practical_d
-
-Ne pas afficher seulement :
-
-Delta = 27 %
-
-Afficher :
-
-- signal faible ;
-- signal moyen ;
-- signal fort ;
-- profil en construction ;
-- intervalle de crédibilité.
+transfer_opportunity =
+position de vraie partie où une compétence entraînée était pertinente
 
 Exemple :
 
-L’utilisateur réussit les tactiques en entraînement mais les rate en partie réelle.
-Signal de transfert tactique : fort.
+skill trained = only_move_defense
 
-============================================================
-30. INTENT LAYER : PRINCIPE GÉNÉRAL
-============================================================
+future games:
+4 positions contiennent une ressource défensive critique
+user succeeds 1
+misses 3
 
-L’Intent Layer est un sous-système indépendant.
+------------------------------------------------------------
+31.2 Événement
+------------------------------------------------------------
 
-Il sert à comprendre :
-
-l’écart entre ce que le joueur voulait faire et ce que la position exigeait.
-
-Il ne doit pas être un chat permanent.
-Il ne doit pas être obligatoire.
-Il ne doit pas remplacer le moteur.
-
-Il doit être :
-
-- opt-in ;
-- orchestré ;
-- limité en friction ;
-- distingué pre_engine / post_engine ;
-- ancré textuellement ;
-- juridiquement protégé ;
-- validé empiriquement.
-
-============================================================
-31. INTENT_ORCHESTRATION
-============================================================
-
-Pas de question à chaque coup.
-
-Niveaux :
-
-Niveau 0 :
-pas d’intention.
-
-Niveau 1 :
-intent light.
-
-Questions rapides :
-
-- “Tu avais vu cette menace ?”
-- “Ton idée principale ?”
-- “Tu voulais attaquer, défendre, développer ?”
-
-Niveau 2 :
-intent deep.
-
-Questions :
-
-- “Quels coups candidats avais-tu ?”
-- “Quelle ligne avais-tu calculée ?”
-- “Quelle ouverture pensais-tu suivre ?”
-
-Niveau 3 :
-Candidate Trainer.
-
-Mode opt-in dédié.
-
-Budget V1 :
-
-Review normale :
-0–2 questions max.
-
-Review profonde :
-3–5 questions max.
-
-Candidate Mode :
-questions centrales, car opt-in.
-
-============================================================
-32. pre_engine vs post_engine
-============================================================
-
-Distinction obligatoire.
-
-intent_pre_engine :
-capturé avant évaluation, solution, PV, correction.
-
-Utilisable pour :
-
-- métacognition ;
-- candidats ;
-- confiance ;
-- représentation mentale réelle.
-
-intent_post_engine :
-capturé après correction ou évaluation.
-
-Utilisable pour :
-
-- pédagogie ;
-- self-explanation ;
-- reformulation.
-
-Non utilisable pour :
-
-- calibration métacognitive ;
-- preuve d’intention initiale ;
-- candidate_generation_gap fort.
-
-============================================================
-33. intent_event_v1
-============================================================
-
-Structure :
-
-intent_event_v1:
-
-- intent_event_id
+transfer_opportunity_event:
 - user_id
 - game_id
 - ply
-- fen_before
-- move_played
-- prompt_type
-
-capture_timing:
-- pre_engine
-- post_engine
-- post_correction
-- training_pre_attempt
-- training_post_attempt
-
-user_input:
-- quick_choice_response
-- user_text
-- self_confidence
-- candidate_moves_declared
-- expected_opponent_reply
-- claimed_opening
-- claimed_goal
-- claimed_plan
-
-response_quality:
-- non_response_reason
-- vague_response_type
-- parse_confidence
-- bias_risk
-- usability_for_metrics
-
-extraction:
-- extracted_json
-- source_spans
-- parser_version
-- is_inference_flags
-
-classification:
-- intent_alignment_category
-- candidate_signal
-- opening_awareness_signal
-- metacognitive_signal
-
-privacy:
-- privacy_level
-- cloud_allowed
-- research_opt_in
-- deletable
-
-metadata:
+- fen
+- skill_tag
+- trained_item_ids_related
+- opportunity_confidence
+- expected_action
+- player_action
+- success
+- miss_type
+- engine_evidence
 - created_at
-- schema_version
+
+------------------------------------------------------------
+31.3 Transfer Gap bayésien
+------------------------------------------------------------
+
+theta_train_skill ~ Beta(alpha_train, beta_train)
+theta_game_skill ~ Beta(alpha_game, beta_game)
+
+transfer_gap =
+E(theta_train_skill) - E(theta_game_skill)
+
+Mais uniquement si :
+
+opportunity_count >= threshold
+opportunity_confidence >= threshold
+
+Affichage :
+
+Signal de transfert en construction
+Signal faible
+Signal moyen
+Signal fort
+
+Interdit :
+
+Transfert : 27 %
+
+------------------------------------------------------------
+31.4 Seuils de prudence
+------------------------------------------------------------
+
+V1.1 shadow :
+
+minimum_opportunities = 3
+minimum_confidence = 0.60
+visible_user = false
+
+V2 prudent visible :
+
+minimum_opportunities = 8
+minimum_confidence = 0.70
+minimum_games_after_training = 5
+
+Afficher seulement des phrases prudentes.
 
 ============================================================
-34. RÉPONSES VAGUES
+32. TRAINING ITEMS
 ============================================================
 
-Réponses comme :
+Un training_item doit contenir :
 
-- “je ne sais pas”
-- “j’ai joué instinctivement”
-- “j’ai paniqué”
-- “je n’avais pas le temps”
-- “je ne me souviens plus”
+id
+source_type
+source_game_id
+source_ply
+source_moment_id
+fen
+side_to_move
+best_move
+accepted_moves_json
+domain
+primary_tag
+secondary_tags_json
+failure_mode
+difficulty_proxy
+criticality_score
+explanation_short
+takeaway
+created_at
+status
 
-ne doivent pas être surinterprétées.
+Règles V1 :
 
-Ajouter :
+max 5 items par Review
+idempotent
+déduplication source_game_id + source_ply
+accepted_moves_json contient au minimum best_move
+pas de faux item
+pas de Stockfish supplémentaire inutile
 
-non_response_reason :
-- no_time
-- no_memory
-- no_clear_plan
-- prefer_not_to_answer
-- too_hard_to_explain
-- played_by_instinct
-- time_pressure
-- unknown
+Sources futures :
+
+user_game_error
+user_game_good_decision
+benchmark_skill_position
+near_transfer_variant
+far_transfer_variant
+opening_repertoire_position
+endgame_core_position
+
+============================================================
+33. BONNES DÉCISIONS
+============================================================
+
+NeuroChess ne doit pas seulement détecter les erreurs.
+
+Il doit aussi détecter les bonnes décisions pédagogiquement utiles.
+
+good_decision_event:
+- high_impact_gain
+- defensive_resource_found
+- conversion_success
+- correct_simplification
+- strong_candidate_selection
+- opening_plan_success
+
+Rôle :
+
+renforcer l’identité de progression
+stabiliser les forces
+éviter une app uniquement punitive
+
+Copie utilisateur :
+
+Tu as bien trouvé cette ressource. On va vérifier si elle revient dans d’autres positions.
+
+============================================================
+34. INTENT LAYER
+============================================================
+
+L’Intent Layer est puissant mais dangereux s’il est trop lourd.
+
+Doctrine :
+
+optional
+opt-in
+non permanent
+jamais obligatoire en V1
+jamais source de vérité moteur
+
+------------------------------------------------------------
+34.1 Intent Light
+------------------------------------------------------------
+
+Questions courtes :
+
+Tu avais vu cette menace ?
+Tu cherchais à attaquer ou défendre ?
+Tu étais sûr de ce coup ?
+Tu avais envisagé le coup proposé ?
+
+------------------------------------------------------------
+34.2 Intent Deep
+------------------------------------------------------------
+
+Mode dédié seulement :
+
+Quels coups candidats avais-tu ?
+Quelle réponse adverse attendais-tu ?
+Quelle ligne avais-tu calculée ?
+Pourquoi as-tu rejeté ce coup ?
+
+------------------------------------------------------------
+34.3 Statuts
+------------------------------------------------------------
+
+pre_engine
+post_engine
+quick_choice
+free_text
+candidate_list
+confidence
+
+------------------------------------------------------------
+34.4 Intent alignment
+------------------------------------------------------------
+
+aligned
+partially_aligned
+misaligned
+unverifiable
 
 Règle :
 
-une réponse vague seule ne pilote pas Practice.
-Elle est un contexte, pas une preuve forte.
+Une intention déclarée est subjective.
+Elle ne remplace jamais l’évaluation moteur.
 
 ============================================================
-35. INTENT ALIGNMENT
+35. CANDIDATE METRICS
 ============================================================
 
-Pas de score 0–1 en V1.
+V2/V3.
+
+Mesurer :
+
+candidate_topk_recall
+best_move_in_candidates
+forcing_move_in_candidates
+candidate_quality
+preferred_move_alignment
+expected_reply_accuracy
+
+Formule conceptuelle :
+
+candidate_topk_recall =
+1 if best_move in declared_candidates else 0
+
+Mais à interpréter prudemment :
+
+un joueur peut ne pas déclarer tous ses candidats
+un joueur peut rationaliser après coup
+la capture doit être pre_engine si possible
+
+============================================================
+36. SELF-EXPLANATION
+============================================================
+
+La self-explanation peut être utile, mais pas comme dissertation obligatoire.
 
 V1 :
 
-intent_alignment_category_v1 :
-
-- aligned
-- partially_aligned
-- misaligned
-- unverifiable
-
-aligned :
-l’intention correspond aux effets du coup.
-
-partially_aligned :
-bonne intention, mauvaise exécution.
-
-misaligned :
-intention contradictoire avec le coup.
-
-unverifiable :
-intention trop vague.
-
-V2 future :
-atomic_effect_confirmation_rate.
-
-============================================================
-36. LLM ET ANCRAGE TEXTUEL
-============================================================
-
-Règle absolue :
-
-Pas de span, pas de donnée forte.
-
-Chaque champ extrait doit avoir :
-
-- value ;
-- source_span ;
-- confidence ;
-- parser_version ;
-- is_inference ;
-- usable_for_metrics.
-
-Si source_span absent :
-
-value = null
-ou usable_for_metrics = false.
-
-Le LLM ne doit pas inventer :
-
-- intention ;
-- coup ;
-- ligne ;
-- motif ;
-- évaluation.
-
-============================================================
-37. CANDIDATE METRICS
-============================================================
-
-V1 qualitative :
-
-candidate_signal_v1 :
-- best_declared_in_candidates
-- best_declared_absent
-- no_candidates_provided
-- candidates_post_engine_unusable
-- unclear_candidate_report
-
-Pas de candidate_topk_recall numérique en V1.
+non obligatoire
+micro-question possible
 
 V2 :
-si Candidate Trainer opt-in.
 
-Options :
-
-“As-tu envisagé ce coup ?”
-- calculé sérieusement ;
-- regardé puis rejeté ;
-- vu mais pas calculé ;
-- pas vu.
-
-============================================================
-38. INTENT-BASED METRICS FUTURES
-============================================================
-
-À ne pas sur-utiliser trop tôt.
-
-Métriques futures :
-
-metacognitive_calibration_gap =
-self_confidence - result_quality
-
-candidate_topk_recall =
-top_moves_in_candidates / k
-
-opening_intention_gap =
-distance between claimed opening and actual opening evidence
-
-plan_execution_gap =
-validity_of_plan - effectiveness_of_move
-
-intent_effect_confirmation_rate =
-confirmed_atomic_effects / verifiable_effects
-
-Toutes ces métriques doivent rester research/audit tant qu’elles ne sont pas validées.
-
-============================================================
-39. OPENING INTENTION MODEL
-============================================================
-
-L’utilisateur peut dire :
-
-- “Je voulais jouer la Caro-Kann.”
-- “Je pensais être dans une Najdorf.”
-- “Je voulais sortir du livre.”
-- “Je ne connais pas cette ouverture.”
-
-NeuroChess doit distinguer :
-
-- sortie volontaire ;
-- sortie involontaire ;
-- transposition ;
-- confusion ;
-- mauvais ordre de coups ;
-- plan cohérent mais tactiquement puni.
-
-Métriques :
-
-opening_awareness_signal :
-aware / confused / intentional_deviation / unknown
-
-opening_intention_gap :
-research only.
-
-Ne jamais dire :
-
-“Cette sortie a causé la perte.”
-
-Dire :
-
-“Un problème apparaît après cette sortie.”
-ou
-“La suite suggère un repère d’ouverture à renforcer.”
-
-============================================================
-40. SELF-EXPLANATION
-============================================================
-
-NeuroChess peut demander :
-
-“Pourquoi ce coup est meilleur selon toi ?”
-
-Le but :
-mesurer la compréhension après correction.
-
-Métriques :
-
-- motif mentionné ;
-- ressource adverse mentionnée ;
-- ligne compatible avec PV ;
-- explication superficielle ;
-- explication correcte.
-
-Attention :
-post_engine => utile pédagogiquement, pas preuve de compréhension initiale.
-
-============================================================
-41. SCIENCES COGNITIVES DE L’APPRENTISSAGE
-============================================================
-
-Principes utilisés :
-
-------------------------------------------------------------
-41.1 Retrieval practice
-------------------------------------------------------------
-
-L’utilisateur doit essayer avant de voir la solution.
-
-Défi → Essayer → Correction → Entraînement.
-
-------------------------------------------------------------
-41.2 Feedback contrastif
-------------------------------------------------------------
-
-Comparer :
-
-Ton coup
-vs
-Meilleure idée.
-
-------------------------------------------------------------
-41.3 Error-based learning
-------------------------------------------------------------
-
-Transformer l’erreur en pattern d’apprentissage.
-
-------------------------------------------------------------
-41.4 Desirable difficulty
-------------------------------------------------------------
-
-Exercice ni trop facile ni trop dur.
-
-Target P_success ≈ 0.65.
-
-------------------------------------------------------------
-41.5 Spaced repetition
-------------------------------------------------------------
-
-Revoir les erreurs au bon moment.
-
-------------------------------------------------------------
-41.6 Interleaving
-------------------------------------------------------------
-
-Mélanger tactique, conversion, défense, ouverture, calcul.
-
-------------------------------------------------------------
-41.7 Metacognitive calibration
-------------------------------------------------------------
-
-Comparer confiance déclarée et qualité réelle.
-
-------------------------------------------------------------
-41.8 Self-explanation
-------------------------------------------------------------
-
-Demander au joueur d’expliquer pour renforcer la compréhension.
-
-============================================================
-42. NIVEAUX 400 → 2400
-============================================================
-
-Architecture mathématique unique.
-Contenu et UX stratifiés.
-
-------------------------------------------------------------
-400–800 : NeuroChess Foundations
-------------------------------------------------------------
-
-Objectif :
-perception.
-
-Tags :
-- hanging_piece ;
-- simple_threat_missed ;
-- undefended_piece ;
-- king_in_danger.
-
-UX :
-flèches, attaques/défenses, phrases simples.
-
-Intent Layer :
-désactivé ou ultra simplifié.
-Questions oui/non seulement :
-“Tu avais vu cette menace ?”
-
-Pas de self-explanation complexe.
-Pas de Candidate Trainer lourd.
-
-------------------------------------------------------------
-800–1200
-------------------------------------------------------------
-
-Objectif :
-motifs de base.
-
-- tactiques simples ;
-- roque ;
-- développement ;
-- sécurité roi.
-
-------------------------------------------------------------
-1200–1600
-------------------------------------------------------------
-
-Objectif :
-stabiliser les décisions.
-
-- tactiques ;
-- conversion ;
-- défense ;
-- sortie d’ouverture.
-
-------------------------------------------------------------
-1600–2000
-------------------------------------------------------------
-
-Objectif :
-transfert.
-
-- Transfer Gap ;
-- Practice ;
-- conversion ;
-- candidate generation simple.
-
-------------------------------------------------------------
-2000–2400
-------------------------------------------------------------
-
-Objectif :
-audit avancé.
-
-- candidate metrics ;
-- opening association ;
-- résilience ;
-- précision par cadence.
-
-Même moteur.
-Contenu différent.
-
-============================================================
-43. COLD START
-============================================================
-
-Pas de test obligatoire long.
-
-Approche :
-
-1. Onboarding léger :
-- rating ;
-- cadence ;
-- objectif ;
-- plateforme ;
-- ouvertures optionnelles.
-
-2. Prior informé :
-rating -> theta_global prior.
-
-3. Première Review :
-3 moments utiles même si profil en construction.
-
-4. Calibration passive :
-les premières sessions alimentent le modèle.
-
-5. Diagnostic optionnel :
-15–20 positions.
-
-============================================================
-44. VALIDATION PRODUIT ET SCIENTIFIQUE
-============================================================
-
-LEVEL 1 — Validation produit
-
-Métriques :
-- completion rate ;
-- review-to-practice conversion ;
-- retry success ;
-- retention ;
-- self-rated usefulness ;
-- baisse des erreurs répétées.
-
-LEVEL 2 — Validation scientifique
-
-Groupes :
-A Review + Practice
-B Review + Practice + Intent Light
-C Review + Practice + Intent Deep
-
-Métrique primaire :
-réduction des erreurs sur motifs déjà rencontrés en Practice.
-
-Métriques secondaires :
-- accuracy future ;
-- missed opportunities ;
-- conversion failures ;
-- defensive misses ;
-- Elo externe secondaire.
-
-Durée cible :
-60–90 jours.
-
-Taille indicative :
-200–300 utilisateurs par bras pour une preuve sérieuse.
-
-============================================================
-45. PREDICTION VALIDATION
-============================================================
-
-NeuroChess doit faire des prédictions et les vérifier.
+explanation_attempt
+explanation_quality
+source_span
+misconception_detected
 
 Exemples :
 
-“Tu risques de rater les tactiques forcing.”
+Pourquoi ce coup marche ?
+Quelle menace ce coup crée ?
+Qu’est-ce qui change après la réponse adverse ?
 
-Puis vérifier dans les futures parties.
+Règle :
+
+L’explication doit aider l’action suivante.
+Pas de surcharge.
+
+============================================================
+37. MOTIVATION AND LOAD MODEL
+============================================================
+
+NeuroChess doit préserver l’envie de revenir.
+
+------------------------------------------------------------
+37.1 États comportementaux prudents
+------------------------------------------------------------
+
+engaged
+neutral
+overloaded
+wrong_streak
+repeated_reveal
+session_abandoned
+returning_after_break
+
+Ne pas inférer directement :
+
+stress
+intelligence
+personnalité
+
+------------------------------------------------------------
+37.2 Signaux
+------------------------------------------------------------
+
+wrong_streak_count
+rapid_wrong_attempts
+long_time_no_move
+repeated_reveal
+session_abandoned
+practice_completion_drop
+low_score_after_loss
+
+------------------------------------------------------------
+37.3 Actions
+------------------------------------------------------------
+
+Si série d’échecs :
+
+Cette position est difficile. L’objectif est d’apprendre, pas de réussir du premier coup.
+
+Si reveal :
+
+Bonne décision de regarder. Cette position reviendra bientôt.
+
+Si partie difficile :
+
+On va garder les moments vraiment utiles.
+
+Si surcharge :
+
+Session courte aujourd’hui.
+
+============================================================
+38. COGNITIVE LOAD POLICY
+============================================================
+
+NeuroChess doit limiter :
+
+extraneous load
+visual clutter
+raw engine data
+too many choices
+long explanations
+multi-score confusion
+
+Chaque écran scientifique doit respecter :
+
+une action principale
+un message clair
+debug replié
+complexité cachée
+
+============================================================
+39. BENCHMARK CURRICULUM
+============================================================
+
+Les vraies parties sont nécessaires mais insuffisantes.
+
+NeuroChess doit aussi avoir un curriculum benchmark.
+
+Pourquoi ?
+
+Un joueur peut ne jamais rencontrer certaines finales.
+Un joueur peut éviter certaines structures.
+Un joueur peut avoir des angles morts invisibles dans peu de parties.
+
+Sources :
+
+benchmark_skill_position
+near_transfer_variant
+far_transfer_variant
+endgame_core_position
+opening_structure_position
+
+Questions :
+
+Qu’est-ce que tes parties révèlent ?
+Qu’est-ce que ton niveau exige mais que tes parties ne montrent pas encore ?
+
+============================================================
+40. COLD START
+============================================================
+
+Au départ, peu de données.
+
+NeuroChess doit éviter les faux diagnostics.
+
+------------------------------------------------------------
+40.1 Étapes
+------------------------------------------------------------
+
+1. niveau déclaré approximatif
+2. première partie importée
+3. première Review
+4. premières tentatives
+5. profil en construction
+6. benchmark optionnel
+
+------------------------------------------------------------
+40.2 Messages
+------------------------------------------------------------
+
+Profil en construction
+Importe quelques parties et termine des sessions pour obtenir une priorité fiable.
+
+Interdit :
+
+Tactique : 43 %
+
+avec trois tentatives.
+
+============================================================
+41. DAILY PLAN SCIENTIFIQUE
+============================================================
+
+V1 déterministe :
+
+1. positions dues
+2. positions ratées récemment
+3. moments récents à forte criticality
+4. diversité minimale
+5. anti-redondance
+
+Ne pas utiliser fortement SkillTrace en V1.
+
+Daily Plan V1 :
+
+target_items = 5–6
+estimated_duration = 8–12 min
+
+Si peu d’items :
+
+plan court
+profil en construction
+pas de faux item
+
+============================================================
+42. VALIDATION FRAMEWORK
+============================================================
+
+------------------------------------------------------------
+42.1 Niveau 0 — Sanity checks
+------------------------------------------------------------
+
+FEN légales
+best_move légal
+eval POV blancs
+formules stables
+cache strict
+tests unitaires
+
+------------------------------------------------------------
+42.2 Niveau 1 — Produit
+------------------------------------------------------------
+
+activation
+import_success
+review_open_rate
+practice_start_rate
+attempt_before_reveal_rate
+daily_plan_start_rate
+return_rate
+
+------------------------------------------------------------
+42.3 Niveau 2 — Apprentissage immédiat
+------------------------------------------------------------
+
+retry_success
+same_item_recall
+hint_to_success_improvement
+time_to_solution_decrease
+
+------------------------------------------------------------
+42.4 Niveau 3 — Rétention
+------------------------------------------------------------
+
+J+1 recall
+J+3 recall
+J+7 recall
+J+30 recall
+
+------------------------------------------------------------
+42.5 Niveau 4 — Transfert proche
+------------------------------------------------------------
+
+near_variant_success
+same_motif_different_position_success
+same_structure_success
+
+------------------------------------------------------------
+42.6 Niveau 5 — Transfert en vraie partie
+------------------------------------------------------------
+
+transfer_opportunity_success
+missed_opportunity_rate
+repeated_error_rate
+
+------------------------------------------------------------
+42.7 Niveau 6 — Performance externe
+------------------------------------------------------------
+
+rating_trend
+blunder_rate_trend
+conversion_rate_trend
+defense_resource_rate
+opening_stability
+
+============================================================
+43. MÉTRIQUE PRIMAIRE SCIENTIFIQUE
+============================================================
+
+La métrique primaire ultime n’est pas Elo brut.
+
+La métrique primaire est :
+
+reduction_of_repeated_transfer_opportunity_errors
+
+Définition :
+
+Quand une opportunité du même type revient en vraie partie,
+l’utilisateur la rate-t-il moins souvent ?
+
+C’est la métrique qui distingue NeuroChess d’un puzzle trainer.
+
+============================================================
+44. PREDICTION VALIDATION
+============================================================
+
+Tous les modèles prédictifs doivent être évalués.
 
 Métriques :
-- Brier score ;
-- calibration curve ;
-- reliability diagram ;
-- prediction error ;
-- expected vs observed improvement.
 
-Formule Brier :
+Brier score
+log loss
+calibration curve
+reliability diagram
+expected calibration error
+prediction interval coverage
 
-Brier =
-(1 / n) * Σ(p_i - y_i)^2
+Objectifs :
 
-où :
-p_i = probabilité prédite
-y_i = résultat observé 0/1
+prédire réussite en Practice
+prédire reveal risk
+prédire recall J+3
+prédire transfert opportunité
+prédire réduction erreurs futures
 
-============================================================
-46. PRIVACY / RGPD / DATA GOVERNANCE
-============================================================
+Règle :
 
-Données stockées :
-- parties ;
-- coups ;
-- erreurs ;
-- scores ;
-- intentions ;
-- confiance ;
-- explications ;
-- réponses libres ;
-- progression.
-
-Obligatoire :
-
-- export ;
-- suppression ;
-- droit à l’oubli ;
-- consentement research ;
-- local-only possible ;
-- cloud opt-in ;
-- anonymisation ;
-- suppression des inférences dérivées ;
-- hébergement UE si cloud.
-
-Documents :
-- DATA_PRIVACY_AND_INTENT_DPIA.md
-- DATA_RETENTION_POLICY.md
-- EXPORT_AND_DELETE_POLICY.md
+Un modèle qui ne prédit rien ne doit pas piloter le plan.
 
 ============================================================
-47. LLM : RÔLE ET LIMITES
+45. ELO PROGRESSION MODEL
 ============================================================
 
-Le LLM ne doit jamais être source de vérité échiquéenne.
+NeuroChess peut suivre Elo, mais ne doit pas promettre Elo.
 
-Rôles autorisés :
+Variables :
 
-1. structurer l’intention ;
-2. reformuler ;
-3. poser une question ;
-4. générer une explication à partir d’Evidence JSON.
+initial_rating
+rating_system
+time_control
+games_per_week
+practice_minutes_per_week
+serious_study_minutes
+consistency
+baseline_blunder_rate
+transfer_success_rate
+opening_stability
+endgame_coverage
 
-Règles :
+Sortie interne :
 
-Si le LLM mentionne un coup :
-il doit être dans les données.
+unknown
+weak_positive
+positive
+strong_positive
+plateau_risk
 
-Si le LLM mentionne une ligne :
-elle doit être dans la PV.
+Sortie utilisateur :
 
-Si le LLM mentionne une intention :
-elle doit venir du user_text avec source_span.
+Ton signal de progression est positif.
+Tu réduis les erreurs répétées.
+Ton entraînement est régulier.
 
-Verifier obligatoire avant LLM coach public.
+Interdit :
+
+Tu atteindras 2400.
+
+============================================================
+46. PRIVACY / DATA GOVERNANCE
+============================================================
+
+L’utilisateur doit pouvoir :
+
+exporter ses données
+supprimer ses données
+comprendre ce qui est stocké
+refuser l’intention
+refuser la recherche
+
+Suppression doit inclure :
+
+games
+moves
+reviews
+moments
+training_items
+practice_attempts
+daily_plan_items
+skilltrace_states
+intent_events
+transfer_opportunities
+derived_inferences
+telemetry_events
+
+Règle :
+
+Si l’utilisateur supprime ses données,
+NeuroChess supprime aussi les inférences dérivées.
+
+============================================================
+47. LLM POLICY
+============================================================
+
+Le LLM peut :
+
+reformuler
+résumer
+poser une question
+structurer une intention
+expliquer Evidence JSON
+
+Le LLM ne peut pas :
+
+choisir le meilleur coup
+inventer une ligne
+inventer une intention
+inventer un diagnostic
+modifier un score
+piloter seul le Daily Plan
+
+Toute explication LLM avancée doit être vérifiée contre :
+
+legal_moves
+engine PV
+Evidence JSON
+source spans
+known tags
+
+Statut :
+
+LLM coach = V3
+LLM verifier = obligatoire avant confiance
 
 ============================================================
 48. VERSIONING
@@ -2017,265 +2745,723 @@ Verifier obligatoire avant LLM coach public.
 
 Chaque métrique doit avoir :
 
-- metric_id ;
-- formula_version ;
-- source_semantics ;
-- calibration_status ;
-- engine_version ;
-- schema_version ;
-- visible_user ;
-- drives_training ;
-- limitations.
+metric_id
+formula_version
+purpose
+visible_user
+drives_training
+calibration_status
+limitations
+source_semantics
+owner
+date_added
+
+Chaque modèle doit avoir :
+
+model_id
+model_version
+training_data_version
+calibration_status
+evaluation_report
+deployment_status
+rollback_plan
+
+============================================================
+49. STOCKFISH WDL VS LICHESS-LIKE
+============================================================
+
+Lichess-like Win% est une transformation utile.
+
+Stockfish WDL est une autre sémantique.
+
+Règle :
+
+Ne jamais mélanger silencieusement Lichess-like Win% et Stockfish WDL.
+
+Statuts :
+
+white_percent_lichess_v1 => UI / base metrics
+stockfish_wdl_expected_score => audit / future calibration
+
+============================================================
+50. TAIL RISK
+============================================================
+
+CVaR est rejeté en UI V1.
+
+Mais des mesures de queue peuvent aider en audit.
+
+tail_mean_topk_v1 =
+mean(top_k win_loss)
+
+Statut :
+
+visible_user: no
+purpose: audit
+
+============================================================
+51. ENGINE COST POLICY
+============================================================
+
+Analyse en deux niveaux :
+
+1. analyse standard sur positions nécessaires
+2. analyse deeper seulement sur candidats critiques
+
+Règles :
+
+cache strict
+pas de deep partout
+pas de Stockfish dans transaction DB
+pas de recalcul inutile
+quotas possibles
+
+============================================================
+52. CACHE STRICT
+============================================================
+
+Une analyse cache est réutilisable seulement si :
+
+same FEN
+same engine_hash
+same engine_version_string
+same nnue_hash
+same analysis_profile compatible
+same multipv minimal
+same formula_version
+same metric_version
+quality_status ok
+
+Si Stockfish change :
+
+ancienne analyse = legacy
+ne pas mélanger
+bouton réanalyser
+ne pas supprimer automatiquement
+
+============================================================
+53. ANALYSIS FAILURE POLICY
+============================================================
+
+Chaque job d’analyse doit finir dans un état terminal ou récupérable.
+
+États :
+
+queued
+running
+stalled_resumable
+completed
+completed_with_warnings
+partial
+failed_recoverable
+failed_final
+
+Interdit :
+
+spinner infini sans action
+job running éternel
+progress frozen sans recovery
+
+============================================================
+54. ANNEXE A — SCIENCE CLAIMS REGISTRY
+============================================================
+
+Chaque claim visible doit être classé avant d’être affiché.
+
+Champs obligatoires :
+
+claim_id
+claim_text
+claim_type
+evidence_source
+confidence_level
+visible_user
+requires_threshold
+risk_if_wrong
+approved_wording
+forbidden_wording
+last_reviewed_at
 
 Exemples :
 
-white_percent_lichess_v1
-move_accuracy_lichess_v1
-coach_neuro_score_v1
-criticality_score_heuristic_v1
-transfer_gap_beta_v1
-priority_score_additive_v1
-expected_score_wdl_sfXX_v1
+claim_id: move_cost_win_chances_v1
+claim_text: Ce coup a coûté des chances de gain.
+evidence_source: engine + win_percent
+confidence_level: high si analyse strict_valid
+visible_user: yes
+forbidden_wording: Ce coup prouve que tu joues mal.
+
+claim_id: recurring_error_v1
+claim_text: Cette erreur revient dans tes parties.
+evidence_source: repeated tags across games
+requires_threshold: at least 3 occurrences or conservative wording
+visible_user: yes prudent
+
+claim_id: guaranteed_2400
+claim_text: Tu atteindras 2400.
+status: FORBIDDEN
+visible_user: never
 
 ============================================================
-49. DIFFÉRENCE LICHESS-LIKE / STOCKFISH WDL
+55. ANNEXE B — ITEM DIFFICULTY SPEC
 ============================================================
 
-Ne jamais fusionner sans versioning.
+Objectif : rendre le modèle de difficulté calibrable.
 
-Lichess-like :
-- public / UI ;
-- calibré humainement ;
-- Win% / Accuracy.
+Données minimales :
 
-Stockfish WDL :
-- audit moteur ;
-- self-play semantics ;
-- version Stockfish dépendante.
+item_id
+user_level_bucket
+primary_tag
+domain
+phase
+piece_count
+legal_moves_count
+best_move
+solution_depth_proxy
+requires_forcing_sequence
+requires_quiet_move
+requires_sacrifice
+historical_success_rate
+median_time_to_success
+hint_success_rate
+reveal_rate
 
-Expected score WDL :
+Première estimation V1 :
 
-expected_score =
-(W + 0.5 * D) / (W + D + L)
+difficulty_proxy =
+0.30 * normalized_win_loss
++ 0.20 * solution_depth_proxy
++ 0.15 * legal_moves_complexity
++ 0.15 * quiet_move_bonus
++ 0.10 * sacrifice_bonus
++ 0.10 * low_visibility_bonus
 
-Usage :
-audit interne, pas score public V1.
+Cette formule est internal_only et doit être calibrée.
 
-============================================================
-50. TAIL RISK / CVaR
-============================================================
+Tests :
 
-Ne pas utiliser CVaR_90 en UI sur parties courtes.
-
-Avec peu de coups, CVaR_90 devient presque un max instable.
-
-Préférer :
-
-tail_mean_topk_v1 =
-mean(top k diagnostic losses)
-
-k =
-max(1, ceil(0.10 * n_moves))
-
-+ bootstrap CI plus tard.
-
-Classification :
-audit only.
-
-============================================================
-51. COÛT COMPUTATIONNEL STOCKFISH
-============================================================
-
-Le coût d’analyse doit être traité comme une contrainte produit.
-
-Questions obligatoires :
-
-- combien de positions analysées par partie ?
-- combien de secondes par position ?
-- combien de nodes par position ?
-- combien de parties par utilisateur par jour ?
-- combien coûte une Review standard ?
-- combien coûte une Review deep ?
-
-Formule générique :
-
-daily_engine_cost =
-active_users
-* games_per_user_per_day
-* analyzed_positions_per_game
-* avg_seconds_per_position
-* cost_per_engine_second
-
-Stratégie V1 recommandée :
-
-1. analyse peu coûteuse sur toutes les positions ;
-2. détection de positions candidates ;
-3. analyse plus profonde seulement sur candidats ;
-4. cache strict ;
-5. invalidation par engine_version, formula_version, analysis_profile ;
-6. quotas selon plan gratuit/payant.
-
-Politique adaptative :
-
-- standard_review :
-analyse suffisante pour Review utilisateur normale.
-
-- deep_review :
-analyse plus coûteuse, opt-in ou payante.
-
-- live_analysis :
-faible coût, jamais utilisée comme vérité finale.
+- best_move legal in FEN ;
+- difficulty_proxy bounded 0–1 ;
+- difficulty_proxy stable across duplicate generation ;
+- empirical success rate monotonic by bucket after enough data.
 
 ============================================================
-52. CACHE ET VERSIONING D’ANALYSE
+56. ANNEXE C — TRANSFER OPPORTUNITY SPEC
 ============================================================
 
-Chaque analyse doit stocker :
+Objectif : détecter quand une compétence entraînée aurait pu être utilisée en vraie partie.
 
-- engine_version ;
-- engine_hash si possible ;
-- analysis_profile ;
-- depth/time/nodes ;
-- multipv ;
-- formula_version ;
-- metric_version ;
-- cache_key ;
-- created_at.
+Étapes :
 
-Si Stockfish change :
-ne pas mélanger les anciens scores et les nouveaux sans versioning.
+1. Identifier compétence entraînée.
+2. Analyser futures parties.
+3. Détecter positions candidates.
+4. Vérifier que la compétence était pertinente.
+5. Classer réussite, échec ou non-évaluable.
+6. Mettre à jour le signal de transfert.
 
-Si les formules changent :
-recalculer ou marquer legacy.
+Résultats possibles :
 
-============================================================
-53. VALIDATION DE LA TAXONOMIE
-============================================================
+opportunity_success
+opportunity_missed
+opportunity_unclear
+false_positive_likely
+not_enough_evidence
 
-Créer :
+Seuils :
 
-ANNOTATION_PROTOCOL.md
+V1.1 shadow : at least 3 opportunities
+V2 visible prudent : at least 8 opportunities
+V2 strong signal : at least 15 opportunities
 
-Contenu :
+Règle :
 
-- 8 tags initiaux ;
-- définitions opérationnelles ;
-- exemples positifs ;
-- exemples négatifs ;
-- règles de primary/secondary tag ;
-- 200 positions ;
-- deux juges ;
-- κ de Cohen ;
-- seuils d’acceptation.
-
-Aucune extension de taxonomie sans validation minimale.
+Pas d’opportunité détectée = pas de conclusion sur le transfert.
 
 ============================================================
-54. DOCUMENTS OPÉRATIONNELS À PRODUIRE
+57. ANNEXE D — TAXONOMY PROTOCOL
 ============================================================
 
-Avant de coder les couches avancées :
+Chaque tag doit avoir :
 
-1. ANNOTATION_PROTOCOL.md
-Taxonomie 8 tags, deux juges, κ.
+id
+name_fr
+name_internal
+definition
+positive_examples
+negative_examples
+common_confusions
+disambiguation_rule
+minimum_evidence
+source
+status
 
-2. VALIDATION_FRAMEWORK.md
-A/B, métrique primaire, durée, tailles, critères.
+Exemple :
 
-3. ENGINE_COST_POLICY.md
-Budget Stockfish, cache, quotas, profils.
-
-4. INTENT_ORCHESTRATION.md
-Quand demander l’intention.
-
-5. INTENT_SCHEMA.md
-Schéma intent_event_v1.
-
-6. DATA_PRIVACY_AND_INTENT_DPIA.md
-Privacy, consentement, suppression.
-
-============================================================
-55. ROADMAP SCIENTIFIQUE
-============================================================
-
-Ordre recommandé :
-
-1. Figer formules Lichess-like.
-2. Stabiliser NeuroScore coach.
-3. Créer ANNOTATION_PROTOCOL.md.
-4. Définir les 8 tags initiaux.
-5. Enrichir practice_result_event.
-6. Créer SkillTrace Beta.
-7. Créer ETV 3 termes.
-8. Créer ENGINE_COST_POLICY.md.
-9. Créer Training Item Engine.
-10. Créer cold-start léger.
-11. Créer Intent Orchestration docs.
-12. Ajouter intent_event_v1 opt-in.
-13. Créer corpus annoté.
-14. Calibrer criticality.
-15. Ajouter Transfer Gap.
-16. Ajouter Candidate Trainer.
-17. Ajouter FSRS-lite.
-18. Ajouter LLM verifier.
-19. Ajouter validation framework scientifique.
+tag: forcing_sequence
+Définition : séquence où le joueur doit identifier une suite de coups forcés.
+Positive examples : échecs, captures, menaces directes avec réponses limitées.
+Negative examples : simple fork en un coup sans calcul.
+Disambiguation : si fork et forcing_sequence sont vrais, primary_tag = forcing_sequence si la séquence complète est nécessaire.
 
 ============================================================
-56. SYNTHÈSE FINALE
+58. ANNEXE E — VALIDATION FRAMEWORK OPÉRATIONNEL
 ============================================================
 
-NeuroChess repose sur une architecture mathématique et cognitive qui transforme les parties réelles en données de décision.
+Baselines obligatoires :
 
-Le moteur dit ce qui est vrai.
-Les métriques disent ce qui compte.
-L’intention dit ce que le joueur croyait.
-Les exercices testent ce qu’il sait faire.
-Le modèle utilisateur estime ce qu’il maîtrise.
-Le plan recommandé choisit quoi travailler.
-Les futures parties vérifient ce qui s’est transféré.
+A. Stockfish review seule
+B. puzzle trainer générique
+C. Review + Practice sans spacing
+D. Review + Practice + spacing
+E. NeuroChess complet avec transfert
 
-Formule finale :
+Métriques produit :
 
-Stockfish calcule.
-Win% humanise.
-Accuracy mesure.
-NeuroScore communique.
-Criticality sélectionne.
-Taxonomy qualifie.
-Intent explique la représentation mentale.
-Practice entraîne.
-SkillTrace modélise.
-ETV prescrit.
-Transfer Gap vérifie.
-Future games valident.
+activation_rate
+review_open_rate
+practice_start_rate
+attempt_before_reveal_rate
+practice_completion_rate
+return_D1
+return_D7
 
-La promesse ultime :
+Métriques apprentissage :
 
-NeuroChess ne dit pas seulement :
-“Tu as fait une erreur.”
+same_item_retry_success
+J1_recall
+J3_recall
+J7_recall
+J30_recall
+near_transfer_success
+real_game_transfer_opportunity_success
 
-NeuroChess dit :
+Métrique primaire :
 
-“Voici l’écart entre ce que tu voulais faire, ce que tu as joué, ce que la position exigeait, ce que tu as appris, et ce que tu dois travailler maintenant.”
+reduction_of_repeated_transfer_opportunity_errors
 
-C’est cette combinaison — vérité moteur, intention humaine, apprentissage probabiliste, répétition, validation du transfert — qui peut rendre NeuroChess réellement révolutionnaire.
+Critères minimaux avant claim fort :
+
+- gain statistiquement robuste vs baseline ;
+- pas de dégradation completion_rate ;
+- pas de hausse frustration proxies ;
+- effet observé sur au moins deux niveaux de joueur ;
+- documentation des abandons.
 
 ============================================================
-57. VERROUS OPÉRATIONNELS RESTANTS
+59. ANNEXE F — MOTIVATION AND LOAD SPEC
 ============================================================
 
-Le document est conceptuellement solide, mais quatre verrous doivent être fermés avant que le projet soit pleinement exécutable :
+Signaux comportementaux :
 
-1. Validation :
-écrire un vrai protocole, pas seulement une intention.
+wrong_streak >= 3
+rapid_wrong_attempts >= 2 in 30s
+reveal_rate_session > 0.5
+session_time > target_duration * 1.5
+abandon_after_low_score
+return_after_break
 
-2. Taxonomie :
-commencer avec 8 tags, annoter 200 positions, mesurer κ.
+Actions :
 
-3. Coût Stockfish :
-écrire ENGINE_COST_POLICY.md avant de scaler.
+wrong_streak => proposer indice / message calme
+high_reveal => réduire difficulté prochaine session
+long_session => proposer pause ou session courte
+return_after_break => reprendre doucement
 
-4. Foundations :
-traiter 400–800 comme module distinct, pas comme simple version basse du même UX.
+Phrases interdites :
 
-Une fois ces quatre verrous traités, ce Plan 1 devient une constitution scientifique exploitable.
+Tu as encore raté.
+Tu devrais savoir ça.
+C’est une erreur facile.
+Ton niveau est faible.
+
+Phrases autorisées :
+
+Cette position est difficile.
+On va la revoir au bon moment.
+Tu n’as pas besoin de réussir du premier coup.
+On garde seulement les moments utiles.
+
+============================================================
+60. ANNEXE G — LLM VERIFIER POLICY
+============================================================
+
+Toute sortie LLM avancée doit être vérifiée.
+
+Entrées autorisées :
+
+Evidence JSON
+legal_moves
+best_move
+PV
+top_moves
+review_moment
+tag
+user_intent_event
+
+Sorties autorisées :
+
+reformulation
+explication pédagogique
+question d’intention
+résumé prudent
+
+Sorties interdites :
+
+nouveau meilleur coup non vérifié
+ligne inventée
+intention inventée
+diagnostic psychologique
+score modifié
+claim Elo
+
+Verifier checks :
+
+- coups mentionnés légaux ;
+- meilleur coup cohérent avec Evidence JSON ;
+- aucune ligne inventée ;
+- aucune intention non déclarée ;
+- aucune promesse abusive ;
+- ton non humiliant.
+
+============================================================
+61. ANNEXE H — DATA PRIVACY AND INFERENCE POLICY
+============================================================
+
+Les données utilisateur incluent :
+
+raw data
+computed metrics
+derived inferences
+practice history
+intent events
+skill states
+transfer opportunities
+telemetry events
+
+Export doit inclure :
+
+- données brutes ;
+- tentatives ;
+- plans ;
+- inférences importantes ;
+- timestamps ;
+- versions de modèles/formules.
+
+Delete doit supprimer :
+
+- données brutes ;
+- données dérivées ;
+- SkillTrace ;
+- Transfer signals ;
+- Daily Plan ;
+- Practice attempts ;
+- Intent events ;
+- telemetry locale.
+
+Règle :
+
+L’utilisateur possède aussi les inférences faites sur lui.
+
+============================================================
+62. ANNEXE I — ENGINE METRIC VERSIONING POLICY
+============================================================
+
+Chaque analyse dépend de :
+
+engine_hash
+engine_version_string
+nnue_hash
+analysis_profile
+formula_version
+metric_version
+cache_validity_status
+
+Jamais de mélange silencieux.
+
+Si engine change :
+
+- ancien review = legacy ;
+- possible lecture ;
+- pas de comparaison directe de scores ;
+- bouton réanalyser ;
+- pas de suppression automatique.
+
+============================================================
+63. ANNEXE J — DAILY PLAN SELECTION PSEUDO-CODE
+============================================================
+
+V1 deterministic_daily_plan:
+
+inputs:
+- due_items
+- failed_recent_items
+- recent_critical_items
+- diversity_constraints
+- max_items
+
+algorithm:
+
+1. selected = []
+2. add due_items sorted by due_at asc, then criticality desc, then item_id asc
+3. add failed_recent sorted by last_attempt_at desc, then criticality desc
+4. add recent_critical sorted by criticality desc, then created_at desc
+5. apply anti-duplicate by item_id and source_game_id/source_ply
+6. apply tag diversity if alternatives exist
+7. stop at max_items
+8. if selected < 3, return partial_plan state
+9. never fake items
+
+Output user copy:
+
+Plan du jour prêt
+Plan court aujourd’hui
+Profil en construction
+
+No ETV visible.
+No SkillTrace mastery visible.
+
+============================================================
+64. ANNEXE K — SCIENTIFIC DEFINITION OF DONE
+============================================================
+
+Une couche scientifique est “done” seulement si :
+
+1. contrat écrit ;
+2. statut scientifique défini ;
+3. données nécessaires disponibles ;
+4. tests unitaires ;
+5. tests de non-régression ;
+6. garde-fou UX ;
+7. export/delete compatible ;
+8. claim registry mis à jour ;
+9. limites documentées ;
+10. métriques d’évaluation définies.
+
+Pour une couche prédictive :
+
+11. calibration mesurée ;
+12. baseline comparée ;
+13. erreurs analysées ;
+14. décision de visibilité prise.
+
+============================================================
+65. ROADMAP SCIENTIFIQUE
+============================================================
+
+------------------------------------------------------------
+65.1 V1 — boucle utile minimale
+------------------------------------------------------------
+
+Inclut :
+
+metrics Lichess-like
+NeuroScore coach prudent
+criticality heuristic
+taxonomy V0
+training_items
+practice_events enrichis
+simple_spaced_repetition_v1
+Daily Plan déterministe
+export/delete
+board exploration locale
+analysis failure recovery
+
+Exclut :
+
+LLM coach
+Candidate Trainer
+Intent deep
+Transfer Gap visible
+ETV visible
+FSRS visible
+NeuroMonitor
+brain/cortex/atlas
+
+------------------------------------------------------------
+65.2 V1.1 — fiabilité scientifique
+------------------------------------------------------------
+
+Inclut :
+
+SkillTrace shadow
+difficulty model initial
+transfer opportunity logging
+good decision mining
+motivation/load signals
+benchmark diagnostic léger
+
+------------------------------------------------------------
+65.3 V2 — différenciation forte
+------------------------------------------------------------
+
+Inclut :
+
+Intent Light
+Transfer Gap interne puis prudent
+near-transfer variants
+Candidate Trainer opt-in
+taxonomy V1 validée
+FSRS adapté
+validation framework actif
+
+------------------------------------------------------------
+65.4 V3 — système avancé
+------------------------------------------------------------
+
+Inclut :
+
+SkillTrace hiérarchique
+MIRT
+contextual bandit
+LLM verifier
+opening repertoire model
+endgame curriculum
+coach/club mode
+longitudinal Elo model
+adaptive curriculum
+
+============================================================
+66. GOUVERNANCE DES CLAIMS
+============================================================
+
+Chaque claim visible doit être classé.
+
+| Claim | Autorisé ? | Condition |
+|---|---:|---|
+| Ce coup a coûté des chances de gain | oui | moteur + Win% |
+| Cette erreur revient | oui | occurrences suffisantes |
+| Tu progresses sur ce motif | oui | tendance robuste |
+| Tu maîtrises ce domaine à 73 % | non | trop précis |
+| Tu réussis en exercice mais pas encore en partie | oui prudent | opportunités détectées |
+| Tu atteindras 2400 | non | interdit |
+| Ton cerveau apprend mieux | non | non mesuré |
+| Cette position reviendra bientôt | oui | scheduling |
+
+============================================================
+67. SYNTHÈSE FINALE
+============================================================
+
+NeuroChess Science v3 :
+
+Engine Truth
++ Decision Evidence
++ Chess Expertise Model
++ Learning Science
++ Adaptive Difficulty
++ Spaced Retrieval
++ Transfer Opportunity Detection
++ Motivation Preservation
++ Longitudinal Validation
++ Claim Governance
++ Privacy of Inferences
++ Engine Version Discipline
+
+Phrase finale :
+
+Stockfish dit ce qui est vrai.
+NeuroChess choisit ce qui est utile.
+Le joueur essaie.
+Le système mesure.
+La position revient.
+Les futures parties vérifient.
+Le plan s’adapte.
+
+NeuroChess n’est pas une app qui dit seulement :
+
+voici le meilleur coup
+
+NeuroChess est une app qui dit :
+
+voici ce que tes décisions révèlent
+voici ce que tu dois travailler maintenant
+voici l’exercice
+voici si tu l’as retenu
+voici si ça se transfère
+voici la prochaine action utile
+
+============================================================
+68. VERROUS RESTANTS POUR ATTEINDRE LE NIVEAU 20/20 RÉEL
+============================================================
+
+Ce Plan 1 est la cible scientifique.
+
+Il ne devient réellement 20/20 qu’après validation empirique.
+
+Verrous :
+
+1. corpus annoté coach ;
+2. validation taxonomie ;
+3. calibration criticality ;
+4. modèle difficulté ;
+5. opportunités de transfert ;
+6. SkillTrace calibré ;
+7. effet mesuré sur erreurs futures ;
+8. effet mesuré sur rétention ;
+9. effet mesuré sur transfert réel ;
+10. comparaison contre baselines ;
+11. protection motivationnelle ;
+12. absence de faux claims ;
+13. stabilité moteur/cache prouvée ;
+14. export/delete des inférences ;
+15. absence de métriques trompeuses visibles.
+
+Baselines à comparer :
+
+Stockfish review seule
+puzzle trainer générique
+Review + Practice sans spacing
+Review + Practice + spacing
+NeuroChess complet avec transfert
+
+Métrique ultime :
+
+réduction des erreurs répétées lorsqu’une opportunité réelle du même type revient en partie
+
+============================================================
+69. DOCTRINE FINALE ABSOLUE
+============================================================
+
+NeuroChess doit toujours respecter ces règles :
+
+1. La vérité échiquéenne vient du moteur, pas du LLM.
+2. La vérité pédagogique vient de la sélection utile, pas du meilleur coup brut.
+3. La progression vient de l’effort actif, pas de la lecture passive.
+4. La maîtrise ne se déclare pas sans répétition.
+5. Le transfert ne se déclare pas sans opportunité réelle.
+6. Le score ne doit jamais humilier.
+7. Les métriques non calibrées restent internes.
+8. Les données utilisateur sont exportables et supprimables.
+9. Les promesses scientifiques doivent être prudentes.
+10. L’app doit toujours proposer une prochaine action utile.
+11. La difficulté doit être calibrée au niveau et à l’état du joueur.
+12. Le plan doit préserver la motivation autant que la performance.
+13. Les inférences utilisateur appartiennent à l’utilisateur.
+14. Les modèles prédictifs doivent battre une baseline avant de piloter fortement.
+15. Une V1 utile vaut mieux qu’une V3 amputée.
+
+============================================================
+70. SOURCES ET RÉFÉRENCES SCIENTIFIQUES
+============================================================
+
+Cette section n’est pas destinée à être affichée dans l’application.
+Elle sert à rappeler les références conceptuelles qui ont inspiré la doctrine scientifique du Plan 1.
+
+Références principales :
+
+- FIDE Handbook, titres et ratings : https://handbook.fide.com/chapter/B012024
+- FIDE Rating Regulations : https://handbook.fide.com/chapter/B022024
+- Lichess Accuracy / Win% documentation : https://lichess.org/page/accuracy
+- Roediger & Karpicke, testing effect / retrieval practice.
+- Cepeda et al., distributed practice / spacing effect.
+- Dunlosky et al., techniques d’apprentissage efficaces.
+- Gobet & Simon, expertise échiquéenne, chunks et templates.
+- Barnett & Ceci, transfer of learning.
+- Sweller, cognitive load theory.
+- Ryan & Deci, Self-Determination Theory.
+- Open Spaced Repetition / FSRS : https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler
+
+============================================================
+FIN DU PLAN 1 — CONSTITUTION SCIENTIFIQUE NEUROCHESS v3.0 FINAL CODEX
+============================================================
