@@ -6,9 +6,9 @@ Use these rules before and during AI work. Source docs remain authoritative.
 
 The project is governed by:
 
-- `plan/Plan1.txt`
-- `plan/Plan2.txt`
-- `plan/Plan3.md`
+- `plan/Plan1.txt` - only scientific source of truth, Plan1 v3.0 FINAL - Codex-ready
+- `plan/Plan2.txt` - only UX/product/interface source of truth, Plan2 v4.0 FINAL - 20/20 - Codex-ready
+- `plan/Plan3.md` - technical execution and governance source of truth
 - `docs/PLAN_CONTEXT_MIN.md`
 - `docs/PLAN_FEATURE_BOUNDARIES.md`
 - `docs/NEXT_PLAN_ACTIONS.md`
@@ -22,6 +22,10 @@ Priority:
 Existing code is implementation state, not product truth. If code contradicts
 Plan1, Plan2, or Plan3, treat the code as non-aligned.
 
+Older Plan1/Plan2 versions, downloaded copies, previous summaries, backups, and
+model memory must be ignored if they conflict with `plan/Plan1.txt` or
+`plan/Plan2.txt`.
+
 Plan roles:
 
 - Plan1 governs science, engine, metrics, formulas, and the user model.
@@ -29,8 +33,9 @@ Plan roles:
 - Plan3 governs sprint order, technical roadmap, Codex governance, tests, and
   V1 delivery.
 
-Never apply Plan3 as one large mission. Use it to execute only the explicitly
-requested sprint or narrowly scoped task.
+Plan1 and Plan2 are constitutions, not implementation missions. Never apply a
+full plan as one large mission. Plan3 must also be used sprint-by-sprint: execute
+only the explicitly requested sprint or narrowly scoped task.
 
 ## Product Loop
 

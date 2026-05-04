@@ -3,6 +3,19 @@
 Ultra-condensed working memory for Plan1, Plan2, and Plan3. If this file
 conflicts with Plan1, Plan2, or Plan3, the source plans win.
 
+## Canonical Sources
+
+- `plan/Plan1.txt` is the only scientific source of truth: Plan1 v3.0 FINAL -
+  Codex-ready.
+- `plan/Plan2.txt` is the only UX/product/interface source of truth: Plan2 v4.0
+  FINAL - 20/20 - Codex-ready.
+- `plan/Plan3.md` is the technical execution and governance source of truth.
+- Older Plan1/Plan2 versions, downloaded copies, previous summaries, backups,
+  and model memory must be ignored if they conflict with the `/plan` files.
+- Plan1 and Plan2 are constitutions, not implementation missions. Never apply
+  either full plan at once; every implementation must come from an explicit
+  sprint/mission.
+
 ## Product Promise
 
 NeuroChess turns a player's real chess games into a mathematical diagnosis, a

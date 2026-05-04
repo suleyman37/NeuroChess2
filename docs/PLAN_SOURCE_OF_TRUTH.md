@@ -1,11 +1,11 @@
-# Plan Source Of Truth
+# NeuroChess Plan Source Of Truth
 
-## Local Plan Files
+## Canonical Plan Files
 
 - Plan directory: `C:\Users\bahij\OneDrive\Desktop\NeuroChess2_vraie\NeuroChess2\plan`
-- Plan1: `C:\Users\bahij\OneDrive\Desktop\NeuroChess2_vraie\NeuroChess2\plan\Plan1.txt`
-- Plan2: `C:\Users\bahij\OneDrive\Desktop\NeuroChess2_vraie\NeuroChess2\plan\Plan2.txt`
-- Plan3: `C:\Users\bahij\OneDrive\Desktop\NeuroChess2_vraie\NeuroChess2\plan\Plan3.md`
+- Plan1: `plan/Plan1.txt` - scientific source of truth - Plan1 v3.0 FINAL - Codex-ready
+- Plan2: `plan/Plan2.txt` - UX/product/interface source of truth - Plan2 v4.0 FINAL - 20/20 - Codex-ready
+- Plan3: `plan/Plan3.md` - technical execution/governance source of truth
 
 ## Roles
 
@@ -18,6 +18,17 @@ visual design constitution for NeuroChess.
 Plan3 is the execution-order, technical roadmap, Codex governance, testing, and
 V1 delivery constitution for NeuroChess. It does not replace Plan1 or Plan2; it
 governs sprint order and acceptance discipline.
+
+## Canonical Rules
+
+- `plan/Plan1.txt` is the only scientific source of truth for NeuroChess.
+- `plan/Plan2.txt` is the only UX/product/interface source of truth for NeuroChess.
+- `plan/Plan3.md` remains the technical execution and governance source of truth.
+- Older Plan1/Plan2 versions, downloaded copies, previous summaries, backups, and
+  model memory must be ignored if they conflict with the files in `/plan`.
+- Plan1 and Plan2 are constitutions, not implementation missions. Codex must
+  never apply either full plan at once.
+- One mission = one objective = one controlled diff = tests = report.
 
 ## Priority Order
 
