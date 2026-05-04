@@ -33,6 +33,7 @@ import {
 } from "./reviewViewModel";
 import type { GameStoryEvent, ReviewFocusKey, ReviewLessonStep, ReviewPanelProps, ReviewPov, ReviewSectionKey } from "./reviewTypes";
 
+const REVIEW_RETRY_COPY = "Vous pouvez reprendre l'analyse.";
 
 export function ReviewPanel({
   review,
@@ -463,9 +464,10 @@ export function ReviewPanel({
             {reviewJob.completed_position_count}/{reviewJob.required_position_count} positions
           </span>
           {reviewJob.error_message && <span>{reviewJob.error_message}</span>}
-          {reviewJob.retryable && (
-            <span>Vous pouvez reprendre l'analyse.</span>
-          )}
+          {reviewJob.retryable &&
+            !reviewJob.error_message?.includes(REVIEW_RETRY_COPY) && (
+              <span>{REVIEW_RETRY_COPY}</span>
+            )}
           {reviewJob.last_error && (
             <details className="review-job-debug">
               <summary>Debug technique</summary>

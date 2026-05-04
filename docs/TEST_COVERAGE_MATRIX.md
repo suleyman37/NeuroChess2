@@ -1,6 +1,6 @@
 # Test Coverage Matrix
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1`
 Date: 2026-05-04
 
 This matrix lists available automated tests, scripts, and smoke checks. It does
@@ -9,7 +9,7 @@ not count static tests as browser or end-to-end proof.
 ## Latest Run Summary
 
 - `tools/plan_guard.py`: PASS.
-- Backend full suite: PASS, 476 tests.
+- Backend full suite: PASS, 486 tests.
 - `scripts/review_regression_smoke.py`: PASS.
 - `scripts/pgn_import_smoke.py`: PASS.
 - `scripts/pgn_sindarov_real_flow_smoke.py`: PASS.
@@ -31,6 +31,24 @@ not count static tests as browser or end-to-end proof.
   and Edge CDP to prove durable `training_items`, deterministic Daily Plan,
   Training Plan du jour CTA, Practice from Daily Plan, recorded reveal attempt,
   `due_at`, export coverage, and no forbidden V1 labels.
+- Core board interaction smoke: PASS via
+  `cmd /c node scripts\browser_core_board_interaction_smoke.mjs`.
+  It proves real browser click-click board attempts for Review Practice
+  (`best`, `wrong`, `illegal`), reveal persistence, Daily Plan Practice board
+  attempt, export coverage, and `learning_summary.practice_event_count=5`.
+- Analysis stall recovery browser smoke: PASS via
+  `cmd /c node scripts\browser_analysis_stall_recovery_smoke.mjs`.
+  It proves controlled fake-engine timeout/failure, one retry copy, `Reprendre`
+  recovery, and Review completion after retry.
+- Review exploration real browser smoke: PASS via
+  `cmd /c node scripts\browser_review_exploration_real_smoke.mjs`.
+  It proves `Exploration locale` with real click-click board movement, undo,
+  reset, illegal move feedback, no Practice attempt created during exploration,
+  then a separate Review Practice attempt saved with `due_at`.
+- Real analysis no-infinite-loop browser smoke: PASS via
+  `cmd /c node scripts\browser_real_analysis_no_infinite_loop_smoke.mjs`.
+  It restores a normal Review job in browser, enforces a 90s hard deadline, and
+  observed `queued -> running -> completed` with progress `0/13 -> 12/13 -> 13/13`.
 
 ## Matrix
 
@@ -44,11 +62,13 @@ not count static tests as browser or end-to-end proof.
 | `backend/tests/test_contrast_coach_explanation.py` | unit | Review pedagogy | Contrast coach copy/evidence | Browser lesson UX | PASS in full suite | medium | Browser lesson smoke |
 | `backend/tests/test_database.py` | integration | DB/migrations | Schema migrations, review/practice tables, learning loop fields | Legacy real DB fixture pack | PASS in full suite | high | Add DB_SCHEMA.md and fixture migrations |
 | `backend/tests/test_engine_config.py` | unit | Engine config | Stockfish config helpers | Real engine availability | PASS in full suite | medium | Browser degraded engine state |
+| `backend/tests/test_core_board_practice_contract.py` | integration | Core board/Practice contract | Legal FEN/best moves, correct/wrong/illegal attempt persistence, enriched fields, due_at | Browser pointer events | PASS targeted | high | Keep aligned with browser board smoke |
 | `backend/tests/test_engine_profiles.py` | unit | Engine profiles | Live/standard/deep profile semantics | Full engine cost budget | PASS in full suite | medium | Plan3 cache/profile compatibility |
 | `backend/tests/test_engine_real.py` | integration | Stockfish executable | Real Stockfish smoke/availability | Browser, full Review pipeline | PASS in full suite | medium | Flaky across machines if engine missing |
 | `backend/tests/test_evaluation_display.py` | unit | Evaluation semantics | POV White eval, mate/eval display, player POV | UI wording in browser | PASS in full suite | high | Add golden docs examples if formulas change |
 | `backend/tests/test_frontend_app_shell_static.py` | static | App Shell | Plan2 nav, Review not main tab, Training labels, forbidden labels | Runtime browser and state branches | PASS in full suite | medium | Browser shell fixture |
 | `backend/tests/test_frontend_learning_loop_static.py` | static | Learning UI | Learning counters wired, no FSRS/ETV/SkillTrace labels | Real due data in browser | PASS in full suite | medium | Browser due/revision fixture |
+| `backend/tests/test_frontend_core_board_interaction_static.py` | static | Board/Practice UI contract | Board selectors, click-click support, Practice attempt path, no duplicate retry copy, forbidden labels absent, smoke scripts present | Runtime board movement | PASS targeted | medium | Keep selectors stable |
 | `backend/tests/test_frontend_profile_privacy_static.py` | static | Profile/Privacy UI | Profile outside main nav, export/delete labels, typed confirmation, forbidden labels absent | Runtime API/browser behavior | PASS targeted | medium | Keep aligned with browser smoke |
 | `backend/tests/test_frontend_lesson_flow_static.py` | static | Review lesson UI | Review tabs/copy/internal details hidden | Browser interaction and board moves | PASS in full suite | medium | Browser Review/Lesson smoke |
 | `backend/tests/test_game_api.py` | API/integration | Games API | Create/list/open/moves/analysis-related API paths | Browser UX, real user import | PASS in full suite | high | Keep separate from profile/privacy destructive tests |
@@ -83,6 +103,10 @@ not count static tests as browser or end-to-end proof.
 | `scripts/browser_v1_flow_smoke.mjs` | browser smoke | V1 user loop | `/app`, Plan2 nav, Training 3 entries, PGN import UI, Review ready, Summary visible, Practice start, reveal attempt, `due_at`, learning summary scheduled signal, forbidden labels absent | Correct drag/drop move attempt, invalid PGN, mobile/responsive | PASS | high | Extend later for invalid/degraded/mobile states |
 | `scripts/browser_profile_privacy_smoke.mjs` | browser smoke | Profile/Privacy | `/app`, Plan2 nav exactly 3 entries, top-right Profile panel, export JSON with `pgn_raw`, first delete click preserves data, typed `SUPPRIMER`, confirmed delete clears temp local data, forbidden labels absent | Real user DB, browser download file contents beyond API payload, mobile/responsive | PASS | high | Keep port range within backend CORS regex |
 | `scripts/browser_daily_plan_smoke.mjs` | browser smoke | Training Items / Daily Plan V1 | Temp DB API seed, fake-engine Review, `training_items_available`, Daily Plan create, export includes new tables, Training 3 entries, Plan du jour Practice, reveal attempt stored as `training_item:{id}`, `due_at`, forbidden labels absent | Rich 5-6 item day, drag/drop move attempt, mobile/responsive | PASS | high | Add richer history fixture later |
+| `scripts/browser_core_board_interaction_smoke.mjs` | browser smoke | Core board interaction V1 | Temp DB, fake engine, Review board, Review Practice real click-click correct/wrong/illegal moves, reveal fallback, Daily Plan Practice real board move, attempt export, learning summary, forbidden labels absent | Mobile/responsive, full drag/drop path across browsers | PASS | high | Add drag/drop-specific variant if click-click ever regresses |
+| `scripts/browser_analysis_stall_recovery_smoke.mjs` | browser smoke | Analysis stall/recovery UI | Controlled fake-engine timeout/failure, retryable Review job, no duplicate retry copy, Reprendre recovery, Review done after retry | Real Stockfish OS-level hang | PASS | high | Add slow real-engine degraded smoke only if stable |
+| `scripts/browser_review_exploration_real_smoke.mjs` | browser smoke | Review local exploration | Review `Exploration locale`, real click-click move from Review board, board FEN changes, undo, reset, illegal move feedback, no Practice attempt during exploration, separate Practice attempt saved afterward | Drag/drop exploration, promotion picker | PASS | high | Manual real DB spot check still useful |
+| `scripts/browser_real_analysis_no_infinite_loop_smoke.mjs` | browser smoke | Analysis no-infinite-loop | Browser-restored Review job, hard deadline, terminal/recoverable state, statuses/progress evidence, no network 500 | Real Stockfish OS-level hang on a user's live DB | PASS | high | Add slow real-engine local smoke only if stable |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |
@@ -90,7 +114,7 @@ not count static tests as browser or end-to-end proof.
 
 ## Coverage Gaps
 
-- No browser invalid-PGN/degraded-state smoke.
+- No browser invalid-PGN smoke.
 - SkillTrace shadow coverage is still absent because that capability is not
   implemented.
 - No registry-vs-code checker.

@@ -1,12 +1,12 @@
 # V1 Readiness Report
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1`
 Date: 2026-05-04
 
 ## 1. Resume executif
 
-- Alpha utilisable estimee: 90%.
-- V1 reelle estimee: 78%.
+- Alpha utilisable estimee: 94%.
+- V1 reelle estimee: 84%.
 - Decision premiers utilisateurs externes: NO-GO.
 
 NeuroChess a maintenant une preuve browser automatisee du flow V1 minimal :
@@ -15,15 +15,20 @@ Practice -> attempt reveal -> due_at/learning_summary scheduled signal`.
 Le minimum Profile/Settings/Privacy est browser-proven avec export JSON et
 suppression locale confirmee. Le backend a maintenant des `training_items`
 durables et un Daily Plan deterministe, avec Practice lancee depuis
-`Plan du jour` en browser smoke. La V1 externe reste NO-GO car SkillTrace
-shadow manque, les etats degrades ne sont pas assez prouves en UI reelle, les
-strings francaises ne sont pas centralisees, et le browser ne prouve pas encore
-drag/drop, mobile/responsive et cas d'erreur.
+`Plan du jour` en browser smoke. Le core board est maintenant browser-proven
+pour click-click correct, mauvais coup legal, illegal, reveal et Daily Plan
+Practice. Le board Review a maintenant un mode `Exploration locale` prouve en
+browser reel : legal move, undo, reset, illegal move calme, aucun attempt cree
+pendant l'exploration. Les jobs Review stale sont materialises en `stalled`
+recuperables et un smoke navigateur impose un hard deadline anti-boucle. La V1
+externe reste NO-GO car SkillTrace shadow manque, les etats degrades hors
+analyse-stall restent incomplets, les strings francaises ne sont pas
+centralisees, et mobile/responsive n'est pas encore prouve.
 
 ## 2. Valide automatiquement
 
 - Plan guard: PASS.
-- Backend full suite: PASS, 476 tests.
+- Backend full suite: PASS, 486 tests.
 - Review regression smoke: PASS.
 - PGN import smoke: PASS.
 - Sindarov real-flow smoke: PASS.
@@ -41,6 +46,14 @@ drag/drop, mobile/responsive et cas d'erreur.
   `backend.tests.test_training_items_daily_plan`.
 - Browser Daily Plan smoke: PASS via
   `cmd /c node scripts\browser_daily_plan_smoke.mjs`.
+- Browser core board interaction smoke: PASS via
+  `cmd /c node scripts\browser_core_board_interaction_smoke.mjs`.
+- Browser analysis stall recovery smoke: PASS via
+  `cmd /c node scripts\browser_analysis_stall_recovery_smoke.mjs`.
+- Browser Review exploration real smoke: PASS via
+  `cmd /c node scripts\browser_review_exploration_real_smoke.mjs`.
+- Browser real analysis no-infinite-loop smoke: PASS via
+  `cmd /c node scripts\browser_real_analysis_no_infinite_loop_smoke.mjs`.
 - Learning Loop V1 service: attempt fields, due rules, due session, no-due
   summary all covered by backend tests.
 - Training V1 static guard: exactly 3 entries and no forbidden labels.
@@ -69,15 +82,38 @@ drag/drop, mobile/responsive et cas d'erreur.
   fake engine, materializes `training_items_available=1`, creates a real
   partial Daily Plan, opens Training, starts `Plan du jour` Practice, records a
   `revealed` attempt as `item_id=training_item:1`, and stores `due_at` J+1.
+- Core board interaction browser smoke records:
+  - correct Review Practice board move: `result=best`;
+  - wrong legal Review Practice board move: `result=wrong`;
+  - illegal Review Practice board move: `result=illegal`;
+  - reveal fallback: `reveal_used=true`;
+  - Daily Plan Practice board move: `item_id=training_item:2`,
+    `result=best`;
+  - `learning_summary.practice_event_count=5`;
+  - export contains 5 practice attempts.
+- Analysis stall recovery browser smoke injects a controlled fake-engine
+  timeout/failure at 12/13 positions, shows one retry copy, clicks `Reprendre`,
+  and reaches Review `done`.
+- Review exploration browser smoke proves `Exploration locale` from a Review
+  board position: legal move `d4c5` changed board FEN, undo returned to the
+  original FEN, reset returned to the original FEN, illegal move `a1a3` showed a
+  calm illegal message, attempts stayed `0 -> 0`, then a separate Review
+  Practice attempt saved `result=best` with `due_at`.
+- Real analysis no-infinite-loop browser smoke proves a browser-restored Review
+  job cannot wait forever silently under the tested fixture: statuses observed
+  `queued -> running -> completed`, progress `0/13 -> 12/13 -> 13/13`, hard
+  deadline 90s, no network 500.
 
 ## 4. Existe mais pas valide en browser
 
-- Correct drag/drop Practice move attempt in browser.
+- Drag/drop Practice move attempt across browsers.
+- Drag/drop Review exploration across browsers.
 - Practice hint, skip, summary, retry failed in browser.
 - Rich 5-6 item Daily Plan browser fixture across several games/tags.
 - Due review browser flow from Training/Revisions outside the Daily Plan path.
 - Invalid PGN UI error state.
-- Slow/stalled analysis UI state.
+- Broader slow/backend-unavailable degraded states beyond the controlled
+  analysis-stall recovery and no-infinite-loop smokes.
 - Backend unavailable UI state.
 - Empty-history UI state.
 
@@ -151,7 +187,7 @@ $env:TEMP=(Resolve-Path .tmp\test-run-local).Path
 $env:TMP=$env:TEMP
 $env:TMPDIR=$env:TEMP
 .venv_repair_local\Scripts\python.exe -m unittest discover backend/tests
-# PASS: Ran 476 tests in 86.801s, OK.
+# PASS: Ran 486 tests in 128.963s, OK.
 ```
 
 ```powershell
@@ -236,11 +272,23 @@ cmd /c node scripts\browser_daily_plan_smoke.mjs
 # created, Training CTA opens Practice, reveal attempt stored with due_at.
 ```
 
+```powershell
+cmd /c node scripts\browser_core_board_interaction_smoke.mjs
+# PASS: Review board visible, moment selection, Practice from Review,
+# click-click correct/wrong/illegal board attempts persisted, reveal persisted,
+# Daily Plan board attempt persisted, export includes attempts.
+```
+
+```powershell
+cmd /c node scripts\browser_analysis_stall_recovery_smoke.mjs
+# PASS: controlled fake-engine timeout/failure, one retry copy, Reprendre
+# recovery, Review done after retry.
+```
+
 ## 11. Tests non executes
 
-- Browser drag/drop correct-move attempt was not run; the automated browser
-  smoke validates a reveal/correction attempt because it is stable and records a
-  real `practice_attempt`.
+- Browser drag/drop-specific path was not run; click-click board input is now
+  browser-proven for correct, wrong legal, and illegal attempts.
 - Mobile/responsive browser check was not run.
 - Invalid-PGN browser check was not run.
 - Lint could not run because no `lint` script exists.

@@ -83,6 +83,10 @@ and screens that ask the user to make too many decisions.
 | review.start_practice | S'entraîner sur cette Review | app.review.summary | Review summary | primary | practice eligible items exist | no eligible items | 1 | summary -> training | review_id, items | starts practice | false | true | criticality_score_v1, practice_result_v1 | show why unavailable | review_start_practice | Must not be disabled without explanation. |
 | review.open_key_lesson | Voir la leçon clé | app.review.summary | Review summary | secondary | key moment exists | no annotations | n/a | summary -> learn.challenge | annotation | selects lesson | false | false | criticality_score_v1 | open explorer | review_open_key_lesson | Can compete with training CTA. |
 | review.open_explorer | Explorer | app.review.summary | Review summary | secondary | review exists | none | n/a | summary -> explorer | review data | navigation | false | false | none | stay summary | review_open_explorer | Can expose too much detail. |
+| review.start_local_exploration | Explorer la position | app.review.board | Board area | secondary | review board has a valid FEN and no Practice session is active | Practice running or no FEN | n/a | passive board -> exploration locale | selected Review FEN | local frontend board state only | false | false | none | keep passive Review board | review_start_local_exploration | Must not imply AI/opponent or save attempts. |
+| review.undo_local_exploration | Annuler le coup | app.review.board | Board exploration panel | secondary | exploration move history not empty | exploration inactive | n/a | exploration current FEN -> previous FEN | local exploration history | local frontend board state only | false | false | none | show calm no-move message | review_undo_local_exploration | Must not alter Review/Practice data. |
+| review.reset_local_exploration | Reinitialiser | app.review.board | Board exploration panel | secondary | exploration active | exploration inactive | n/a | exploration current FEN -> base Review FEN | base Review FEN | local frontend board state only | false | false | none | stay on current exploration state if reset fails | review_reset_local_exploration | Must not alter Review/Practice data. |
+| review.exit_local_exploration | Quitter l'exploration | app.review.board | Board exploration panel | alternative | exploration active | exploration inactive | n/a | exploration -> passive Review board | none | local frontend state cleared | false | false | none | stay in exploration if close fails | review_exit_local_exploration | Must not create a hidden fourth mode. |
 | review.open_opening_summary | Voir l'ouverture | app.review.summary | Opening module | contextual | opening evidence exists | no opening evidence | n/a | summary -> opening detail | opening_reality_evidence_v1 | navigation | false | false | opening_reality_evidence_v1 | hide action | review_open_opening_summary | Opening can distract from main lesson. |
 | lesson.try_move | Essayer | app.review.learn.challenge | ReviewLessonPanel | primary | try_move_supported | unsupported | 1 | challenge -> try | fen_before, legal moves | enters attempt mode | false | true | criticality_score_v1 | show correction as primary | lesson_try_move | Must keep solution hidden. |
 | lesson.show_hint | Indice | app.review.learn.challenge | ReviewLessonPanel | secondary | challenge active | correction/training | n/a | challenge -> hint_shown | annotation | reveals non-solution hint | false | false | none | hide if no hint | lesson_show_hint | Hint must not leak best move. |
@@ -125,6 +129,19 @@ and screens that ask the user to make too many decisions.
   `POST /api/training/daily-plan/practice`, remains the only primary action on
   `app.training`, and must never expose `selection_score`, ETV, SkillTrace
   mastery, Candidate Trainer, or Transfer Gap.
+
+- P0 Core board interaction note: `practice.submit_attempt` is now proven in
+  browser by click-click board input for correct, wrong legal, and illegal
+  attempts. `practice.reveal_solution` remains a fallback and is also
+  browser-proven to persist `reveal_used=true`. Review/Daily Plan Practice
+  attempts remain backend-authored through
+  `POST /review/practice/sessions/{session_id}/attempts`.
+
+- P0 real-runtime exploration note: `review.start_local_exploration`,
+  `review.undo_local_exploration`, `review.reset_local_exploration`, and
+  `review.exit_local_exploration` are local-only Review board actions. They
+  must never call the Practice attempt endpoint, create `due_at`, or update
+  `learning_summary`.
 
 - Primary action count must be exactly one for prescriptive screens.
 - Secondary action count must not exceed two.

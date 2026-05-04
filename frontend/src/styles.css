@@ -2778,6 +2778,70 @@ button:focus-visible {
   color: #ffffff;
 }
 
+.review-exploration-panel {
+  width: min(100%, 560px);
+  display: grid;
+  gap: 10px;
+  align-items: start;
+  background: #f7f9fc;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.review-exploration-panel.active {
+  border-color: #9fb2ce;
+  background: #f4f7fb;
+}
+
+.review-exploration-panel span {
+  color: #657386;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.review-exploration-panel strong {
+  display: block;
+  color: #172033;
+  margin-top: 3px;
+}
+
+.review-exploration-panel p {
+  margin: 4px 0 0;
+  color: #506176;
+}
+
+.review-exploration-feedback {
+  font-weight: 700;
+}
+
+.review-exploration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.review-exploration-moves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review-exploration-moves li {
+  background: #ffffff;
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  color: #172033;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 4px 7px;
+}
+
 .review-reset-picker,
 .review-job-debug {
   background: #f7f9fc;

@@ -65,7 +65,11 @@ export function ReviewCockpitSummary({
   const estimatedPracticeMinutes = estimatePracticeMinutes(practicePositionCount);
 
   return (
-    <section className="review-cockpit-summary review-summary-simple" aria-label="Résumé Review">
+    <section
+      className="review-cockpit-summary review-summary-simple"
+      aria-label="Résumé Review"
+      data-testid="review-summary"
+    >
       <div className="review-cockpit-hero">
         <div className="review-cockpit-score">
           <span>{coachScoreLabel}</span>
@@ -103,7 +107,10 @@ export function ReviewCockpitSummary({
         ) : (
           <ol className="review-key-moment-list">
             {visibleMoments.map((annotation, index) => (
-              <li key={`${annotation.ply}-${annotation.uci}-${index}`}>
+              <li
+                key={`${annotation.ply}-${annotation.uci}-${index}`}
+                data-testid="review-moment-card"
+              >
                 <button type="button" onClick={() => onOpenLesson(annotation)}>
                   <span>Coup {annotation.move_number}</span>
                   <strong>
@@ -129,7 +136,12 @@ export function ReviewCockpitSummary({
           </p>
         </div>
         {practiceEligibleCount > 0 ? (
-          <button type="button" className="primary" onClick={onStartPractice}>
+          <button
+            type="button"
+            className="primary"
+            data-testid="review-practice-button"
+            onClick={onStartPractice}
+          >
             Commencer
           </button>
         ) : (

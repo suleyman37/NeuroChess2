@@ -29,7 +29,12 @@ export function ReviewPracticeLaunch({
         </span>
       </div>
       {eligibleCount > 0 ? (
-        <button type="button" className="primary" onClick={onStartPractice}>
+        <button
+          type="button"
+          className="primary"
+          data-testid="review-practice-button"
+          onClick={onStartPractice}
+        >
           Commencer l'entraînement
         </button>
       ) : (
@@ -211,7 +216,11 @@ export function ReviewPracticeSessionPanel({
     state.itemState === "awaiting_attempt" || state.itemState === "hint_shown";
 
   return (
-    <section className="review-practice-panel" aria-label="Mode entraînement Review">
+    <section
+      className="review-practice-panel"
+      aria-label="Mode entraînement Review"
+      data-testid="practice-panel"
+    >
       <div className="review-practice-head">
         <div>
           <span>Entraînement Review</span>
@@ -236,7 +245,10 @@ export function ReviewPracticeSessionPanel({
           </div>
         )}
         {state.feedback && (
-          <div className={`review-practice-feedback review-practice-feedback-${state.feedback.result}`}>
+          <div
+            className={`review-practice-feedback review-practice-feedback-${state.feedback.result}`}
+            data-testid="practice-feedback"
+          >
             <strong>{coachTextForPov(state.feedback.message, povContext, itemAnnotation)}</strong>
             {state.attemptedUci && (
               <span>
@@ -247,7 +259,7 @@ export function ReviewPracticeSessionPanel({
           </div>
         )}
         {showSolution && (
-          <div className="review-practice-solution">
+          <div className="review-practice-solution" data-testid="practice-result">
             Solution : {item.best_move_san ?? item.best_move_uci}
           </div>
         )}
@@ -272,10 +284,21 @@ export function ReviewPracticeSessionPanel({
       <div className="review-action-row">
         {waitingForAttempt && (
           <>
-            <button type="button" onClick={onHint} disabled={state.saving}>
+            <button
+              type="button"
+              data-testid="practice-hint-button"
+              onClick={onHint}
+              disabled={state.saving}
+            >
               Indice
             </button>
-            <button className="primary" type="button" onClick={onRevealSolution} disabled={state.saving}>
+            <button
+              className="primary"
+              type="button"
+              data-testid="practice-reveal-button"
+              onClick={onRevealSolution}
+              disabled={state.saving}
+            >
               Voir la correction
             </button>
             <button type="button" onClick={onSkip} disabled={state.saving}>
@@ -302,7 +325,13 @@ export function ReviewPracticeSessionPanel({
                 Voir la ligne
               </button>
             )}
-            <button className="primary" type="button" onClick={onNext} disabled={state.saving}>
+            <button
+              className="primary"
+              type="button"
+              data-testid="practice-next-button"
+              onClick={onNext}
+              disabled={state.saving}
+            >
               {state.currentIndex + 1 >= state.items.length
                 ? "Terminer"
                 : "Position suivante"}

@@ -18,6 +18,26 @@ et les fichiers frontend/backend inspectes.
 
 ## Mise a jour QA du 2026-05-04
 
+- `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` est implemente.
+- Le board React (`frontend/src/components/ChessBoardPanel.tsx`) supporte
+  maintenant le click-click en plus du drag/drop, l'orientation
+  Review/Practice, des highlights de selection et des selectors QA stables.
+- `scripts/browser_core_board_interaction_smoke.mjs` prouve en browser reel
+  avec DB temporaire: Review board visible, selection de moment, Practice
+  depuis Review, coup correct sauvegarde (`result=best`), mauvais coup legal
+  sauvegarde (`result=wrong`), coup illegal sauvegarde (`result=illegal`),
+  reveal sauvegarde (`reveal_used=true`), Practice depuis Daily Plan avec
+  `item_id=training_item:{id}`, export des attempts et
+  `learning_summary.practice_event_count=5`.
+- `scripts/browser_analysis_stall_recovery_smoke.mjs` prouve un timeout/fail
+  controle via fake engine, une seule copie de `Vous pouvez reprendre
+  l'analyse.`, puis recovery par `Reprendre` jusqu'a Review `done`.
+- Le fake engine a un hook QA strictement test-only
+  `FAKE_ENGINE_TIMEOUT_ON_INDEX` / `FAKE_ENGINE_TIMEOUT_ON_FEN_KEY`. Aucun
+  changement Stockfish reel ni formule.
+- `docs/CORE_INTERACTION_CONTRACT.md` documente le contrat board / Review /
+  Practice / Daily Plan / stall recovery.
+
 - `P0.BROWSER-SMOKE-FLOW` est implemente via
   `scripts/browser_v1_flow_smoke.mjs`.
 - Le smoke demarre un backend avec DB temporaire, le fake engine existant, Vite
@@ -80,7 +100,7 @@ Etat : implemente le 2026-05-04, validations finales PASS.
   `due_at` issu de `simple_spaced_repetition_v1`.
 - Export/delete inclut et purge `training_items` et `daily_plan_items`.
 - Validations principales: plan guard PASS, backend full suite PASS
-  (`476 tests`), Review smoke PASS, PGN smoke PASS, Sindarov real-flow smoke
+  (`486 tests`), Review smoke PASS, PGN smoke PASS, Sindarov real-flow smoke
   PASS, frontend build PASS, `npx tsc --noEmit` PASS.
 - Smoke browser dedie:
   `cmd /c node scripts\browser_daily_plan_smoke.mjs`.
@@ -907,3 +927,31 @@ Readiness apres browser smoke : alpha interne estimee a 84%, V1 externe estimee
 a 62%, decision NO-GO pour premiers utilisateurs externes. La mission suivante
 etait `P1.PROFILE-PRIVACY`, maintenant livree; la priorite actuelle est
 `P1.DEGRADED-STATES-ANTI-TILT`.
+
+## P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1
+
+Etat : implemente le 2026-05-04, sans commit ni stage.
+
+Le bug utilisateur principal a ete reproduit dans le navigateur local : la
+Review affichait un echiquier, mais aucune action `Explorer la position` n'etait
+disponible et le board etait desactive hors Practice/Try Move. Le correctif
+ajoute un mode `Exploration locale` dans la Review :
+
+- clic source + clic destination depuis la position Review courante ;
+- coups legaux joues localement avec `chess.js`, sans Stockfish ;
+- historique minimal des coups explores ;
+- `Annuler le coup`, `Reinitialiser`, `Quitter l'exploration` ;
+- message calme pour coup illegal ;
+- aucun appel Practice attempt, aucun `due_at`, aucune mise a jour
+  `learning_summary`.
+
+La separation Exploration/Practice est maintenant prouvee par
+`scripts/browser_review_exploration_real_smoke.mjs` : tentative count avant
+exploration = 0, apres exploration = 0, puis Practice sauvegarde ensuite une
+vraie tentative separee avec `result=best` et `due_at`.
+
+Cote analyse, `ReviewJobService.get_job()` materialise maintenant un job
+`running/finalizing` stale en `stalled` recuperable lorsque le watchdog detecte
+un timeout. Le browser smoke `scripts/browser_real_analysis_no_infinite_loop_smoke.mjs`
+impose un hard deadline de 90s et a observe `queued -> running -> completed`
+avec progression `0/13 -> 12/13 -> 13/13`.

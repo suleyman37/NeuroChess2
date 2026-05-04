@@ -269,6 +269,33 @@ class ReviewJobService:
                 if status == "completed"
                 else None
             )
+            if (
+                status in {"running", "finalizing"}
+                and self._watchdog_action(row, coverage) == "stalled"
+            ):
+                reason = self._stalled_reason(row)
+                message = (
+                    ENGINE_TIMEOUT_USER_MESSAGE
+                    if reason in {"position_timeout", "engine_hard_timeout"}
+                    else "Analyse bloquee temporairement. Vous pouvez reprendre l'analyse."
+                )
+                self._update_job_from_coverage(
+                    connection,
+                    job_id,
+                    status="stalled",
+                    coverage=coverage,
+                    error_message=message,
+                    failed_reason=STALLED_FAILED_REASON,
+                    last_error=reason,
+                    retryable=True,
+                    current_phase="stalled",
+                    stalled_reason=reason,
+                )
+                connection.commit()
+                row = self._get_job_row(connection, job_id)
+                if row is None:
+                    raise ReviewServiceError("review job not found", status_code=404)
+                status = str(row["status"])
             derived = self._derive_reconcile_state(
                 row,
                 coverage=coverage,

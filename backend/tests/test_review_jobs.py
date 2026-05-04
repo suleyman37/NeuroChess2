@@ -216,7 +216,7 @@ class ReviewJobServiceTests(unittest.TestCase):
         self.assertEqual(completed["status"], "completed")
         self.assertEqual(failures["count"], 1)
 
-    def test_get_review_job_status_is_read_only(self) -> None:
+    def test_get_review_job_status_materializes_stale_job_as_recoverable(self) -> None:
         game_id, _positions = self._create_finished_game()
         job = self.job_service.start_job(game_id, profile="standard")
         stale = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat(
@@ -241,12 +241,16 @@ class ReviewJobServiceTests(unittest.TestCase):
         payload = self.job_service.get_job(job["job_id"])
         after = self._job_snapshot(job["job_id"])
 
-        self.assertEqual(after, before)
-        self.assertEqual(payload["status"], "running")
+        self.assertEqual(before["status"], "running")
+        self.assertEqual(after["status"], "stalled")
+        self.assertEqual(payload["status"], "stalled")
+        self.assertTrue(payload["retryable"])
+        self.assertEqual(payload["current_phase"], "stalled")
+        self.assertEqual(payload["stalled_reason"], "position_timeout")
         self.assertTrue(payload["derived_is_stale"])
-        self.assertTrue(payload["derived_needs_reconcile"])
+        self.assertFalse(payload["derived_needs_reconcile"])
         self.assertTrue(payload["can_reconcile"])
-        self.assertEqual(payload["derived_reconcile_reason"], "position_timeout")
+        self.assertIsNone(payload["derived_reconcile_reason"])
 
     def test_post_reconcile_mutates_stale_job(self) -> None:
         game_id, _positions = self._create_finished_game()

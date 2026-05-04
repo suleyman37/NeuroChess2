@@ -5,6 +5,46 @@ Date: 2026-05-04
 This document records V1 API contracts that are visible to the frontend or QA.
 Plan1, Plan2, and Plan3 remain authoritative.
 
+## Review / Practice Board Interaction V1
+
+### `POST /review/practice/sessions/{session_id}/attempts`
+
+- Purpose: persist one Practice attempt from the browser board or explicit
+  fallback action.
+- Frontend sends UCI through `attempted_uci`; backend remains authoritative for
+  legal/correct/wrong/illegal grading.
+- V1 accepted results include `best`, `very_good`, `acceptable`, `wrong`,
+  `illegal`, `revealed`, and `skipped`.
+- Persisted enriched fields include `item_id`, `time_spent_ms`, `hint_used`,
+  `reveal_used`, `source_context`, `attempt_number`, and `due_at`.
+- Review Practice item IDs may be legacy `review:{game_id}:ply:{ply}`.
+- Daily Plan Practice item IDs use `training_item:{id}`.
+- `source_context` is `review_practice` for Review sessions and `daily_plan`
+  for Daily Plan sessions.
+- The endpoint must not call Stockfish and must not change scoring formulas.
+
+### Fake-engine QA timeout hook
+
+- `FAKE_ENGINE_TIMEOUT_ON_INDEX` and `FAKE_ENGINE_TIMEOUT_ON_FEN_KEY` are
+  test-only fake-engine hooks for browser/QA stall recovery.
+- They raise `engine_hard_timeout` inside `FakeStockfishService`.
+- They have no effect on real Stockfish and must not be used as product
+  behavior.
+- Browser proof: `scripts/browser_analysis_stall_recovery_smoke.mjs`.
+
+### `GET /review/jobs/{job_id}`
+
+- Purpose: return the current Review analysis job state for frontend polling.
+- V1 anti-infinite-loop behavior: if a `running` or `finalizing` job is stale
+  according to the watchdog, the service materializes it as retryable
+  `status = "stalled"` with a calm recovery message instead of continuing to
+  present it as active forever.
+- Stalled payloads must include `retryable = true`, `current_phase = "stalled"`,
+  `stalled_reason`, `error_message`, and `can_reconcile = true`.
+- This does not modify Stockfish and does not cache timeout output as valid
+  analysis.
+- Browser proof: `scripts/browser_real_analysis_no_infinite_loop_smoke.mjs`.
+
 ## Training Items / Daily Plan V1
 
 ### `GET /api/training/daily-plan/today`

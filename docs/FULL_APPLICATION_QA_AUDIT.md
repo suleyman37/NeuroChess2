@@ -1,6 +1,6 @@
 # Full Application QA Audit V1
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1`
 Date: 2026-05-04
 
 This is an evidence audit, not a product implementation pass. Plan1, Plan2, and
@@ -103,6 +103,86 @@ New evidence added after Profile/Privacy:
   browser proof uses a compact fixture that produces a valid partial one-item
   plan.
 
+## P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1 Update
+
+Date: 2026-05-04.
+
+New evidence added after Daily Plan:
+
+- Frontend board contract: `ChessBoardPanel` now supports drag/drop plus
+  click-source/click-target attempts, stable board selectors, orientation
+  props, selected-square highlighting, and safe illegal-click handling.
+- Backend QA hook: fake engine has test-only timeout environment hooks to
+  reproduce a recoverable analysis failure without touching Stockfish or
+  formulas.
+- Tests added: `backend/tests/test_core_board_practice_contract.py`,
+  `backend/tests/test_frontend_core_board_interaction_static.py`,
+  `scripts/browser_core_board_interaction_smoke.mjs`, and
+  `scripts/browser_analysis_stall_recovery_smoke.mjs`.
+- Browser strategy: isolated temp backend DB, fake engine, Vite, Edge CDP,
+  controlled QA seed for a ready Review/training item, no real user DB writes.
+- Result: PASS for the core board interaction smoke.
+- Proven browser flow:
+  `/app -> Plan2 nav -> Review board visible -> Review moment stable ->
+  Practice from Review -> correct click-click board move saved -> wrong legal
+  click-click board move saved -> illegal move recorded safely -> reveal saved
+  -> Daily Plan Practice -> real board move saved -> reload safe -> export
+  contains attempts -> forbidden V1 labels absent`.
+- Latest evidence:
+  `game_id=1`, `review_status=done`, `review_moment_count=1`,
+  `review_session_id=5`, `daily_plan_session_id=6`,
+  `item_id=training_item:2`, `accepted_move=f3g5`,
+  `correct_attempt_id=1`, `correct_attempt_result=best`,
+  `wrong_attempt_id=2`, `wrong_attempt_result=wrong`,
+  `illegal_attempt_id=3`, `illegal_attempt_result=illegal`,
+  `reveal_attempt_id=4`, `reveal_used=true`,
+  `daily_plan_attempt_id=5`, `daily_plan_attempt_result=best`,
+  `due_at=2026-05-11T15:22:43+00:00`,
+  `learning_summary.practice_event_count=5`.
+- Analysis stall recovery smoke result: PASS for controlled fake-engine
+  timeout. It proves a single retry message and successful resume to Review
+  done; it does not prove every possible real Stockfish stall mode.
+- Remaining gaps: drag/drop-specific browser path is still not separately
+  exercised because click-click is the V1 reliable input method; invalid PGN,
+  backend-offline, mobile/responsive, and hint/skip browser proofs remain.
+
+## P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1 Update
+
+Date: 2026-05-04.
+
+New evidence added after the user reported that previous PASS smokes did not
+match the real local app:
+
+- Runtime reproduction: `/app -> Voir la Review` showed a Review board but no
+  `Explorer la position` action. The board was disabled outside Practice/Try
+  Move, so the user could not explore legal moves from a Review position.
+- Frontend repair: Review board now has `Exploration locale`, local legal moves
+  via `chess.js`, undo, reset, exit, illegal-move feedback, and a clear copy
+  saying these moves are not saved as exercises.
+- Separation guarantee: exploration does not call the Practice attempt endpoint,
+  does not create `due_at`, and does not update `learning_summary`.
+- Analysis repair: stale `running/finalizing` Review jobs are materialized as
+  retryable `stalled` jobs when the watchdog detects timeout, so polling does
+  not keep presenting stale work as active forever.
+- Tests added: `scripts/browser_review_exploration_real_smoke.mjs`,
+  `scripts/browser_real_analysis_no_infinite_loop_smoke.mjs`, and static/backend
+  assertions in `backend/tests/test_frontend_core_board_interaction_static.py`
+  and `backend/tests/test_review_jobs.py`.
+- Browser exploration result: PASS. Evidence:
+  `game_id=1`, `review_status=done`, `review_moment_count=1`,
+  `original_fen=r1bq1rk1/pp2bppp/4pn2/2pp4/3P4/3BPN2/PPP2PPP/RNBQR1K1 w - - 0 7`,
+  `explored_move=d4c5`, board changed, undo OK, reset OK,
+  `illegal_exploration_move=a1a3`, attempts stayed `0 -> 0`, then Practice
+  saved `practice_attempt_id=1`, `practice_attempt_result=best`,
+  `practice_due_at=2026-05-11T17:35:54+00:00`.
+- Browser no-infinite-loop result: PASS. Evidence:
+  `review_job_id=7e72dcc5ea4149eb8d39c90185b375e1`, statuses
+  `queued -> running -> completed`, progress `0/13 -> 12/13 -> 13/13`, hard
+  deadline 90s, no network 500.
+- Remaining gaps: drag/drop-specific exploration is not separately proven;
+  broader degraded states, mobile/responsive, invalid PGN browser errors, and
+  real user DB long-running Stockfish edge cases still need release hardening.
+
 ## Matrix
 
 | Domaine | Fonctionnalite | Attendu Plan1/Plan2/Plan3 | Etat reel observe dans le code | Fichiers concernes | Endpoint/API concerne si applicable | Test automatique existant | Test ajoute pendant cette mission | Smoke test effectue | Browser test effectue | Niveau de preuve | Resultat | Risque | Action recommandee | Priorite |
@@ -144,14 +224,15 @@ New evidence added after Profile/Privacy:
 | Review | Lecture rapide | V1 quick reading | Review tabs/components exist | `ReviewFocusTabs.tsx`, `ReviewLessonPanel.tsx` | review response | static lesson tests | no | no | not browser | C | PARTIAL | Flow not browser-validated | Browser lesson smoke | P1 |
 | Review | Lecon complete | Active lesson path | Lesson components/tests exist | review components | review response | lesson/static/backend tests | no | no | not browser | C | PARTIAL | Board/lesson edge cases | Browser lesson smoke | P1 |
 | Review | Explorer details folded | Technical details not default | Explorer/technical details component exists | `ReviewTechnicalDetails.tsx`, `ReviewPanel.tsx` | review response | static/plan_guard | no | no | not browser | C | PASS | Could be visible via copy drift | Static + browser fixture | P1 |
-| Review | Training CTA | `S'entrainer sur cette Review` | Component/action registry present | `ReviewCockpitSummary.tsx`, `ACTION_REGISTRY.md` | practice APIs | static tests | no | no | not found in browser preparation state | C | PARTIAL | Ready Review CTA not browser-proven | Browser ready review | P0 |
+| Review | Training CTA | `S'entrainer sur cette Review` | Component/action registry present and browser smoke opens Practice from ready Review | `ReviewCockpitSummary.tsx`, `ACTION_REGISTRY.md`, `scripts/browser_core_board_interaction_smoke.mjs` | practice APIs | static tests | yes | core board smoke PASS | PASS | A | PASS | Lesson/Explorer CTAs not fully browser-proven | Broader Review browser fixture later | P1 |
 | Review | Internal metrics hidden | No raw criticality/diagnostic normal UI | plan_guard/static tests pass; Search shows internals in types/debug only | `frontend/src`, `tools/plan_guard.py` | n/a | plan_guard/static tests | no | plan_guard PASS | forbidden snapshots clear | A | PASS | Guard can miss synonyms | Keep expanding guard | P0 |
-| Practice | Start from Review | Review-derived session | Backend service/route and frontend client exist | `review_practice_service.py`, `ReviewPracticePanel.tsx` | `/review/practice/sessions` | practice session tests | no | review smoke indirect | not browser | B | PASS | Browser not proven | Browser fixture | P0 |
+| Review | Local exploration | User can explore legal moves from Review without AI/opponent and without saving attempts | Implemented in `App.tsx` with `Exploration locale`, undo/reset/exit, illegal feedback, and local `chess.js` state | `frontend/src/App.tsx`, `ChessBoardPanel.tsx`, `styles.css`, `docs/CORE_INTERACTION_CONTRACT.md` | none; explicitly local-only | static test | yes | no | `browser_review_exploration_real_smoke.mjs` PASS | A | PASS | Drag/drop exploration not separately proven; promotion picker is queen-default V1 | Keep click-click as V1 contract; add drag/promotion only if user testing requires | P1 |
+| Practice | Start from Review | Review-derived session | Backend service/route/frontend client exist and browser smoke starts Review Practice | `review_practice_service.py`, `ReviewPracticePanel.tsx`, `scripts/browser_core_board_interaction_smoke.mjs` | `/review/practice/sessions` | practice session tests | yes | core board smoke PASS | PASS | A | PASS | Drag/drop-specific path still not separately exercised | Keep click-click as V1 reliable input; add drag smoke later if needed | P1 |
 | Practice | Focus mode | Practice should reduce distractions | Component exists; global nav may still be visible | `ReviewPracticePanel.tsx`, `App.tsx` | practice APIs | static partial | no | no | not browser | C | PARTIAL | Plan3 focus mode not fully proven | Practice browser smoke | P1 |
-| Practice | Correct attempt | Attempts graded/stored | Backend service tests cover accepted/best | `review_practice_service.py` | `/attempts` | practice tests | no | no | not browser | B | PASS | UI board attempt not browser-proven | Browser practice move smoke | P0 |
-| Practice | Incorrect attempt | Wrong/illegal recorded | Tests cover wrong/illegal and due scheduling | same | `/attempts` | learning loop tests | no | no | not browser | B | PASS | UI not browser-proven | Browser practice smoke | P0 |
+| Practice | Correct attempt | Attempts graded/stored | Backend tests and browser click-click board attempt save `result=best` | `review_practice_service.py`, `ChessBoardPanel.tsx`, `scripts/browser_core_board_interaction_smoke.mjs` | `/attempts` | practice tests | yes | core board smoke PASS | PASS | A | PASS | Drag/drop not separately proven | Add optional drag/drop proof later if UX requires it | P1 |
+| Practice | Incorrect attempt | Wrong/illegal recorded | Browser click-click saves wrong legal and illegal attempts without crash | same | `/attempts` | learning loop tests | yes | core board smoke PASS | PASS | A | PASS | Illegal UX copy can still be improved | Degraded states/copy mission | P1 |
 | Practice | Hint | Hint flag stored | Frontend client sends `hint_used`, backend stores | `client.ts`, `review_practice_service.py` | `/attempts` | learning loop tests | no | no | not browser | B | PASS | Hint UX not browser-proven | Browser practice smoke | P1 |
-| Practice | Reveal/correction | Reveal flag/result due tomorrow | Backend/service + static tests | same | `/attempts` | reveal/skip + learning loop tests | no | no | not browser | B | PASS | UI correction copy not browser-proven | Browser practice smoke | P1 |
+| Practice | Reveal/correction | Reveal flag/result due tomorrow | Browser smoke records reveal after attempts with `reveal_used=true` | same | `/attempts` | reveal/skip + learning loop tests | yes | core board smoke PASS | PASS | A | PASS | Correction teaching copy still not deeply assessed | Lesson/feedback browser fixture later | P1 |
 | Practice | Skip | Skipped no due V1 | Delay rule test covers no due | `review_practice_service.py` | attempt/skip path | learning loop tests | no | no | not browser | B | PASS | Browser skip not tested | Browser practice smoke | P1 |
 | Practice | Session summary | Session result counts | Service and component exist | `review_practice_service.py`, `ReviewPracticePanel.tsx` | session detail/complete | summary tests | no | no | not browser | B | PASS | UX not browser-proven | Browser practice smoke | P1 |
 | Practice | Retry failed | Failed retry route/session | Backend route/service exists and tests cover retry | `review_practice_service.py`, `game_routes.py` | `/retry-failed` | practice session tests | no | no | not browser | B | PASS | UX not browser-proven | Browser practice smoke | P1 |
@@ -161,7 +242,7 @@ New evidence added after Profile/Privacy:
 | Entrainement | Mes positions ratees | Use Practice history | Frontend uses failed session/history signals | `App.tsx`, practice service | session list | learning/practice tests | no | no | label only | B | PARTIAL | Not browser-proven with failures | Browser fixture | P1 |
 | Entrainement | Revisions | Use due items | Backend due count/session exists; Daily Plan also prioritizes due items globally by latest attempt | `App.tsx`, `review_practice_service.py`, `daily_plan_service.py` | revisions route, `/api/training/daily-plan` | learning loop + Daily Plan tests | yes | browser_daily_plan_smoke PASS | partial plan PASS | B | PARTIAL | Dedicated due-revision browser path still not proven | Browser due-empty/due-ready fixture | P1 |
 | Entrainement | Forbidden modes absent | No Candidate/Intent/LLM/TransferGap/fourth card | Static tests and browser pass | `App.tsx` | n/a | static tests + plan_guard | no | plan_guard PASS | PASS | A | PASS | Guard terms only | Keep tests updated | P0 |
-| Learning Loop | practice_result_event fields | item/session/result/move/time/hint/reveal/source/timestamp/due | Implemented in attempts schema/service/client | `review_practice_service.py`, `schemas.py`, `client.ts` | `/attempts` | learning loop tests | no | no | not browser | B | PASS | Event model not promoted to dedicated table name | Align docs/schema naming later | P1 |
+| Learning Loop | practice_result_event fields | item/session/result/move/time/hint/reveal/source/timestamp/due | Implemented in attempts schema/service/client and browser core smoke verifies saved attempts/export | `review_practice_service.py`, `schemas.py`, `client.ts`, `scripts/browser_core_board_interaction_smoke.mjs` | `/attempts` | learning loop tests | yes | core board smoke PASS | PASS | A | PASS | Event model not promoted to dedicated table name | Align docs/schema naming later | P1 |
 | Learning Loop | simple_spaced_repetition_v1 rules | wrong/illegal/reveal 1d, hint 3d, success 7d, skip none | `practice_revision_delay_days` tests pass | `review_practice_service.py` | service | `test_review_practice_learning_loop.py` | no | no | no | B | PASS | Repeated success multiplier not implemented | Backlog as Plan3 gap | P1 |
 | Learning Loop | learning_summary | Real counters, not fake progress | Service returns due/scheduled/week counters | `review_practice_service.py` | session list | learning loop tests | no | no | no | B | PASS | Per-game summary, not global Today API | Daily Plan/training API later | P1 |
 | Learning Loop | Compact progression UI | Real counts only | App consumes learning summary | `frontend/src/App.tsx` | session list | static tests | no | no | not data-browser | C | PARTIAL | Browser data fixture missing | Browser fixture | P1 |
@@ -170,7 +251,7 @@ New evidence added after Profile/Privacy:
 | Learning Loop | SkillTrace shadow | V1 shadow only, not visible | Not implemented in backend; hidden in UI | docs/backend search | n/a | none | no | no | no | E | MISSING | Plan3 says V1 shadow should exist before release | Add shadow-only sprint after Daily Plan | P1 |
 | Backend/API | FastAPI app health | Backend launchable | `backend.app:app` launched, `/health` OK | `backend/app.py` | `/health` | API tests | no | browser support server | n/a | A | PASS | Needs standard dev command docs | Add setup docs later | P1 |
 | Backend/API | Games routes | Create/list/get/moves/history | Routes exposed and tested | `game_routes.py` | `/games*` | game API tests | no | real flow PASS | browser history PASS | A | PASS | Per-game delete is not productized; whole local-data delete exists | Keep destructive actions confirmed | P1 |
-| Backend/API | Review routes/jobs | Generate/jobs/reconcile/cancel/get | Routes exist and tests pass | `game_routes.py`, `review_job_service.py` | `/review/jobs`, `/games/{id}/review` | review tests | no | review smoke PASS | partial | A | PASS | Browser ready summary not proven | Browser fixture | P0 |
+| Backend/API | Review routes/jobs | Generate/jobs/reconcile/cancel/get | Routes exist and tests pass; stale running/finalizing jobs materialize as retryable `stalled` when watchdog detects timeout | `game_routes.py`, `review_job_service.py` | `/review/jobs`, `/games/{id}/review` | review tests | yes | review smoke PASS | `browser_real_analysis_no_infinite_loop_smoke.mjs` PASS | A | PASS | Real Stockfish OS-level hang on a user's live DB still needs human spot check | Keep no-infinite smoke and add broader degraded states | P0 |
 | Backend/API | Practice routes | sessions/attempts/retry/due/plan | Routes exist and tests pass; Daily Plan Practice returns normal practice session with `scope=daily_plan` | `game_routes.py`, `review_practice_service.py` | `/review/practice/*`, `/api/training/daily-plan/practice` | practice tests + Daily Plan tests | yes | browser_daily_plan_smoke PASS | PASS | A | PASS | Correct drag/drop move still not browser-proven | Browser practice move fixture | P1 |
 | Backend/API | Schemas/contracts | Pydantic shapes plus V1 API contract doc | Attempt schema includes V1 fields; DailyPlanRequest and export/delete contracts documented | `schemas.py`, `docs/API_CONTRACTS.md` | API models | backend tests | yes | browser_daily_plan_smoke PASS | PASS | B | PASS | Contract doc remains manual | Keep API contract updated with new endpoints | P1 |
 | Backend/API | Migrations/schema doc | Durable schema evolution | Learning loop plus `0019_v5_6_training_items_daily_plan` migrations documented | `migrations.py`, `test_database.py`, `docs/DB_SCHEMA.md` | n/a | database/Daily Plan tests | yes | no | no | B | PASS | DB_SCHEMA doc remains manual | Update after schema migrations | P1 |
@@ -193,7 +274,7 @@ New evidence added after Profile/Privacy:
 | Interdits V1 | SkillTrace/ETV/FSRS visible | Not visible to user | Static tests prevent labels in App | `frontend/src/App.tsx` | n/a | `test_frontend_learning_loop_static.py` | no | no | PASS snapshots | A | PASS | Future docs labels can leak into UI | Keep guard | P0 |
 | Etats degrades | PGN invalide | Calm actionable error | Backend parser error tested; browser invalid not tested | `pgn_import_service.py`, `App.tsx` | import APIs | pgn tests | no | no | no | B | PARTIAL | UI copy unknown | Browser invalid PGN smoke | P1 |
 | Etats degrades | Stockfish absent | Clear fallback | Engine unavailable warnings exist | engine/review state | analysis/review APIs | engine/review tests | no | no | no | B | PARTIAL | Browser copy not proven | Degraded states sprint | P1 |
-| Etats degrades | Analyse lente/partielle | User sees progress/recovery | Job states/tests exist | `review_job_service.py`, `reviewState.ts` | job APIs | review job tests | no | review smoke PASS | not browser | B | PARTIAL | User can be stuck in unclear state | Browser job-state smoke | P1 |
+| Etats degrades | Analyse lente/partielle | User sees progress/recovery | Controlled fake-engine timeout shows one retry message and resume to Review done | `review_job_service.py`, `reviewState.ts`, `fake_engine.py`, `scripts/browser_analysis_stall_recovery_smoke.mjs` | job APIs | review job tests + fake engine timeout test | yes | analysis stall smoke PASS | PASS controlled timeout | A | PARTIAL | Real Stockfish 17/18 stall modes still need production observation | Degraded states sprint with real-engine fixture | P1 |
 | Etats degrades | Backend indisponible | Frontend should degrade calmly | Not tested in browser | frontend API client/App | all fetches | none dedicated | no | no | no | D | NOT_TESTED | Hard crash/toast unknown | Browser offline-backend smoke | P1 |
 | Etats degrades | Session interrompue | Resume or honest fallback | Practice state/resume exists | `App.tsx`, `ReviewPracticePanel.tsx` | practice session | practice tests | no | no | no | B | PARTIAL | Browser state not tested | Practice browser smoke | P1 |
 | Etats degrades | Due queue empty | Honest no due state | Service raises `no_due_items` with learning summary | `review_practice_service.py` | revisions route | learning loop tests | no | no | no | B | PASS | UI copy not browser-proven | Browser due-empty fixture | P1 |
@@ -207,15 +288,17 @@ New evidence added after Profile/Privacy:
 | Browser/UX | Nav clicks | Aujourd'hui/Games/Training work | Training clicked and rendered 3 labels; Games clicked | `App.tsx` | n/a | static app shell | no | no | PASS | A | PASS | Today click not separately repeated | Automated browser smoke | P0 |
 | Browser/UX | Import PGN UI | Paste/preview/import works | Browser filled and imported QA PGN | `App.tsx`, backend routes | import APIs | pgn tests | no | PGN smoke PASS | PASS | A | PASS | Writes to live local DB | Isolated browser DB fixture | P0 |
 | Browser/UX | Ready Review UI | Open a completed Review | Automated browser smoke opens a ready contextual Review and sees Summary/CTA | `App.tsx`, Review components, `scripts/browser_v1_flow_smoke.mjs` | review APIs | review smoke/backend tests | `scripts/browser_v1_flow_smoke.mjs` | review smoke PASS | PASS | A | PASS | Lesson/Explorer paths still need browser proof | Add broader browser fixtures later | P1 |
-| Browser/UX | Practice UI | Start and submit Practice in browser | Automated browser smoke starts Practice and records a reveal/correction attempt | Practice components, `scripts/browser_v1_flow_smoke.mjs` | practice APIs | backend practice tests | `scripts/browser_v1_flow_smoke.mjs` | browser smoke PASS | PASS for reveal attempt | A | PARTIAL | Correct drag/drop move, hint, skip, retry not browser-proven | Extend browser smoke later | P1 |
+| Browser/UX | Practice UI | Start and submit Practice in browser | Core browser smoke starts Practice and records correct, wrong, illegal, reveal, and Daily Plan board attempts | Practice components, `scripts/browser_v1_flow_smoke.mjs`, `scripts/browser_core_board_interaction_smoke.mjs` | practice APIs | backend practice tests | core board smoke | browser smokes PASS | PASS click-click + reveal | A | PASS | Drag/drop-specific, hint, skip, retry still not browser-proven | Add optional browser coverage after degraded states | P1 |
 | Browser/UX | Profile/privacy UI | Export/delete are visible, confirmed, and local-first | Automated browser smoke opens Profile panel, exports JSON, verifies no first-click delete, confirms deletion, and verifies empty history/export | `scripts/browser_profile_privacy_smoke.mjs`, `App.tsx`, `privacy_service.py` | `/api/export`, `/api/user-data` | profile/privacy backend/static tests | `scripts/browser_profile_privacy_smoke.mjs` | profile/privacy smoke PASS | PASS | A | PASS | One favicon 404 in browser smoke, non-app blocking | Ignore favicon or add asset later | P2 |
-| Browser/UX | Daily Plan flow | Start Practice from deterministic Daily Plan | Automated browser smoke seeds a game, materializes `training_items`, creates Daily Plan, opens Training, starts Plan du jour Practice, records reveal attempt and `due_at` | `scripts/browser_daily_plan_smoke.mjs`, `App.tsx`, `daily_plan_service.py` | `/api/training/daily-plan*`, `/api/export` | Daily Plan backend/static tests | `scripts/browser_daily_plan_smoke.mjs` | browser daily plan smoke PASS | PASS | A | PASS | Fixture proves a valid partial one-item plan, not a rich 5-6 item day | Add richer history fixture later | P1 |
+| Browser/UX | Daily Plan flow | Start Practice from deterministic Daily Plan | Browser smokes seed a game, materialize `training_items`, create Daily Plan, open Training, start Plan du jour Practice, and save both reveal and real board-move attempts | `scripts/browser_daily_plan_smoke.mjs`, `scripts/browser_core_board_interaction_smoke.mjs`, `App.tsx`, `daily_plan_service.py` | `/api/training/daily-plan*`, `/api/export` | Daily Plan backend/static tests | daily plan + core board smokes | browser smokes PASS | PASS | A | PASS | Fixture proves compact one-item plan, not rich 5-6 item day | Add richer history fixture later | P1 |
+| Browser/UX | Board interaction | V1 board must be truly usable | Review and Practice boards render with stable selectors; click-click move input saves real attempts; orientation prop is wired | `ChessBoardPanel.tsx`, `App.tsx`, `scripts/browser_core_board_interaction_smoke.mjs` | practice APIs | `test_core_board_practice_contract.py`, static board test | yes | core board smoke PASS | PASS | A | PASS | Drag/drop-specific smoke remains optional gap | Add drag/drop smoke only if user reports drag-specific bug | P1 |
+| Browser/UX | Analysis stall recovery | User should not be trapped by a stalled/failed position | Controlled fake-engine timeout produces retryable state, one recovery copy, and successful resume | `fake_engine.py`, `ReviewPanel.tsx`, `scripts/browser_analysis_stall_recovery_smoke.mjs` | review job APIs | `test_engine_config.py`, static retry-copy test | yes | analysis stall smoke PASS | PASS controlled | A | PARTIAL | Real Stockfish timeout diversity not exhaustively proven | Degraded states/real-engine recovery mission | P1 |
 | Browser/UX | Console errors | No major app crash | Browser `tab.dev.logs(error)` returned empty | frontend runtime | n/a | no | no | no | PASS | A | PASS | Browser plugin printed non-app Statsig/network noise | Ignore plugin noise unless app logs appear | P1 |
 
 ## Summary Counts
 
-- PASS: 70
-- PARTIAL: 28
+- PASS: 73
+- PARTIAL: 27
 - FAIL: 0
 - NOT_TESTED: 3
 - MISSING: 3

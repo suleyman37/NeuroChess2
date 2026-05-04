@@ -2290,7 +2290,8 @@ class CalibrationLogicTests(unittest.TestCase):
 
         self.assertIn("type EvaluationBarState", normalized)
         self.assertIn("evaluationBarStateForBoardFen", normalized)
-        self.assertIn("const boardFen = viewedFen ?? currentFen", normalized)
+        self.assertIn("const rawBoardFen = viewedFen ?? currentFen", normalized)
+        self.assertIn("const boardFen = reviewExplorationActive", normalized)
         self.assertIn("boardEvaluationContextForPosition", normalized)
         self.assertIn('if (mode === "LIVE")', normalized)
         self.assertIn('if (mode === "HISTORICAL")', normalized)
@@ -2564,7 +2565,10 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("setReviewBarPhase(moveMode === \"played\" ? \"after\" : \"before\")", normalized)
         self.assertIn("buildReviewBoardArrows", normalized)
         self.assertIn("uciToBoardArrow", normalized)
-        self.assertIn("customArrows={reviewBoardArrows}", normalized)
+        self.assertIn(
+            "customArrows={reviewExplorationActive ? [] : reviewBoardArrows}",
+            normalized,
+        )
         self.assertIn("customArrows?: BoardArrow[]", board_panel_source)
         self.assertIn("customArrows={customArrows as Arrow[] | undefined}", board_panel_source)
         self.assertIn("Voir le coup joué", review_panel_source)

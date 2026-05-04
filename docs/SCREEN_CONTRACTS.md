@@ -78,6 +78,9 @@ helps the user.
 - Question: "Qu'est-ce que cette partie révèle ?"
 - Primary action: train on this Review.
 - Secondary actions: key lesson, explorer.
+- Board-side secondary action: `Explorer la position` may start local-only
+  exploration from the selected Review FEN. It is not AI play, not Practice, and
+  must not save attempts or update learning data.
 - Visible score: coach NeuroScore as the main score, reference precision as a
   secondary line.
 - Forbidden: debug, engine options, score JSON.
@@ -106,6 +109,10 @@ helps the user.
 
 - Question: "Que dois-je corriger dans cette partie ?"
 - Primary action depends on session state: start session, resume session, retry failed, or redo all.
+- Board interaction contract: Practice accepts real board moves by click-click
+  and drag/drop support where available. Correct, wrong legal, illegal, and
+  reveal attempts must persist through the backend and update `due_at` /
+  `learning_summary`. See `docs/CORE_INTERACTION_CONTRACT.md`.
 
 ### app.review.explorer
 

@@ -57,6 +57,74 @@ python tools/plan_guard.py
   real-flow smoke, frontend build, typecheck fallback, browser smoke,
   `git diff --check`.
 
+### P0. CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1
+
+- ID: `CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1`
+- Priorite: P0
+- Titre: Prove and repair the real browser board interaction loop
+- Etat: completed on 2026-05-04. `ChessBoardPanel` now supports click-click
+  move input in addition to drag/drop, orientation is passed for Review/Practice,
+  stable board selectors exist, and stalled-analysis retry copy is no longer
+  duplicated.
+- Justification Plan1/Plan2/Plan3: V1 Practice must be active learning
+  (`Défi -> Tentative -> Correction -> Répétition`), not reveal-only. Plan3
+  requires browser evidence for board UX before external users.
+- Fichiers probables: `frontend/src/components/ChessBoardPanel.tsx`,
+  `frontend/src/App.tsx`, `frontend/src/components/review/*`,
+  `backend/neurochess/engines/fake_engine.py`,
+  `scripts/browser_test_helpers.mjs`,
+  `scripts/browser_core_board_interaction_smoke.mjs`,
+  `scripts/browser_analysis_stall_recovery_smoke.mjs`,
+  `backend/tests/test_core_board_practice_contract.py`,
+  `backend/tests/test_frontend_core_board_interaction_static.py`,
+  `docs/CORE_INTERACTION_CONTRACT.md`.
+- Taille: M
+- Risques: drag/drop-specific behavior is not separately proven across browsers;
+  click-click is the stable V1 input contract.
+- Dependances: Training Items/Daily Plan and Profile/Privacy already merged.
+- Definition du done: Review board renders, Review moment selection keeps board
+  stable, Practice from Review accepts real board moves, correct/wrong/illegal
+  attempts persist, reveal persists, Daily Plan Practice accepts board moves,
+  analysis timeout/failure recovery has one retry copy and completes after
+  retry, no forbidden V1 UI appears.
+- Tests a lancer: `cmd /c node scripts\browser_core_board_interaction_smoke.mjs`,
+  `cmd /c node scripts\browser_analysis_stall_recovery_smoke.mjs`, backend
+  full suite, frontend build/typecheck, existing browser smokes, plan guard.
+
+### P0. REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1
+
+- ID: `REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1`
+- Priorite: P0
+- Titre: Repair user-observed Review board exploration and real analysis loop
+- Etat: completed on 2026-05-04. This mission continued on top of the
+  uncommitted Core Board P0 diff because the user reported the previous PASS
+  smokes were not representative of the real local app.
+- Justification Plan1/Plan2/Plan3: Review must support active understanding and
+  Practice must not be reveal-only. Analysis must never leave the user in an
+  infinite spinner with no terminal or recoverable state.
+- Fichiers probables: `frontend/src/App.tsx`,
+  `frontend/src/components/ChessBoardPanel.tsx`, `frontend/src/styles.css`,
+  `backend/neurochess/review_job_service.py`,
+  `backend/tests/test_review_jobs.py`,
+  `backend/tests/test_frontend_core_board_interaction_static.py`,
+  `scripts/browser_review_exploration_real_smoke.mjs`,
+  `scripts/browser_real_analysis_no_infinite_loop_smoke.mjs`,
+  `docs/CORE_INTERACTION_CONTRACT.md`.
+- Taille: M
+- Risques: Review exploration is intentionally local-only and not an engine
+  explorer. Drag/drop is still secondary; click-click is the required V1 input
+  contract.
+- Dependances: Core Board P0, Training Items/Daily Plan, Profile/Privacy.
+- Definition du done: Review has `Exploration locale`, the user can make legal
+  local moves, undo, reset, handle illegal moves calmly, and no Practice attempt
+  is created during exploration. Practice still saves real attempts separately.
+  Stale Review jobs are materialized as recoverable `stalled` jobs, and browser
+  analysis smoke has a hard deadline.
+- Tests a lancer: `cmd /c node scripts\browser_review_exploration_real_smoke.mjs`,
+  `cmd /c node scripts\browser_real_analysis_no_infinite_loop_smoke.mjs`,
+  existing browser board/profile/daily/V1 smokes, backend full suite, frontend
+  build/typecheck, plan guard, `git diff --check`.
+
 ### P0. INTEGRATE-PLAN3-MD
 
 - ID: `INTEGRATE-PLAN3-MD`
