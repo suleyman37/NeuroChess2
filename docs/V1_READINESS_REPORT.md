@@ -1,12 +1,12 @@
 # V1 Readiness Report
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1`
-Date: 2026-05-04
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1`
+Date: 2026-05-05
 
 ## 1. Resume executif
 
-- Alpha utilisable estimee: 94%.
-- V1 reelle estimee: 84%.
+- Alpha utilisable estimee: 95%.
+- V1 reelle estimee: 87%.
 - Decision premiers utilisateurs externes: NO-GO.
 
 NeuroChess a maintenant une preuve browser automatisee du flow V1 minimal :
@@ -20,15 +20,22 @@ pour click-click correct, mauvais coup legal, illegal, reveal et Daily Plan
 Practice. Le board Review a maintenant un mode `Exploration locale` prouve en
 browser reel : legal move, undo, reset, illegal move calme, aucun attempt cree
 pendant l'exploration. Les jobs Review stale sont materialises en `stalled`
-recuperables et un smoke navigateur impose un hard deadline anti-boucle. La V1
-externe reste NO-GO car SkillTrace shadow manque, les etats degrades hors
-analyse-stall restent incomplets, les strings francaises ne sont pas
-centralisees, et mobile/responsive n'est pas encore prouve.
+recuperables et un smoke navigateur impose un hard deadline anti-boucle. Le P1
+Degraded States ajoute maintenant un `StateNotice` commun, des copies
+calmes pour PGN invalide/illegal, backend local indisponible, Daily Plan vide ou
+partiel, Practice sans item, tentative non enregistree, coup illegal, session
+terminee, reveal et tentative repetee difficile. Le nouveau smoke navigateur
+prouve invalid PGN, PGN illegal, Daily Plan vide, backend offline, export vide,
+confirmation delete et absence de network 500 en DB temporaire. La V1 externe
+reste NO-GO car SkillTrace shadow manque, les strings francaises ne sont pas
+centralisees, mobile/responsive n'est pas encore prouve, et les scenarios
+Practice interrupted/repeated-wrong restent statiques ou couverts par smokes
+existants plutot que par un smoke dedie complet.
 
 ## 2. Valide automatiquement
 
 - Plan guard: PASS.
-- Backend full suite: PASS, 486 tests.
+- Backend full suite: PASS, 495 tests.
 - Review regression smoke: PASS.
 - PGN import smoke: PASS.
 - Sindarov real-flow smoke: PASS.
@@ -54,6 +61,10 @@ centralisees, et mobile/responsive n'est pas encore prouve.
   `cmd /c node scripts\browser_review_exploration_real_smoke.mjs`.
 - Browser real analysis no-infinite-loop smoke: PASS via
   `cmd /c node scripts\browser_real_analysis_no_infinite_loop_smoke.mjs`.
+- Degraded states backend/static test: PASS via
+  `.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_degraded_states_v1`.
+- Browser degraded states smoke: PASS via
+  `cmd /c node scripts\browser_degraded_states_smoke.mjs`.
 - Learning Loop V1 service: attempt fields, due rules, due session, no-due
   summary all covered by backend tests.
 - Training V1 static guard: exactly 3 entries and no forbidden labels.
@@ -103,6 +114,11 @@ centralisees, et mobile/responsive n'est pas encore prouve.
   job cannot wait forever silently under the tested fixture: statuses observed
   `queued -> running -> completed`, progress `0/13 -> 12/13 -> 13/13`, hard
   deadline 90s, no network 500.
+- Degraded states browser smoke proves invalid PGN (`PGN non reconnu`), illegal
+  PGN (`Un coup n'est pas legal`), empty Daily Plan (`Plan en construction`),
+  backend offline (`NeuroChess local ne repond pas`), export empty DB, delete
+  confirmation required, confirmed temp-DB deletion, no page errors and no
+  network 500.
 
 ## 4. Existe mais pas valide en browser
 
@@ -111,10 +127,9 @@ centralisees, et mobile/responsive n'est pas encore prouve.
 - Practice hint, skip, summary, retry failed in browser.
 - Rich 5-6 item Daily Plan browser fixture across several games/tags.
 - Due review browser flow from Training/Revisions outside the Daily Plan path.
-- Invalid PGN UI error state.
-- Broader slow/backend-unavailable degraded states beyond the controlled
-  analysis-stall recovery and no-infinite-loop smokes.
-- Backend unavailable UI state.
+- Engine missing/path invalid settings UX.
+- Practice interrupted resume state in browser.
+- Repeated wrong anti-tilt state in browser; static guard exists.
 - Empty-history UI state.
 
 ## 5. Partiel
@@ -155,8 +170,10 @@ centralisees, et mobile/responsive n'est pas encore prouve.
 
 ## 8. Gaps Plan2
 
-- Anti-tilt is missing as a dedicated UX behavior.
-- Degraded states are partial and not browser-proven.
+- Anti-tilt is implemented lightly for repeated wrong attempts and reveal-used
+  recovery copy; browser proof is still indirect/static for repeated wrongs.
+- Degraded states are partially browser-proven for invalid/illegal PGN, backend
+  unavailable, empty Daily Plan and export/delete safety.
 - Profile/Settings/Privacy is now a minimal top-right panel, not a main tab.
 - Ready Review Summary and reveal Practice attempt are browser-proven; lesson,
   explorer, hint/skip/retry, and drag/drop move attempts still need browser
@@ -298,7 +315,7 @@ cmd /c node scripts\browser_analysis_stall_recovery_smoke.mjs
 | Priorite | Risque | Preuve | Action |
 |---|---|---|---|
 | P1 | SkillTrace shadow missing | Docs only | Add shadow-only after Daily Plan |
-| P1 | Degraded states incomplete | Not browser-tested | `P1.DEGRADED-STATES-ANTI-TILT` |
+| P1 | Degraded states incomplete | Browser-tested for key import/offline/daily-plan states, but not every contract state | Extend focused degraded smoke only when fixtures are stable |
 | P1 | i18n strings not centralized | No `frontend/src/i18n/fr.ts` found | Centralize French strings |
 | P1 | Strict Stockfish cache policy partial | Plan3 conditions not fully proved | Cache policy audit/sprint |
 | P2 | Registries not code-checked | Manual docs only | Registry/code checker |
@@ -306,11 +323,12 @@ cmd /c node scripts\browser_analysis_stall_recovery_smoke.mjs
 
 ## 13. Prochaine mission recommandee
 
-One next mission: `P1.DEGRADED-STATES-ANTI-TILT`.
+One next mission: `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`.
 
-Reason: the core browser V1 loop and Profile/Privacy flow are now proven.
-External V1 still needs calmer, browser-tested recovery states for invalid PGN,
-backend unavailable, slow/stalled analysis, empty queues, and anti-tilt copy.
+Reason: the core browser V1 loop, board interaction, analysis recovery,
+Profile/Privacy, Daily Plan, and key degraded states are now proven. External
+V1 still needs mobile/responsive and accessibility evidence before inviting
+non-technical users.
 
 ## 14. Critere de sortie V1 Plan3
 
@@ -324,4 +342,4 @@ backend unavailable, slow/stalled analysis, empty queues, and anti-tilt copy.
 | Revision J+3 | pass | Backend learning loop tests for hint success -> 3 days; browser reveal creates J+1 scheduled due | Browser Training/Revisions due-flow not proven |
 | Export/delete | pass | Backend tests and browser profile/privacy smoke | Deletes only after typed `SUPPRIMER` in tested temp DB |
 | Tests critiques | partial | Backend/build/smokes/browser V1 + profile/privacy + daily-plan flow pass | Needs degraded/mobile tests |
-| Utilisateurs externes | missing | SkillTrace shadow/degraded states/i18n/mobile/drag-drop proof incomplete | NO-GO |
+| Utilisateurs externes | missing | SkillTrace shadow/i18n/mobile-responsive proof incomplete; repeated-wrong anti-tilt browser fixture partial | NO-GO |

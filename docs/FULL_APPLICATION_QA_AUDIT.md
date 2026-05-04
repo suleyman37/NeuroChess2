@@ -303,3 +303,24 @@ match the real local app:
 - NOT_TESTED: 3
 - MISSING: 3
 - PLACEHOLDER: 0
+
+## P1 Degraded States / Anti-Tilt Update - 2026-05-05
+
+This update supersedes the older degraded-state rows above where they mention
+invalid PGN, backend unavailable, empty Daily Plan, and anti-tilt copy as not
+browser-tested.
+
+| Area | New evidence | Status | Remaining risk |
+|---|---|---|---|
+| Import invalid PGN | `StateNotice` + `buildPgnImportNotice` + `backend/tests/test_degraded_states_v1.py` + `scripts/browser_degraded_states_smoke.mjs` | PASS | Duplicate-only import browser path is statically covered but not separately clicked in browser. |
+| Import illegal PGN | Parser error remains backend-authored; UI maps illegal SAN to `Un coup n’est pas légal` | PASS | Exact parser detail remains collapsed. |
+| Backend unavailable | Offline frontend smoke uses wrong API base and expects `NeuroChess local ne répond pas` | PASS | Full offline mode is intentionally not implemented. |
+| Daily Plan empty | Empty temp DB browser smoke verifies `Plan en construction` and import CTA | PASS | Rich partial plan variety remains a later fixture. |
+| Practice save/illegal/no-items/completed | Static tests verify `StateNotice` wiring and no forbidden copy | PARTIAL | Runtime save-failure simulation is not browser-proven. |
+| Repeated wrong anti-tilt | Calm copy exists and static tests guard against blame/shame copy | PARTIAL | Browser repeated-wrong flow is deferred because core move flows are already covered by P0. |
+| Export/delete after degraded states | Browser smoke verifies export on temp DB, wrong confirmation fails, confirmed delete succeeds | PASS | UI Profile smoke remains the richer export/delete browser proof. |
+
+Updated conservative readiness effect: degraded-state coverage improves from
+`PARTIAL` to `PARTIAL+`. External V1 remains NO-GO until mobile/responsive,
+accessibility, i18n centralization, SkillTrace shadow, and release hardening are
+handled.

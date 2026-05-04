@@ -414,24 +414,49 @@ tool_timeout_sec = 180
 - ID: `DEGRADED-STATES-ANTI-TILT`
 - Priorite: P1
 - Titre: Make degraded states and anti-tilt copy calm and actionable
-- Etat: next recommended mission after `TRAINING-ITEMS-DAILY-PLAN-V1`.
+- Etat: implemented on 2026-05-05 by
+  `P1.DEGRADED-STATES-ANTI-TILT-V1`.
 - Justification Plan1/Plan2: Plan2 asks for sane dopamine, recovery states, and
   emotional regulation after losses or blocked analysis.
-- Fichiers probables: `frontend/src/reviewState.ts`,
-  `frontend/src/components/review/ReviewTechnicalDetails.tsx`,
-  `frontend/src/App.tsx`, browser smoke scripts.
+- Fichiers touches: `frontend/src/components/StateNotice.tsx`,
+  `frontend/src/degradedStates.ts`, `frontend/src/App.tsx`,
+  `frontend/src/components/review/ReviewPracticePanel.tsx`,
+  `scripts/browser_degraded_states_smoke.mjs`,
+  `docs/DEGRADED_STATES_CONTRACT.md`, docs QA/governance.
 - Taille: M
 - Risques: hiding actionable recovery behind too much soft copy, or turning
-  errors into a technical dashboard.
+  errors into a technical dashboard. Backend unavailable, invalid/illegal PGN,
+  Daily Plan empty, and export/delete temp-DB safety are browser-proven by the
+  new smoke. Engine stalled recovery and real board Practice remain covered by
+  the P0 smokes.
 - Dependances: app shell states, browser V1 flow smoke, profile/privacy smoke,
   browser Daily Plan smoke.
-- Definition du done: invalid PGN, backend unavailable, Stockfish absent,
-  slow/partial/stalled review, empty history, no due revisions, interrupted
-  Practice, and recent-loss states have clear next actions with no jargon and
-  no forbidden V1 UI.
+- Definition du done: invalid PGN, illegal PGN, duplicate import, backend
+  unavailable, Daily Plan empty/partial/unavailable, no Practice item, illegal
+  Practice move, save failure, reveal-used reassurance, repeated-wrong copy,
+  and session-completed states have clear next actions with no jargon and no
+  forbidden V1 UI. Full mobile/i18n/offline mode remains deferred.
 - Tests a lancer: plan guard, frontend build/typecheck, static tests, backend
   review/API tests if state contracts change, browser degraded-state smoke plus
   existing browser V1/profile smokes.
+
+### P1. MOBILE-RESPONSIVE-AND-A11Y-V1
+
+- ID: `MOBILE-RESPONSIVE-AND-A11Y-V1`
+- Priorite: P1
+- Titre: Prove mobile/responsive and keyboard/accessibility basics for V1
+- Etat: recommended next mission after Degraded States.
+- Justification Plan2/Plan3: V1 is browser-usable, but mobile/responsive and
+  accessibility are not yet proven by a dedicated smoke.
+- Fichiers probables: focused frontend CSS/components and browser smoke scripts.
+- Taille: M
+- Risques: turning the mission into a redesign instead of a proof/repair pass.
+- Dependances: P0 board/runtime, P1 degraded states.
+- Definition du done: app shell, Import, Review, Review exploration, Practice,
+  Daily Plan, Profile/Privacy, StateNotice, and board controls are usable at
+  mobile and desktop viewports with no overlap, keyboard traps, or hidden CTAs.
+- Tests a lancer: plan guard, frontend build/typecheck, backend static tests,
+  existing browser smokes, new mobile/responsive smoke.
 
 ### P1. PROFILE-PRIVACY
 

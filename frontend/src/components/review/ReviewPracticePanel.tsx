@@ -1,4 +1,13 @@
 import type { ReviewPracticeItem } from "../../api/client";
+import { StateNotice } from "../StateNotice";
+import {
+  ANTI_TILT_REPEATED_WRONG_NOTICE,
+  PRACTICE_COMPLETED_NOTICE,
+  PRACTICE_ILLEGAL_MOVE_NOTICE,
+  PRACTICE_NO_ITEMS_NOTICE,
+  PRACTICE_REVEAL_NOTICE,
+  buildPracticeSaveFailedNotice,
+} from "../../degradedStates";
 import { errorTypeLabel, reviewColorLabel } from "./reviewLabels";
 import { ReviewPvStepper } from "./ReviewPvStepper";
 import { buildPracticeSummaryView, coachTextForPov, practiceHintForItem, practiceItemAnnotationLabel } from "./reviewViewModel";
@@ -120,6 +129,17 @@ export function ReviewPracticeSessionPanel({
           <span>Session terminée</span>
           <strong>{solvedCount} / {itemCount} positions réussies</strong>
         </div>
+        <StateNotice
+          compact
+          variant={PRACTICE_COMPLETED_NOTICE.variant}
+          title={PRACTICE_COMPLETED_NOTICE.title}
+          message={PRACTICE_COMPLETED_NOTICE.message}
+          primaryActionLabel={PRACTICE_COMPLETED_NOTICE.primaryActionLabel}
+          secondaryActionLabel={PRACTICE_COMPLETED_NOTICE.secondaryActionLabel}
+          onPrimaryAction={onQuit}
+          onSecondaryAction={onRetryFailed}
+          testId="practice-complete"
+        />
         <div className="review-practice-summary-grid">
           <PracticeSummaryMetric
             label="Positions travaillées"
@@ -191,7 +211,15 @@ export function ReviewPracticeSessionPanel({
           <span>Entraînement Review</span>
           <strong>0 position</strong>
         </div>
-        <p>Aucune position disponible pour cette session.</p>
+        <StateNotice
+          compact
+          variant={PRACTICE_NO_ITEMS_NOTICE.variant}
+          title={PRACTICE_NO_ITEMS_NOTICE.title}
+          message={PRACTICE_NO_ITEMS_NOTICE.message}
+          primaryActionLabel={PRACTICE_NO_ITEMS_NOTICE.primaryActionLabel}
+          onPrimaryAction={onQuit}
+          testId="practice-no-items-notice"
+        />
         <button type="button" onClick={onQuit}>Revenir à la Review</button>
       </section>
     );
@@ -214,6 +242,13 @@ export function ReviewPracticeSessionPanel({
   );
   const waitingForAttempt =
     state.itemState === "awaiting_attempt" || state.itemState === "hint_shown";
+  const latestAttemptNumber = Number(state.summary?.latest_attempt?.attempt_number ?? 0);
+  const feedbackResult = state.feedback?.result ?? null;
+  const repeatedWrongNoticeVisible =
+    latestAttemptNumber >= 2 && (feedbackResult === "wrong" || feedbackResult === "illegal");
+  const illegalNoticeVisible = feedbackResult === "illegal";
+  const revealNoticeVisible = state.solutionRevealed && !state.feedback;
+  const saveFailedNotice = state.error ? buildPracticeSaveFailedNotice(state.error) : null;
 
   return (
     <section
@@ -278,7 +313,53 @@ export function ReviewPracticeSessionPanel({
             item={item}
           />
         )}
-        {state.error && <div className="warning">{state.error}</div>}
+        {illegalNoticeVisible && (
+          <StateNotice
+            compact
+            variant={PRACTICE_ILLEGAL_MOVE_NOTICE.variant}
+            title={PRACTICE_ILLEGAL_MOVE_NOTICE.title}
+            message={PRACTICE_ILLEGAL_MOVE_NOTICE.message}
+            primaryActionLabel={PRACTICE_ILLEGAL_MOVE_NOTICE.primaryActionLabel}
+            onPrimaryAction={onTryAgain}
+            testId="practice-illegal-move-notice"
+          />
+        )}
+        {repeatedWrongNoticeVisible && (
+          <StateNotice
+            compact
+            variant={ANTI_TILT_REPEATED_WRONG_NOTICE.variant}
+            title={ANTI_TILT_REPEATED_WRONG_NOTICE.title}
+            message={ANTI_TILT_REPEATED_WRONG_NOTICE.message}
+            primaryActionLabel={ANTI_TILT_REPEATED_WRONG_NOTICE.primaryActionLabel}
+            secondaryActionLabel={ANTI_TILT_REPEATED_WRONG_NOTICE.secondaryActionLabel}
+            onPrimaryAction={onTryAgain}
+            onSecondaryAction={onRevealSolution}
+            testId="anti-tilt-repeated-wrong-notice"
+          />
+        )}
+        {revealNoticeVisible && (
+          <StateNotice
+            compact
+            variant={PRACTICE_REVEAL_NOTICE.variant}
+            title={PRACTICE_REVEAL_NOTICE.title}
+            message={PRACTICE_REVEAL_NOTICE.message}
+            testId="anti-tilt-reveal-notice"
+          />
+        )}
+        {saveFailedNotice && (
+          <StateNotice
+            compact
+            variant={saveFailedNotice.variant}
+            title={saveFailedNotice.title}
+            message={saveFailedNotice.message}
+            primaryActionLabel={saveFailedNotice.primaryActionLabel}
+            secondaryActionLabel={saveFailedNotice.secondaryActionLabel}
+            details={saveFailedNotice.details}
+            onPrimaryAction={onTryAgain}
+            onSecondaryAction={onRevealSolution}
+            testId="practice-save-failed-notice"
+          />
+        )}
       </div>
 
       <div className="review-action-row">

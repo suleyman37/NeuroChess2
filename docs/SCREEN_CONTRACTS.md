@@ -59,6 +59,9 @@ helps the user.
 - Question: "Quelle partie je veux importer, jouer ou analyser ?"
 - Primary action: import PGN.
 - Contextual actions: open, analyze, view Review, continue training.
+- Degraded states: empty PGN, invalid PGN, illegal PGN and duplicate import
+  must render a calm `StateNotice` with one useful recovery action and collapsed
+  technical details. Invalid PGN must not create a game.
 
 ### app.review.empty
 
@@ -113,6 +116,10 @@ helps the user.
   and drag/drop support where available. Correct, wrong legal, illegal, and
   reveal attempts must persist through the backend and update `due_at` /
   `learning_summary`. See `docs/CORE_INTERACTION_CONTRACT.md`.
+- Degraded states: no item, illegal move, attempt-save failure, reveal-used
+  reassurance and repeated wrong attempts must use calm copy. Repeated wrong
+  attempts may encourage the user to retry or reveal, but must not blame, shame,
+  or introduce a separate anti-tilt product surface.
 
 ### app.review.explorer
 
@@ -144,6 +151,10 @@ helps the user.
   construction`, but must not expose FSRS/ETV/SkillTrace/Transfer Gap.
 - Forbidden: Candidate Trainer, deep Intent Layer, LLM coach, visible Transfer
   Gap.
+- Degraded states: `Plan en construction`, `Plan court aujourd'hui`, and
+  `Plan indisponible` explain whether there is no durable data yet, a partial
+  plan, or a failed request. These states remain inside the existing three
+  Training entries and do not create a fourth mode.
 
 ### app.progress
 

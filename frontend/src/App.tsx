@@ -69,6 +69,7 @@ import {
 import { MoveHistory } from "./components/MoveHistory";
 import { LandingPage } from "./components/LandingPage";
 import { NeuroChessLogo } from "./components/NeuroChessLogo";
+import { StateNotice } from "./components/StateNotice";
 import {
   ReviewPanel,
   momentKey,
@@ -82,6 +83,10 @@ import { ReviewStepStatus } from "./components/review/ReviewStepStatus";
 import {
   annotationIndex,
 } from "./components/review/reviewViewModel";
+import {
+  buildDailyPlanNotice,
+  buildPgnImportNotice,
+} from "./degradedStates";
 import { makeEvaluationDisplayFromEngineScore } from "./evaluationDisplay";
 import {
   INITIAL_REVIEW_STATE,
@@ -110,6 +115,16 @@ type TodayHeroAction =
   | "wait";
 type ActiveTab = "moves" | "review" | "import" | "history" | "info";
 type HistoryScope = "mine" | "imported" | "local" | "ai" | "observed" | "all";
+
+const EXAMPLE_IMPORT_PGN = `[Event "Exemple NeuroChess"]
+[Site "?"]
+[Date "2026.05.05"]
+[White "Joueur"]
+[Black "Adversaire"]
+[Result "*"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 *
+`;
 
 function normalizeReviewFocusKey(value: string): ReviewFocusKey {
   if (value === "learn" || value === "practice" || value === "lab") {
@@ -465,6 +480,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     useState<PgnImportResult | null>(null);
   const [pgnImportLoading, setPgnImportLoading] = useState(false);
   const [pgnImportError, setPgnImportError] = useState<string | null>(null);
+  const pgnTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [historyItems, setHistoryItems] = useState<GameHistoryItem[]>([]);
   const [historyScope, setHistoryScope] = useState<HistoryScope>("mine");
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -2111,7 +2127,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
 
   async function handlePgnPreview() {
     if (!pgnFile && !pgnText.trim()) {
-      setPgnImportError("Ajoute un fichier PGN ou colle un PGN.");
+      setPgnImportError("IMPORT_EMPTY_PGN");
       return;
     }
 
@@ -2133,7 +2149,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
 
   async function handlePgnImport() {
     if (!pgnFile && !pgnText.trim()) {
-      setPgnImportError("Ajoute un fichier PGN ou colle un PGN.");
+      setPgnImportError("IMPORT_EMPTY_PGN");
       return;
     }
 
@@ -2149,6 +2165,18 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       setPgnImportResult(result);
       await loadHistory();
       setActiveShellPage("games");
+      if (result.imported_count === 0 && result.invalid_count > 0) {
+        setActiveTab("import");
+        return;
+      }
+      if (
+        result.imported_count === 0 &&
+        result.duplicate_count > 0 &&
+        result.invalid_count === 0
+      ) {
+        setActiveTab("import");
+        return;
+      }
       setActiveTab("history");
     } catch (err) {
       setPgnImportError(messageFromError(err));
@@ -4267,6 +4295,15 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   const dailyPlanItemCount = dailyPlan?.item_count ?? 0;
   const dailyPlanAvailable = dailyPlanItemCount > 0;
   const dailyPlanEstimatedMinutes = dailyPlan?.estimated_minutes ?? dailyPlanItemCount * 2;
+  const pgnImportNotice = buildPgnImportNotice({
+    errorMessage: pgnImportError,
+    preview: pgnPreview,
+    result: pgnImportResult,
+  });
+  const dailyPlanNotice = buildDailyPlanNotice({
+    dailyPlan,
+    errorMessage: dailyPlanError,
+  });
   const trainingPrimaryLabel = reviewPracticeState?.active
     ? "Reprendre"
     : dailyPlanLoading
@@ -4841,6 +4878,29 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
               {trainingPrimaryLabel}
             </button>
           </div>
+          {dailyPlanNotice && (
+            <StateNotice
+              variant={dailyPlanNotice.variant}
+              title={dailyPlanNotice.title}
+              message={dailyPlanNotice.message}
+              primaryActionLabel={dailyPlanNotice.primaryActionLabel}
+              secondaryActionLabel={dailyPlanNotice.secondaryActionLabel}
+              details={dailyPlanNotice.details}
+              testId="degraded-daily-plan-notice"
+              onPrimaryAction={() => {
+                if (dailyPlanNotice.stateId === "DAILY_PLAN_EMPTY") {
+                  openGamesPanel("import");
+                  return;
+                }
+                if (dailyPlanNotice.stateId === "DAILY_PLAN_PARTIAL") {
+                  void startDailyPlanPractice();
+                  return;
+                }
+                void createOrRefreshDailyPlan();
+              }}
+              onSecondaryAction={() => openGamesPanel("import")}
+            />
+          )}
           <div className="plan2-card-grid training-grid">
             <article className="plan2-card" data-testid="training-daily-plan-card">
               <span>Plan du jour</span>
@@ -5349,6 +5409,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                 <label>
                   Coller PGN
                   <textarea
+                    ref={pgnTextareaRef}
                     value={pgnText}
                     data-testid="pgn-textarea"
                     onChange={(event) => {
@@ -5410,7 +5471,40 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                 </div>
               </div>
 
-              {pgnImportError && <div className="review-note">{pgnImportError}</div>}
+              {pgnImportNotice && (
+                <StateNotice
+                  variant={pgnImportNotice.variant}
+                  title={pgnImportNotice.title}
+                  message={pgnImportNotice.message}
+                  primaryActionLabel={pgnImportNotice.primaryActionLabel}
+                  secondaryActionLabel={pgnImportNotice.secondaryActionLabel}
+                  details={pgnImportNotice.details}
+                  testId="degraded-import-notice"
+                  onPrimaryAction={() => {
+                    if (pgnImportNotice.stateId === "IMPORT_DUPLICATE_GAME") {
+                      setActiveTab("history");
+                      void loadHistory();
+                      return;
+                    }
+                    pgnTextareaRef.current?.focus();
+                  }}
+                  onSecondaryAction={() => {
+                    if (pgnImportNotice.stateId === "IMPORT_INVALID_PGN") {
+                      setPgnText(EXAMPLE_IMPORT_PGN);
+                      setPgnPreview(null);
+                      setPgnImportResult(null);
+                      setPgnImportError(null);
+                      pgnTextareaRef.current?.focus();
+                      return;
+                    }
+                    setPgnText("");
+                    setPgnPreview(null);
+                    setPgnImportResult(null);
+                    setPgnImportError(null);
+                    pgnTextareaRef.current?.focus();
+                  }}
+                />
+              )}
 
               {pgnPreview && (
                 <div className="import-report">

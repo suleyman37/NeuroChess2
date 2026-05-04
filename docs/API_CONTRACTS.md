@@ -169,3 +169,20 @@ Plan1, Plan2, and Plan3 remain authoritative.
 - Static frontend guard: `backend/tests/test_frontend_profile_privacy_static.py`.
 - Browser smoke: `scripts/browser_profile_privacy_smoke.mjs`.
 - Daily Plan browser smoke: `scripts/browser_daily_plan_smoke.mjs`.
+- P1 degraded-state tests: `backend/tests/test_degraded_states_v1.py`.
+- P1 degraded-state browser smoke: `scripts/browser_degraded_states_smoke.mjs`.
+
+## V1 Degraded-State Error Contract
+
+- No endpoint contract was broken in P1.DEGRADED-STATES-ANTI-TILT-V1.
+- Existing PGN preview/import responses remain the source for import degraded
+  states:
+  - `valid_count = 0` and `invalid_count > 0` maps to `IMPORT_INVALID_PGN`.
+  - parser detail containing illegal SAN maps to `IMPORT_ILLEGAL_MOVES`.
+  - `imported_count = 0`, `duplicate_count > 0`, `invalid_count = 0` maps to
+    `IMPORT_DUPLICATE_GAME`.
+- Existing failed fetch / failed request messages are mapped in the frontend to
+  `BACKEND_UNAVAILABLE` or `BACKEND_REQUEST_FAILED`.
+- Technical details are safe to expose only under collapsed `Détails techniques`.
+- Future backend changes may add `error_code`, `recoverable`, and
+  `recommended_action`, but must not remove existing fields without a migration.

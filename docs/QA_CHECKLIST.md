@@ -1,7 +1,7 @@
 # QA Checklist
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1`
-Date: 2026-05-04
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1`
+Date: 2026-05-05
 
 ## Baseline
 
@@ -25,12 +25,13 @@ Date: 2026-05-04
 ## Automated Validation
 
 - [x] `tools/plan_guard.py` PASS.
-- [x] Backend full suite PASS, 470 tests.
+- [x] Backend full suite PASS, 495 tests.
 - [x] Review smoke PASS.
 - [x] PGN import smoke PASS.
 - [x] Sindarov real-flow smoke PASS.
 - [x] Frontend build PASS.
 - [x] TypeScript fallback typecheck PASS.
+- [x] Degraded states backend/static test PASS.
 - [ ] Lint unavailable: no `lint` npm script.
 - [ ] `npm run typecheck` unavailable: no `typecheck` npm script.
 
@@ -71,7 +72,10 @@ Date: 2026-05-04
 - [x] Browser real analysis no-infinite-loop smoke validates a hard 90s deadline
   and terminal/recoverable job behavior; latest evidence reached `completed`
   with progress `13/13`.
-- [ ] Browser invalid PGN state not validated.
+- [x] Browser invalid PGN state validated.
+- [x] Browser illegal PGN state validated.
+- [x] Browser backend unavailable state validated.
+- [x] Browser empty Daily Plan state validated.
 - [ ] Mobile/responsive not validated.
 
 ## V1 Boundaries
@@ -94,6 +98,8 @@ Date: 2026-05-04
 - [x] Automated browser E2E smoke exists for Review local exploration.
 - [x] Automated browser E2E smoke exists for analysis stall recovery.
 - [x] Automated browser E2E smoke exists for analysis no-infinite-loop deadline.
+- [x] Automated browser E2E smoke exists for key degraded states and offline
+  recovery copy.
 - [x] Privacy/export/delete implemented and browser-smoked in isolated temp DB.
 - [x] Deterministic backend Daily Plan implemented and browser-smoked.
 - [x] Durable `training_items` implemented and exported/deleted.
@@ -104,6 +110,7 @@ Date: 2026-05-04
 ## Documentation
 
 - [x] Create/update `docs/FULL_APPLICATION_QA_AUDIT.md`.
+- [x] Create/update `docs/DEGRADED_STATES_CONTRACT.md`.
 - [x] Create/update `docs/TEST_COVERAGE_MATRIX.md`.
 - [x] Create/update `docs/V1_READINESS_REPORT.md`.
 - [x] Create/update this checklist.
@@ -113,6 +120,6 @@ Date: 2026-05-04
 ## Decision
 
 - Alpha: usable internally with strong backend evidence.
-- External V1: NO-GO until SkillTrace shadow, broader degraded states,
-  centralized French strings, mobile/responsive checks, and release hardening
-  are handled.
+- External V1: NO-GO until SkillTrace shadow, centralized French strings,
+  mobile/responsive checks, accessibility checks, and release hardening are
+  handled.

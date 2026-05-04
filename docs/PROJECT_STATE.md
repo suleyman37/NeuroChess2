@@ -72,7 +72,31 @@ et les fichiers frontend/backend inspectes.
   Dernier resultat connu: PASS, avec DB temporaire isolee, export avec
   `pgn_raw`, premier clic delete non destructif, confirmation tapee, puis
   historique/export vides apres suppression.
-- Prochaine mission recommandee: `P1.DEGRADED-STATES-ANTI-TILT`.
+- Mission suivante alors recommandee: `P1.DEGRADED-STATES-ANTI-TILT`,
+  maintenant couverte par la mise a jour ci-dessous.
+
+## Mise a jour Degraded States / Anti-Tilt du 2026-05-05
+
+- `P1.DEGRADED-STATES-ANTI-TILT-V1` ajoute une couche V1 de recovery UX sans
+  nouveau mode produit.
+- Nouveau composant frontend: `frontend/src/components/StateNotice.tsx`.
+  Il affiche titre, message, action primaire, action secondaire optionnelle et
+  details techniques replies par defaut.
+- Nouveau mapping frontend: `frontend/src/degradedStates.ts`.
+  Etats implementes: import PGN vide/invalide/illegal/doublon, backend local
+  indisponible, plan du jour vide/partiel/indisponible, Practice sans item,
+  coup illegal, tentative non enregistree, session terminee, reveal rassurant,
+  et copy anti-tilt apres tentatives ratees repetees.
+- Nouveau contrat: `docs/DEGRADED_STATES_CONTRACT.md`.
+- Nouveau smoke browser: `scripts/browser_degraded_states_smoke.mjs`.
+  Il couvre un sous-ensemble robuste avec DB temporaire: PGN invalide, PGN avec
+  coup illegal, Daily Plan vide, backend local indisponible, export/delete safe.
+- Les flows analyse bloquee/reprise, Practice reel et Daily Plan Practice reel
+  restent prouves par les smokes P0 existants.
+- Aucun changement Stockfish, formules scientifiques, metriques backend,
+  SkillTrace, Candidate Trainer, LLM, Intent Layer, Transfer Gap, ETV, FSRS ou
+  quatrieme tab de navigation.
+- Prochaine mission recommandee: `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`.
 
 ## P1.TRAINING-ITEMS-DAILY-PLAN-V1
 
@@ -110,7 +134,7 @@ Etat : implemente le 2026-05-04, validations finales PASS.
 - Aucun changement Stockfish, formules scientifiques, metriques backend, LLM,
   Candidate Trainer, Transfer Gap, SkillTrace visible ou NeuroMonitor.
 - Prochaine mission recommandee apres validations completes:
-  `P1.DEGRADED-STATES-ANTI-TILT`.
+  `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`.
 
 ## Features livrees
 
@@ -925,8 +949,8 @@ Summary, Practice et attempt reveal avec `due_at`.
 
 Readiness apres browser smoke : alpha interne estimee a 84%, V1 externe estimee
 a 62%, decision NO-GO pour premiers utilisateurs externes. La mission suivante
-etait `P1.PROFILE-PRIVACY`, maintenant livree; la priorite actuelle est
-`P1.DEGRADED-STATES-ANTI-TILT`.
+etait `P1.PROFILE-PRIVACY`, maintenant livree; la priorite actuelle apres P1
+degraded states est `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`.
 
 ## P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1
 

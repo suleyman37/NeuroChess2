@@ -122,6 +122,17 @@ and screens that ask the user to make too many decisions.
 
 ## Screen-Level Limits
 
+- P1 Degraded States / Anti-Tilt note: recovery actions are now registered as
+  state-driven UI actions, not new product modes. `games.import_pgn` may show
+  `IMPORT_EMPTY_PGN`, `IMPORT_INVALID_PGN`, `IMPORT_ILLEGAL_MOVES`, or
+  `IMPORT_DUPLICATE_GAME` via `StateNotice`. `training.start_daily_plan` may
+  show `DAILY_PLAN_EMPTY`, `DAILY_PLAN_PARTIAL`, or
+  `DAILY_PLAN_CREATE_FAILED`. `practice.submit_attempt` may show
+  `PRACTICE_ATTEMPT_SAVE_FAILED`, `PRACTICE_ILLEGAL_MOVE`, or
+  `ANTI_TILT_REPEATED_WRONG`. These notices keep one primary action, collapsed
+  technical details, and no hidden training side effect unless the user starts
+  or resumes Practice explicitly.
+
 - V5.6 Daily Plan note: `today.follow_recommendation` and
   `training.start_daily_plan` now prefer the deterministic backend Daily Plan
   when one exists. `training.start_daily_plan` calls

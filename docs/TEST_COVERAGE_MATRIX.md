@@ -1,7 +1,7 @@
 # Test Coverage Matrix
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1`
-Date: 2026-05-04
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1`
+Date: 2026-05-05
 
 This matrix lists available automated tests, scripts, and smoke checks. It does
 not count static tests as browser or end-to-end proof.
@@ -9,7 +9,7 @@ not count static tests as browser or end-to-end proof.
 ## Latest Run Summary
 
 - `tools/plan_guard.py`: PASS.
-- Backend full suite: PASS, 486 tests.
+- Backend full suite: PASS, 495 tests.
 - `scripts/review_regression_smoke.py`: PASS.
 - `scripts/pgn_import_smoke.py`: PASS.
 - `scripts/pgn_sindarov_real_flow_smoke.py`: PASS.
@@ -49,6 +49,16 @@ not count static tests as browser or end-to-end proof.
   `cmd /c node scripts\browser_real_analysis_no_infinite_loop_smoke.mjs`.
   It restores a normal Review job in browser, enforces a 90s hard deadline, and
   observed `queued -> running -> completed` with progress `0/13 -> 12/13 -> 13/13`.
+- Degraded states backend/static test: PASS via
+  `.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_degraded_states_v1`.
+  It verifies `StateNotice`, import/Daily Plan/Practice degraded-state wiring,
+  calm anti-tilt copy, no new forbidden V1 labels, PGN invalid/illegal/duplicate
+  backend behavior, and `DEGRADED_STATES_CONTRACT.md` state IDs.
+- Degraded states browser smoke: PASS via
+  `cmd /c node scripts\browser_degraded_states_smoke.mjs`.
+  It proves invalid PGN, illegal PGN, empty Daily Plan, backend unavailable,
+  export empty DB, delete confirmation safety, temp DB deletion, forbidden-label
+  absence, no page errors, and no network 500.
 
 ## Matrix
 
@@ -69,6 +79,7 @@ not count static tests as browser or end-to-end proof.
 | `backend/tests/test_frontend_app_shell_static.py` | static | App Shell | Plan2 nav, Review not main tab, Training labels, forbidden labels | Runtime browser and state branches | PASS in full suite | medium | Browser shell fixture |
 | `backend/tests/test_frontend_learning_loop_static.py` | static | Learning UI | Learning counters wired, no FSRS/ETV/SkillTrace labels | Real due data in browser | PASS in full suite | medium | Browser due/revision fixture |
 | `backend/tests/test_frontend_core_board_interaction_static.py` | static | Board/Practice UI contract | Board selectors, click-click support, Practice attempt path, no duplicate retry copy, forbidden labels absent, smoke scripts present | Runtime board movement | PASS targeted | medium | Keep selectors stable |
+| `backend/tests/test_degraded_states_v1.py` | unit/static | Degraded states / anti-tilt V1 | `StateNotice`, safe import/Daily Plan/Practice degraded copy, repeated-wrong anti-tilt copy, forbidden-label guard, invalid/illegal/duplicate PGN behavior, contract doc state IDs | Browser pointer behavior; full engine-missing UI | PASS targeted | high | Add richer simulated API failure tests as endpoints evolve |
 | `backend/tests/test_frontend_profile_privacy_static.py` | static | Profile/Privacy UI | Profile outside main nav, export/delete labels, typed confirmation, forbidden labels absent | Runtime API/browser behavior | PASS targeted | medium | Keep aligned with browser smoke |
 | `backend/tests/test_frontend_lesson_flow_static.py` | static | Review lesson UI | Review tabs/copy/internal details hidden | Browser interaction and board moves | PASS in full suite | medium | Browser Review/Lesson smoke |
 | `backend/tests/test_game_api.py` | API/integration | Games API | Create/list/open/moves/analysis-related API paths | Browser UX, real user import | PASS in full suite | high | Keep separate from profile/privacy destructive tests |
@@ -107,6 +118,7 @@ not count static tests as browser or end-to-end proof.
 | `scripts/browser_analysis_stall_recovery_smoke.mjs` | browser smoke | Analysis stall/recovery UI | Controlled fake-engine timeout/failure, retryable Review job, no duplicate retry copy, Reprendre recovery, Review done after retry | Real Stockfish OS-level hang | PASS | high | Add slow real-engine degraded smoke only if stable |
 | `scripts/browser_review_exploration_real_smoke.mjs` | browser smoke | Review local exploration | Review `Exploration locale`, real click-click move from Review board, board FEN changes, undo, reset, illegal move feedback, no Practice attempt during exploration, separate Practice attempt saved afterward | Drag/drop exploration, promotion picker | PASS | high | Manual real DB spot check still useful |
 | `scripts/browser_real_analysis_no_infinite_loop_smoke.mjs` | browser smoke | Analysis no-infinite-loop | Browser-restored Review job, hard deadline, terminal/recoverable state, statuses/progress evidence, no network 500 | Real Stockfish OS-level hang on a user's live DB | PASS | high | Add slow real-engine local smoke only if stable |
+| `scripts/browser_degraded_states_smoke.mjs` | browser smoke | Degraded states / recovery UX | Temp DB invalid PGN, illegal PGN, empty Daily Plan, backend offline notice, export empty DB, delete confirmation safety, no network 500, forbidden labels absent | Practice interrupted resume, repeated-wrong anti-tilt in browser, full engine-missing settings UI, mobile/responsive | PASS | high | Expand with practice interruption only after stable fixture exists |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |
@@ -114,7 +126,9 @@ not count static tests as browser or end-to-end proof.
 
 ## Coverage Gaps
 
-- No browser invalid-PGN smoke.
+- Practice interrupted resume is not browser-proven.
+- Repeated-wrong anti-tilt is statically guarded, not browser-proven.
+- Engine missing/path invalid settings UX remains partial; analysis stall recovery is covered.
 - SkillTrace shadow coverage is still absent because that capability is not
   implemented.
 - No registry-vs-code checker.

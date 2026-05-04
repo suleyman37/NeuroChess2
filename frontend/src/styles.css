@@ -502,6 +502,77 @@ button:focus-visible {
   border: 1px solid #ead48d;
 }
 
+.state-notice {
+  background: #f4f7fb;
+  border: 1px solid #d7e2f0;
+  border-radius: 8px;
+  color: #26364a;
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 14px;
+}
+
+.state-notice strong {
+  color: #162033;
+  display: block;
+  font-size: 0.98rem;
+}
+
+.state-notice p {
+  margin: 4px 0 0;
+}
+
+.state-notice-info {
+  background: #f4f7fb;
+  border-color: #cbd8ea;
+}
+
+.state-notice-warning {
+  background: #fff7e8;
+  border-color: #ecc56f;
+}
+
+.state-notice-danger {
+  background: #fff1f0;
+  border-color: #f2aaa5;
+}
+
+.state-notice-success {
+  background: #eefbf3;
+  border-color: #b7dfc1;
+}
+
+.state-notice-compact {
+  margin: 10px 0;
+  padding: 12px;
+}
+
+.state-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.state-notice-actions button {
+  margin: 0;
+}
+
+.state-notice-details {
+  color: #526071;
+  font-size: 0.82rem;
+}
+
+.state-notice-details summary {
+  cursor: pointer;
+  font-weight: 760;
+}
+
+.state-notice-details pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .status-note {
   background: #eef3f9;
   border: 1px solid #cbd8ea;
@@ -3875,6 +3946,40 @@ button:focus-visible {
 .warning {
   background: rgba(249, 180, 76, 0.1);
   border-color: rgba(249, 180, 76, 0.32);
+}
+
+.state-notice {
+  background: rgba(8, 13, 32, 0.78);
+  border-color: rgba(154, 172, 204, 0.2);
+  color: var(--nc-muted);
+}
+
+.state-notice strong {
+  color: var(--nc-text);
+}
+
+.state-notice-info {
+  background: rgba(67, 231, 255, 0.08);
+  border-color: rgba(67, 231, 255, 0.24);
+}
+
+.state-notice-warning {
+  background: rgba(249, 180, 76, 0.1);
+  border-color: rgba(249, 180, 76, 0.32);
+}
+
+.state-notice-danger {
+  background: rgba(255, 76, 120, 0.12);
+  border-color: rgba(255, 76, 120, 0.34);
+}
+
+.state-notice-success {
+  background: rgba(48, 242, 164, 0.1);
+  border-color: rgba(48, 242, 164, 0.3);
+}
+
+.state-notice-details {
+  color: var(--nc-muted);
 }
 
 .status-note {
