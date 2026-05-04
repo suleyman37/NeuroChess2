@@ -5281,3 +5281,235 @@ button.danger:disabled {
     padding-inline: 0;
   }
 }
+
+/* P1 mobile/a11y V1: final narrow-viewport overrides after legacy Review rules. */
+html,
+body,
+#root,
+.app {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+.board-panel:focus-visible {
+  outline: 2px solid rgba(0, 229, 255, 0.82);
+  outline-offset: 3px;
+}
+
+button,
+a,
+input,
+textarea,
+select,
+summary {
+  touch-action: manipulation;
+}
+
+.board-panel,
+.analysis-layout,
+.board-column,
+.right-panel,
+.tab-panel,
+.review-content,
+.review-practice-panel,
+.review-practice-card,
+.review-exploration-panel,
+.plan2-page,
+.plan2-card,
+.profile-privacy-panel,
+.state-notice {
+  min-width: 0;
+}
+
+.review-action-row button,
+.review-exploration-actions button,
+.state-notice-actions button,
+.import-actions button,
+.profile-privacy-actions button,
+.profile-delete-actions button,
+.app-shell-nav button,
+.app-header-tools button,
+.games-page-actions button,
+.review-context-header button {
+  min-height: 44px;
+}
+
+@media (max-width: 720px) {
+  .app {
+    padding: 12px;
+  }
+
+  .topbar.app-header {
+    gap: 12px;
+    padding: 12px;
+    width: 100%;
+  }
+
+  .app-brand {
+    min-width: 0;
+  }
+
+  .app-brand-title {
+    min-width: 0;
+  }
+
+  .app-brand-title p {
+    overflow-wrap: anywhere;
+  }
+
+  .app-shell-nav {
+    display: grid;
+    gap: 6px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .app-shell-nav button {
+    font-size: 0.82rem;
+    padding: 0.6rem 0.35rem;
+    width: 100%;
+  }
+
+  .app-header-tools {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+    width: 100%;
+  }
+
+  .app-header-tools button,
+  .app-header-tools label,
+  .profile-status {
+    width: 100%;
+  }
+
+  .plan2-page {
+    gap: 12px;
+    width: 100%;
+  }
+
+  .plan2-hero,
+  .plan2-card,
+  .state-notice,
+  .profile-privacy-panel {
+    padding: 14px;
+  }
+
+  .plan2-primary-action,
+  .plan2-secondary-action,
+  .training-card-cta {
+    width: 100%;
+  }
+
+  .analysis-layout {
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: stretch;
+    width: 100%;
+  }
+
+  .board-column {
+    order: 1;
+    width: 100%;
+  }
+
+  .eval-wrap {
+    order: 2;
+    width: 100%;
+  }
+
+  .right-panel {
+    grid-column: auto;
+    min-height: auto;
+    order: 3;
+    width: 100%;
+  }
+
+  .tab-panel {
+    padding: 12px;
+  }
+
+  .board-panel {
+    justify-self: center;
+    width: min(100%, calc(100vw - 32px));
+  }
+
+  .board-nav,
+  .review-context-nav,
+  .review-action-row,
+  .review-exploration-actions,
+  .state-notice-actions,
+  .import-actions,
+  .profile-privacy-actions,
+  .profile-delete-actions {
+    align-items: stretch;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .board-nav {
+    overflow-x: auto;
+  }
+
+  .review-action-row button,
+  .review-exploration-actions button,
+  .state-notice-actions button,
+  .import-actions button,
+  .profile-privacy-actions button,
+  .profile-delete-actions button {
+    flex: 1 1 150px;
+  }
+
+  .review-practice-head,
+  .review-practice-history-head,
+  .review-practice-history-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .review-practice-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .review-exploration-panel {
+    width: min(100%, calc(100vw - 32px));
+  }
+
+  .import-form textarea {
+    min-height: 190px;
+    width: 100%;
+  }
+
+  .pgn-history-table {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .pgn-history-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pgn-history-head {
+    display: none;
+  }
+
+  .profile-privacy-panel {
+    margin-inline: 0;
+    width: 100%;
+  }
+
+  .profile-delete-confirmation input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 440px) {
+  .review-practice-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

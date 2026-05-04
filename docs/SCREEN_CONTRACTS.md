@@ -13,6 +13,26 @@ helps the user.
 - Technical details belong in advanced options, explorer, or debug surfaces.
 - Raw formulas, evidence JSON, engine settings, and debug panels are forbidden in normal beginner flows.
 
+## Mobile And Accessibility V1 Minimum
+
+- The main app shell must remain usable at a 390x844 mobile viewport without
+  horizontal overflow.
+- Main navigation remains exactly `Aujourd'hui`, `Mes parties`,
+  `Entrainement`; Profile/Settings stays outside the main nav.
+- Training remains exactly `Plan du jour`, `Mes positions ratees`,
+  `Revisions`.
+- Review mobile must keep the board visible and reachable before the Review
+  summary, with `Explorer la position`, undo, reset, and exit controls reachable.
+- Practice mobile must keep the board tappable and keep `Indice`, `Voir la
+  correction`, `Passer`, and continue/next actions reachable below the board.
+- Profile/Privacy mobile must keep export/delete visible and the delete
+  confirmation usable.
+- Keyboard V1 minimum: main nav, Import PGN, PGN textarea, Practice board,
+  Practice buttons, and Profile/Settings must be reachable by Tab with visible
+  focus styling.
+- CSS must respect `prefers-reduced-motion`. This is a V1 minimum smoke
+  contract, not a full WCAG certification.
+
 ## Contracts
 
 | screen_id | route | question_answered | primary_user_intent | primary_action | allowed_secondary_actions | alternative_action | visible_modules | hidden_modules | forbidden_modules | empty_state | loading_state | error_state | max_primary_actions | max_secondary_actions | progressive_disclosure_level | technical_details_location |

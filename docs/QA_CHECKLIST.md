@@ -1,6 +1,6 @@
 # QA Checklist
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`
 Date: 2026-05-05
 
 ## Baseline
@@ -32,6 +32,7 @@ Date: 2026-05-05
 - [x] Frontend build PASS.
 - [x] TypeScript fallback typecheck PASS.
 - [x] Degraded states backend/static test PASS.
+- [x] Mobile/accessibility backend static test PASS.
 - [ ] Lint unavailable: no `lint` npm script.
 - [ ] `npm run typecheck` unavailable: no `typecheck` npm script.
 
@@ -76,7 +77,15 @@ Date: 2026-05-05
 - [x] Browser illegal PGN state validated.
 - [x] Browser backend unavailable state validated.
 - [x] Browser empty Daily Plan state validated.
-- [ ] Mobile/responsive not validated.
+- [x] Browser mobile responsive smoke validates 390x844 viewport, no horizontal
+  overflow on critical screens, Review board visible, Review exploration tap,
+  Review Practice tap attempt, Daily Plan Practice tap attempt, Training exactly
+  3 entries, Profile/Privacy visibility, and no forbidden V1 labels.
+- [x] Browser keyboard/accessibility smoke validates Tab focus and visible focus
+  rings for main nav, import, PGN textarea, Practice board, Indice, Voir la
+  correction, Passer, Profile/Settings focus, reduced-motion CSS, and no
+  network 500.
+- [ ] Full WCAG audit/certification not performed.
 
 ## V1 Boundaries
 
@@ -100,6 +109,8 @@ Date: 2026-05-05
 - [x] Automated browser E2E smoke exists for analysis no-infinite-loop deadline.
 - [x] Automated browser E2E smoke exists for key degraded states and offline
   recovery copy.
+- [x] Automated browser E2E smoke exists for mobile responsive core flows.
+- [x] Automated browser E2E smoke exists for keyboard/focus basics.
 - [x] Privacy/export/delete implemented and browser-smoked in isolated temp DB.
 - [x] Deterministic backend Daily Plan implemented and browser-smoked.
 - [x] Durable `training_items` implemented and exported/deleted.
@@ -121,5 +132,6 @@ Date: 2026-05-05
 
 - Alpha: usable internally with strong backend evidence.
 - External V1: NO-GO until SkillTrace shadow, centralized French strings,
-  mobile/responsive checks, accessibility checks, and release hardening are
-  handled.
+  release hardening, and deeper accessibility/manual device checks are handled.
+  Mobile/responsive and keyboard basics are now browser-smoked, but this is not
+  a full accessibility certification.

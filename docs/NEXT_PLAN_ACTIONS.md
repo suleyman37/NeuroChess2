@@ -445,18 +445,46 @@ tool_timeout_sec = 180
 - ID: `MOBILE-RESPONSIVE-AND-A11Y-V1`
 - Priorite: P1
 - Titre: Prove mobile/responsive and keyboard/accessibility basics for V1
-- Etat: recommended next mission after Degraded States.
+- Etat: completed on 2026-05-05. Mobile responsive and keyboard/focus basics
+  are now covered by dedicated browser smokes.
 - Justification Plan2/Plan3: V1 is browser-usable, but mobile/responsive and
   accessibility are not yet proven by a dedicated smoke.
-- Fichiers probables: focused frontend CSS/components and browser smoke scripts.
+- Fichiers touches: focused responsive CSS in `frontend/src/styles.css`,
+  board focus/width in `frontend/src/components/ChessBoardPanel.tsx`,
+  browser helper additions, `scripts/browser_mobile_responsive_smoke.mjs`,
+  `scripts/browser_keyboard_accessibility_smoke.mjs`, static tests, and QA docs.
 - Taille: M
 - Risques: turning the mission into a redesign instead of a proof/repair pass.
 - Dependances: P0 board/runtime, P1 degraded states.
-- Definition du done: app shell, Import, Review, Review exploration, Practice,
-  Daily Plan, Profile/Privacy, StateNotice, and board controls are usable at
-  mobile and desktop viewports with no overlap, keyboard traps, or hidden CTAs.
+- Definition du done: done for V1 minimum. App shell, Import, Review, Review
+  exploration, Practice, Daily Plan, Profile/Privacy and board controls are
+  browser-smoked at 390x844 with no horizontal overflow. Keyboard focus basics
+  and `prefers-reduced-motion` are browser-smoked. Full WCAG certification and
+  physical-device QA remain out of scope.
 - Tests a lancer: plan guard, frontend build/typecheck, backend static tests,
-  existing browser smokes, new mobile/responsive smoke.
+  existing browser smokes, `cmd /c node scripts\browser_mobile_responsive_smoke.mjs`,
+  and `cmd /c node scripts\browser_keyboard_accessibility_smoke.mjs`.
+
+### P1. I18N-STRINGS-CATALOG-V1
+
+- ID: `I18N-STRINGS-CATALOG-V1`
+- Priorite: P1
+- Titre: Centralize V1 French strings without changing product behavior
+- Etat: recommended next mission after Mobile/A11Y.
+- Justification Plan2/Plan3: the V1 surface is now browser-proven across core,
+  degraded, mobile and keyboard flows, but visible French strings remain
+  scattered. Centralizing strings reduces copy drift without adding features.
+- Fichiers probables: a focused frontend strings module, limited component
+  imports, static tests, and QA docs.
+- Taille: M
+- Risques: accidentally rewriting UX copy, changing i18n scope into a product
+  redesign, or touching forbidden V2/V3 labels.
+- Dependances: completed P0/P1 browser smokes.
+- Definition du done: critical V1 labels/copy move to a small catalog while UI
+  behavior, nav labels, Training entries, degraded-state messages, board flows,
+  and forbidden-label guards remain unchanged.
+- Tests a lancer: plan guard, backend static tests, frontend build/typecheck,
+  existing browser smokes, mobile/accessibility smokes.
 
 ### P1. PROFILE-PRIVACY
 

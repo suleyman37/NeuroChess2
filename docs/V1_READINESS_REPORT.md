@@ -1,12 +1,12 @@
 # V1 Readiness Report
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`
 Date: 2026-05-05
 
 ## 1. Resume executif
 
-- Alpha utilisable estimee: 95%.
-- V1 reelle estimee: 87%.
+- Alpha utilisable estimee: 96%.
+- V1 reelle estimee: 91%.
 - Decision premiers utilisateurs externes: NO-GO.
 
 NeuroChess a maintenant une preuve browser automatisee du flow V1 minimal :
@@ -24,13 +24,18 @@ recuperables et un smoke navigateur impose un hard deadline anti-boucle. Le P1
 Degraded States ajoute maintenant un `StateNotice` commun, des copies
 calmes pour PGN invalide/illegal, backend local indisponible, Daily Plan vide ou
 partiel, Practice sans item, tentative non enregistree, coup illegal, session
-terminee, reveal et tentative repetee difficile. Le nouveau smoke navigateur
-prouve invalid PGN, PGN illegal, Daily Plan vide, backend offline, export vide,
-confirmation delete et absence de network 500 en DB temporaire. La V1 externe
-reste NO-GO car SkillTrace shadow manque, les strings francaises ne sont pas
-centralisees, mobile/responsive n'est pas encore prouve, et les scenarios
-Practice interrupted/repeated-wrong restent statiques ou couverts par smokes
-existants plutot que par un smoke dedie complet.
+terminee, reveal et tentative repetee difficile. Le smoke navigateur degraded
+states prouve invalid PGN, PGN illegal, Daily Plan vide, backend offline,
+export vide, confirmation delete et absence de network 500 en DB temporaire.
+Le P1 Mobile / A11Y ajoute maintenant une preuve browser a 390x844: pas
+d'overflow horizontal sur les ecrans critiques, Review exploration par
+tap/click, Practice Review, Daily Plan Practice, Profile/Privacy visible, focus
+clavier visible pour nav, import, PGN textarea, board Practice et boutons
+Practice, et CSS `prefers-reduced-motion`. La V1 externe reste NO-GO car
+SkillTrace shadow manque, les strings francaises ne sont pas centralisees,
+l'accessibilite n'est pas une certification WCAG complete, et les scenarios
+Practice interrupted/repeated-wrong restent statiques ou couverts indirectement
+plutot que par un smoke dedie complet.
 
 ## 2. Valide automatiquement
 
@@ -65,6 +70,10 @@ existants plutot que par un smoke dedie complet.
   `.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_degraded_states_v1`.
 - Browser degraded states smoke: PASS via
   `cmd /c node scripts\browser_degraded_states_smoke.mjs`.
+- Mobile responsive smoke: PASS via
+  `cmd /c node scripts\browser_mobile_responsive_smoke.mjs`.
+- Keyboard/accessibility smoke: PASS via
+  `cmd /c node scripts\browser_keyboard_accessibility_smoke.mjs`.
 - Learning Loop V1 service: attempt fields, due rules, due session, no-due
   summary all covered by backend tests.
 - Training V1 static guard: exactly 3 entries and no forbidden labels.
@@ -119,6 +128,17 @@ existants plutot que par un smoke dedie complet.
   backend offline (`NeuroChess local ne repond pas`), export empty DB, delete
   confirmation required, confirmed temp-DB deletion, no page errors and no
   network 500.
+- Mobile responsive browser smoke proves viewport `390x844`, main nav exactly
+  `Aujourd'hui / Mes parties / Entrainement`, no horizontal overflow on Today,
+  Games, Review, Practice, Training and Profile, Review board width 358px,
+  Review exploration move `d4c5`, Review Practice attempt `result=best`, Daily
+  Plan Practice attempt `result=best`, Training exactly 3 entries, and
+  forbidden labels absent. It observed one harmless 404 resource request and no
+  page errors or network 500.
+- Keyboard/accessibility browser smoke proves visible focus rings for main nav,
+  Importer PGN, PGN textarea, import primary action, Practice board, Indice,
+  Voir la correction, Passer and Profile/Settings; it also verifies
+  `prefers-reduced-motion` CSS and no network 500.
 
 ## 4. Existe mais pas valide en browser
 
@@ -131,6 +151,8 @@ existants plutot que par un smoke dedie complet.
 - Practice interrupted resume state in browser.
 - Repeated wrong anti-tilt state in browser; static guard exists.
 - Empty-history UI state.
+- Physical-device mobile QA and full screen-reader/WCAG audit; automated smoke
+  covers the 390x844 browser viewport and keyboard focus basics only.
 
 ## 5. Partiel
 
@@ -174,6 +196,8 @@ existants plutot que par un smoke dedie complet.
   recovery copy; browser proof is still indirect/static for repeated wrongs.
 - Degraded states are partially browser-proven for invalid/illegal PGN, backend
   unavailable, empty Daily Plan and export/delete safety.
+- Mobile/responsive and keyboard focus basics are browser-proven at 390x844.
+  This is a V1 minimum proof, not a full accessibility certification.
 - Profile/Settings/Privacy is now a minimal top-right panel, not a main tab.
 - Ready Review Summary and reveal Practice attempt are browser-proven; lesson,
   explorer, hint/skip/retry, and drag/drop move attempts still need browser
@@ -188,8 +212,9 @@ existants plutot que par un smoke dedie complet.
 - No SkillTrace shadow.
 - No centralized French strings.
 - No strict cache policy proof matching all Plan3 conditions.
-- Automated browser smokes exist for the minimal V1 loop, profile/privacy, and
-  Daily Plan; release smoke still needs degraded/mobile coverage.
+- Automated browser smokes exist for the minimal V1 loop, profile/privacy,
+  Daily Plan, degraded states, mobile responsive flow, and keyboard/focus
+  basics.
 
 ## 10. Tests executes
 
@@ -302,12 +327,41 @@ cmd /c node scripts\browser_analysis_stall_recovery_smoke.mjs
 # recovery, Review done after retry.
 ```
 
+```powershell
+cmd /c node scripts\browser_review_exploration_real_smoke.mjs
+# PASS: Review exploration locale, tap/click move, undo/reset, illegal message,
+# no attempt during exploration, separate Practice attempt saved.
+```
+
+```powershell
+cmd /c node scripts\browser_real_analysis_no_infinite_loop_smoke.mjs
+# PASS: hard deadline, status/progress evidence, final/recoverable state.
+```
+
+```powershell
+cmd /c node scripts\browser_degraded_states_smoke.mjs
+# PASS: invalid PGN, illegal PGN, empty Daily Plan, backend offline,
+# export/delete temp DB safety.
+```
+
+```powershell
+cmd /c node scripts\browser_mobile_responsive_smoke.mjs
+# PASS: 390x844 viewport, no horizontal overflow, Review exploration,
+# Review Practice, Daily Plan Practice, Profile/Privacy visible.
+```
+
+```powershell
+cmd /c node scripts\browser_keyboard_accessibility_smoke.mjs
+# PASS: keyboard focus rings, Practice board/buttons focusable, reduced motion.
+```
+
 ## 11. Tests non executes
 
 - Browser drag/drop-specific path was not run; click-click board input is now
   browser-proven for correct, wrong legal, and illegal attempts.
-- Mobile/responsive browser check was not run.
-- Invalid-PGN browser check was not run.
+- Mobile/responsive browser check now passes at 390x844, but physical-device QA
+  was not run.
+- Invalid-PGN browser check now passes through the degraded-states smoke.
 - Lint could not run because no `lint` script exists.
 
 ## 12. Risques critiques
@@ -323,12 +377,12 @@ cmd /c node scripts\browser_analysis_stall_recovery_smoke.mjs
 
 ## 13. Prochaine mission recommandee
 
-One next mission: `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`.
+One next mission: `P1.I18N-STRINGS-CATALOG-V1`.
 
 Reason: the core browser V1 loop, board interaction, analysis recovery,
-Profile/Privacy, Daily Plan, and key degraded states are now proven. External
-V1 still needs mobile/responsive and accessibility evidence before inviting
-non-technical users.
+Profile/Privacy, Daily Plan, key degraded states, mobile responsive flow, and
+keyboard/focus basics are now proven. External V1 still needs French string
+centralization/catalog coverage before inviting non-technical users.
 
 ## 14. Critere de sortie V1 Plan3
 
@@ -341,5 +395,5 @@ non-technical users.
 | Daily Plan | pass | Backend Daily Plan tests and browser daily-plan smoke | Browser proof uses a valid partial one-item plan, not a rich 5-6 item day |
 | Revision J+3 | pass | Backend learning loop tests for hint success -> 3 days; browser reveal creates J+1 scheduled due | Browser Training/Revisions due-flow not proven |
 | Export/delete | pass | Backend tests and browser profile/privacy smoke | Deletes only after typed `SUPPRIMER` in tested temp DB |
-| Tests critiques | partial | Backend/build/smokes/browser V1 + profile/privacy + daily-plan flow pass | Needs degraded/mobile tests |
-| Utilisateurs externes | missing | SkillTrace shadow/i18n/mobile-responsive proof incomplete; repeated-wrong anti-tilt browser fixture partial | NO-GO |
+| Tests critiques | partial | Backend/build/smokes/browser V1 + profile/privacy + daily-plan + degraded + mobile/a11y basics pass | Needs physical-device and full a11y/manual release QA |
+| Utilisateurs externes | missing | SkillTrace shadow/i18n incomplete; repeated-wrong anti-tilt browser fixture partial; full a11y certification absent | NO-GO |

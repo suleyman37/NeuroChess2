@@ -51,8 +51,11 @@ New evidence added after the full audit:
   `attempt_result=revealed`, `due_at=2026-05-05T12:08:29+00:00`,
   `learning_summary.practice_event_count=1`,
   `learning_summary.scheduled_count=1`.
-- Remaining browser gaps: correct drag/drop move attempt, hint/skip/retry,
-  invalid PGN, backend unavailable, slow/stalled analysis, mobile/responsive.
+- Remaining browser gaps at that point: correct drag/drop move attempt,
+  hint/skip/retry, invalid PGN, backend unavailable, slow/stalled analysis, and
+  mobile/responsive. Later P0/P1 missions added dedicated board, degraded-state,
+  mobile, and keyboard/focus browser proofs; drag/drop-specific and full WCAG
+  certification remain outside this report's proven V1 surface.
 
 ## P1.PROFILE-PRIVACY-V1 Update
 
@@ -144,7 +147,8 @@ New evidence added after Daily Plan:
   done; it does not prove every possible real Stockfish stall mode.
 - Remaining gaps: drag/drop-specific browser path is still not separately
   exercised because click-click is the V1 reliable input method; invalid PGN,
-  backend-offline, mobile/responsive, and hint/skip browser proofs remain.
+  backend-offline, physical-device mobile QA, full accessibility certification,
+  and hint/skip browser proofs remain.
 
 ## P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1 Update
 
@@ -180,8 +184,32 @@ match the real local app:
   `queued -> running -> completed`, progress `0/13 -> 12/13 -> 13/13`, hard
   deadline 90s, no network 500.
 - Remaining gaps: drag/drop-specific exploration is not separately proven;
-  broader degraded states, mobile/responsive, invalid PGN browser errors, and
-  real user DB long-running Stockfish edge cases still need release hardening.
+  broader degraded states, physical-device mobile QA, full accessibility
+  certification, invalid PGN browser errors, and real user DB long-running
+  Stockfish edge cases still need release hardening.
+
+## P1.MOBILE-RESPONSIVE-AND-A11Y-V1 Update
+
+Date: 2026-05-05.
+
+New evidence added for mobile and keyboard readiness:
+
+- Mobile responsive smoke result: PASS at 390x844 with device scale factor 2.
+  It proves the V1 main nav remains exactly 3 entries, no horizontal overflow on
+  critical screens, Review board visibility, Review local exploration by real
+  tap/click, reset, Review Practice real move feedback, Daily Plan Practice real
+  move feedback, Training exactly 3 entries, and Profile/Privacy export/delete
+  visibility.
+- Keyboard/accessibility smoke result: PASS. It proves visible focus for the
+  main nav, Import PGN action, PGN textarea, Practice board, Practice actions,
+  and Profile/Settings, plus presence of reduced-motion CSS.
+- Static coverage added:
+  `backend/tests/test_frontend_mobile_accessibility_static.py` checks mobile CSS
+  markers, focus/reduced-motion markers, board accessibility, the two browser
+  smoke scripts, V1 nav/training contracts, and absence of forbidden V1 labels in
+  the touched mobile/accessibility surface.
+- Scope limitation: this is a V1 minimum accessibility proof, not a full WCAG
+  certification, screen-reader audit, or physical-device QA campaign.
 
 ## Matrix
 
@@ -321,6 +349,7 @@ browser-tested.
 | Export/delete after degraded states | Browser smoke verifies export on temp DB, wrong confirmation fails, confirmed delete succeeds | PASS | UI Profile smoke remains the richer export/delete browser proof. |
 
 Updated conservative readiness effect: degraded-state coverage improves from
-`PARTIAL` to `PARTIAL+`. External V1 remains NO-GO until mobile/responsive,
-accessibility, i18n centralization, SkillTrace shadow, and release hardening are
-handled.
+`PARTIAL` to `PARTIAL+`. The later mobile/a11y mission adds V1 mobile and
+keyboard/focus browser proof, but External V1 remains NO-GO until i18n
+centralization, SkillTrace shadow, full accessibility certification, physical
+device QA, and release hardening are handled.

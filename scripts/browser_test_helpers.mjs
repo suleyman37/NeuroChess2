@@ -450,6 +450,119 @@ export class BrowserSmokeHarness {
     this.mark("app_loads", "pass", `${this.frontendBaseUrl}/app`);
   }
 
+  async setViewport({ width, height, deviceScaleFactor = 1, mobile = false }) {
+    await this.browserClient.send("Emulation.setDeviceMetricsOverride", {
+      width,
+      height,
+      deviceScaleFactor,
+      mobile,
+    });
+    await this.browserClient.send("Emulation.setTouchEmulationEnabled", {
+      enabled: mobile,
+      maxTouchPoints: mobile ? 5 : 1,
+    });
+    this.evidence.viewport = { width, height, deviceScaleFactor, mobile };
+    this.mark("viewport_configured", "pass", `${width}x${height} dpr=${deviceScaleFactor}`);
+  }
+
+  async assertNoHorizontalOverflow(stage, selectors = null) {
+    const result = await this.evalPage((configuredSelectors) => {
+      const viewportWidth = window.innerWidth;
+      const selectorList = configuredSelectors ?? [
+        "html",
+        "body",
+        '[data-testid="app-root"]',
+        ".topbar.app-header",
+        ".app-shell-nav",
+        ".analysis-layout",
+        ".board-column",
+        ".right-panel",
+        ".plan2-page",
+        ".profile-privacy-panel",
+        ".state-notice",
+        '[data-testid="review-board"]',
+        '[data-testid="practice-board"]',
+      ];
+      const documentOverflow = Math.max(
+        document.documentElement.scrollWidth,
+        document.body?.scrollWidth ?? 0,
+      ) - viewportWidth;
+      const offenders = [];
+      for (const selector of selectorList) {
+        for (const element of document.querySelectorAll(selector)) {
+          const rect = element.getBoundingClientRect();
+          if (rect.width <= 0 || rect.height <= 0) {
+            continue;
+          }
+          const overflowLeft = Math.max(0, -rect.left);
+          const overflowRight = Math.max(0, rect.right - viewportWidth);
+          if (overflowLeft > 2 || overflowRight > 2) {
+            offenders.push({
+              selector,
+              left: Math.round(rect.left),
+              right: Math.round(rect.right),
+              width: Math.round(rect.width),
+              overflowLeft: Math.round(overflowLeft),
+              overflowRight: Math.round(overflowRight),
+            });
+          }
+        }
+      }
+      return {
+        ok: documentOverflow <= 2 && offenders.length === 0,
+        viewportWidth,
+        documentScrollWidth: document.documentElement.scrollWidth,
+        bodyScrollWidth: document.body?.scrollWidth ?? 0,
+        documentOverflow: Math.round(documentOverflow),
+        offenders,
+      };
+    }, selectors);
+    if (!result.ok) {
+      this.fail(stage, JSON.stringify(result));
+    }
+    this.mark(stage, "pass", `viewport=${result.viewportWidth}, scroll=${result.documentScrollWidth}`);
+    return result;
+  }
+
+  async pressKey(key, options = {}) {
+    const modifiers = options.shift ? 8 : 0;
+    const keyCode = key === "Tab" ? 9 : key === "Enter" ? 13 : key === "Escape" ? 27 : key === " " ? 32 : 0;
+    const code = key === " " ? "Space" : key;
+    const dispatchTypes = key === "Enter" || key === " " ? ["rawKeyDown", "keyUp"] : ["keyDown", "keyUp"];
+    for (const type of dispatchTypes) {
+      await this.browserClient.send("Input.dispatchKeyEvent", {
+        type,
+        key,
+        code,
+        windowsVirtualKeyCode: keyCode,
+        nativeVirtualKeyCode: keyCode,
+        modifiers,
+        text: type === "rawKeyDown" ? (key === "Enter" ? "\r" : key === " " ? " " : undefined) : undefined,
+        unmodifiedText: type === "rawKeyDown" ? (key === "Enter" ? "\r" : key === " " ? " " : undefined) : undefined,
+      });
+    }
+    await delay(options.afterMs ?? 100);
+  }
+
+  async activeElementSnapshot() {
+    return this.evalPage(() => {
+      const element = document.activeElement;
+      if (!element) {
+        return { ok: false };
+      }
+      return {
+        ok: true,
+        tag: element.tagName,
+        testId: element.getAttribute("data-testid"),
+        text: element.textContent?.replace(/\s+/g, " ").trim().slice(0, 120) ?? "",
+        ariaLabel: element.getAttribute("aria-label"),
+        className: typeof element.className === "string" ? element.className : "",
+        outlineStyle: window.getComputedStyle(element).outlineStyle,
+        outlineWidth: window.getComputedStyle(element).outlineWidth,
+      };
+    });
+  }
+
   async visibleText() {
     return this.evalPage(() => document.body?.innerText ?? "");
   }

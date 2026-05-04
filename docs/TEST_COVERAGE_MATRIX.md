@@ -1,6 +1,6 @@
 # Test Coverage Matrix
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`
 Date: 2026-05-05
 
 This matrix lists available automated tests, scripts, and smoke checks. It does
@@ -59,6 +59,17 @@ not count static tests as browser or end-to-end proof.
   It proves invalid PGN, illegal PGN, empty Daily Plan, backend unavailable,
   export empty DB, delete confirmation safety, temp DB deletion, forbidden-label
   absence, no page errors, and no network 500.
+- Mobile responsive browser smoke: PASS via
+  `cmd /c node scripts\browser_mobile_responsive_smoke.mjs`.
+  It proves a 390x844 mobile viewport, Plan2 nav integrity, no horizontal
+  overflow on Today/Games/Review/Practice/Training/Profile, Review exploration
+  tap/click move, Review Practice attempt, Daily Plan Practice attempt, Profile
+  export/delete visibility, and forbidden-label absence.
+- Keyboard/accessibility browser smoke: PASS via
+  `cmd /c node scripts\browser_keyboard_accessibility_smoke.mjs`.
+  It proves visible keyboard focus for main nav, Importer, PGN textarea,
+  Practice board, Indice, Voir la correction, Passer, Profile/Settings focus,
+  reduced-motion CSS presence, and no network 500.
 
 ## Matrix
 
@@ -80,6 +91,7 @@ not count static tests as browser or end-to-end proof.
 | `backend/tests/test_frontend_learning_loop_static.py` | static | Learning UI | Learning counters wired, no FSRS/ETV/SkillTrace labels | Real due data in browser | PASS in full suite | medium | Browser due/revision fixture |
 | `backend/tests/test_frontend_core_board_interaction_static.py` | static | Board/Practice UI contract | Board selectors, click-click support, Practice attempt path, no duplicate retry copy, forbidden labels absent, smoke scripts present | Runtime board movement | PASS targeted | medium | Keep selectors stable |
 | `backend/tests/test_degraded_states_v1.py` | unit/static | Degraded states / anti-tilt V1 | `StateNotice`, safe import/Daily Plan/Practice degraded copy, repeated-wrong anti-tilt copy, forbidden-label guard, invalid/illegal/duplicate PGN behavior, contract doc state IDs | Browser pointer behavior; full engine-missing UI | PASS targeted | high | Add richer simulated API failure tests as endpoints evolve |
+| `backend/tests/test_frontend_mobile_accessibility_static.py` | static | Mobile/a11y V1 | Final responsive CSS overrides, focus-visible, reduced motion, board tab focus, mobile/keyboard smoke scripts, Plan2 nav and Training contracts | Real browser rendering and keyboard traversal | PASS targeted | medium | Keep paired with browser smokes |
 | `backend/tests/test_frontend_profile_privacy_static.py` | static | Profile/Privacy UI | Profile outside main nav, export/delete labels, typed confirmation, forbidden labels absent | Runtime API/browser behavior | PASS targeted | medium | Keep aligned with browser smoke |
 | `backend/tests/test_frontend_lesson_flow_static.py` | static | Review lesson UI | Review tabs/copy/internal details hidden | Browser interaction and board moves | PASS in full suite | medium | Browser Review/Lesson smoke |
 | `backend/tests/test_game_api.py` | API/integration | Games API | Create/list/open/moves/analysis-related API paths | Browser UX, real user import | PASS in full suite | high | Keep separate from profile/privacy destructive tests |
@@ -119,6 +131,8 @@ not count static tests as browser or end-to-end proof.
 | `scripts/browser_review_exploration_real_smoke.mjs` | browser smoke | Review local exploration | Review `Exploration locale`, real click-click move from Review board, board FEN changes, undo, reset, illegal move feedback, no Practice attempt during exploration, separate Practice attempt saved afterward | Drag/drop exploration, promotion picker | PASS | high | Manual real DB spot check still useful |
 | `scripts/browser_real_analysis_no_infinite_loop_smoke.mjs` | browser smoke | Analysis no-infinite-loop | Browser-restored Review job, hard deadline, terminal/recoverable state, statuses/progress evidence, no network 500 | Real Stockfish OS-level hang on a user's live DB | PASS | high | Add slow real-engine local smoke only if stable |
 | `scripts/browser_degraded_states_smoke.mjs` | browser smoke | Degraded states / recovery UX | Temp DB invalid PGN, illegal PGN, empty Daily Plan, backend offline notice, export empty DB, delete confirmation safety, no network 500, forbidden labels absent | Practice interrupted resume, repeated-wrong anti-tilt in browser, full engine-missing settings UI, mobile/responsive | PASS | high | Expand with practice interruption only after stable fixture exists |
+| `scripts/browser_mobile_responsive_smoke.mjs` | browser smoke | Mobile responsive V1 | 390x844 viewport, no horizontal overflow, Plan2 nav exactly 3, Review board fits, Review exploration tap, Review Practice tap attempt, Training exactly 3, Daily Plan Practice tap attempt, Profile/Privacy visible, forbidden labels absent | Real physical devices, landscape/tablet matrix, visual design certification | PASS | high | Add manual device pass before broad external release |
+| `scripts/browser_keyboard_accessibility_smoke.mjs` | browser smoke | Keyboard/focus a11y V1 | Tab focus for nav/import/PGN textarea/Practice board/Practice buttons/Profile, focus ring evidence, reduced-motion CSS, forbidden labels absent, no network 500 | Full WCAG audit, screen reader semantics, every modal/route branch | PASS | medium | Full a11y audit remains future |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |
@@ -129,6 +143,8 @@ not count static tests as browser or end-to-end proof.
 - Practice interrupted resume is not browser-proven.
 - Repeated-wrong anti-tilt is statically guarded, not browser-proven.
 - Engine missing/path invalid settings UX remains partial; analysis stall recovery is covered.
+- Mobile/responsive basics are browser-proven at 390x844, but real device
+  manual QA and full WCAG accessibility certification remain open.
 - SkillTrace shadow coverage is still absent because that capability is not
   implemented.
 - No registry-vs-code checker.

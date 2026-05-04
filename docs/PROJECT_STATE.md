@@ -98,6 +98,34 @@ et les fichiers frontend/backend inspectes.
   quatrieme tab de navigation.
 - Prochaine mission recommandee: `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`.
 
+## Mise a jour Mobile / Accessibilite V1 du 2026-05-05
+
+- `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` ajoute une preuve V1 minimum sans
+  redesign global.
+- `frontend/src/styles.css` a des overrides finaux pour le viewport mobile:
+  nav principale compacte en 3 entrees, layout Review en une colonne, board
+  visible sans overflow, actions Practice/Exploration/StateNotice/Profile
+  atteignables, historique PGN sans largeur fixe, et touch targets critiques a
+  environ 44px.
+- `frontend/src/components/ChessBoardPanel.tsx` rend le board focusable quand il
+  est interactif et ajuste sa largeur a `window.innerWidth - 32` sur mobile,
+  avec minimum 260px.
+- `scripts/browser_test_helpers.mjs` ajoute des helpers de smoke pour viewport
+  mobile, detection d'overflow horizontal, touches clavier et snapshot de focus.
+- Nouveaux smokes:
+  - `scripts/browser_mobile_responsive_smoke.mjs`
+  - `scripts/browser_keyboard_accessibility_smoke.mjs`
+- Resultats connus:
+  - Mobile smoke PASS a 390x844: no horizontal overflow, Review board 358px,
+    Review exploration move `d4c5`, Review Practice attempt `best`, Daily Plan
+    Practice attempt `best`, Training exactement 3 entrees, Profile/Privacy
+    visible, aucun label V1 interdit.
+  - Keyboard/a11y smoke PASS: focus visible pour nav, Importer PGN, textarea
+    PGN, board Practice, Indice, Voir la correction, Passer, Profile/Settings,
+    presence de `prefers-reduced-motion`, aucune network 500.
+- Ce n'est pas une certification WCAG complete ni une QA physique multi-device.
+- Prochaine mission recommandee: `P1.I18N-STRINGS-CATALOG-V1`.
+
 ## P1.TRAINING-ITEMS-DAILY-PLAN-V1
 
 Etat : implemente le 2026-05-04, validations finales PASS.
