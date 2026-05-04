@@ -1,6 +1,6 @@
 # QA Checklist
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1`
 Date: 2026-05-04
 
 ## Baseline
@@ -56,6 +56,9 @@ Date: 2026-05-04
 - [x] Browser Profile/Privacy smoke validates top-right panel, export JSON,
   typed delete confirmation, confirmed local-data deletion in a temp DB, and
   Plan2 nav integrity.
+- [x] Browser Daily Plan smoke validates temp DB seed, Review done,
+  `training_items`, Daily Plan creation, Training Plan du jour CTA, Practice
+  from plan, attempt with `item_id=training_item:{id}`, and `due_at`.
 - [ ] Browser invalid PGN state not validated.
 - [ ] Mobile/responsive not validated.
 
@@ -76,8 +79,8 @@ Date: 2026-05-04
 - [x] App shell browser smoke passes for the minimal V1 loop.
 - [x] Automated browser E2E smoke exists for the minimal V1 loop.
 - [x] Privacy/export/delete implemented and browser-smoked in isolated temp DB.
-- [ ] Deterministic backend Daily Plan missing.
-- [ ] Durable `training_items` missing.
+- [x] Deterministic backend Daily Plan implemented and browser-smoked.
+- [x] Durable `training_items` implemented and exported/deleted.
 - [ ] SkillTrace shadow missing.
 - [ ] Centralized French strings missing.
 - [ ] Strict Stockfish cache proof incomplete.
@@ -94,5 +97,6 @@ Date: 2026-05-04
 ## Decision
 
 - Alpha: usable internally with strong backend evidence.
-- External V1: NO-GO until deterministic Daily Plan, durable training items,
-  SkillTrace shadow, degraded states, and release hardening are handled.
+- External V1: NO-GO until SkillTrace shadow, degraded states, centralized
+  French strings, mobile/responsive checks, drag/drop Practice proof, and
+  release hardening are handled.

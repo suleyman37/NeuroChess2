@@ -3,6 +3,7 @@ import type { CSSProperties, ChangeEvent } from "react";
 import { Chess } from "chess.js";
 import {
   createGame,
+  createDailyPlan,
   classifyGameOpening,
   finishGame,
   getAnalysisByFen,
@@ -15,6 +16,7 @@ import {
   getGameMoves,
   getGameOpening,
   getReview,
+  getDailyPlanToday,
   getReviewPracticeSession,
   getReviewPracticeSessions,
   importPgnGames,
@@ -29,11 +31,13 @@ import {
   reconcileReviewJob,
   startReviewJob,
   startDueReviewPracticeSession,
+  startDailyPlanPracticeSession,
   startReviewPracticeSession,
   startLiveAnalysis,
   stopLiveAnalysis,
   type AnalysisByFen,
   type BoardEvaluationContext,
+  type DailyPlanResponse,
   type Evaluation,
   type EvaluationSource,
   type GameHistoryItem,
@@ -97,7 +101,13 @@ import {
 type BusyState = "idle" | "new-game" | "move" | "finish" | "load-game";
 type PositionMode = "LIVE" | "HISTORICAL" | "REVIEW";
 type AppShellPage = "today" | "games" | "training";
-type TodayHeroAction = "review" | "practice" | "revision" | "import" | "wait";
+type TodayHeroAction =
+  | "daily_plan"
+  | "review"
+  | "practice"
+  | "revision"
+  | "import"
+  | "wait";
 type ActiveTab = "moves" | "review" | "import" | "history" | "info";
 type HistoryScope = "mine" | "imported" | "local" | "ai" | "observed" | "all";
 
@@ -361,6 +371,9 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     useState(false);
   const [reviewPracticeHistoryError, setReviewPracticeHistoryError] =
     useState<string | null>(null);
+  const [dailyPlan, setDailyPlan] = useState<DailyPlanResponse | null>(null);
+  const [dailyPlanLoading, setDailyPlanLoading] = useState(false);
+  const [dailyPlanError, setDailyPlanError] = useState<string | null>(null);
   const [guidedPvIndex, setGuidedPvIndex] = useState<number | null>(null);
   const [reviewPvLineState, setReviewPvLineState] =
     useState<ReviewPvLineState | null>(null);
@@ -518,6 +531,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   const reviewUiError = reviewUiState.error ?? reviewError;
   const reviewTabVisible =
     canRequestReview || review !== null || reviewUiBusy || reviewUiError !== null;
+  const reviewPanelVisible = reviewTabVisible || reviewPracticeState?.active === true;
   const infoTabVisible = import.meta.env.DEV;
   const reviewHalfMovesCount = moveHistory?.moves.length ?? moves.length;
   const currentGameIsShortForReview =
@@ -643,6 +657,20 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     review?.status,
     review?.completed_position_count,
   ]);
+
+  useEffect(() => {
+    if (activeShellPage === "today" || activeShellPage === "training") {
+      const canCreatePlan =
+        reviewIsCompletedForPractice(review) ||
+        review?.status === "done" ||
+        review?.status === "completed";
+      if (canCreatePlan) {
+        void createOrRefreshDailyPlan();
+        return;
+      }
+      void loadDailyPlan();
+    }
+  }, [activeShellPage, review?.status, review?.completed_position_count]);
 
   useEffect(() => {
     resetSolutionReveal("game_changed");
@@ -774,13 +802,13 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   ]);
 
   useEffect(() => {
-    if (activeTab === "review" && !reviewTabVisible) {
+    if (activeTab === "review" && !reviewPanelVisible) {
       setActiveTab("moves");
     }
     if (activeTab === "info" && !infoTabVisible) {
       setActiveTab("moves");
     }
-  }, [activeTab, infoTabVisible, reviewTabVisible]);
+  }, [activeTab, infoTabVisible, reviewPanelVisible]);
 
   useEffect(() => {
     if (positionMode === "HISTORICAL" && viewedFen && viewedFen !== currentFen) {
@@ -2025,6 +2053,8 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     setReviewPracticeState(null);
     setReviewPracticeHistory([]);
     setReviewPracticeLearningSummary(null);
+    setDailyPlan(null);
+    setDailyPlanError(null);
     setSelectedHistoryGame(null);
     setHistoryItems([]);
     setPgnPreview(null);
@@ -3000,6 +3030,34 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     }
   }
 
+  async function loadDailyPlan() {
+    setDailyPlanLoading(true);
+    setDailyPlanError(null);
+    try {
+      const payload = await getDailyPlanToday();
+      setDailyPlan(payload);
+    } catch (err) {
+      setDailyPlanError(messageFromError(err));
+    } finally {
+      setDailyPlanLoading(false);
+    }
+  }
+
+  async function createOrRefreshDailyPlan() {
+    setDailyPlanLoading(true);
+    setDailyPlanError(null);
+    try {
+      const payload = await createDailyPlan({ maxItems: 6 });
+      setDailyPlan(payload);
+      return payload;
+    } catch (err) {
+      setDailyPlanError(messageFromError(err));
+      throw err;
+    } finally {
+      setDailyPlanLoading(false);
+    }
+  }
+
   function practiceStateFromSession(
     session: {
       session_id: number | string;
@@ -3158,7 +3216,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         timeSpentMs: practiceTimeSpentMs(state),
         hintUsed: state.hintVisible,
         revealUsed: state.solutionRevealed,
-        sourceContext: "review_practice",
+        sourceContext: item.source_context ?? "review_practice",
       });
       const feedback = summary.attempt_feedback ?? null;
       setReviewPracticeState((current) =>
@@ -3172,6 +3230,9 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             }
           : current,
       );
+      if (item.source_context === "daily_plan") {
+        void loadDailyPlan();
+      }
     } catch (err) {
       setReviewPracticeState((current) =>
         current
@@ -3256,11 +3317,14 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         timeSpentMs: practiceTimeSpentMs(state),
         hintUsed: state.hintVisible,
         revealUsed: true,
-        sourceContext: "review_practice",
+        sourceContext: item.source_context ?? "review_practice",
       });
       setReviewPracticeState((current) =>
         current ? { ...current, summary, saving: false } : current,
       );
+      if (item.source_context === "daily_plan") {
+        void loadDailyPlan();
+      }
     } catch (err) {
       setReviewPracticeState((current) =>
         current
@@ -3388,6 +3452,32 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       void loadReviewPracticeHistory(gameId);
     } catch (err) {
       setReviewError(messageFromError(err));
+    }
+  }
+
+  async function startDailyPlanPractice() {
+    setDailyPlanLoading(true);
+    setDailyPlanError(null);
+    try {
+      const plan = dailyPlan?.item_count ? dailyPlan : await createOrRefreshDailyPlan();
+      if (!plan.item_count) {
+        setDailyPlan(plan);
+        return;
+      }
+      const planSession = await startDailyPlanPracticeSession({ maxItems: 6 });
+      if (planSession.daily_plan) {
+        setDailyPlan(planSession.daily_plan);
+      }
+      await startPracticeFromSession(planSession, "running");
+      if (gameId) {
+        void loadReviewPracticeHistory(gameId);
+      }
+    } catch (err) {
+      const message = messageFromError(err);
+      setDailyPlanError(message);
+      setReviewError(message);
+    } finally {
+      setDailyPlanLoading(false);
     }
   }
 
@@ -3967,8 +4057,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             ? "Analyse disponible"
             : "Prêt";
 
-  const reviewContextAvailable =
-    reviewTabVisible || reviewPracticeState?.active === true;
+  const reviewContextAvailable = reviewPanelVisible;
   const practiceAvailable = reviewIsCompletedForPractice(review);
   const reviewReady =
     review?.status === "done" || review?.status === "completed";
@@ -4019,24 +4108,40 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       : practiceAvailable
         ? review?.moments.length ?? 0
         : 0;
+  const dailyPlanItemCount = dailyPlan?.item_count ?? 0;
+  const dailyPlanAvailable = dailyPlanItemCount > 0;
+  const dailyPlanEstimatedMinutes = dailyPlan?.estimated_minutes ?? dailyPlanItemCount * 2;
   const trainingPrimaryLabel = reviewPracticeState?.active
     ? "Reprendre"
+    : dailyPlanLoading
+      ? "Chargement"
+    : dailyPlanAvailable
+      ? "Commencer"
+    : practiceAvailable || reviewReady
+      ? "Créer le plan du jour"
     : learningDueCount > 0
       ? "Réviser"
-    : practiceAvailable
-      ? "Commencer"
       : reviewAnalysisInProgress
         ? "Analyse en cours"
         : reviewContextAvailable
           ? "Voir la Review"
           : "Importer une partie";
-  const trainingPrimaryDisabled = reviewAnalysisInProgress && !reviewContextAvailable;
+  const trainingPrimaryDisabled =
+    dailyPlanLoading || (reviewAnalysisInProgress && !reviewContextAvailable);
   const trainingPlanStatus = reviewPracticeState?.active
     ? "Session Practice en cours"
+    : dailyPlanLoading
+      ? "chargement..."
+    : dailyPlanAvailable
+      ? `${dailyPlanItemCount} position${dailyPlanItemCount > 1 ? "s" : ""} · ${dailyPlanEstimatedMinutes} minutes`
+    : dailyPlanError
+      ? "plan indisponible"
+    : dailyPlan?.status === "empty"
+      ? "profil en construction"
+    : practiceAvailable || reviewReady
+      ? "plan prêt à créer"
     : learningDueCount > 0
       ? `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} à consolider`
-    : practiceAvailable
-      ? `${availablePracticePositionCount} position${availablePracticePositionCount > 1 ? "s" : ""} prête${availablePracticePositionCount > 1 ? "s" : ""}`
       : reviewAnalysisInProgress
         ? "Analyse en cours"
         : reviewContextAvailable
@@ -4044,10 +4149,18 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
           : "profil en construction";
   const trainingPlanDetail = reviewPracticeState?.active
     ? "Reprends la session en cours avant de changer de tâche."
+    : dailyPlanLoading
+      ? "Le backend vérifie les positions durables disponibles."
+    : dailyPlanAvailable
+      ? "Plan déterministe construit depuis tes positions dues, ratées et critiques."
+    : dailyPlanError
+      ? dailyPlanError
+    : dailyPlan?.status === "empty"
+      ? dailyPlan.message
+    : practiceAvailable || reviewReady
+      ? "Crée une session courte depuis les positions durables de la Review."
     : learningDueCount > 0
       ? "Commence par les positions qui reviennent aujourd'hui."
-    : practiceAvailable
-      ? "Commence une session courte depuis les positions de la Review."
       : reviewAnalysisInProgress
         ? "Le plan du jour apparaîtra quand la Review sera stabilisée."
         : reviewContextAvailable
@@ -4098,14 +4211,13 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         label: "Reprendre Practice",
         action: "practice",
       }
-    : learningDueCount > 0
+    : dailyPlanAvailable
       ? {
-          kicker: "Révisions prêtes",
-          title: `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} à consolider`,
-          detail:
-            "Commence par les positions qui reviennent aujourd'hui, puis poursuis la Review si besoin.",
-          label: "Réviser",
-          action: "revision",
+          kicker: "Plan du jour",
+          title: `Aujourd'hui - ${dailyPlanEstimatedMinutes} minutes`,
+          detail: `${dailyPlanItemCount} position${dailyPlanItemCount > 1 ? "s" : ""} issue${dailyPlanItemCount > 1 ? "s" : ""} des moments durables. Commence par ce qui compte maintenant.`,
+          label: "Commencer",
+          action: "daily_plan",
         }
     : reviewReady
       ? {
@@ -4126,6 +4238,15 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             action: "wait",
             disabled: true,
           }
+        : learningDueCount > 0
+          ? {
+              kicker: "Révisions prêtes",
+              title: `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} à consolider`,
+              detail:
+                "Commence par les positions qui reviennent aujourd'hui, puis poursuis la Review si besoin.",
+              label: "Réviser",
+              action: "revision",
+            }
         : gameId && canRequestReview
           ? {
               kicker: "Partie prête",
@@ -4159,16 +4280,23 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       : "profil en construction";
   const reviewQueueText = reviewPracticeState?.active
     ? "Session Practice en cours"
-    : learningDueCount > 0
-      ? `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} prête${learningDueCount > 1 ? "s" : ""} à consolider`
-      : learningScheduledCount > 0
-        ? `${learningScheduledCount} position${learningScheduledCount > 1 ? "s" : ""} ${learningScheduledCount > 1 ? "reviendront" : "reviendra"} au bon moment`
-    : availablePracticePositionCount > 0
-      ? `${availablePracticePositionCount} position${availablePracticePositionCount > 1 ? "s" : ""} issue${availablePracticePositionCount > 1 ? "s" : ""} de la Review`
-      : "profil en construction";
+    : dailyPlanAvailable
+      ? `${dailyPlanItemCount} position${dailyPlanItemCount > 1 ? "s" : ""} dans le plan du jour`
+      : learningDueCount > 0
+        ? `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} prête${learningDueCount > 1 ? "s" : ""} à consolider`
+        : learningScheduledCount > 0
+          ? `${learningScheduledCount} position${learningScheduledCount > 1 ? "s" : ""} ${learningScheduledCount > 1 ? "reviendront" : "reviendra"} au bon moment`
+      : availablePracticePositionCount > 0
+        ? `${availablePracticePositionCount} position${availablePracticePositionCount > 1 ? "s" : ""} issue${availablePracticePositionCount > 1 ? "s" : ""} de la Review`
+        : "profil en construction";
 
   function handleTodayPrimaryAction() {
     if (todayHero.action === "wait") {
+      return;
+    }
+    if (todayHero.action === "daily_plan") {
+      setReviewFocusKey("practice");
+      void startDailyPlanPractice();
       return;
     }
     if (todayHero.action === "practice") {
@@ -4198,16 +4326,15 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       setReviewFocusKey("practice");
       return;
     }
+    if (dailyPlanAvailable || practiceAvailable || reviewReady || dailyPlan?.status === "empty") {
+      setReviewFocusKey("practice");
+      void startDailyPlanPractice();
+      return;
+    }
     if (learningDueCount > 0) {
       openReviewContext("training");
       setReviewFocusKey("practice");
       void startDueReviewPractice();
-      return;
-    }
-    if (practiceAvailable) {
-      openReviewContext("training");
-      setReviewFocusKey("practice");
-      void handleStartReviewPractice();
       return;
     }
     if (reviewContextAvailable) {
@@ -4223,17 +4350,19 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       setReviewFocusKey("practice");
       return;
     }
+    const targetSessionId = failedPracticeSessionId ?? latestPracticeSessionId;
+    if (!targetSessionId) {
+      return;
+    }
     if (failedPracticeSessionId) {
       openReviewContext("training");
       setReviewFocusKey("practice");
       void retryFailedPracticeSession(failedPracticeSessionId);
       return;
     }
-    if (latestPracticeSessionId) {
-      openReviewContext("training");
-      setReviewFocusKey("practice");
-      void viewPracticeSessionSummary(latestPracticeSessionId);
-    }
+    openReviewContext("training");
+    setReviewFocusKey("practice");
+    void viewPracticeSessionSummary(targetSessionId);
   }
 
   function handleTrainingRevisionsAction() {
@@ -4785,7 +4914,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             />
           </section>
 
-          {reviewTabVisible && (
+          {reviewPanelVisible && (
             <section
               id="panel-review"
               role="tabpanel"

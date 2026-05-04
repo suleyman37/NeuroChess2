@@ -72,6 +72,7 @@ class ProfilePrivacyApiTests(unittest.TestCase):
             "review_jobs",
             "review_summaries",
             "review_moments",
+            "training_items",
             "practice_sessions",
             "practice_session_items",
             "practice_attempts",

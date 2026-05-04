@@ -1,6 +1,6 @@
 # Test Coverage Matrix
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1`
 Date: 2026-05-04
 
 This matrix lists available automated tests, scripts, and smoke checks. It does
@@ -9,7 +9,7 @@ not count static tests as browser or end-to-end proof.
 ## Latest Run Summary
 
 - `tools/plan_guard.py`: PASS.
-- Backend full suite: PASS, 470 tests.
+- Backend full suite: PASS, 476 tests.
 - `scripts/review_regression_smoke.py`: PASS.
 - `scripts/pgn_import_smoke.py`: PASS.
 - `scripts/pgn_sindarov_real_flow_smoke.py`: PASS.
@@ -25,6 +25,12 @@ not count static tests as browser or end-to-end proof.
   top-right profile panel, export JSON, non-destructive first delete click,
   typed delete confirmation, cleared local data, Plan2 nav integrity, and no
   forbidden V1 labels.
+- Daily Plan browser smoke: PASS via
+  `cmd /c node scripts\browser_daily_plan_smoke.mjs`.
+  The script uses an isolated temp backend DB, fake engine, API PGN seed, Vite,
+  and Edge CDP to prove durable `training_items`, deterministic Daily Plan,
+  Training Plan du jour CTA, Practice from Daily Plan, recorded reveal attempt,
+  `due_at`, export coverage, and no forbidden V1 labels.
 
 ## Matrix
 
@@ -54,6 +60,7 @@ not count static tests as browser or end-to-end proof.
 | `backend/tests/test_pedagogical_explanations.py` | unit | Pedagogy | Explanation generation | Browser copy/lesson flow | PASS in full suite | medium | Browser lesson smoke |
 | `backend/tests/test_pgn_import_service.py` | unit/API | PGN import | Preview/import/dedup/invalid PGN/API with TestClient | Browser form | PASS in full suite | high | Browser invalid/duplicate PGN smoke |
 | `backend/tests/test_profile_privacy.py` | API/integration | Profile/Privacy | Export empty/data, `pgn_raw`, delete confirmation, idempotent delete, no Stockfish/analysis dependency | Browser download behavior | PASS targeted | high | Keep temp DB isolation |
+| `backend/tests/test_training_items_daily_plan.py` | integration/API/static | Training Items / Daily Plan V1 | `training_items` migration/generation/idempotency, max 5 per Review, accepted moves, deterministic Daily Plan, due/failed/recent/diversity buckets, Daily Plan Practice attempt, export/delete coverage, no SkillTrace influence | Rich multi-game user history and real-engine browser variety | PASS targeted | high | Add richer corpus fixture later |
 | `backend/tests/test_pgn_sindarov_real_file.py` | integration | Real PGN file | Sindarov real PGN import/review job start | Browser | PASS in full suite | high | Keep fixture stable |
 | `backend/tests/test_pv_contrast_evidence.py` | unit | PV evidence | PV contrast structures | Browser PV disclosure | PASS in full suite | medium | Explorer browser smoke |
 | `backend/tests/test_rating_math.py` | unit | Math helpers | Rating/math utilities | Product flows | PASS in full suite | medium | None immediate |
@@ -75,6 +82,7 @@ not count static tests as browser or end-to-end proof.
 | `scripts/pgn_sindarov_real_flow_smoke.py` | smoke | Real PGN flow | 14 Sindarov games, import/open/replay/review start | Browser Review/Practice | PASS | high | Browser E2E with one fixture |
 | `scripts/browser_v1_flow_smoke.mjs` | browser smoke | V1 user loop | `/app`, Plan2 nav, Training 3 entries, PGN import UI, Review ready, Summary visible, Practice start, reveal attempt, `due_at`, learning summary scheduled signal, forbidden labels absent | Correct drag/drop move attempt, invalid PGN, mobile/responsive | PASS | high | Extend later for invalid/degraded/mobile states |
 | `scripts/browser_profile_privacy_smoke.mjs` | browser smoke | Profile/Privacy | `/app`, Plan2 nav exactly 3 entries, top-right Profile panel, export JSON with `pgn_raw`, first delete click preserves data, typed `SUPPRIMER`, confirmed delete clears temp local data, forbidden labels absent | Real user DB, browser download file contents beyond API payload, mobile/responsive | PASS | high | Keep port range within backend CORS regex |
+| `scripts/browser_daily_plan_smoke.mjs` | browser smoke | Training Items / Daily Plan V1 | Temp DB API seed, fake-engine Review, `training_items_available`, Daily Plan create, export includes new tables, Training 3 entries, Plan du jour Practice, reveal attempt stored as `training_item:{id}`, `due_at`, forbidden labels absent | Rich 5-6 item day, drag/drop move attempt, mobile/responsive | PASS | high | Add richer history fixture later |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |
@@ -83,7 +91,7 @@ not count static tests as browser or end-to-end proof.
 ## Coverage Gaps
 
 - No browser invalid-PGN/degraded-state smoke.
-- No backend `training_items`, deterministic `Daily Plan`, or SkillTrace shadow
-  coverage because those capabilities are not implemented.
+- SkillTrace shadow coverage is still absent because that capability is not
+  implemented.
 - No registry-vs-code checker.
 - No `npm run lint` or `npm run typecheck` script; build does include `tsc`.

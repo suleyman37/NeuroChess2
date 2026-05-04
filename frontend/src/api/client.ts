@@ -436,6 +436,9 @@ export type ReviewPracticeResult =
   | string;
 
 export type ReviewPracticeItem = {
+  item_id?: string | null;
+  training_item_id?: number | null;
+  source_context?: string | null;
   game_id?: number | null;
   ply: number;
   move_number: number | null;
@@ -581,6 +584,32 @@ export type ReviewPracticeLearningSummary = {
   next_due_at?: string | null;
 };
 
+export type DailyPlanItem = {
+  plan_item_id: number;
+  item_id: number;
+  order_index: number;
+  source_bucket: "due" | "failed_recent" | "recent_critical" | "diversity_fill" | string;
+  selection_reason: string;
+  source_game_id?: number | null;
+  source_ply?: number | null;
+  primary_tag?: string | null;
+  domain?: string | null;
+  created_at?: string | null;
+};
+
+export type DailyPlanResponse = {
+  schema_version: string;
+  user_id: string;
+  plan_date: string;
+  status: "ready" | "partial" | "empty" | string;
+  item_count: number;
+  target_item_count: number;
+  estimated_minutes: number;
+  empty_reason?: string | null;
+  message: string;
+  items: DailyPlanItem[];
+};
+
 export type ReviewResponse = {
   game_id: number;
   status:
@@ -661,6 +690,7 @@ export type ReviewResponse = {
   headline_score_subject?: "user" | "white" | "black" | string | null;
   headline_score_formula_version?: string | null;
   review_summary_sentence?: string | null;
+  training_items_available?: number | null;
   score_availability?: ReviewScoreAvailability | null;
   review_score_deprecated?: boolean;
   review_score_alias_of?: "lichess_like_accuracy" | string | null;
@@ -1139,6 +1169,7 @@ export type UserDataExport = {
   review_jobs: Array<Record<string, unknown>>;
   review_summaries: Array<Record<string, unknown>>;
   review_moments: Array<Record<string, unknown>>;
+  training_items: Array<Record<string, unknown>>;
   practice_sessions: Array<Record<string, unknown>>;
   practice_session_items: Array<Record<string, unknown>>;
   practice_attempts: Array<Record<string, unknown>>;
@@ -1161,6 +1192,7 @@ export type UserDataDeleteSummary = {
   review_jobs_deleted: number;
   review_summaries_deleted: number;
   review_moments_deleted: number;
+  training_items_deleted: number;
   practice_sessions_deleted: number;
   practice_attempts_deleted: number;
   due_items_deleted: number;
@@ -1216,6 +1248,43 @@ export function deleteUserData(confirm: string): Promise<UserDataDeleteSummary> 
   return request<UserDataDeleteSummary>(`/api/user-data?${params.toString()}`, {
     method: "DELETE",
   });
+}
+
+export function getDailyPlanToday(): Promise<DailyPlanResponse> {
+  return request<DailyPlanResponse>("/api/training/daily-plan/today");
+}
+
+export function createDailyPlan(
+  options: {
+    maxItems?: number;
+    durationPreference?: string | null;
+  } = {},
+): Promise<DailyPlanResponse> {
+  return request<DailyPlanResponse>("/api/training/daily-plan", {
+    method: "POST",
+    body: JSON.stringify({
+      max_items: options.maxItems ?? 6,
+      duration_preference: options.durationPreference ?? null,
+    }),
+  });
+}
+
+export function startDailyPlanPracticeSession(
+  options: {
+    maxItems?: number;
+    durationPreference?: string | null;
+  } = {},
+): Promise<ReviewPracticeSessionResponse & { daily_plan?: DailyPlanResponse }> {
+  return request<ReviewPracticeSessionResponse & { daily_plan?: DailyPlanResponse }>(
+    "/api/training/daily-plan/practice",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        max_items: options.maxItems ?? 6,
+        duration_preference: options.durationPreference ?? null,
+      }),
+    },
+  );
 }
 
 export function createGame(): Promise<GameState> {

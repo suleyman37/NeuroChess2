@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from neurochess.analysis_service import AnalysisService, InvalidFenError
 from neurochess.api.schemas import (
     CreateGameRequest,
+    DailyPlanRequest,
     FinishGameRequest,
     GameStateResponse,
     PlayMoveRequest,
@@ -31,6 +32,7 @@ from neurochess.live_analysis_service import (
     LiveAnalysisService,
     get_default_live_analysis_service,
 )
+from neurochess.daily_plan_service import DailyPlanService
 from neurochess.opening_service import OpeningService, OpeningServiceError
 from neurochess.pgn_import_service import PgnImportService
 from neurochess.privacy_service import UserDataConfirmationError, UserDataService
@@ -40,6 +42,7 @@ from neurochess.review_practice_service import (
     ReviewPracticeServiceError,
 )
 from neurochess.review_service import ReviewService, ReviewServiceError
+from neurochess.training_item_service import TrainingItemService
 
 
 ACTIVE_SESSIONS: dict[int, GameSession] = {}
@@ -120,6 +123,33 @@ def get_user_data_service(
     repository: Repository = Depends(get_repository),
 ) -> UserDataService:
     return UserDataService(repository.db_path)
+
+
+def get_training_item_service(
+    repository: Repository = Depends(get_repository),
+) -> TrainingItemService:
+    return TrainingItemService(repository.db_path)
+
+
+def get_daily_plan_service(
+    repository: Repository = Depends(get_repository),
+) -> DailyPlanService:
+    return DailyPlanService(repository.db_path)
+
+
+def _ensure_training_items_for_review_payload(
+    game_id: int,
+    payload: dict[str, Any],
+    training_item_service: TrainingItemService,
+) -> dict[str, Any]:
+    if payload.get("status") in {"done", "completed", "partial"}:
+        training_items = training_item_service.ensure_training_items_for_game(
+            game_id,
+            review_payload=payload,
+        )
+        payload = dict(payload)
+        payload["training_items_available"] = len(training_items)
+    return payload
 
 
 @router.get("/health")
@@ -389,6 +419,7 @@ def generate_game_review(
     force_retry_failed: bool = Query(False),
     profile: str = Query("standard"),
     review_service: ReviewService = Depends(get_review_service),
+    training_item_service: TrainingItemService = Depends(get_training_item_service),
     analysis_service: AnalysisService = Depends(get_analysis_service),
     live_analysis_service: LiveAnalysisService = Depends(get_live_analysis_service),
 ) -> Any:
@@ -412,7 +443,11 @@ def generate_game_review(
         )
         return JSONResponse(status_code=202, content=payload)
 
-    return payload
+    return _ensure_training_items_for_review_payload(
+        game_id,
+        payload,
+        training_item_service,
+    )
 
 
 @router.post("/games/{game_id}/review/jobs")
@@ -498,9 +533,15 @@ def get_game_review(
     game_id: int,
     profile: str = Query("standard"),
     review_service: ReviewService = Depends(get_review_service),
+    training_item_service: TrainingItemService = Depends(get_training_item_service),
 ) -> dict[str, Any]:
     try:
-        return review_service.get_review(game_id, profile=profile)
+        payload = review_service.get_review(game_id, profile=profile)
+        return _ensure_training_items_for_review_payload(
+            game_id,
+            payload,
+            training_item_service,
+        )
     except ReviewServiceError as exc:
         if exc.payload is not None:
             return JSONResponse(status_code=exc.status_code, content=exc.payload)
@@ -512,15 +553,63 @@ def rebuild_game_review_metrics(
     game_id: int,
     profile: str = Query("standard"),
     review_service: ReviewService = Depends(get_review_service),
+    training_item_service: TrainingItemService = Depends(get_training_item_service),
 ) -> dict[str, Any]:
     try:
-        return review_service.rebuild_review_metrics_from_cached_analyses(
+        payload = review_service.rebuild_review_metrics_from_cached_analyses(
             game_id,
             profile=profile,
+        )
+        return _ensure_training_items_for_review_payload(
+            game_id,
+            payload,
+            training_item_service,
         )
     except ReviewServiceError as exc:
         if exc.payload is not None:
             return JSONResponse(status_code=exc.status_code, content=exc.payload)
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+
+@router.get("/api/training/daily-plan/today")
+def get_daily_plan_today(
+    daily_plan_service: DailyPlanService = Depends(get_daily_plan_service),
+) -> dict[str, Any]:
+    return daily_plan_service.get_today_plan()
+
+
+@router.post("/api/training/daily-plan")
+def create_daily_plan(
+    request: DailyPlanRequest,
+    daily_plan_service: DailyPlanService = Depends(get_daily_plan_service),
+) -> dict[str, Any]:
+    return daily_plan_service.create_or_get_today_plan(
+        max_items=request.max_items or 6,
+        duration_preference=request.duration_preference,
+    )
+
+
+@router.post("/api/training/daily-plan/practice")
+def start_daily_plan_practice_session(
+    request: DailyPlanRequest,
+    daily_plan_service: DailyPlanService = Depends(get_daily_plan_service),
+    practice_service: ReviewPracticeService = Depends(get_review_practice_service),
+) -> Any:
+    items, plan = daily_plan_service.create_plan_practice_items(
+        max_items=request.max_items or 6,
+    )
+    try:
+        session = practice_service.create_session_from_training_items(
+            items,
+            scope="daily_plan",
+        )
+        session["daily_plan"] = plan
+        return session
+    except ReviewPracticeServiceError as exc:
+        if exc.payload is not None:
+            payload = dict(exc.payload)
+            payload["daily_plan"] = plan
+            return JSONResponse(status_code=exc.status_code, content=payload)
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
 
 

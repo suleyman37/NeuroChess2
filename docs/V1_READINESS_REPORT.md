@@ -1,26 +1,29 @@
 # V1 Readiness Report
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1`
 Date: 2026-05-04
 
 ## 1. Resume executif
 
-- Alpha utilisable estimee: 88%.
-- V1 reelle estimee: 70%.
+- Alpha utilisable estimee: 90%.
+- V1 reelle estimee: 78%.
 - Decision premiers utilisateurs externes: NO-GO.
 
 NeuroChess a maintenant une preuve browser automatisee du flow V1 minimal :
 `/app -> navigation Plan2 -> import PGN UI -> Review prete -> Summary ->
 Practice -> attempt reveal -> due_at/learning_summary scheduled signal`.
-Le minimum Profile/Settings/Privacy est maintenant browser-proven avec export
-JSON et suppression locale confirmee. La V1 externe reste NO-GO car Daily Plan
-deterministe backend manque, `training_items` durable manque, SkillTrace shadow
-manque, et les etats degrades ne sont pas assez prouves en UI reelle.
+Le minimum Profile/Settings/Privacy est browser-proven avec export JSON et
+suppression locale confirmee. Le backend a maintenant des `training_items`
+durables et un Daily Plan deterministe, avec Practice lancee depuis
+`Plan du jour` en browser smoke. La V1 externe reste NO-GO car SkillTrace
+shadow manque, les etats degrades ne sont pas assez prouves en UI reelle, les
+strings francaises ne sont pas centralisees, et le browser ne prouve pas encore
+drag/drop, mobile/responsive et cas d'erreur.
 
 ## 2. Valide automatiquement
 
 - Plan guard: PASS.
-- Backend full suite: PASS, 470 tests.
+- Backend full suite: PASS, 476 tests.
 - Review regression smoke: PASS.
 - PGN import smoke: PASS.
 - Sindarov real-flow smoke: PASS.
@@ -34,6 +37,10 @@ manque, et les etats degrades ne sont pas assez prouves en UI reelle.
   `backend.tests.test_frontend_profile_privacy_static`.
 - Browser profile/privacy smoke: PASS via
   `cmd /c node scripts\browser_profile_privacy_smoke.mjs`.
+- Training Items / Daily Plan backend tests: PASS via
+  `backend.tests.test_training_items_daily_plan`.
+- Browser Daily Plan smoke: PASS via
+  `cmd /c node scripts\browser_daily_plan_smoke.mjs`.
 - Learning Loop V1 service: attempt fields, due rules, due session, no-due
   summary all covered by backend tests.
 - Training V1 static guard: exactly 3 entries and no forbidden labels.
@@ -58,12 +65,17 @@ manque, et les etats degrades ne sont pas assez prouves en UI reelle.
   nav remains exactly `Aujourd'hui`, `Mes parties`, `Entrainement`, exports JSON
   with `pgn_raw`, verifies the first delete click preserves data, requires
   typed `SUPPRIMER`, then clears local game/history/export data in a temp DB.
+- Daily Plan browser smoke seeds a PGN through the API, completes Review with
+  fake engine, materializes `training_items_available=1`, creates a real
+  partial Daily Plan, opens Training, starts `Plan du jour` Practice, records a
+  `revealed` attempt as `item_id=training_item:1`, and stores `due_at` J+1.
 
 ## 4. Existe mais pas valide en browser
 
 - Correct drag/drop Practice move attempt in browser.
 - Practice hint, skip, summary, retry failed in browser.
-- Due review browser flow from Training/Revisions.
+- Rich 5-6 item Daily Plan browser fixture across several games/tags.
+- Due review browser flow from Training/Revisions outside the Daily Plan path.
 - Invalid PGN UI error state.
 - Slow/stalled analysis UI state.
 - Backend unavailable UI state.
@@ -71,10 +83,10 @@ manque, et les etats degrades ne sont pas assez prouves en UI reelle.
 
 ## 5. Partiel
 
-- Aujourd'hui uses real local signals, but not a backend deterministic Daily
-  Plan.
-- Entrainement uses Practice/session signals, but Daily Plan is not a durable
-  Plan3 service.
+- Aujourd'hui uses real local signals and can prioritize backend Daily Plan, but
+  not every priority branch is browser-proven.
+- Entrainement uses the durable backend Daily Plan for `Plan du jour`; richer
+  multi-item variety still depends on more user history.
 - Review is contextual and the ready Review Summary is browser-proven; broader
   lesson/explorer paths remain partial.
 - Compact progress and due counts are based on real Practice counters, but only
@@ -98,7 +110,7 @@ manque, et les etats degrades ne sont pas assez prouves en UI reelle.
 ## 7. Gaps Plan1
 
 - SkillTrace Beta shadow is missing.
-- `training_items` durable model is missing.
+- `training_items` durable model is implemented for Review-derived moments.
 - Transfer validation is future/not implemented.
 - Real FSRS remains future; current implementation is correctly named
   `simple_spaced_repetition_v1`.
@@ -118,13 +130,13 @@ manque, et les etats degrades ne sont pas assez prouves en UI reelle.
 
 ## 9. Gaps Plan3
 
-- No durable `training_items`.
-- No backend deterministic `Daily Plan`.
+- Durable `training_items` implemented for V1 Review moments.
+- Backend deterministic `Daily Plan` implemented and browser-smoked.
 - No SkillTrace shadow.
 - No centralized French strings.
 - No strict cache policy proof matching all Plan3 conditions.
-- Automated browser smokes exist for the minimal V1 loop and profile/privacy;
-  release smoke still needs degraded/mobile coverage.
+- Automated browser smokes exist for the minimal V1 loop, profile/privacy, and
+  Daily Plan; release smoke still needs degraded/mobile coverage.
 
 ## 10. Tests executes
 
@@ -139,7 +151,7 @@ $env:TEMP=(Resolve-Path .tmp\test-run-local).Path
 $env:TMP=$env:TEMP
 $env:TMPDIR=$env:TEMP
 .venv_repair_local\Scripts\python.exe -m unittest discover backend/tests
-# PASS: Ran 470 tests in 125.630s, OK.
+# PASS: Ran 476 tests in 86.801s, OK.
 ```
 
 ```powershell
@@ -208,6 +220,22 @@ cmd /c node scripts\browser_profile_privacy_smoke.mjs
 # deletion in isolated temp DB, Plan2 nav intact, forbidden labels absent.
 ```
 
+```powershell
+$env:PYTHONPATH=(Resolve-Path .manual_pydeps\site-packages).Path
+$env:TEMP=(Resolve-Path .tmp\test-run-local).Path
+$env:TMP=$env:TEMP
+$env:TMPDIR=$env:TEMP
+.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_training_items_daily_plan
+# PASS: training_items, deterministic Daily Plan, Practice from plan,
+# diversity, export/delete coverage.
+```
+
+```powershell
+cmd /c node scripts\browser_daily_plan_smoke.mjs
+# PASS: temp DB/fake engine seed, training_items materialized, Daily Plan
+# created, Training CTA opens Practice, reveal attempt stored with due_at.
+```
+
 ## 11. Tests non executes
 
 - Browser drag/drop correct-move attempt was not run; the automated browser
@@ -221,8 +249,6 @@ cmd /c node scripts\browser_profile_privacy_smoke.mjs
 
 | Priorite | Risque | Preuve | Action |
 |---|---|---|---|
-| P1 | Daily Plan is not backend deterministic | Search found no backend daily plan API/service | `P1.DAILY-PLAN-DETERMINISTIC` |
-| P1 | Durable `training_items` missing | Search found no implementation | Add training item model after browser smoke |
 | P1 | SkillTrace shadow missing | Docs only | Add shadow-only after Daily Plan |
 | P1 | Degraded states incomplete | Not browser-tested | `P1.DEGRADED-STATES-ANTI-TILT` |
 | P1 | i18n strings not centralized | No `frontend/src/i18n/fr.ts` found | Centralize French strings |
@@ -246,8 +272,8 @@ backend unavailable, slow/stalled analysis, empty queues, and anti-tilt copy.
 | Analyze | pass | Review smoke, real-flow review start, browser smoke cached/fake job completion | Browser smoke uses fake engine/temp DB, not real Stockfish |
 | Review | pass | Backend review tests/smoke and browser ready Summary | Broader Lesson/Explorer browser paths partial |
 | Practice | partial | Backend/API tests and browser reveal attempt | Correct drag/drop move, hint/skip/retry not browser-proven |
-| Daily Plan | missing | No backend daily plan service/API found | Frontend-derived action only |
+| Daily Plan | pass | Backend Daily Plan tests and browser daily-plan smoke | Browser proof uses a valid partial one-item plan, not a rich 5-6 item day |
 | Revision J+3 | pass | Backend learning loop tests for hint success -> 3 days; browser reveal creates J+1 scheduled due | Browser Training/Revisions due-flow not proven |
 | Export/delete | pass | Backend tests and browser profile/privacy smoke | Deletes only after typed `SUPPRIMER` in tested temp DB |
-| Tests critiques | partial | Backend/build/smokes/browser V1 + profile/privacy flow pass | Needs degraded/mobile tests |
-| Utilisateurs externes | missing | Daily Plan/training_items/SkillTrace shadow/degraded states incomplete | NO-GO |
+| Tests critiques | partial | Backend/build/smokes/browser V1 + profile/privacy + daily-plan flow pass | Needs degraded/mobile tests |
+| Utilisateurs externes | missing | SkillTrace shadow/degraded states/i18n/mobile/drag-drop proof incomplete | NO-GO |

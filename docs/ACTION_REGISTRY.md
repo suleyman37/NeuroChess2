@@ -118,6 +118,14 @@ and screens that ask the user to make too many decisions.
 
 ## Screen-Level Limits
 
+- V5.6 Daily Plan note: `today.follow_recommendation` and
+  `training.start_daily_plan` now prefer the deterministic backend Daily Plan
+  when one exists. `training.start_daily_plan` calls
+  `POST /api/training/daily-plan` or
+  `POST /api/training/daily-plan/practice`, remains the only primary action on
+  `app.training`, and must never expose `selection_score`, ETV, SkillTrace
+  mastery, Candidate Trainer, or Transfer Gap.
+
 - Primary action count must be exactly one for prescriptive screens.
 - Secondary action count must not exceed two.
 - Contextual row actions are allowed, but must not visually compete with the screen primary action.

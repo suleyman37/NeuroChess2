@@ -1023,6 +1023,89 @@ def _apply_v5_5_learning_loop_practice_event_fields(connection: sqlite3.Connecti
     )
 
 
+def _apply_v5_6_training_items_daily_plan(connection: sqlite3.Connection) -> None:
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS training_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_type TEXT NOT NULL,
+            source_game_id INTEGER NOT NULL,
+            source_ply INTEGER NOT NULL,
+            source_moment_id INTEGER NULL,
+            fen TEXT NOT NULL,
+            side_to_move TEXT NOT NULL,
+            best_move TEXT NOT NULL,
+            accepted_moves_json TEXT NOT NULL DEFAULT '[]',
+            domain TEXT NOT NULL DEFAULT 'unknown',
+            primary_tag TEXT NOT NULL DEFAULT 'unknown',
+            secondary_tags_json TEXT NOT NULL DEFAULT '[]',
+            difficulty_proxy REAL NULL,
+            criticality_score REAL NOT NULL DEFAULT 0.0,
+            explanation_short TEXT NULL,
+            takeaway TEXT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NULL,
+            status TEXT NOT NULL DEFAULT 'active',
+            FOREIGN KEY(source_game_id) REFERENCES games(id) ON DELETE CASCADE,
+            FOREIGN KEY(source_moment_id) REFERENCES review_moments(id) ON DELETE SET NULL
+        )
+        """
+    )
+    connection.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_training_items_source_game_ply
+        ON training_items(source_game_id, source_ply)
+        """
+    )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_training_items_status_created
+        ON training_items(status, created_at)
+        """
+    )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_training_items_game
+        ON training_items(source_game_id, source_ply)
+        """
+    )
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS daily_plan_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL DEFAULT 'local',
+            plan_date TEXT NOT NULL,
+            item_id INTEGER NOT NULL,
+            order_index INTEGER NOT NULL,
+            selection_reason TEXT NOT NULL,
+            selection_score REAL NOT NULL DEFAULT 0.0,
+            source_bucket TEXT NOT NULL
+                CHECK(source_bucket IN (
+                    'due',
+                    'failed_recent',
+                    'recent_critical',
+                    'diversity_fill',
+                    'manual'
+                )),
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(item_id) REFERENCES training_items(id) ON DELETE CASCADE
+        )
+        """
+    )
+    connection.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_plan_items_user_date_item
+        ON daily_plan_items(user_id, plan_date, item_id)
+        """
+    )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_daily_plan_items_user_date_order
+        ON daily_plan_items(user_id, plan_date, order_index)
+        """
+    )
+
+
 MIGRATIONS: tuple[tuple[str, MigrationBody], ...] = (
     (
         "0001_v0_schema",
@@ -1142,6 +1225,10 @@ MIGRATIONS: tuple[tuple[str, MigrationBody], ...] = (
     (
         "0018_v5_5_learning_loop_practice_event_fields",
         _apply_v5_5_learning_loop_practice_event_fields,
+    ),
+    (
+        "0019_v5_6_training_items_daily_plan",
+        _apply_v5_6_training_items_daily_plan,
     ),
 )
 

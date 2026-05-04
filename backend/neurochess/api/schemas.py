@@ -114,6 +114,11 @@ class RecordReviewPracticeAttemptRequest(BaseModel):
     source_context: str | None = None
 
 
+class DailyPlanRequest(BaseModel):
+    max_items: int | None = 6
+    duration_preference: str | None = None
+
+
 class EvaluationResponse(BaseModel):
     white_percent: float
     black_percent: float

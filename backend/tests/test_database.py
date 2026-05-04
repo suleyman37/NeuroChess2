@@ -122,7 +122,7 @@ class DatabaseTests(unittest.TestCase):
                 "SELECT COUNT(*) FROM schema_migrations"
             ).fetchone()[0]
 
-        self.assertEqual(migration_count, 18)
+        self.assertEqual(migration_count, 19)
 
     def test_v5_2_2_history_category_schema_exists(self) -> None:
         with closing(sqlite3.connect(self.db_path)) as connection:

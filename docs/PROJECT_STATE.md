@@ -54,6 +54,44 @@ et les fichiers frontend/backend inspectes.
   historique/export vides apres suppression.
 - Prochaine mission recommandee: `P1.DEGRADED-STATES-ANTI-TILT`.
 
+## P1.TRAINING-ITEMS-DAILY-PLAN-V1
+
+Etat : implemente le 2026-05-04, validations finales PASS.
+
+- Migration `0019_v5_6_training_items_daily_plan` ajoute `training_items` et
+  `daily_plan_items`.
+- `TrainingItemService` materialise jusqu'a 5 items durables depuis les
+  `review_moments`, avec deduplication `source_game_id + source_ply`,
+  `accepted_moves_json` incluant le meilleur coup, tags fallback et liens
+  source conserves.
+- `DailyPlanService` cree un plan local deterministe (`user_id=local`) avec les
+  buckets `due`, `failed_recent`, `recent_critical`, `diversity_fill`, un tri
+  stable, une limite de repetition par tag quand des alternatives existent, et
+  aucune influence SkillTrace.
+- Nouveaux endpoints:
+  - `GET /api/training/daily-plan/today`
+  - `POST /api/training/daily-plan`
+  - `POST /api/training/daily-plan/practice`
+- Frontend: `Aujourd'hui` et `Entrainement` consomment le vrai Daily Plan.
+  `Entrainement` conserve exactement `Plan du jour`, `Mes positions ratees`,
+  `Revisions`.
+- Practice Daily Plan enregistre les attempts avec
+  `item_id=training_item:{id}`, `source_context=daily_plan`, champs enrichis et
+  `due_at` issu de `simple_spaced_repetition_v1`.
+- Export/delete inclut et purge `training_items` et `daily_plan_items`.
+- Validations principales: plan guard PASS, backend full suite PASS
+  (`476 tests`), Review smoke PASS, PGN smoke PASS, Sindarov real-flow smoke
+  PASS, frontend build PASS, `npx tsc --noEmit` PASS.
+- Smoke browser dedie:
+  `cmd /c node scripts\browser_daily_plan_smoke.mjs`.
+  Dernier resultat: PASS avec DB temporaire, fake engine, PGN seed,
+  training item materialise, plan cree, Practice lancee depuis Training,
+  attempt `revealed` enregistree et `due_at` J+1.
+- Aucun changement Stockfish, formules scientifiques, metriques backend, LLM,
+  Candidate Trainer, Transfer Gap, SkillTrace visible ou NeuroMonitor.
+- Prochaine mission recommandee apres validations completes:
+  `P1.DEGRADED-STATES-ANTI-TILT`.
+
 ## Features livrees
 
 - Backend SQLite avec migrations idempotentes.

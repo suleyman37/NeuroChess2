@@ -357,6 +357,15 @@ export function ReviewPanel({
     );
   }
 
+  if (practiceState?.active) {
+    return (
+      <div className="review-content">
+        <div className="panel-title">Review coach</div>
+        {renderFocusedReviewModule()}
+      </div>
+    );
+  }
+
   if (displayStatus === "not_reviewable") {
     return (
       <ReviewMessage>

@@ -48,6 +48,7 @@ class UserDataService:
         "review_jobs": "review_jobs",
         "review_summaries": "game_reviews",
         "review_moments": "review_moments",
+        "training_items": "training_items",
         "practice_sessions": "review_practice_sessions",
         "practice_session_items": None,
         "practice_attempts": "review_practice_attempts",
@@ -61,6 +62,8 @@ class UserDataService:
     }
 
     _delete_tables: tuple[tuple[str, str], ...] = (
+        ("daily_plan_items_deleted", "daily_plan_items"),
+        ("training_items_deleted", "training_items"),
         ("practice_attempts_deleted", "review_practice_attempts"),
         ("practice_sessions_deleted", "review_practice_sessions"),
         ("review_moments_deleted", "review_moments"),
@@ -71,7 +74,6 @@ class UserDataService:
         ("game_opening_classifications_deleted", "game_opening_classifications"),
         ("games_deleted", "games"),
         ("telemetry_deleted", "telemetry_events"),
-        ("daily_plan_items_deleted", "daily_plan_items"),
         ("skilltrace_states_deleted", "skilltrace_states"),
         ("user_settings_deleted", "user_settings"),
         ("local_profile_deleted", "local_profile"),
@@ -155,6 +157,7 @@ class UserDataService:
                         "practice_attempts_deleted", 0
                     ),
                     "due_items_deleted": due_items_deleted,
+                    "training_items_deleted": counts.get("training_items_deleted", 0),
                     "telemetry_deleted": counts.get("telemetry_deleted", 0),
                     "daily_plan_items_deleted": counts.get("daily_plan_items_deleted", 0),
                     "skilltrace_states_deleted": counts.get("skilltrace_states_deleted", 0),
@@ -195,6 +198,11 @@ class UserDataService:
             for payload in payloads:
                 if "items_json" in payload:
                     payload["items_json"] = _json_loads_or_raw(payload["items_json"])
+        if table_name == "training_items":
+            for payload in payloads:
+                for key in ("accepted_moves_json", "secondary_tags_json"):
+                    if key in payload:
+                        payload[key] = _json_loads_or_raw(payload[key])
         return payloads
 
     def _practice_session_items(

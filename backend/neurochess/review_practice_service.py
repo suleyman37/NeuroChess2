@@ -27,7 +27,13 @@ PRACTICE_DEFAULT_MAX_ITEMS = 5
 PRACTICE_MAX_ITEMS_LIMIT = 20
 
 PRACTICE_ALLOWED_POVS = {"user", "white", "black", "both"}
-PRACTICE_ALLOWED_SCOPES = {"top_priority", "all_to_review", "retry_failed"}
+PRACTICE_ALLOWED_SCOPES = {
+    "top_priority",
+    "all_to_review",
+    "retry_failed",
+    "due_review",
+    "daily_plan",
+}
 PRACTICE_ALLOWED_RESULTS = {
     "best",
     "very_good",
@@ -157,7 +163,11 @@ class ReviewPracticeService:
         scope: str,
         items: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        session_items = [dict(item, game_id=game_id) for item in items]
+        session_items: list[dict[str, Any]] = []
+        for item in items:
+            payload = dict(item)
+            payload.setdefault("game_id", game_id)
+            session_items.append(payload)
         items_json = json.dumps(session_items, ensure_ascii=False, sort_keys=True)
 
         def write_session() -> int:
@@ -233,6 +243,40 @@ class ReviewPracticeService:
             "summary": _summary_payload(session_row, [], session_items),
         }
 
+    def create_session_from_training_items(
+        self,
+        items: list[dict[str, Any]],
+        *,
+        scope: str = "daily_plan",
+        pov: str = "user",
+    ) -> dict[str, Any]:
+        if not items:
+            raise ReviewPracticeServiceError(
+                "no daily plan practice items",
+                status_code=409,
+                payload={
+                    "status": "no_daily_plan_items",
+                    "scope": scope,
+                    "items": [],
+                    "summary": _empty_summary(),
+                },
+            )
+        first_game_id = _int_or_none(items[0].get("game_id"))
+        if first_game_id is None:
+            raise ReviewPracticeServiceError(
+                "daily plan item is missing source game",
+                status_code=409,
+            )
+        normalized_scope = _normalize_scope(scope)
+        normalized_pov = _normalize_pov(pov)
+        return self._create_session_from_items(
+            first_game_id,
+            review_id=None,
+            pov=normalized_pov,
+            scope=normalized_scope,
+            items=items,
+        )
+
     def record_attempt(
         self,
         session_id: int,
@@ -279,8 +323,12 @@ class ReviewPracticeService:
         normalized_hint_used = bool(hint_used)
         normalized_reveal_used = bool(reveal_used) or normalized_result == "revealed"
         normalized_time_spent_ms = _normalize_time_spent_ms(time_spent_ms)
-        normalized_source_context = _normalize_source_context(source_context)
-        item_id = _practice_item_id(int(session["game_id"]), int(ply))
+        normalized_source_context = _normalize_source_context(
+            source_context or item.get("source_context")
+        )
+        attempt_game_id = int(item.get("game_id") or session["game_id"])
+        raw_item_id = item.get("item_id")
+        item_id = str(raw_item_id) if raw_item_id else _practice_item_id(attempt_game_id, int(ply))
         due_at = practice_revision_due_at(
             normalized_result,
             created_at,
@@ -317,7 +365,7 @@ class ReviewPracticeService:
                         """,
                         (
                             session_id,
-                            int(session["game_id"]),
+                            attempt_game_id,
                             int(ply),
                             str(item.get("color") or ""),
                             attempted_uci,
@@ -344,7 +392,7 @@ class ReviewPracticeService:
                 summary["attempt_feedback"] = feedback
                 summary["latest_attempt"] = {
                     "session_id": session_id,
-                    "game_id": int(session["game_id"]),
+                    "game_id": attempt_game_id,
                     "ply": int(ply),
                     "color": str(item.get("color") or ""),
                     "attempted_uci": attempted_uci,

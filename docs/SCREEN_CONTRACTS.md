@@ -43,6 +43,11 @@ helps the user.
 
 ### app.today
 
+- V5.6 Daily Plan update: Today may use the deterministic backend Daily Plan as
+  the main next action after active Practice, before falling back to Review,
+  analysis, due revisions, or import. It must still show one hero and one
+  primary CTA, with no debug metric or fake progress.
+
 - Question: "Que dois-je faire maintenant ?"
 - Primary action: follow the real available next step: due revision Practice,
   Review, active Practice, analysis-in-progress state, or import.
@@ -110,6 +115,15 @@ helps the user.
 - Technical details are allowed here only when folded.
 
 ### app.training
+
+- V5.6 Daily Plan update: `Plan du jour` is backed by durable
+  `training_items` and the backend endpoints
+  `GET /api/training/daily-plan/today`,
+  `POST /api/training/daily-plan`, and
+  `POST /api/training/daily-plan/practice`. The Training screen still has
+  exactly three entries: Plan du jour, Mes positions ratees, Revisions.
+  `selection_score`, ETV, SkillTrace mastery, Candidate Trainer, and Transfer
+  Gap stay hidden from normal UI.
 
 - Question: "Que dois-je corriger maintenant ?"
 - Primary action: `Réviser`, `Commencer`, or `Reprendre` the real available

@@ -22,6 +22,9 @@ class FrontendLearningLoopStaticTests(unittest.TestCase):
             "reviewPracticeLearningSummary",
             "learningDueCount",
             "learningScheduledCount",
+            "dailyPlan",
+            "startDailyPlanPractice",
+            "createOrRefreshDailyPlan",
             "startDueReviewPractice",
             "handleTrainingRevisionsAction",
             "Progression cette semaine",
@@ -36,6 +39,10 @@ class FrontendLearningLoopStaticTests(unittest.TestCase):
             "revealUsed",
             "sourceContext",
             "ReviewPracticeLearningSummary",
+            "DailyPlanResponse",
+            "getDailyPlanToday",
+            "createDailyPlan",
+            "startDailyPlanPracticeSession",
             "startDueReviewPracticeSession",
         ):
             self.assertIn(token, self.client + self.app)

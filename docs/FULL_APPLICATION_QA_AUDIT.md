@@ -1,6 +1,6 @@
 # Full Application QA Audit V1
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1`
 Date: 2026-05-04
 
 This is an evidence audit, not a product implementation pass. Plan1, Plan2, and
@@ -77,6 +77,32 @@ New evidence added after the browser V1 flow:
   `history_count_before_confirm=1`, `history_count_after_delete=0`,
   `export_games_after_delete=0`.
 
+## P1.TRAINING-ITEMS-DAILY-PLAN-V1 Update
+
+Date: 2026-05-04.
+
+New evidence added after Profile/Privacy:
+
+- Backend: durable `training_items`, deterministic `daily_plan_items`, and
+  endpoints `GET /api/training/daily-plan/today`,
+  `POST /api/training/daily-plan`,
+  `POST /api/training/daily-plan/practice`.
+- Services: `TrainingItemService` materializes at most five active items from
+  `review_moments`; `DailyPlanService` selects due, failed recent, recent
+  critical, then diversity-fill candidates with stable deterministic sorting.
+- Tests added: `backend/tests/test_training_items_daily_plan.py` and
+  `scripts/browser_daily_plan_smoke.mjs`.
+- Browser strategy: isolated temp backend DB, fake engine, API PGN seed, Vite,
+  Edge CDP.
+- Result: PASS.
+- Proven browser flow: PGN seed -> Review done -> `training_items_available=1`
+  -> Daily Plan partial with real item id -> Training Plan du jour CTA ->
+  Practice opens -> `Voir la correction` records attempt
+  `item_id=training_item:1` -> `due_at` J+1 -> forbidden V1 labels absent.
+- Remaining gaps: full 5-6 item plan variety depends on richer user history;
+  browser proof uses a compact fixture that produces a valid partial one-item
+  plan.
+
 ## Matrix
 
 | Domaine | Fonctionnalite | Attendu Plan1/Plan2/Plan3 | Etat reel observe dans le code | Fichiers concernes | Endpoint/API concerne si applicable | Test automatique existant | Test ajoute pendant cette mission | Smoke test effectue | Browser test effectue | Niveau de preuve | Resultat | Risque | Action recommandee | Priorite |
@@ -95,10 +121,10 @@ New evidence added after the browser V1 flow:
 | App Shell | Review contextuelle | Accessible depuis games/today/training | Handler `openReviewContext` et buttons existent | `frontend/src/App.tsx` | `/games/{game_id}/review` | static + backend review tests | no | review smoke PASS | opened in browser, but only preparation state validated | A | PARTIAL | Ready Review UI not proven in browser | Build deterministic browser fixture | P0 |
 | App Shell | Responsive minimal | Plan2 mobile/desktop stable | Not exercised in this audit | CSS/app shell | n/a | none dedicated | no | no | no | D | NOT_TESTED | Layout regressions possible | Browser smoke desktop + mobile | P1 |
 | Aujourd'hui | Hero unique | One main intent / one CTA | Code derives `todayHero`; browser saw Today and one import CTA in empty state | `frontend/src/App.tsx` | n/a | static tests partial | no | no | PASS basic | A | PARTIAL | Priorities not all browser-tested | Browser fixture matrix | P1 |
-| Aujourd'hui | Priority signals | Practice/Review/analyse/revision/import | Uses real state variables; no backend daily plan | `frontend/src/App.tsx` | practice/review APIs | static tests | no | no | no | C | PARTIAL | Daily Plan is frontend-derived, not Plan3 backend service | Implement deterministic Daily Plan service | P1 |
+| Aujourd'hui | Priority signals | Practice/Daily Plan/Review/analyse/revision/import | Uses real state variables and backend Daily Plan when available | `frontend/src/App.tsx`, `daily_plan_service.py` | practice/review/Daily Plan APIs | static + Daily Plan tests | yes | browser_daily_plan_smoke PASS | Daily Plan path PASS | A | PARTIAL | Other priority branches still need browser matrix | Browser fixture matrix | P1 |
 | Aujourd'hui | Derniere Review card | Show last review if data exists | Code/docs indicate card; not browser-validated with ready fixture | `frontend/src/App.tsx` | `/games/{game_id}/review` | static only | no | no | no | C | PARTIAL | Could show stale/ambiguous Review | Browser fixture with ready review | P1 |
 | Aujourd'hui | Progression cette semaine | Real practice counters only | Wired to learning summary counts | `frontend/src/App.tsx`, `review_practice_service.py` | practice session list | learning loop tests | no | no | no | B | PARTIAL | Not validated with browser due data | Add browser fixture with attempts | P1 |
-| Aujourd'hui | A revoir | Due count from simple revision | Backend counts due/scheduled; UI consumes counts | same | `/games/{game_id}/review/practice/revisions` | learning loop tests | no | no | no | B | PARTIAL | Only game-scoped due, no global queue | Daily Plan/due queue service | P1 |
+| Aujourd'hui | A revoir | Due count from simple revision | Backend counts due/scheduled; Daily Plan also prioritizes globally due `training_items` | same | revisions route, `/api/training/daily-plan` | learning loop + Daily Plan tests | yes | browser_daily_plan_smoke PASS | partial | B | PARTIAL | Due card itself not browser-proven with multiple items | Browser due-ready fixture | P1 |
 | Aujourd'hui | No fake numbers | No invented progress | Static copy says profile/building when missing | `frontend/src/App.tsx` | n/a | static test | no | no | visible empty state honest | A | PASS | Future copy may drift | Keep static guard | P1 |
 | Aujourd'hui | No dashboard technique | Plan2 calm/actionable | No raw metric dashboard seen | `frontend/src/App.tsx` | n/a | plan_guard | no | plan_guard PASS | PASS basic | A | PASS | Hidden explorer still dense | Keep complexity folded | P1 |
 | Mes parties | Import PGN backend | V1 PGN import | Service/routes exist and pass tests/smoke | `pgn_import_service.py`, `game_routes.py` | `/games/import-pgn`, `/preview` | `test_pgn_import_service.py` | no | PGN smoke PASS, real flow PASS | PASS import UI | A | PASS | UI can pollute local data in manual smoke | Add isolated browser DB fixture | P0 |
@@ -131,23 +157,23 @@ New evidence added after the browser V1 flow:
 | Practice | Retry failed | Failed retry route/session | Backend route/service exists and tests cover retry | `review_practice_service.py`, `game_routes.py` | `/retry-failed` | practice session tests | no | no | not browser | B | PASS | UX not browser-proven | Browser practice smoke | P1 |
 | Practice | Due review session | Start revisions from due positions | `create_due_review_session` and API route exist | `review_practice_service.py`, `game_routes.py` | `/games/{id}/review/practice/revisions` | learning loop tests | no | no | not browser | B | PASS | Game-scoped only | Global due queue later | P1 |
 | Entrainement | Exactly 3 entries | Plan du jour, Mes positions ratees, Revisions only | Browser Training tab shows exactly those 3 labels | `frontend/src/App.tsx` | practice APIs | static app shell/learning tests | no | no | PASS | A | PASS | Future mode creep | Static guard stays | P0 |
-| Entrainement | Plan du jour | Deterministic daily action | Frontend chooses from real signals; no backend daily plan | `frontend/src/App.tsx` | practice/review APIs | static tests | no | no | browser label only | C | PARTIAL | Not Plan3 deterministic backend service | Build Daily Plan service | P1 |
+| Entrainement | Plan du jour | Deterministic daily action | Backend Daily Plan service exists; Training uses real plan count/CTA and opens Daily Plan Practice | `frontend/src/App.tsx`, `daily_plan_service.py`, `game_routes.py` | `/api/training/daily-plan*` | `test_training_items_daily_plan.py`, static tests | yes | browser_daily_plan_smoke PASS | PASS | A | PASS | Rich 5-6 item plans need more user history | Degraded/mobile browser fixtures later | P1 |
 | Entrainement | Mes positions ratees | Use Practice history | Frontend uses failed session/history signals | `App.tsx`, practice service | session list | learning/practice tests | no | no | label only | B | PARTIAL | Not browser-proven with failures | Browser fixture | P1 |
-| Entrainement | Revisions | Use due items | Backend due count/session exists, UI label shown | `App.tsx`, `review_practice_service.py` | revisions route | learning loop tests | no | no | label only | B | PARTIAL | No global due queue | Daily Plan/due queue | P1 |
+| Entrainement | Revisions | Use due items | Backend due count/session exists; Daily Plan also prioritizes due items globally by latest attempt | `App.tsx`, `review_practice_service.py`, `daily_plan_service.py` | revisions route, `/api/training/daily-plan` | learning loop + Daily Plan tests | yes | browser_daily_plan_smoke PASS | partial plan PASS | B | PARTIAL | Dedicated due-revision browser path still not proven | Browser due-empty/due-ready fixture | P1 |
 | Entrainement | Forbidden modes absent | No Candidate/Intent/LLM/TransferGap/fourth card | Static tests and browser pass | `App.tsx` | n/a | static tests + plan_guard | no | plan_guard PASS | PASS | A | PASS | Guard terms only | Keep tests updated | P0 |
 | Learning Loop | practice_result_event fields | item/session/result/move/time/hint/reveal/source/timestamp/due | Implemented in attempts schema/service/client | `review_practice_service.py`, `schemas.py`, `client.ts` | `/attempts` | learning loop tests | no | no | not browser | B | PASS | Event model not promoted to dedicated table name | Align docs/schema naming later | P1 |
 | Learning Loop | simple_spaced_repetition_v1 rules | wrong/illegal/reveal 1d, hint 3d, success 7d, skip none | `practice_revision_delay_days` tests pass | `review_practice_service.py` | service | `test_review_practice_learning_loop.py` | no | no | no | B | PASS | Repeated success multiplier not implemented | Backlog as Plan3 gap | P1 |
 | Learning Loop | learning_summary | Real counters, not fake progress | Service returns due/scheduled/week counters | `review_practice_service.py` | session list | learning loop tests | no | no | no | B | PASS | Per-game summary, not global Today API | Daily Plan/training API later | P1 |
 | Learning Loop | Compact progression UI | Real counts only | App consumes learning summary | `frontend/src/App.tsx` | session list | static tests | no | no | not data-browser | C | PARTIAL | Browser data fixture missing | Browser fixture | P1 |
-| Learning Loop | training_items | Plan3 V1 durable items from moments | No `training_items` implementation found | backend | n/a | none | no | no | no | E | MISSING | Practice items remain review-session derived | Implement training_items sprint | P1 |
-| Learning Loop | Daily Plan backend | Deterministic plan API/service | No `/api/today`, `/api/training`, or daily_plan service found | backend | missing Plan3 APIs | none | no | no | no | E | MISSING | Today/Training stays frontend-derived | P1.DAILY-PLAN-DETERMINISTIC | P1 |
+| Learning Loop | training_items | Plan3 V1 durable items from moments | Implemented as durable `training_items`, generated from `review_moments`, max 5 per Review, idempotent by game/ply | `training_item_service.py`, `migrations.py`, `game_routes.py` | Review get/generate/rebuild materialization | `test_training_items_daily_plan.py` | yes | browser_daily_plan_smoke PASS | PASS | A | PASS | Full corpus variety not yet browser-proven | Keep idempotency tests and expand fixtures later | P1 |
+| Learning Loop | Daily Plan backend | Deterministic plan API/service | Implemented as `DailyPlanService` + `/api/training/daily-plan*`; uses due, failed_recent, recent_critical, diversity_fill | `daily_plan_service.py`, `game_routes.py`, `client.ts`, `App.tsx` | `/api/training/daily-plan/today`, `/api/training/daily-plan`, `/api/training/daily-plan/practice` | `test_training_items_daily_plan.py` | yes | browser_daily_plan_smoke PASS | PASS | A | PASS | Browser fixture validates partial one-item plan, not rich plan variety | Add richer browser fixture after more data | P1 |
 | Learning Loop | SkillTrace shadow | V1 shadow only, not visible | Not implemented in backend; hidden in UI | docs/backend search | n/a | none | no | no | no | E | MISSING | Plan3 says V1 shadow should exist before release | Add shadow-only sprint after Daily Plan | P1 |
 | Backend/API | FastAPI app health | Backend launchable | `backend.app:app` launched, `/health` OK | `backend/app.py` | `/health` | API tests | no | browser support server | n/a | A | PASS | Needs standard dev command docs | Add setup docs later | P1 |
 | Backend/API | Games routes | Create/list/get/moves/history | Routes exposed and tested | `game_routes.py` | `/games*` | game API tests | no | real flow PASS | browser history PASS | A | PASS | Per-game delete is not productized; whole local-data delete exists | Keep destructive actions confirmed | P1 |
 | Backend/API | Review routes/jobs | Generate/jobs/reconcile/cancel/get | Routes exist and tests pass | `game_routes.py`, `review_job_service.py` | `/review/jobs`, `/games/{id}/review` | review tests | no | review smoke PASS | partial | A | PASS | Browser ready summary not proven | Browser fixture | P0 |
-| Backend/API | Practice routes | sessions/attempts/retry/due | Routes exist and tests pass | `game_routes.py` | `/review/practice/*` | practice tests | no | no | no | B | PASS | Browser practice missing | Browser fixture | P0 |
-| Backend/API | Schemas/contracts | Pydantic shapes plus V1 API contract doc | Attempt schema includes V1 fields; export/delete contracts documented | `schemas.py`, `docs/API_CONTRACTS.md` | API models | backend tests | yes | no | no | B | PASS | Contract doc remains manual | Keep API contract updated with new endpoints | P1 |
-| Backend/API | Migrations/schema doc | Durable schema evolution | Learning loop migration exists; DB export/delete scope documented | `migrations.py`, `test_database.py`, `docs/DB_SCHEMA.md` | n/a | database tests | yes | no | no | B | PASS | DB_SCHEMA doc remains manual | Update after schema migrations | P1 |
+| Backend/API | Practice routes | sessions/attempts/retry/due/plan | Routes exist and tests pass; Daily Plan Practice returns normal practice session with `scope=daily_plan` | `game_routes.py`, `review_practice_service.py` | `/review/practice/*`, `/api/training/daily-plan/practice` | practice tests + Daily Plan tests | yes | browser_daily_plan_smoke PASS | PASS | A | PASS | Correct drag/drop move still not browser-proven | Browser practice move fixture | P1 |
+| Backend/API | Schemas/contracts | Pydantic shapes plus V1 API contract doc | Attempt schema includes V1 fields; DailyPlanRequest and export/delete contracts documented | `schemas.py`, `docs/API_CONTRACTS.md` | API models | backend tests | yes | browser_daily_plan_smoke PASS | PASS | B | PASS | Contract doc remains manual | Keep API contract updated with new endpoints | P1 |
+| Backend/API | Migrations/schema doc | Durable schema evolution | Learning loop plus `0019_v5_6_training_items_daily_plan` migrations documented | `migrations.py`, `test_database.py`, `docs/DB_SCHEMA.md` | n/a | database/Daily Plan tests | yes | no | no | B | PASS | DB_SCHEMA doc remains manual | Update after schema migrations | P1 |
 | Backend/API | Old data compatibility | Do not break old sessions | Tests cover migration/compat paths | migrations/repos/tests | n/a | database/practice tests | no | no | no | B | PASS | Not every legacy DB path proven | Add migration fixture pack | P1 |
 | Backend/API | Error handling | Clear API errors | Many errors mapped; degraded state incomplete | routes/services/frontend state | API | backend tests partial | no | no | partial browser | B | PARTIAL | UX may show generic errors | Degraded states sprint | P1 |
 | Stockfish/Metrics | Stockfish unchanged | No engine/formula changes in QA mission | `stockfish_service.py` not modified in diff | engine files | n/a | engine tests | no | review smoke PASS | no | B | PASS | Strict cache still partial | Cache policy sprint | P1 |
@@ -183,13 +209,14 @@ New evidence added after the browser V1 flow:
 | Browser/UX | Ready Review UI | Open a completed Review | Automated browser smoke opens a ready contextual Review and sees Summary/CTA | `App.tsx`, Review components, `scripts/browser_v1_flow_smoke.mjs` | review APIs | review smoke/backend tests | `scripts/browser_v1_flow_smoke.mjs` | review smoke PASS | PASS | A | PASS | Lesson/Explorer paths still need browser proof | Add broader browser fixtures later | P1 |
 | Browser/UX | Practice UI | Start and submit Practice in browser | Automated browser smoke starts Practice and records a reveal/correction attempt | Practice components, `scripts/browser_v1_flow_smoke.mjs` | practice APIs | backend practice tests | `scripts/browser_v1_flow_smoke.mjs` | browser smoke PASS | PASS for reveal attempt | A | PARTIAL | Correct drag/drop move, hint, skip, retry not browser-proven | Extend browser smoke later | P1 |
 | Browser/UX | Profile/privacy UI | Export/delete are visible, confirmed, and local-first | Automated browser smoke opens Profile panel, exports JSON, verifies no first-click delete, confirms deletion, and verifies empty history/export | `scripts/browser_profile_privacy_smoke.mjs`, `App.tsx`, `privacy_service.py` | `/api/export`, `/api/user-data` | profile/privacy backend/static tests | `scripts/browser_profile_privacy_smoke.mjs` | profile/privacy smoke PASS | PASS | A | PASS | One favicon 404 in browser smoke, non-app blocking | Ignore favicon or add asset later | P2 |
+| Browser/UX | Daily Plan flow | Start Practice from deterministic Daily Plan | Automated browser smoke seeds a game, materializes `training_items`, creates Daily Plan, opens Training, starts Plan du jour Practice, records reveal attempt and `due_at` | `scripts/browser_daily_plan_smoke.mjs`, `App.tsx`, `daily_plan_service.py` | `/api/training/daily-plan*`, `/api/export` | Daily Plan backend/static tests | `scripts/browser_daily_plan_smoke.mjs` | browser daily plan smoke PASS | PASS | A | PASS | Fixture proves a valid partial one-item plan, not a rich 5-6 item day | Add richer history fixture later | P1 |
 | Browser/UX | Console errors | No major app crash | Browser `tab.dev.logs(error)` returned empty | frontend runtime | n/a | no | no | no | PASS | A | PASS | Browser plugin printed non-app Statsig/network noise | Ignore plugin noise unless app logs appear | P1 |
 
 ## Summary Counts
 
-- PASS: 66
-- PARTIAL: 29
+- PASS: 70
+- PARTIAL: 28
 - FAIL: 0
 - NOT_TESTED: 3
-- MISSING: 5
+- MISSING: 3
 - PLACEHOLDER: 0

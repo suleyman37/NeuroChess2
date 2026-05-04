@@ -305,12 +305,48 @@ tool_timeout_sec = 180
   deterministic; SkillTrace, when added, is shadow only.
 - Tests a lancer: backend unit tests, frontend build, plan guard.
 
+### P1. TRAINING-ITEMS-DAILY-PLAN-V1
+
+- ID: `TRAINING-ITEMS-DAILY-PLAN-V1`
+- Priorite: P1
+- Titre: Implement durable training_items and deterministic Daily Plan V1
+- Etat: completed on 2026-05-04 by `P1.TRAINING-ITEMS-DAILY-PLAN-V1`.
+- Justification Plan1/Plan2/Plan3: Plan3 requires durable `training_items`,
+  `simple_spaced_repetition_v1`, a deterministic Daily Plan, and Practice from
+  that plan before V1 release.
+- Fichiers touches: `backend/neurochess/training_item_service.py`,
+  `backend/neurochess/daily_plan_service.py`,
+  `backend/neurochess/data/migrations.py`,
+  `backend/neurochess/api/game_routes.py`,
+  `backend/neurochess/review_practice_service.py`,
+  `backend/neurochess/privacy_service.py`, `frontend/src/App.tsx`,
+  `frontend/src/api/client.ts`, `backend/tests/test_training_items_daily_plan.py`,
+  `scripts/browser_daily_plan_smoke.mjs`, governance/QA docs.
+- Taille: L
+- Risques: plan selection could become opaque if internal scores leak; browser
+  proof currently uses fake engine and a compact seeded PGN producing a partial
+  one-item plan.
+- Dependances: completed Profile/Privacy export/delete, Learning Loop V1,
+  browser V1 flow smoke.
+- Definition du done: `training_items` are durable/idempotent, Daily Plan uses
+  due/failed/recent critical/diversity buckets deterministically, Training keeps
+  exactly three entries, Practice can start from Daily Plan, attempts preserve
+  enriched fields and `due_at`, export/delete covers new tables, and browser
+  Daily Plan smoke passes.
+- Tests a lancer: plan guard, backend full suite, review/PGN/real-flow smokes,
+  browser V1/profile/daily plan smokes, frontend build, `npx tsc --noEmit`,
+  `git diff --check`.
+- Resultat: plan guard PASS, backend full suite PASS (`476 tests`), Review/PGN
+  Sindarov smokes PASS, browser V1/profile/daily plan smokes PASS, frontend
+  build PASS, `npx tsc --noEmit` PASS. Active Daily Plan Practice now renders
+  even without a preselected Review.
+
 ### P1. DEGRADED-STATES-ANTI-TILT
 
 - ID: `DEGRADED-STATES-ANTI-TILT`
 - Priorite: P1
 - Titre: Make degraded states and anti-tilt copy calm and actionable
-- Etat: next recommended mission after `PROFILE-PRIVACY`.
+- Etat: next recommended mission after `TRAINING-ITEMS-DAILY-PLAN-V1`.
 - Justification Plan1/Plan2: Plan2 asks for sane dopamine, recovery states, and
   emotional regulation after losses or blocked analysis.
 - Fichiers probables: `frontend/src/reviewState.ts`,
@@ -319,7 +355,8 @@ tool_timeout_sec = 180
 - Taille: M
 - Risques: hiding actionable recovery behind too much soft copy, or turning
   errors into a technical dashboard.
-- Dependances: app shell states, browser V1 flow smoke, profile/privacy smoke.
+- Dependances: app shell states, browser V1 flow smoke, profile/privacy smoke,
+  browser Daily Plan smoke.
 - Definition du done: invalid PGN, backend unavailable, Stockfish absent,
   slow/partial/stalled review, empty history, no due revisions, interrupted
   Practice, and recent-loss states have clear next actions with no jargon and
