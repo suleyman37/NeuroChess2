@@ -8,7 +8,8 @@ The project is governed by:
 
 - `plan/Plan1.txt` - only scientific source of truth, Plan1 v3.0 FINAL - Codex-ready
 - `plan/Plan2.txt` - only UX/product/interface source of truth, Plan2 v4.0 FINAL - 20/20 - Codex-ready
-- `plan/Plan3.md` - technical execution and governance source of truth
+- `plan/Plan3.md` - only technical execution/release/testing/governance source
+  of truth, Plan3 v4.0 FINAL - 20/20 - Codex-ready
 - `docs/PLAN_CONTEXT_MIN.md`
 - `docs/PLAN_FEATURE_BOUNDARIES.md`
 - `docs/NEXT_PLAN_ACTIONS.md`
@@ -22,9 +23,9 @@ Priority:
 Existing code is implementation state, not product truth. If code contradicts
 Plan1, Plan2, or Plan3, treat the code as non-aligned.
 
-Older Plan1/Plan2 versions, downloaded copies, previous summaries, backups, and
-model memory must be ignored if they conflict with `plan/Plan1.txt` or
-`plan/Plan2.txt`.
+Older plan versions, downloaded copies, previous summaries, old prompts,
+backups, and model memory must be ignored if they conflict with
+`plan/Plan1.txt`, `plan/Plan2.txt`, or `plan/Plan3.md`.
 
 Plan roles:
 
@@ -33,9 +34,9 @@ Plan roles:
 - Plan3 governs sprint order, technical roadmap, Codex governance, tests, and
   V1 delivery.
 
-Plan1 and Plan2 are constitutions, not implementation missions. Never apply a
-full plan as one large mission. Plan3 must also be used sprint-by-sprint: execute
-only the explicitly requested sprint or narrowly scoped task.
+Plan1, Plan2, and Plan3 are constitutions, not implementation missions. Never
+apply a full plan as one large mission. Execute only the explicitly requested
+sprint or narrowly scoped task.
 
 ## Product Loop
 
@@ -114,11 +115,14 @@ Plan2 requires:
 
 Before coding:
 
-1. Read `docs/PLAN_CONTEXT_MIN.md`.
-2. Read `docs/NEXT_PLAN_ACTIONS.md`.
-3. Check `docs/PLAN_FEATURE_BOUNDARIES.md` if touching product behavior.
-4. If unsure, inspect `plan/Plan1.txt`, `plan/Plan2.txt`, or `plan/Plan3.md`.
-5. Start important missions with `git status --short --branch`.
+1. Read `AGENTS.md`.
+2. Read `docs/PLAN_SOURCE_OF_TRUTH.md`.
+3. Read `docs/PLAN_CONTEXT_MIN.md`.
+4. Read the relevant canonical plan files for the mission:
+   `plan/Plan1.txt`, `plan/Plan2.txt`, and/or `plan/Plan3.md`.
+5. Read `docs/NEXT_PLAN_ACTIONS.md`.
+6. Check `docs/PLAN_FEATURE_BOUNDARIES.md` if touching product behavior.
+7. Start important missions with `git status --short --branch`.
 
 During coding:
 
@@ -127,7 +131,9 @@ During coding:
 3. Do not expose internal metrics as user truth.
 4. Prefer small, verifiable missions.
 5. Do not run a massive refactor as one mission.
-6. Never put secrets, tokens, API keys, cookies, or `.env` content in prompts,
+6. Do not stage or commit by default unless explicitly authorized.
+7. Never use `git add -A`; stage only explicit mission files.
+8. Never put secrets, tokens, API keys, cookies, or `.env` content in prompts,
    logs, docs, tests, or memories.
 
 After coding:

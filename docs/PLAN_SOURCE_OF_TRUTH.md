@@ -5,7 +5,8 @@
 - Plan directory: `C:\Users\bahij\OneDrive\Desktop\NeuroChess2_vraie\NeuroChess2\plan`
 - Plan1: `plan/Plan1.txt` - scientific source of truth - Plan1 v3.0 FINAL - Codex-ready
 - Plan2: `plan/Plan2.txt` - UX/product/interface source of truth - Plan2 v4.0 FINAL - 20/20 - Codex-ready
-- Plan3: `plan/Plan3.md` - technical execution/governance source of truth
+- Plan3: `plan/Plan3.md` - technical execution/release/testing/governance
+  source of truth - Plan3 v4.0 FINAL - 20/20 - Codex-ready
 
 ## Roles
 
@@ -23,11 +24,13 @@ governs sprint order and acceptance discipline.
 
 - `plan/Plan1.txt` is the only scientific source of truth for NeuroChess.
 - `plan/Plan2.txt` is the only UX/product/interface source of truth for NeuroChess.
-- `plan/Plan3.md` remains the technical execution and governance source of truth.
-- Older Plan1/Plan2 versions, downloaded copies, previous summaries, backups, and
-  model memory must be ignored if they conflict with the files in `/plan`.
-- Plan1 and Plan2 are constitutions, not implementation missions. Codex must
-  never apply either full plan at once.
+- `plan/Plan3.md` is the only technical execution, release, testing, and Codex
+  governance source of truth for NeuroChess.
+- Older plan versions, downloaded copies, previous summaries, old prompts,
+  backups, and model memory must be ignored if they conflict with the files in
+  `/plan`.
+- Plan1, Plan2, and Plan3 are constitutions, not implementation missions. Codex
+  must never apply any full plan at once.
 - One mission = one objective = one controlled diff = tests = report.
 
 ## Priority Order
@@ -60,10 +63,13 @@ contradicts Plan1, Plan2, or Plan3.
 
 Before product/code changes:
 
-1. Read `docs/PLAN_CONTEXT_MIN.md`.
-2. Read `docs/PLAN_FEATURE_BOUNDARIES.md` when the change touches visible product
+1. Read `AGENTS.md`.
+2. Read `docs/PLAN_SOURCE_OF_TRUTH.md`.
+3. Read `docs/PLAN_CONTEXT_MIN.md`.
+4. Read the canonical plan files relevant to the mission.
+5. Read `docs/PLAN_FEATURE_BOUNDARIES.md` when the change touches visible product
    behavior.
-3. Return to Plan1/Plan2/Plan3 in `/plan` only when there is a doubt,
+6. Return to Plan1/Plan2/Plan3 in `/plan` whenever there is a doubt,
    contradiction, missing boundary, or sprint-order question.
 
 After product/code changes:

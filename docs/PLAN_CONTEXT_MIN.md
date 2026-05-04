@@ -9,12 +9,17 @@ conflicts with Plan1, Plan2, or Plan3, the source plans win.
   Codex-ready.
 - `plan/Plan2.txt` is the only UX/product/interface source of truth: Plan2 v4.0
   FINAL - 20/20 - Codex-ready.
-- `plan/Plan3.md` is the technical execution and governance source of truth.
-- Older Plan1/Plan2 versions, downloaded copies, previous summaries, backups,
-  and model memory must be ignored if they conflict with the `/plan` files.
-- Plan1 and Plan2 are constitutions, not implementation missions. Never apply
-  either full plan at once; every implementation must come from an explicit
+- `plan/Plan3.md` is the only technical execution/release/testing/governance
+  source of truth: Plan3 v4.0 FINAL - 20/20 - Codex-ready.
+- Older plan versions, downloaded copies, previous summaries, old prompts,
+  backups, and model memory must be ignored if they conflict with the `/plan`
+  files.
+- Plan1, Plan2, and Plan3 are constitutions, not implementation missions. Never
+  apply any full plan at once; every implementation must come from an explicit
   sprint/mission.
+- Before every mission, read `AGENTS.md`, `docs/PLAN_SOURCE_OF_TRUTH.md`,
+  `docs/PLAN_CONTEXT_MIN.md`, and the relevant canonical plan files.
+- Do not stage or commit by default. Never use `git add -A`.
 
 ## Product Promise
 

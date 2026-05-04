@@ -1,579 +1,367 @@
 # DOCUMENT MAÎTRE FINAL — PLAN 3/3 NEUROCHESS
+## ARCHITECTURE TECHNIQUE, ROADMAP D’EXÉCUTION, GOUVERNANCE CODEX, TESTS, RELEASE, QUALITÉ, SÉCURITÉ ET LIVRAISON
 
-## ARCHITECTURE TECHNIQUE, ROADMAP D'EXÉCUTION, GOUVERNANCE CODEX, TESTS ET LIVRAISON V1
+Version : Plan d’exécution technique v4.0 FINAL — 20/20 — Codex-ready
+Statut : source de vérité technique, exécution, livraison et gouvernance de NeuroChess
+Remplace : Plan3 v2.2
+Compatibilité : à lire avec Plan1 v3.0 FINAL — Constitution scientifique et Plan2 v4.0 FINAL — UX/Product/Interface
+Langue produit V1 : français
+Doctrine centrale : construire la plus petite boucle complète qui prouve NeuroChess, sans scope creep, sans fake science, sans dette invisible
 
-Version : Plan d'exécution technique final v2.2 — version unique transmissible à Codex
-Statut : document maître opérationnel à utiliser après Plan 1 et Plan 2
-Date de doctrine : après audit croisé ChatGPT / Claude Opus
-Objectif : transformer la vision scientifique et UX de NeuroChess en ordre de construction concret, codable, testable, gouverné et livrable.
+============================================================
+AVERTISSEMENT D’USAGE POUR CODEX ET TOUT AGENT IA
+============================================================
 
-Note d'utilisation : ce fichier est conçu pour être le seul document maître transmis à Codex. Il est autosuffisant pour piloter l'exécution, mais Codex ne doit jamais l'appliquer en une seule fois. Codex doit lire ce document comme référence, puis exécuter uniquement le sprint explicitement demandé par l'utilisateur.
+Ce document est une constitution d’exécution, pas une mission unique.
 
----
+Règles absolues :
 
-# 0. DÉFINITION DU PLAN 3
+1. Ne jamais appliquer tout ce Plan 3 d’un coup.
+2. Ne jamais transformer une section V2/V3 en fonctionnalité V1 sans mission explicite.
+3. Ne jamais modifier Stockfish, les formules scientifiques, les métriques ou les thresholds sans mission dédiée.
+4. Ne jamais ajouter une feature sans contrat utilisateur, contrat data, contrat API, tests, état vide, état loading, état erreur, recovery et rapport.
+5. Ne jamais exposer en UI une métrique interdite par Plan1.
+6. Ne jamais ajouter en V1 : Candidate Trainer, LLM coach, Intent Layer profond, Transfer Gap visible, ETV visible, FSRS visible, NeuroMonitor, brain, cortex, atlas.
+7. Ne jamais ajouter un quatrième onglet principal en V1.
+8. Ne jamais faire de refactor global opportuniste.
+9. Ne jamais faire git add -A.
+10. Ne jamais stage/commit par défaut.
+11. Une mission Codex = un objectif précis = un diff contrôlé = tests = rapport.
+12. Si Codex reçoit ce document sans mission explicite, il doit répondre :
+   “Plan 3 compris. Quelle mission précise dois-je exécuter ?”
 
-Le Plan 1 définit comment NeuroChess pense scientifiquement :
+Canonical marker: PLAN3 MISSION CONTROL
+Canonical marker: ONE MISSION ONE DIFF TESTS REPORT
+Canonical marker: NO COMMIT NO STAGE BY DEFAULT
+Canonical marker: DO NOT IMPLEMENT FULL PLAN
 
-- Stockfish ;
+============================================================
+0. RÔLE DES TROIS PLANS
+============================================================
+
+NeuroChess est gouverné par trois documents maîtres.
+
+------------------------------------------------------------
+0.1 Plan1
+------------------------------------------------------------
+
+Fichier canonique :
+
+plan/Plan1.txt
+
+Rôle :
+
+source de vérité scientifique.
+
+Version attendue :
+
+Plan1 v3.0 FINAL — Codex-ready
+
+Le Plan1 décide :
+
+- vérité moteur ;
 - Win% ;
-- win_loss ;
-- précision ;
-- NeuroScore coach ;
-- criticality_score ;
-- taxonomie ;
-- Practice events ;
-- SkillTrace Beta ;
-- ETV ;
-- Transfer Gap ;
-- Intent Layer ;
-- sciences cognitives de l'apprentissage ;
-- validation scientifique ;
-- prudence sur les claims "neuro".
+- perte de chances ;
+- score coach ;
+- moments critiques ;
+- training_items ;
+- practice events ;
+- répétition espacée ;
+- SkillTrace shadow ;
+- Transfer Opportunity Model ;
+- claims autorisés/interdits ;
+- limites neuro ;
+- validation scientifique.
 
-Le Plan 2 définit comment l'utilisateur vit l'application :
+Règle :
 
-- Aujourd'hui ;
-- Mes parties ;
-- Entraînement ;
-- Review ;
-- Lecture rapide ;
-- Leçon complète ;
-- Practice ;
-- progression visible ;
-- tonalité émotionnelle ;
-- dopamine saine ;
+Si un choix technique contredit Plan1, il est rejeté.
+
+------------------------------------------------------------
+0.2 Plan2
+------------------------------------------------------------
+
+Fichier canonique :
+
+plan/Plan2.txt
+
+Rôle :
+
+source de vérité UX / produit / interface.
+
+Version attendue :
+
+Plan2 v4.0 FINAL — 20/20 — Codex-ready
+
+Le Plan2 décide :
+
+- navigation ;
+- écrans ;
+- boutons ;
+- design system ;
+- microcopy ;
+- états ;
+- action registry ;
+- data-testid ;
+- modales ;
+- toasts ;
+- empty states ;
+- board UX ;
+- exploration locale ;
 - anti-tilt ;
-- charge cognitive ;
-- timing du feedback ;
-- UX calme, premium, claire.
+- accessibility ;
+- responsive.
 
-Le Plan 3 définit comment on construit réellement NeuroChess sans se perdre.
+Règle :
 
-Question centrale du Plan 3 :
+Si une implémentation crée un bouton non défini, un écran non utile, une métrique visible interdite ou une friction inutile, elle est rejetée.
 
-> Dans quel ordre exact doit-on coder NeuroChess pour passer d'un prototype avancé à une V1 utilisable, stable, testable et évolutive ?
+------------------------------------------------------------
+0.3 Plan3
+------------------------------------------------------------
 
-Ce document est le plan de bataille technique.
+Fichier canonique :
 
-Il doit empêcher :
+plan/Plan3.md
 
-- le scope creep ;
-- les features codées dans le désordre ;
-- les refactors massifs inutiles ;
-- les changements de formules non documentés ;
-- les modifications Stockfish non contrôlées ;
-- les écrans ajoutés sans action claire ;
-- les métriques visibles non calibrées ;
-- les boutons qui perdent l'utilisateur ;
-- les prompts Codex trop larges ;
-- la gouvernance infinie sans livraison ;
-- le "joli cerveau fake science" ;
-- le passage prématuré à la V2/V3 ;
-- l'exécution monolithique du plan complet au lieu d'un sprint ciblé.
+Rôle :
 
-Règle fondamentale :
+source de vérité technique, exécution, tests, release, qualité, gouvernance Codex.
 
-> Une mission Codex = un objectif précis = un diff contrôlé = des tests = un rapport.
+Le Plan3 décide :
 
-Règle complémentaire :
+- ordre de construction ;
+- architecture technique ;
+- contracts API ;
+- migrations ;
+- job system ;
+- observability ;
+- tests ;
+- browser smokes ;
+- release gates ;
+- rollback ;
+- risk register ;
+- prompt template ;
+- mission protocol ;
+- dirty worktree protocol ;
+- release candidate ;
+- postmortem ;
+- governance.
 
-> Une V1 utile ne doit pas être une V3 amputée.
-> Elle doit être la plus petite boucle complète qui prouve la promesse NeuroChess.
+Règle :
 
----
+Plan3 ne définit pas la science ni l’UX finale.
+Plan3 définit comment on livre sans casser Plan1 et Plan2.
 
-# 0.0 MODE D'EMPLOI CODEX — DOCUMENT UNIQUE
+------------------------------------------------------------
+0.4 Anciennes versions
+------------------------------------------------------------
 
-Ce document peut être transmis seul à Codex.
+Les anciennes versions de Plan1/Plan2/Plan3, copies téléchargées, backups, résumés précédents ou mémoire modèle doivent être ignorés s’ils contredisent les fichiers canoniques dans /plan.
 
-Mais règle absolue :
+============================================================
+1. THÈSE CENTRALE DU PLAN3
+============================================================
 
-> Codex ne doit jamais appliquer tout ce document d'un coup.
+Plan3 est le centre de commandement technique de NeuroChess.
 
-Codex doit utiliser ce document comme :
+Sa mission est simple :
 
-- référence produit ;
-- référence technique ;
-- garde-fou de scope ;
-- catalogue de sprints ;
-- source des acceptance criteria ;
-- source des exclusions ;
-- source du template de rapport.
+transformer une vision scientifique et UX ambitieuse en une application stable, testable, livrable et évolutive.
 
-À chaque mission, l'utilisateur doit préciser :
+Phrase directrice :
 
-- le sprint ID ;
-- le but exact ;
-- les sections pertinentes ;
-- les fichiers attendus ;
-- les tests à exécuter.
+On construit d’abord un coach utilisable.
+On ferme ensuite la boucle d’apprentissage.
+On ajoute enfin les couches révolutionnaires, seulement quand elles sont mesurées.
 
-Si Codex reçoit seulement ce document sans mission explicite, il doit répondre qu'il a compris le plan et demander quel sprint exécuter.
+NeuroChess doit être construit comme un vaisseau spatial :
 
-Par défaut :
+- chaque système a un contrat ;
+- chaque lancement a une checklist ;
+- chaque anomalie a un recovery ;
+- chaque mission a un objectif ;
+- chaque diff doit pouvoir être relu ;
+- chaque donnée utilisateur doit être protégée ;
+- chaque retour en arrière doit être possible.
 
-- pas de commit ;
-- pas de stage ;
-- pas de refactor global ;
-- pas de feature hors sprint ;
-- pas de modification Stockfish ;
-- pas de changement de formule ;
-- pas de LLM ;
-- rapport final obligatoire.
+La V1 ne doit pas être une V3 amputée.
 
-Les fichiers de gouvernance mentionnés dans Sprint 0 bis sont des livrables à créer dans le repo. Ils ne sont pas nécessaires comme documents séparés à transmettre à Codex, car leur contenu source est déjà inclus dans ce document unique.
+La V1 doit être :
 
----
+la plus petite boucle complète qui prouve la promesse NeuroChess.
 
-# 0.1 DOCTRINE FINALE APRÈS AUDIT CROISÉ
+Boucle V1 :
 
-Les arbitrages finaux sont les suivants.
+Import PGN
+→ Analyse
+→ Review
+→ Exploration locale
+→ Practice
+→ Attempt riche
+→ due_at
+→ Daily Plan
+→ Révision
+→ Progression compacte
+→ Export/Delete
+→ Browser QA
+→ Release candidate
 
-## 0.1.1 Alpha / V1 / V1.1 / V2 / V3
+============================================================
+2. OBJECTIFS DE LIVRAISON
+============================================================
 
-La construction se fait en cinq niveaux.
+------------------------------------------------------------
+2.1 Alpha utilisable
+------------------------------------------------------------
 
-### Alpha utilisable
+Objectif :
 
-Objectif : stabiliser l'expérience principale.
+stabiliser l’expérience principale.
 
 Inclut :
 
-- baseline ;
-- board UX ;
-- score align ;
 - app shell ;
 - Today ;
 - Games ;
-- Review ;
-- Practice focus.
+- import PGN ;
+- analyse standard ;
+- Review summary ;
+- board Review ;
+- Practice focus ;
+- attempt/reveal path ;
+- browser smoke minimal.
 
-But : l'utilisateur comprend quoi faire, importe une partie, lit une Review, tente une position.
+Critère :
 
-Limite : la boucle d'apprentissage n'est pas encore complète.
+un utilisateur interne peut importer une partie, comprendre une Review, et tenter une position.
 
-### V1 réelle
+Limite :
 
-Objectif : fermer la boucle minimale NeuroChess.
+la boucle d’apprentissage n’est pas totalement fermée.
 
-Inclut en plus de l'Alpha :
+------------------------------------------------------------
+2.2 V1 réelle
+------------------------------------------------------------
 
-- training_items générés depuis les review_moments ;
-- practice_attempts riches ;
-- practice_result_event_v1 ;
+Objectif :
+
+fermer la boucle minimale NeuroChess.
+
+Inclut :
+
+- training_items durables ;
+- practice attempts riches ;
 - simple_spaced_repetition_v1 ;
 - Daily Plan déterministe ;
-- Privacy / export / delete ;
+- due reviews ;
+- progression compacte ;
+- Profile/Privacy ;
+- export/delete ;
+- board interaction réelle ;
+- exploration locale ;
+- états dégradés ;
+- responsive minimum ;
 - QA release candidate.
 
-But : NeuroChess n'est plus seulement un analyseur. Il devient un système qui transforme les erreurs en entraînement et fait revenir les positions au bon moment.
+Critère :
 
-### V1.1
+NeuroChess n’est plus seulement un analyseur.
+Les erreurs deviennent des exercices.
+Les exercices reviennent.
+L’utilisateur sait quoi faire aujourd’hui.
 
-Objectif : activer prudemment les couches d'intelligence interne déjà loggées.
+------------------------------------------------------------
+2.3 V1.1
+------------------------------------------------------------
 
-Inclut :
+Objectif :
 
-- SkillTrace utilisé progressivement dans la planification ;
-- NeuroMonitor / Cognitive Map compact ;
-- ETV plus structuré ;
-- calibration initiale ;
-- premiers tests utilisateurs plus larges.
-
-### V2
-
-Objectif : différenciation forte.
+fiabiliser, mesurer, polir.
 
 Inclut :
 
-- Intent Layer opt-in ;
-- Candidate Trainer ;
-- Lichess API ;
-- Chess.com API ;
-- Progression détaillée ;
+- i18n strings centralisées ;
+- mobile smoke complet ;
+- accessibility pass ;
+- SkillTrace shadow ;
+- Good Decision Mining light ;
+- benchmark diagnostic léger ;
+- better degraded states ;
+- performance budget observability ;
+- first external user cohort.
+
+------------------------------------------------------------
+2.4 V2
+------------------------------------------------------------
+
+Objectif :
+
+différenciation forte.
+
+Inclut :
+
+- Intent Light ;
+- Candidate Trainer opt-in ;
+- near-transfer variants ;
 - motif-based repetition ;
-- validation instrumentation avancée ;
-- LLM verifier infrastructure.
+- progression détaillée ;
+- Lichess/Chess.com sync ;
+- notifications douces ;
+- sandbox complète ;
+- Transfer Opportunity logging actif.
 
-### V3
+------------------------------------------------------------
+2.5 V3
+------------------------------------------------------------
 
-Objectif : système avancé / recherche / produit premium.
+Objectif :
+
+système avancé / recherche / produit premium.
 
 Inclut :
 
 - LLM coach vérifié ;
-- Transfer Gap visible ;
-- BKT / MIRT ;
-- contextual bandits ;
-- Foundations complet ;
-- Advanced Audit ;
-- coach / club mode ;
-- recommandations apprises.
-
-## 0.1.2 SkillTrace Beta en shadow mode
-
-Décision finale :
-
-> SkillTrace Beta est implémenté en V1, mais reste en shadow mode.
-
-Cela signifie :
-
-- les états alpha/beta sont créés ;
-- les états sont mis à jour après chaque tentative Practice ;
-- les recommandations théoriques de SkillTrace sont loggées ;
-- mais le Daily Plan V1 ne dépend pas fortement de SkillTrace ;
-- l'utilisateur ne voit pas de score de maîtrise numérique ;
-- aucune promesse scientifique n'est faite.
-
-Le Daily Plan V1 reste déterministe :
-
-1. positions dues ;
-2. positions ratées récemment ;
-3. moments récents à forte criticality ;
-4. diversité minimale des tags ;
-5. anti-redondance.
-
-Condition de sortie du shadow mode :
-
-SkillTrace peut commencer à influencer le Daily Plan en V1.1 seulement si :
-
-- au moins 200 practice_attempts exploitables par utilisateur actif avancé ou cohorte de validation ;
-- au moins 8 tags distincts observés ;
-- corrélation positive entre mastery_mean alpha/beta et taux de réussite réel ;
-- seuil cible indicatif : corrélation >= 0.60 sur échantillon de validation ;
-- aucune dégradation observée de completion rate ou retry success ;
-- décision actée dans DECISIONS_LOG.md.
-
-Tant que ces conditions ne sont pas remplies :
-
-- SkillTrace reste shadow ;
-- Daily Plan reste déterministe ;
-- SkillTrace sert à préparer la calibration future.
-
-## 0.1.3 Cognitive Map / NeuroMonitor hors V1
-
-Décision finale :
-
-> Pas de Cognitive Map visuelle complète en V1.
-
-Raison :
-
-- trop grand risque de faux signal scientifique ;
-- risque UX de dashboard décoratif ;
-- risque de "joli cerveau fake science" ;
-- données insuffisantes au début ;
-- Plan 2 privilégie une progression compacte en V1.
-
-V1 affiche seulement :
-
-- carte "Cette semaine" ;
-- ratios simples ;
-- activité ;
-- positions revues ;
-- réussites / tentatives ;
-- domaine prioritaire prudent si données suffisantes ;
-- sinon "profil en construction".
-
-Seuil de données suffisantes pour afficher un domaine prioritaire V1 :
-
-- au moins 5 parties analysées ;
-- au moins 30 practice_attempts ;
-- au moins 2 domaines représentés ;
-- au moins 5 événements exploitables dans le domaine prioritaire.
-
-Si seuil non atteint, message :
-
-> "Profil en construction — importe quelques parties et termine des sessions pour obtenir une priorité fiable."
-
-Cognitive Map / NeuroMonitor compact déplacé en V1.1.
-
-## 0.1.4 simple_spaced_repetition_v1
-
-Décision finale :
-
-> Ne pas appeler FSRS-lite ce qui n'est pas FSRS.
-
-Le nom V1 officiel est : `simple_spaced_repetition_v1`
-
-Règles V1 :
-
-- wrong : due tomorrow ;
-- success with hint : due in 3 days ;
-- success without hint : due in 7 days ;
-- repeated success : interval multiplier × 1.7 (valeur par défaut V1) ;
-- repeated failure : reset à 1 jour, pas de multiplicateur ;
-- reveal : due tomorrow ou 2 jours max ;
-- skipped : no-op ou soft due selon contexte.
-
-Plafond de l'intervalle V1 : 30 jours. Au-delà, item considéré "appris" et sort de la file active.
-
-FSRS réel ou FSRS-lite plus sophistiqué est V2/V3.
-
-## 0.1.5 i18n
-
-Décision finale :
-
-> V1 officiellement française, mais strings centralisées dès Sprint 3.
-
-Cela signifie :
-
-- pas de switch de langue en V1 ;
-- pas de traduction anglaise obligatoire ;
-- interface en français ;
-- mais pas de chaînes UI dispersées partout ;
-- créer un fichier du type :
-  - `frontend/src/i18n/fr.ts`
-  - ou `frontend/src/i18n/strings.ts`
-
-Raison : prévenir une dette i18n sans surcomplexifier la V1.
-
-## 0.1.6 Cache Stockfish strict
-
-Décision finale :
-
-> Cache exact strict. Aucune comparaison silencieuse entre moteurs, profils ou formules.
-
-Une analyse cache est réutilisable seulement si :
-
-- même FEN ;
-- même engine_hash ;
-- même engine_version_string ;
-- même analysis_profile compatible ;
-- même multipv minimal requis ;
-- quality_status ok ;
-- formula_version compatible ;
-- metric_version compatible.
-
-Définition engine_hash :
-
-```
-engine_hash =
-    SHA256(stockfish_binary)
-    + SHA256(nnue_file_if_external)
-    + version_string_reported_by_engine
-```
-
-Si NNUE intégrée au binaire : `nnue_file_hash = "embedded"`.
-
-Si version_string absente ou ambiguë : `engine_version_string = "unknown"` et le cache doit être considéré non strictement compatible sauf override explicite debug.
-
-Politique si Stockfish change :
-
-- anciennes analyses marquées legacy ;
-- elles peuvent être affichées comme anciennes ;
-- elles ne doivent pas être mélangées à une nouvelle Review ;
-- bouton "Réanalyser avec le moteur actuel" ;
-- jamais de suppression automatique du cache legacy ;
-- jamais de comparaison silencieuse de NeuroScore entre versions moteur différentes.
-
-## 0.1.7 Critère de sortie V1
-
-La V1 est considérée prête pour premiers utilisateurs externes si :
-
-1. 3 utilisateurs externes complètent sans assistance la boucle :
-   import PGN → analyze → Review → Practice → Daily Plan → révision à J+3.
-
-2. Au moins 2 utilisateurs sur 3 reviennent le lendemain ou à J+2.
-
-3. Aucun bug bloquant dans :
-   - import ;
-   - analyse ;
-   - Review ;
-   - Practice ;
-   - sauvegarde attempts ;
-   - plan du jour ;
-   - export/delete.
-
-4. Les tests critiques passent :
-   - backend unit tests ;
-   - frontend typecheck ;
-   - frontend build ;
-   - PGN import smoke ;
-   - Review regression smoke ;
-   - real flow smoke si disponible.
-
-5. L'utilisateur comprend toujours la prochaine action utile.
-
----
-
-# 1. THÈSE CENTRALE DU PLAN 3
-
-NeuroChess doit être construit en couches successives.
-
-Phrase directrice :
-
-> On construit d'abord un coach utilisable, puis on ajoute progressivement les couches révolutionnaires.
-
-La V1 ne doit pas contenir toute la vision. La V1 doit prouver que le cœur fonctionne :
-
-- importer une partie ;
-- analyser ;
-- expliquer les moments clés ;
-- faire rejouer ;
-- créer une session d'entraînement ;
-- enregistrer les tentatives ;
-- faire revenir les positions ;
-- proposer un plan court ;
-- montrer une progression simple ;
-- protéger les données ;
-- rester stable.
-
-La V1 doit éviter :
-
-- Intent Layer complet ;
-- Candidate Trainer ;
-- LLM coach ;
-- Transfer Gap visible ;
-- Cognitive Map décorative ;
-- Progression détaillée ;
-- métriques scientifiques non calibrées visibles ;
-- claims neuroscientifiques forts.
-
-La V1 doit déjà prouver :
-
-> Mes vraies erreurs deviennent des exercices.
-> Mes tentatives sont enregistrées.
-> Mes erreurs reviennent.
-> Je sais quoi faire aujourd'hui.
-
-Si cette boucle fonctionne, NeuroChess existe.
-
----
-
-# 2. ARCHITECTURE TECHNIQUE CIBLE
-
-## 2.1 Architecture globale
-
-Frontend :
-
-- React ;
-- TypeScript ;
-- Vite ;
-- CSS modules ou CSS variables globales ;
-- composants UI propres ;
-- board chess interactif ;
-- état local clair ;
-- hooks dédiés ;
-- polling pour jobs Review ;
-- structure prête pour SSE/WebSocket futur ;
-- strings centralisées en français dès Sprint 3.
-
-Backend :
-
-- Python ;
-- FastAPI ou équivalent ;
-- SQLite local-first en V1 ;
-- SQLAlchemy ou couche repository propre ;
-- python-chess ;
-- Stockfish local ;
-- job system Review ;
-- cache d'analyse ;
-- endpoints REST simples ;
-- migration légère si nécessaire ;
-- export/suppression RGPD.
-
-Moteur :
-
-- Stockfish local ;
-- profils d'analyse versionnés ;
-- cache par FEN + engine_hash + profile + formula_version ;
-- jamais vérité LLM ;
-- jamais sous transaction DB ;
-- jamais comparaison silencieuse entre versions moteur.
-
-Stockage :
-
-- SQLite en V1 ;
-- local-first ;
-- versioning des métriques ;
-- export JSON + PGN ;
-- suppression complète ;
-- cloud sync plus tard.
-
-LLM :
-
-- pas V1 core ;
-- futur parser / coach ;
-- jamais source de vérité échiquéenne ;
-- toujours contraint par Evidence JSON et verifier ;
-- aucune dépendance produit V1.
-
-## 2.2 Frontière des responsabilités
-
-Frontend responsable de :
-
-- expérience utilisateur ;
-- navigation ;
-- board ;
-- Review UI ;
-- Practice UI ;
-- Today page ;
-- Training page ;
-- Profile / Settings ;
-- gestion visuelle des états ;
-- appels API ;
-- responsive ;
-- accessibilité ;
-- centralisation des textes UI.
-
-Backend responsable de :
-
-- vérité des données ;
-- import PGN ;
-- analyse moteur ;
-- calculs ;
-- jobs ;
-- scores ;
-- moments ;
-- training items ;
-- practice events ;
-- SkillTrace shadow ;
-- scheduling ;
-- daily plan ;
-- export/suppression ;
-- cache policy ;
-- telemetry locale ou event logging.
-
-Stockfish responsable de :
-
-- évaluation objective ;
-- top moves ;
-- PV ;
-- WDL audit futur ;
-- moteur strictement versionné.
-
-LLM futur responsable de :
-
-- reformulation ;
-- parsing intention ;
-- explication contrôlée ;
-- jamais évaluation brute ;
-- jamais coup inventé ;
-- jamais intention inventée.
-
----
-
-# 3. PRINCIPES D'INGÉNIERIE
-
-## 3.1 Pas de feature sans contrat
+- Transfer Gap visible prudent ;
+- SkillTrace hiérarchique ;
+- MIRT ;
+- contextual bandit ;
+- opening repertoire model ;
+- endgame curriculum ;
+- coach/club mode ;
+- advanced audit.
+
+============================================================
+3. PRINCIPES D’INGÉNIERIE
+============================================================
+
+------------------------------------------------------------
+3.1 Pas de feature sans contrat
+------------------------------------------------------------
 
 Chaque fonctionnalité doit avoir :
 
 - contrat utilisateur ;
 - contrat data ;
 - contrat API ;
+- contrat UI ;
 - état vide ;
 - état loading ;
 - état erreur ;
+- recovery ;
 - tests ;
 - acceptance criteria ;
 - rollback plan ;
-- perf budget si pertinent.
+- docs ;
+- source planifiée : Plan1 / Plan2 / Plan3.
 
-## 3.2 Pas de métrique sans registry
+Si un de ces éléments manque, la feature n’est pas prête.
 
-Chaque métrique doit avoir :
+------------------------------------------------------------
+3.2 Pas de métrique sans registry
+------------------------------------------------------------
+
+Toute métrique doit avoir :
 
 - metric_id ;
 - formula_version ;
@@ -584,23 +372,19 @@ Chaque métrique doit avoir :
 - limitations ;
 - source_semantics ;
 - owner ;
-- date_added.
+- date_added ;
+- tests de non-régression.
 
-Statuts possibles :
+Règle :
 
-- external_reference ;
-- heuristic_v1 ;
-- shadow_v1 ;
-- internal_audit ;
-- calibrated_v1 ;
-- research_v2 ;
-- deprecated.
+Une métrique non calibrée peut être stockée.
+Elle ne doit pas être affichée comme vérité.
 
-Règle : une métrique non calibrée peut être stockée. Elle ne doit pas être présentée comme vérité utilisateur.
+------------------------------------------------------------
+3.3 Pas de bouton sans Action Registry
+------------------------------------------------------------
 
-## 3.3 Pas de bouton sans Action Registry
-
-Chaque action doit avoir :
+Tout bouton doit avoir :
 
 - action_id ;
 - label_user ;
@@ -609,342 +393,564 @@ Chaque action doit avoir :
 - hidden_when ;
 - effect ;
 - side_effects ;
-- destructive or not ;
+- destructive ;
 - telemetry_event ;
 - confirmation_required ;
-- rollback_possible.
+- rollback_possible ;
+- test_required.
 
-## 3.4 Pas de refactor massif non ciblé
+Si un bouton n’a pas de contrat, il ne doit pas être ajouté.
+
+------------------------------------------------------------
+3.4 Pas d’écran sans Screen Contract
+------------------------------------------------------------
+
+Chaque écran doit avoir :
+
+- screen_id ;
+- user_question ;
+- primary_action ;
+- secondary_actions ;
+- empty_state ;
+- loading_state ;
+- error_state ;
+- data_dependencies ;
+- forbidden_content ;
+- tests.
+
+------------------------------------------------------------
+3.5 Pas de refactor massif non ciblé
+------------------------------------------------------------
 
 Interdit :
 
 - réécrire tout App.tsx sans nécessité ;
-- changer backend + frontend + DB dans le même sprint sans justification ;
-- modifier formules en même temps qu'UI ;
+- modifier backend + frontend + DB + docs dans une seule mission sauf mission système explicitement prévue ;
+- modifier formules en même temps que UI ;
 - modifier Stockfish en même temps que Practice ;
 - ajouter LLM pendant une mission Review ;
 - ajouter V2 pendant sprint V1 ;
-- introduire un design system complet pendant un bugfix.
+- introduire design system complet pendant bugfix ;
+- “nettoyer au passage”.
 
 Autorisé :
 
-- refactor minimal pour accomplir le sprint ;
-- extraction ciblée si elle réduit un fichier instable ;
+- refactor minimal nécessaire ;
+- extraction ciblée si elle réduit un risque immédiat ;
 - documentation du refactor dans le rapport.
 
-## 3.5 Tests avant confiance
+------------------------------------------------------------
+3.6 Tests avant confiance
+------------------------------------------------------------
 
-Chaque mission doit exécuter au minimum, selon disponibilité :
+La phrase “ça marche” n’a aucune valeur sans preuve.
 
-Backend :
+Toute mission doit produire :
 
-```
-.venv\Scripts\python.exe -m unittest discover backend/tests
-```
+- tests exécutés ;
+- commandes exactes ;
+- résultats PASS/FAIL ;
+- limites honnêtes ;
+- preuves browser si UI ;
+- preuves API si backend ;
+- preuves DB si migration.
 
-Frontend :
+------------------------------------------------------------
+3.7 Rollback obligatoire
+------------------------------------------------------------
 
-```
-cd frontend
-node node_modules\typescript\bin\tsc --noEmit
-node node_modules\vite\bin\vite.js build
-```
+Chaque mission doit dire :
 
-Smokes si disponibles :
+- comment revenir en arrière ;
+- quelles données seraient impactées ;
+- si migration réversible ou non ;
+- si rollback code suffit ;
+- si export utilisateur nécessaire.
 
-```
-.venv\Scripts\python.exe scripts\review_regression_smoke.py
-.venv\Scripts\python.exe scripts\pgn_import_smoke.py
-.venv\Scripts\python.exe scripts\pgn_sindarov_real_flow_smoke.py
-```
+------------------------------------------------------------
+3.8 Local-first et data safety
+------------------------------------------------------------
 
-Si un test n'existe pas :
-
-- ne pas inventer qu'il a été exécuté ;
-- signaler `not available` ;
-- proposer le test à créer si pertinent ;
-- ne pas bloquer le sprint sauf si le test est explicitement requis comme acceptance criterion.
-
-## 3.6 Budget de performance
-
-Chaque sprint doit déclarer un perf budget mesurable. Cibles V1 par défaut :
-
-- import PGN d'une partie normale : < 500 ms perçus ;
-- import PGN long ou multi-game : < 2 s ou feedback/progression immédiat ;
-- premier moment Review affiché : < 30 s après lancement analyse standard si moteur disponible et machine correcte ;
-- attempt Practice → feedback : < 200 ms ;
-- chargement Today : < 800 ms ;
-- chargement Review déjà calculée : < 1 s ;
-- transition d'écran : < 150 ms.
-
-Si un sprint ne respecte pas le budget, soit le budget est révisé et acté dans DECISIONS_LOG, soit un sprint d'optimisation est planifié avant continuation.
-
-## 3.7 Rollback plan
-
-Chaque sprint doit déclarer son plan de rollback :
-
-- branche git de référence avant sprint ;
-- commit hash de l'état stable précédent ;
-- procédure de revert ;
-- impact sur les données utilisateur si revert (migrations, etc.) ;
-- temps estimé du rollback.
-
----
-## 3.8 Règle Codex no commit / no stage par défaut
-
-Par défaut, Codex ne doit pas commit et ne doit pas stage.
+La V1 est local-first.
 
 Règles :
 
-- toujours exécuter `git status` avant modification ;
-- toujours exécuter `git status` après modification ;
-- ne jamais exécuter `git add` sauf demande explicite ;
-- ne jamais exécuter `git commit` sauf demande explicite ;
-- si un commit est explicitement demandé, faire un seul commit avec un message clair ;
-- ne jamais inclure des fichiers hors mission dans le commit ;
-- rapporter les fichiers modifiés et les fichiers non suivis.
+- ne jamais supprimer des fichiers projet via endpoint utilisateur ;
+- export/delete doivent être explicites ;
+- tests destructifs sur DB temp seulement ;
+- migrations idempotentes ;
+- sauvegarde possible avant migration sensible ;
+- pas de secret dans export ;
+- pas de chemins absolus inutiles dans export.
 
----
+------------------------------------------------------------
+3.9 Déterminisme avant intelligence
+------------------------------------------------------------
 
-# 4. DATA MODEL CIBLE
+V1 privilégie :
 
-## 4.1 Tables / objets V1
+- heuristiques lisibles ;
+- sélection déterministe ;
+- tests stables ;
+- comportements reproductibles.
 
-### users / local_profile
+Les modèles apprenants arrivent après instrumentation et validation.
 
-- id ;
-- display_name ;
-- initial_rating_bucket ;
-- preferred_time_control ;
-- onboarding_completed ;
-- created_at ;
-- updated_at.
+------------------------------------------------------------
+3.10 Recovery avant sophistication
+------------------------------------------------------------
 
-### user_settings
+Avant toute nouvelle feature :
 
-- user_id ;
-- theme ;
-- density ;
-- animations ;
-- coach_tone ;
-- help_level ;
-- intent_mode ;
-- show_timer ;
-- stockfish_path ;
-- default_analysis_profile ;
-- cloud_sync_enabled ;
-- research_opt_in ;
-- language ;
-- created_at ;
-- updated_at.
+- l’analyse ne doit pas spinner à l’infini ;
+- Practice ne doit pas perdre d’attempt ;
+- Delete doit être sûr ;
+- export doit marcher ;
+- board doit être jouable ;
+- le backend doit donner des erreurs structurées.
 
-Note : `language = fr` en V1. Pas de switch de langue obligatoire.
+============================================================
+4. STACK TECHNIQUE CIBLE
+============================================================
 
-### games
+------------------------------------------------------------
+4.1 Frontend
+------------------------------------------------------------
 
-- id ;
-- source ;
-- source_id ;
-- pgn_raw ;
-- white ;
-- black ;
-- white_rating ;
-- black_rating ;
-- user_color ;
-- result ;
-- time_control ;
-- time_control_class ;
-- opening_name ;
-- eco ;
-- created_at ;
-- imported_at ;
-- status ;
-- duplicate_key ;
-- deleted_at optional.
+Stack :
 
-### moves
+- React ;
+- TypeScript ;
+- Vite ;
+- CSS variables / design tokens ;
+- composants UI propres ;
+- board chess interactif ;
+- hooks dédiés ;
+- polling jobs ;
+- structure prête pour SSE/WebSocket futur.
 
-- id ;
-- game_id ;
-- ply ;
-- move_number ;
-- side ;
-- san ;
-- uci ;
-- fen_before ;
-- fen_after ;
-- is_book ;
-- created_at.
+Responsabilités :
 
-### engine_analysis
+- expérience utilisateur ;
+- navigation ;
+- Review UI ;
+- Practice UI ;
+- board interaction ;
+- Profile/Privacy ;
+- états visuels ;
+- erreurs lisibles ;
+- calls API ;
+- responsive ;
+- accessibility ;
+- i18n strings.
 
-- id ;
-- fen ;
-- engine_version ;
-- engine_version_string ;
+Interdit frontend :
+
+- recalculer les formules scientifiques ;
+- inventer best_move ;
+- inventer tags ;
+- exposer debug par défaut ;
+- fake success sans backend.
+
+------------------------------------------------------------
+4.2 Backend
+------------------------------------------------------------
+
+Stack :
+
+- Python ;
+- FastAPI ou équivalent ;
+- SQLite local-first V1 ;
+- python-chess ;
+- Stockfish local ;
+- repositories/services ;
+- migrations légères ;
+- endpoints REST ;
+- job system Review.
+
+Responsabilités :
+
+- vérité data ;
+- import PGN ;
+- parsing moves ;
+- FEN ;
+- analyse moteur ;
+- score ;
+- moments ;
+- training_items ;
+- practice attempts ;
+- scheduling ;
+- Daily Plan ;
+- export/delete ;
+- cache policy ;
+- telemetry locale ;
+- error contracts.
+
+Interdit backend :
+
+- répondre avec stack traces utilisateur ;
+- supprimer fichiers projet via user-data ;
+- mélanger engines/formules ;
+- faire tourner Stockfish dans transaction longue DB ;
+- ignorer timeout engine.
+
+------------------------------------------------------------
+4.3 Moteur
+------------------------------------------------------------
+
+Stockfish est la source de vérité échiquéenne.
+
+Règles :
+
+- engine versionné ;
 - engine_hash ;
-- nnue_hash ;
-- stockfish_binary_hash ;
-- analysis_profile ;
-- depth ;
-- nodes ;
-- multipv ;
-- eval_cp_white_pov ;
-- mate_in ;
-- wdl_w ;
-- wdl_d ;
-- wdl_l ;
-- top_moves_json ;
-- pv_json ;
-- cache_key ;
-- quality_status ;
-- cache_validity_status ;
-- formula_version ;
-- metric_version ;
-- legacy_flag ;
-- created_at.
+- profile versionné ;
+- cache strict ;
+- timeouts ;
+- retries ;
+- kill/restart si hang ;
+- pas de LLM comme vérité.
 
-`cache_validity_status` values :
+------------------------------------------------------------
+4.4 DB
+------------------------------------------------------------
 
-- strict_valid ;
-- legacy_engine ;
-- legacy_formula ;
-- insufficient_profile ;
-- insufficient_multipv ;
-- stale ;
-- invalid.
+V1 :
 
-### review_jobs
+SQLite local-first.
 
-- id ;
-- game_id ;
-- status ;
+Règles :
+
+- migrations numérotées ;
+- idempotence ;
+- tests migration ;
+- temp DB pour tests destructifs ;
+- export JSON ;
+- delete confirmé ;
+- pas de dépendance cloud.
+
+------------------------------------------------------------
+4.5 LLM futur
+------------------------------------------------------------
+
+Statut :
+
+hors V1.
+
+Règles futures :
+
+- jamais source de vérité échiquéenne ;
+- Evidence JSON obligatoire ;
+- verifier obligatoire ;
+- source spans ;
+- pas d’intention inventée ;
+- pas de ligne inventée ;
+- pas de score modifié.
+
+============================================================
+5. ARCHITECTURE FRONTEND
+============================================================
+
+------------------------------------------------------------
+5.1 Pages V1
+------------------------------------------------------------
+
+Pages / vues principales :
+
+- Today ;
+- Games ;
+- Training ;
+- Review contextuelle ;
+- Practice focus ;
+- Profile/Settings ;
+- Import panel ;
+- Demo mode ;
+- Error/Recovery view.
+
+Interdit onglet principal :
+
+- Review ;
+- Progression détaillée ;
+- Profil ;
+- Sandbox ;
+- Candidate Trainer.
+
+------------------------------------------------------------
+5.2 State management
+------------------------------------------------------------
+
+Principes :
+
+- état local clair ;
+- pas de global store tentaculaire sans nécessité ;
+- hooks dédiés ;
+- API client typé ;
+- transitions contrôlées.
+
+Hooks recommandés :
+
+- useToday ;
+- useGames ;
+- useReviewJob ;
+- useReview ;
+- usePracticeSession ;
+- useDailyPlan ;
+- useProfilePrivacy ;
+- useEngineStatus ;
+- useBoardInteraction ;
+- useToast ;
+- useModalConfirm.
+
+------------------------------------------------------------
+5.3 Board module
+------------------------------------------------------------
+
+Le board doit supporter :
+
+- review_static ;
+- review_exploration ;
+- practice_attempt ;
+- demo ;
+- sandbox futur.
+
+Contrats :
+
+- click-click obligatoire ;
+- drag/drop optionnel ;
+- orientation ;
+- legal highlight ;
+- selected square ;
+- last move ;
+- illegal feedback ;
+- promotion safe ;
+- data-testid ;
+- no crash on invalid FEN.
+
+------------------------------------------------------------
+5.4 UI state machines
+------------------------------------------------------------
+
+Le frontend doit modéliser explicitement :
+
+- analysis states ;
+- review states ;
+- practice states ;
+- daily plan states ;
+- export/delete states ;
+- import states.
+
+Jamais :
+
+- booléens dispersés contradictoires ;
+- spinner sans timeout ;
+- action sans feedback.
+
+------------------------------------------------------------
+5.5 i18n strings
+------------------------------------------------------------
+
+V1 en français.
+
+Mais toutes les strings critiques doivent être centralisées.
+
+Fichiers possibles :
+
+- frontend/src/i18n/fr.ts ;
+- frontend/src/i18n/strings.ts.
+
+Interdit :
+
+- labels d’action hardcodés partout ;
+- messages d’erreur dispersés ;
+- texte interdit qui échappe aux tests statiques.
+
+============================================================
+6. ARCHITECTURE BACKEND
+============================================================
+
+------------------------------------------------------------
+6.1 Services
+------------------------------------------------------------
+
+Services recommandés :
+
+- pgn_import_service ;
+- game_service ;
+- review_job_service ;
+- engine_service ;
+- analysis_cache_service ;
+- review_summary_service ;
+- review_moment_service ;
+- training_item_service ;
+- practice_service ;
+- spaced_repetition_service ;
+- daily_plan_service ;
+- learning_summary_service ;
+- privacy_service ;
+- settings_service ;
+- telemetry_service ;
+- migration_service.
+
+Règle :
+
+Routes API minces.
+Logique dans services testables.
+
+------------------------------------------------------------
+6.2 Repositories
+------------------------------------------------------------
+
+Chaque table critique doit avoir une couche d’accès claire ou des fonctions dédiées.
+
+Éviter :
+
+- SQL inline dupliqué partout ;
+- migrations qui deviennent business logic ;
+- endpoint qui manipule toutes les tables directement.
+
+------------------------------------------------------------
+6.3 Schemas API
+------------------------------------------------------------
+
+Chaque endpoint doit avoir :
+
+- request schema ;
+- response schema ;
+- error schema ;
+- examples ;
+- tests.
+
+Error contract :
+
+{
+  "error_code": "...",
+  "message": "...",
+  "recoverable": true,
+  "recommended_action": "...",
+  "debug": {}
+}
+
+Debug safe :
+
+- pas de secret ;
+- pas de stack trace brute ;
+- pas de chemin absolu inutile.
+
+------------------------------------------------------------
+6.4 Background jobs
+------------------------------------------------------------
+
+Review analysis doit être un job :
+
+- queued ;
+- running ;
+- stalled_resumable ;
+- completed ;
+- completed_with_warnings ;
+- failed_recoverable ;
+- failed_final.
+
+Chaque job :
+
+- heartbeat ;
+- updated_at ;
 - progress_done ;
 - progress_total ;
 - current_phase ;
-- started_at ;
-- updated_at ;
-- completed_at ;
-- heartbeat_at ;
-- error_message ;
-- cancelled_at ;
-- analysis_profile ;
-- engine_hash ;
+- last_error_code ;
+- retry_count ;
+- engine_profile ;
 - formula_version.
 
-### review_summaries
+============================================================
+7. DATA MODEL CIBLE
+============================================================
 
-- id ;
-- game_id ;
-- user_color ;
-- neuro_score ;
-- reference_accuracy ;
-- coach_summary ;
-- primary_domain ;
-- created_at ;
-- formula_version ;
-- engine_hash ;
-- analysis_profile.
+Le modèle de données doit rester aligné avec Plan1.
 
-### review_moments
+------------------------------------------------------------
+7.1 V1 tables principales
+------------------------------------------------------------
 
-- id ;
-- game_id ;
-- ply ;
-- domain ;
-- primary_tag ;
-- secondary_tags_json ;
-- severity_label ;
-- criticality_score ;
-- win_loss ;
-- played_move ;
-- best_move ;
-- fen_before ;
-- fen_after ;
-- explanation_short ;
-- takeaway ;
+V1 core :
+
+- local_profile ;
+- user_settings ;
+- games ;
+- moves ;
+- engine_analysis ;
+- review_jobs ;
+- review_summaries ;
+- review_moments ;
+- training_items ;
+- practice_sessions ;
+- practice_session_items ;
+- practice_attempts ;
+- spaced_repetition_queue ou due_at equivalent ;
+- daily_plan_items ;
+- telemetry_events ;
+- user_aliases si utile.
+
+------------------------------------------------------------
+7.2 Champs critiques practice_attempts
+------------------------------------------------------------
+
+Obligatoires :
+
+- session_id ;
+- item_id ;
+- move_played ;
+- result ;
+- time_spent_ms ;
+- hint_used ;
+- reveal_used ;
+- source_context ;
+- due_at ;
 - created_at.
 
-### training_items
+Futurs :
+
+- confidence_pre_attempt ;
+- explanation_attempt ;
+- time_to_first_move_ms ;
+- wrong_streak_count ;
+- anti_tilt_message_shown.
+
+------------------------------------------------------------
+7.3 training_items
+------------------------------------------------------------
+
+Doit contenir :
 
 - id ;
 - source_type ;
 - source_game_id ;
 - source_ply ;
+- source_moment_id ;
 - fen ;
 - side_to_move ;
 - best_move ;
 - accepted_moves_json ;
 - domain ;
 - primary_tag ;
-- secondary_tags_json ;
-- difficulty_proxy ;
 - criticality_score ;
-- created_at ;
+- explanation_short ;
+- takeaway ;
 - status.
 
-### practice_sessions
+Règles :
 
-- id ;
-- user_id ;
-- source_type ;
-- status ;
-- started_at ;
-- completed_at ;
-- current_index ;
-- total_items ;
-- theme ;
-- created_at.
+- généré depuis review_moments ;
+- max 5 par Review V1 ;
+- idempotent ;
+- dédup source_game_id + source_ply ;
+- accepted_moves_json contient best_move minimum.
 
-### practice_session_items
+------------------------------------------------------------
+7.4 daily_plan_items
+------------------------------------------------------------
 
-- id ;
-- session_id ;
-- item_id ;
-- order_index ;
-- status ;
-- last_result.
-
-### practice_attempts
-
-- id ;
-- session_id ;
-- item_id ;
-- attempt_number ;
-- move_played ;
-- result ;
-- time_spent_ms ;
-- hint_used ;
-- reveal_used ;
-- skipped ;
-- created_at.
-
-### skilltrace_states (shadow V1)
-
-- id ;
-- user_id ;
-- tag ;
-- alpha ;
-- beta ;
-- shadow_mode_flag ;
-- last_recommendation_logged ;
-- updated_at.
-
-### review_queue / spaced_repetition_queue
-
-- id ;
-- user_id ;
-- item_id ;
-- due_at ;
-- interval_days ;
-- last_result ;
-- repetitions ;
-- stability_proxy ;
-- difficulty_proxy ;
-- created_at ;
-- updated_at.
-
-### daily_plan_items
+Champs :
 
 - id ;
 - user_id ;
@@ -956,151 +962,67 @@ Note : `language = fr` en V1. Pas de switch de langue obligatoire.
 - source_bucket ;
 - created_at.
 
-source_bucket values :
+Règle :
 
-- due ;
-- failed_recent ;
-- recent_critical ;
-- diversity_fill ;
-- manual.
+selection_score interne seulement.
 
-selection_score en V1 : debug/internal only.
+------------------------------------------------------------
+7.5 migrations
+------------------------------------------------------------
 
-### domain_signals
+Toute migration doit :
 
-- id ;
-- user_id ;
-- domain ;
-- state ;
-- signal_strength ;
-- evidence_json ;
-- updated_at ;
-- version.
+- être numérotée ;
+- être idempotente si possible ;
+- avoir test ;
+- préserver données existantes ;
+- être documentée ;
+- être incluse dans export/delete si table user-data.
 
-### telemetry_events
+============================================================
+8. API CONTRACTS V1
+============================================================
 
-- id ;
-- user_id ;
-- event_name ;
-- payload_json ;
-- session_id ;
-- created_at.
+------------------------------------------------------------
+8.1 Games
+------------------------------------------------------------
 
-## 4.2 Tables V2
-
-### intent_events
-
-- id ;
-- user_id ;
-- game_id ;
-- ply ;
-- fen_before ;
-- move_played ;
-- capture_timing ;
-- prompt_type ;
-- user_text ;
-- quick_choice_response ;
-- self_confidence ;
-- candidate_moves_declared ;
-- expected_opponent_reply ;
-- claimed_opening ;
-- claimed_goal ;
-- claimed_plan ;
-- non_response_reason ;
-- vague_response_type ;
-- parse_confidence ;
-- bias_risk ;
-- usability_for_metrics ;
-- extracted_json ;
-- source_spans_json ;
-- parser_version ;
-- is_inference_flags_json ;
-- intent_alignment_category ;
-- candidate_signal ;
-- opening_awareness_signal ;
-- metacognitive_signal ;
-- privacy_level ;
-- cloud_allowed ;
-- research_opt_in ;
-- deletable ;
-- created_at.
-
-### candidate_sessions
-
-- id ;
-- user_id ;
-- source_item_id ;
-- status ;
-- created_at.
-
-### candidate_attempts
-
-- id ;
-- candidate_session_id ;
-- fen ;
-- candidate_moves_json ;
-- preferred_move ;
-- confidence ;
-- expected_reply ;
-- result_category ;
-- created_at.
-
-### llm_explanations
-
-- id ;
-- evidence_hash ;
-- model_provider ;
-- model_name ;
-- verifier_status ;
-- explanation_text ;
-- created_at.
-
-### validation_events
-
-- id ;
-- user_id ;
-- event_type ;
-- payload_json ;
-- created_at.
-
----
-
-# 5. API CONTRACTS V1
-
-## 5.1 Games
-
-### GET /api/games
+GET /api/games
 
 Retour :
 
-- games list ;
+- list games ;
 - status ;
-- neuro_score si existe ;
 - review_status ;
+- neuro_score si disponible ;
 - training_available.
 
-### POST /api/games/import/pgn
+POST /api/games/import/pgn
 
 Input :
 
 - pgn_raw ;
-- source optionnel.
+- source optional.
 
 Retour :
 
 - created games ;
 - invalid games ;
-- warnings.
+- warnings ;
+- duplicate info.
 
-### POST /api/games/{game_id}/analyze
+POST /api/games/{game_id}/analyze
 
 Input :
 
-- profile : standard / deep.
+- profile.
 
-Retour : job_id.
+Retour :
 
-### GET /api/games/{game_id}
+- job_id ;
+- status.
+
+GET /api/games/{game_id}
 
 Retour :
 
@@ -1108,47 +1030,56 @@ Retour :
 - moves ;
 - review status.
 
-### DELETE /api/games/{game_id}
+DELETE /api/games/{game_id}
 
-Destructif, confirmation frontend.
+Destructif.
+Confirmation frontend requise.
 
-## 5.2 Review
+------------------------------------------------------------
+8.2 Review
+------------------------------------------------------------
 
-### GET /api/review/jobs/{job_id}
+GET /api/review/jobs/{job_id}
 
 Retour :
 
 - status ;
-- progress ;
+- progress_done ;
+- progress_total ;
 - phase ;
-- error.
+- recoverable ;
+- warnings ;
+- timeout metadata safe.
 
-### GET /api/games/{game_id}/review
+GET /api/games/{game_id}/review
 
 Retour :
 
 - summary ;
 - moments ;
 - scores ;
+- quality_status ;
+- warnings ;
 - training_items_available.
 
-### POST /api/games/{game_id}/review/reconcile
+POST /api/games/{game_id}/review/reconcile
 
-Répare job bloqué ou états inconsistants.
+Répare état incohérent ou job bloqué.
 
-### POST /api/games/{game_id}/review/recompute
+POST /api/games/{game_id}/review/recompute
 
-Advanced only.
+Action avancée.
 
-## 5.3 Practice
+------------------------------------------------------------
+8.3 Practice
+------------------------------------------------------------
 
-### POST /api/practice/sessions
+POST /api/practice/sessions
 
 Input :
 
-- source_game_id optionnel ;
-- source_review_id optionnel ;
-- mode : review / due / failed / plan ;
+- source_game_id optional ;
+- mode: review / due / failed / plan ;
 - max_items.
 
 Retour :
@@ -1156,15 +1087,15 @@ Retour :
 - session_id ;
 - first_item.
 
-### GET /api/practice/sessions/{session_id}
+GET /api/practice/sessions/{session_id}
 
 Retour :
 
 - session ;
 - items ;
-- current item.
+- current_item.
 
-### POST /api/practice/sessions/{session_id}/attempt
+POST /api/practice/sessions/{session_id}/attempt
 
 Input :
 
@@ -1178,16 +1109,19 @@ Retour :
 
 - result ;
 - feedback ;
-- next state.
+- due_at ;
+- next_state.
 
-### POST /api/practice/sessions/{session_id}/skip
-### POST /api/practice/sessions/{session_id}/reveal
-### POST /api/practice/sessions/{session_id}/complete
-### POST /api/practice/sessions/{session_id}/retry-failed
+POST /api/practice/sessions/{session_id}/skip
+POST /api/practice/sessions/{session_id}/reveal
+POST /api/practice/sessions/{session_id}/complete
+POST /api/practice/sessions/{session_id}/retry-failed
 
-## 5.4 Today
+------------------------------------------------------------
+8.4 Today
+------------------------------------------------------------
 
-### GET /api/today
+GET /api/today
 
 Retour :
 
@@ -1197,11 +1131,14 @@ Retour :
 - progress_card ;
 - due_count ;
 - latest_review ;
-- active_session.
+- active_session ;
+- daily_plan_status.
 
-## 5.5 Training
+------------------------------------------------------------
+8.5 Training
+------------------------------------------------------------
 
-### GET /api/training
+GET /api/training
 
 Retour :
 
@@ -1209,49 +1146,46 @@ Retour :
 - failed_items_card ;
 - due_reviews_card ;
 - counts ;
-- current_active_session if exists.
+- active_session.
 
-### POST /api/training/daily-plan
+POST /api/training/daily-plan
 
 Crée ou récupère le plan du jour.
 
-Input :
+GET /api/training/daily-plan/today
 
-- max_items optional ;
-- duration_preference optional.
+Retourne plan existant ou empty state.
 
-Retour :
+POST /api/training/daily-plan/practice
 
-- plan_id ;
-- items ;
-- estimated_duration ;
-- selection_reasons.
+Crée session Practice depuis plan.
 
-### GET /api/training/daily-plan/today
+------------------------------------------------------------
+8.6 Settings / Privacy
+------------------------------------------------------------
 
-Retour :
+GET /api/settings
+PATCH /api/settings
+GET /api/export
+DELETE /api/user-data
 
-- existing daily plan if already generated ;
-- empty state if not enough items.
+DELETE requires confirmation.
 
-## 5.6 Settings / Privacy
+------------------------------------------------------------
+8.7 Engine
+------------------------------------------------------------
 
-### GET /api/settings
-### PATCH /api/settings
-### GET /api/export
-### DELETE /api/user-data
+GET /api/engine/status
+POST /api/engine/test
+PATCH /api/engine/settings
 
-## 5.7 Engine
+============================================================
+9. PIPELINE PGN → REVIEW → TRAINING
+============================================================
 
-### GET /api/engine/status
-### POST /api/engine/test
-### PATCH /api/engine/settings
-
----
-
-# 6. PIPELINE PGN → REVIEW → TRAINING
-
-## 6.1 Import PGN
+------------------------------------------------------------
+9.1 Import PGN
+------------------------------------------------------------
 
 Étapes :
 
@@ -1267,1544 +1201,1834 @@ Retour :
 10. dédupliquer ;
 11. retourner status.
 
-États erreur :
+Erreurs :
 
-- PGN invalide ;
-- coups illégaux ;
-- partie trop courte ;
-- metadata manquante.
+- empty ;
+- invalid ;
+- illegal move ;
+- too short ;
+- too large ;
+- duplicate.
 
-## 6.2 Analyse Review
+------------------------------------------------------------
+9.2 Analyse Review
+------------------------------------------------------------
 
 Étapes :
 
 1. créer review_job ;
 2. déterminer positions à analyser ;
-3. vérifier cache strict (engine_hash + profile + formula_version) ;
+3. vérifier cache strict ;
 4. analyser positions manquantes ;
 5. stocker engine_analysis ;
 6. calculer white_percent ;
 7. calculer player_win_percent ;
 8. calculer win_loss ;
 9. calculer move_accuracy ;
-10. calculer game_accuracy ;
-11. calculer neuro_score_diag ;
+10. calculer reference_accuracy ;
+11. calculer neuro_score_diag interne ;
 12. calculer coach_neuro_score ;
 13. calculer criticality_score ;
-14. appliquer temporal NMS ;
-15. tagger moments avec taxonomy_v0 ;
+14. temporal NMS ;
+15. tag taxonomy V0 ;
 16. générer review_summary ;
 17. générer review_moments ;
 18. générer training_items ;
-19. marquer job completed.
+19. compléter job.
 
-## 6.3 Génération des moments
+------------------------------------------------------------
+9.3 Génération moments
+------------------------------------------------------------
 
 Pour chaque coup du joueur :
 
 - récupérer P_before ;
 - récupérer P_after ;
 - calculer win_loss ;
-- ignorer win_loss insignifiant sauf cas spécial ;
+- calculer transition ;
+- calculer persistence ;
+- calculer reliability ;
 - calculer criticality ;
-- déterminer domaine ;
-- déterminer tag ;
-- déterminer explanation_short ;
-- déterminer takeaway.
+- filtrer shallow/invalid ;
+- trier ;
+- appliquer NMS ;
+- max moments résumé.
 
-Sélection finale :
+------------------------------------------------------------
+9.4 Génération training_items
+------------------------------------------------------------
 
-- trier par criticality ;
-- appliquer temporal NMS ;
-- max 3 moments principaux pour Review Résumé ;
-- max 5 training items pour session Review.
+Depuis review_moments :
 
-## 6.4 Génération Practice Items
-
-Pour chaque review_moment sélectionné, créer un training_item :
-
+- max 5 ;
+- idempotent ;
+- accepted_moves_json inclut best_move ;
+- source_game_id/source_ply/source_moment_id ;
+- domain/primary_tag ;
 - fen_before ;
-- best_move ;
-- accepted_moves ;
-- domain ;
-- tag ;
-- difficulty_proxy ;
-- criticality_score ;
-- source_game_id ;
-- source_ply.
+- side_to_move.
 
-Accepted moves V1 :
+------------------------------------------------------------
+9.5 Practice attempt
+------------------------------------------------------------
 
-- best move ;
-- very good top moves si win_loss vs best inférieur seuil ;
-- ne jamais appeler Stockfish pendant Practice V1.
+Étapes :
 
----
+1. charger session ;
+2. vérifier item ;
+3. valider move ;
+4. déterminer result ;
+5. enregistrer attempt ;
+6. calculer due_at ;
+7. update session item ;
+8. update learning summary ;
+9. retourner feedback.
 
-# 7. JOB SYSTEM
+------------------------------------------------------------
+9.6 Daily Plan
+------------------------------------------------------------
 
-## 7.1 États review_job
+Sources V1 :
 
-- pending ;
-- running ;
-- finalizing ;
-- completed ;
-- failed ;
-- cancelled ;
-- stalled.
+1. due ;
+2. failed_recent ;
+3. recent_critical ;
+4. diversity_fill.
 
-## 7.2 Règles
+Règles :
 
-- pending : job créé, pas encore démarré ;
-- running : analyse en cours, heartbeat mis à jour ;
-- finalizing : analyses terminées, génération Review ;
-- completed : Review disponible ;
-- failed : erreur réelle ;
-- cancelled : annulé utilisateur ;
-- stalled : heartbeat absent trop longtemps.
+- déterministe ;
+- no random ;
+- no SkillTrace strong influence V1 ;
+- no fake item ;
+- max 5–6 items ;
+- partial si pas assez.
 
-## 7.3 Heartbeat
+============================================================
+10. JOB SYSTEM ET FIABILITÉ ANALYSE
+============================================================
 
-Chaque job running doit mettre à jour heartbeat_at.
+------------------------------------------------------------
+10.1 États
+------------------------------------------------------------
 
-Stalled detection : si `now - heartbeat_at > seuil dynamique`.
+review_job.status :
 
-Seuil : doit dépendre du nombre de positions et du profil.
+queued
+running
+stalled_resumable
+completed
+completed_with_warnings
+failed_recoverable
+failed_final
 
-## 7.4 Reconcile
+quality_status :
 
-POST reconcile doit :
+full
+partial
+degraded
+invalid
 
-- vérifier analyses manquantes ;
-- vérifier job status ;
-- finaliser si tout est prêt ;
-- remettre failed/stalled si état incohérent ;
-- ne pas lancer Stockfish sous transaction.
+------------------------------------------------------------
+10.2 Heartbeat
+------------------------------------------------------------
 
-## 7.5 Cache quality gate
+Chaque job running doit mettre à jour :
 
-Une analyse cache est utilisable seulement si :
+- heartbeat_at ;
+- updated_at ;
+- progress_done ;
+- current_phase.
 
-- même fen ;
+Si heartbeat stale :
+
+- passer stalled_resumable ;
+- exposer recovery CTA ;
+- ne pas spinner infini.
+
+------------------------------------------------------------
+10.3 Timeouts
+------------------------------------------------------------
+
+Chaque position doit avoir :
+
+- timeout_ms ;
+- attempt_count ;
+- last_error ;
+- recoverable.
+
+Règles :
+
+- retry budget ;
+- pas d’infinite loop ;
+- timeout analysis non strict_valid ;
+- fake-engine hooks test-only.
+
+------------------------------------------------------------
+10.4 Resume
+------------------------------------------------------------
+
+Resume doit :
+
+- retry missing/timeout positions ;
+- ne pas réanalyser cache strict-valid ;
+- compléter si possible ;
+- partial si safe ;
+- failed_recoverable si impossible mais récupérable.
+
+------------------------------------------------------------
+10.5 Reconcile
+------------------------------------------------------------
+
+Reconcile répare :
+
+- job done mais review absente ;
+- job stalled mais analyses présentes ;
+- progress mismatch ;
+- orphan review moments ;
+- cache valid mais job bloqué.
+
+============================================================
+11. STOCKFISH ET CACHE STRICT
+============================================================
+
+------------------------------------------------------------
+11.1 engine_hash
+------------------------------------------------------------
+
+engine_hash =
+
+SHA256(stockfish_binary)
++ SHA256(nnue_file_if_external or embedded)
++ version_string_reported_by_engine
+
+Si version inconnue :
+
+engine_version_string = unknown
+cache not strict valid sauf debug override explicite.
+
+------------------------------------------------------------
+11.2 Cache key
+------------------------------------------------------------
+
+Cache compatible seulement si :
+
+- même FEN ;
 - même engine_hash ;
 - même engine_version_string ;
-- analysis_profile >= required profile ;
+- même nnue_hash ;
+- même analysis_profile ;
 - multipv suffisant ;
-- quality_status ok ;
 - formula_version compatible ;
 - metric_version compatible ;
-- legacy_flag = false.
+- quality_status ok.
 
-Sinon : réanalyse, ou marquage legacy + bouton "Réanalyser avec moteur actuel".
+------------------------------------------------------------
+11.3 Legacy policy
+------------------------------------------------------------
 
----
+Si moteur/formule change :
 
-# 8. STOCKFISH COST POLICY
+- ancienne analyse = legacy ;
+- affichable comme ancienne ;
+- pas mélangée dans nouvelle Review ;
+- bouton Réanalyser ;
+- jamais suppression automatique.
 
-## 8.1 Profils d'analyse
+------------------------------------------------------------
+11.4 Analyse adaptative
+------------------------------------------------------------
 
-### live
+Niveaux :
 
-- faible coût ;
-- MultiPV 1 ;
-- time court ;
-- non utilisé pour Review finale.
+live
+standard_review
+deep_review
+foundations/future
 
-### standard_review
+Règle :
 
-- coût modéré ;
-- MultiPV 3 ;
-- temps par position raisonnable ;
-- V1 par défaut.
+- standard sur positions nécessaires ;
+- deep seulement sur top moments ou demande explicite ;
+- pas de deep partout.
 
-### deep_review
+============================================================
+12. TRAINING ENGINE
+============================================================
 
-- opt-in ;
-- payant/futur ;
-- MultiPV 3–5 ;
-- temps plus long.
+------------------------------------------------------------
+12.1 Sources
+------------------------------------------------------------
 
-### foundations
+Sources V1 :
 
-- faible profondeur ;
-- focus attaques/défenses simples.
+- review_moments ;
+- training_items ;
+- due reviews ;
+- failed recent ;
+- Daily Plan.
 
-## 8.2 Analyse adaptative
+Sources futures :
 
-Ne pas analyser toutes les positions en deep.
+- benchmark curriculum ;
+- good decisions ;
+- near-transfer variants ;
+- opening repertoire ;
+- endgame curriculum.
 
-Stratégie :
+------------------------------------------------------------
+12.2 Daily Plan V1 deterministic
+------------------------------------------------------------
 
-1. analyse standard ou shallow globale ;
-2. détecter positions candidates ;
-3. approfondir seulement :
-   - gros win_loss ;
-   - bascule de zone ;
-   - sortie d'ouverture ;
-   - position gagnante relâchée ;
-   - ressource défensive ;
-   - top moments.
+Pseudo-code :
 
-## 8.3 Formule de coût
+candidates = []
+candidates += due_items_sorted_by_due_at()
+candidates += failed_recent_sorted_by_recency_and_severity()
+candidates += recent_critical_sorted_by_criticality()
+candidates += diversity_fill()
 
-```
-daily_engine_cost =
-    active_users
-    × games_per_user_per_day
-    × analyzed_positions_per_game
-    × avg_seconds_per_position
-    × cost_per_engine_second
-```
+dedupe item_id
+dedupe source_game_id + source_ply
+apply max same primary_tag <= 2 if alternatives exist
+sort by bucket priority and stable keys
+persist daily_plan_items
+return plan
 
-## 8.4 Quotas futurs
+Stable keys :
 
-Gratuit :
+- bucket priority ;
+- due_at asc ;
+- criticality desc ;
+- created_at desc ;
+- item_id asc.
 
-- nombre de reviews/mois limité ;
-- standard uniquement.
+------------------------------------------------------------
+12.3 simple_spaced_repetition_v1
+------------------------------------------------------------
 
-Premium :
+Rules :
 
-- plus de reviews ;
-- deep limité.
+wrong / illegal => tomorrow
+revealed => tomorrow
+success with hint => 3 days
+success without help => 7 days
+skipped => no due V1
 
-Pro :
+Interdit :
 
-- deep plus large ;
-- batch analysis.
+- appeler cela FSRS ;
+- afficher FSRS ;
+- exposer stability/difficulty memory.
 
-V1 locale : coût surtout temps machine utilisateur.
-
----
-
-# 9. FRONTEND ARCHITECTURE
-
-## 9.1 Pages V1
-
-- TodayPage ;
-- GamesPage ;
-- TrainingPage ;
-- ReviewPage ;
-- PracticeSessionPage ;
-- ProfileSettingsPage.
-
-Pas de ProgressionPage racine V1. Progression détaillée peut être route secondaire `/progression` mais pas dans la nav principale.
-
-## 9.2 Routes
-
-- /app/today ;
-- /app/games ;
-- /app/games/:id ;
-- /app/games/:id/review ;
-- /app/training ;
-- /app/practice/:sessionId ;
-- /app/profile ;
-- /app/settings.
-
-## 9.3 Composants principaux
-
-- AppShell ;
-- HeaderNav ;
-- PrimaryCTA ;
-- StatusBanner ;
-- ProgressCard ;
-- TodayHero ;
-- TodayProgressCard ;
-- GameCard ;
-- GamesFilterBar ;
-- ReviewLayout ;
-- ChessBoardPanel ;
-- ReviewSummaryPanel ;
-- ReviewQuickRead ;
-- ReviewLesson ;
-- ReviewTrainingCTA ;
-- ReviewExplorer ;
-- PracticeFocusShell ;
-- PracticeBoard ;
-- PracticeCorrectionPanel ;
-- SessionSummary ;
-- TrainingHome ;
-- TrainingPlanCard ;
-- TrainingDueCard ;
-- SettingsPanel.
-
-CognitiveMap / NeuroMonitor : V1.1.
-
-## 9.4 State management
-
-V1 possible : React state + custom hooks.
-
-Hooks :
-
-- useToday() ;
-- useGames() ;
-- useReview(gameId) ;
-- useReviewJob(jobId) ;
-- usePracticeSession(sessionId) ;
-- useSettings() ;
-- useEngineStatus().
-
-Polling : review job status toutes les 1–2s pendant running.
-
-Future : SSE / WebSocket.
-
-## 9.5 Loading UI
-
-Jamais spinner seul.
-
-Utiliser :
-
-- skeleton cards ;
-- progress text ;
-- phase label ;
-- action possible.
-
-Exemple :
-
-> Analyse en cours — 34 / 78 positions
-> Tu peux continuer pendant l'analyse.
-
----
-
-# 10. TODAY PAGE IMPLEMENTATION
-
-Input : `GET /api/today`
-
-Frontend détermine hero_state et secondary_cards.
-
-Hero states :
-
-- active_session ;
-- daily_plan ;
-- review_ready ;
-- analysis_running ;
-- due_reviews ;
-- profile_building ;
-- plan_done ;
-- empty.
-
-Chaque hero a :
-
-- title ;
-- body ;
-- primary_label ;
-- primary_action ;
-- secondary_label optionnel ;
-- secondary_action optionnel.
-
-Test : si plusieurs états, priority order strict.
-
-Acceptance criteria :
-
-- un seul Hero visible ;
-- CTA clair ;
-- aucune confusion ;
-- pas plus de 2 cartes secondaires ;
-- responsive mobile.
-
----
-
-# 11. REVIEW UI IMPLEMENTATION
-
-## 11.1 Review Summary
-
-Affiche :
-
-- NeuroScore coach ;
-- phrase principale ;
-- détail score replié ;
-- choix Lecture rapide / Leçon complète ;
-- 3 moments clés ;
-- CTA entraînement ;
-- Explorer replié.
-
-Ne pas afficher :
-
-- diagnostic_gap ;
-- raw criticality ;
-- ETV ;
-- posterior ;
-- debug.
-
-## 11.2 Lecture rapide
-
-Affiche 3 moments en lecture :
-
-- coup joué ;
-- meilleur coup ;
-- phrase courte.
-
-Fin :
-
-- M'entraîner maintenant ;
-- Me le rappeler demain ;
-- Terminer.
-
-## 11.3 Leçon complète
-
-États :
-
-- challenge ;
-- attempted ;
-- reflection_pause ;
-- correction ;
-- training_prompt.
-
-## 11.4 Micro-pause
-
-Si attempt wrong :
-
-- attendre 2–3s ;
-- message : "Observe ce que ton coup permet à l'adversaire." ;
-- puis afficher correction.
-
-## 11.5 Explorer
-
-Replié par défaut.
-
-Contient :
-
-- all moves ;
-- filters ;
-- PV ;
-- raw-ish details ;
-- opening details ;
-- technical accordions ;
-- debug only if enabled.
-
----
-
-# 12. PRACTICE IMPLEMENTATION
-
-## 12.1 Focus mode
-
-- Hide main nav ;
-- Show progress ;
-- Show board ;
-- Show instruction.
-
-## 12.2 Attempt flow
-
-Initial : `waiting_for_move`.
-
-On move : submit attempt.
-
-If correct : show success correction.
-
-If wrong : show reflection_pause puis correction.
-
-## 12.3 Hints
-
-hint_level 0–3.
-
-- Hint 1 : général ;
-- Hint 2 : plus orienté ;
-- Hint 3 : presque solution.
-
-After hint 3 : show reveal option.
-
-## 12.4 Completion
-
-At end : show session summary.
-
-Update :
-
+------------------------------------------------------------
+12.4 SkillTrace shadow
+------------------------------------------------------------
+
+V1/V1.1 :
+
+- update states ;
+- log recommendations ;
+- no visible mastery % ;
+- no strong Daily Plan influence.
+
+Conditions avant action :
+
+- volume attempts suffisant ;
+- tags suffisants ;
+- corrélation positive ;
+- pas de baisse completion ;
+- décision documentée.
+
+============================================================
+13. PRIVACY / SETTINGS / USER DATA
+============================================================
+
+------------------------------------------------------------
+13.1 Export
+------------------------------------------------------------
+
+GET /api/export doit inclure :
+
+- metadata ;
+- games ;
+- moves ;
+- reviews ;
+- review_moments ;
+- training_items ;
+- practice_sessions ;
 - practice_attempts ;
-- skilltrace (shadow) ;
-- spaced repetition queue.
+- due/scheduling ;
+- daily_plan_items ;
+- settings ;
+- profile ;
+- telemetry locale si présente.
 
----
+Exclure :
 
-# 13. TRAINING ENGINE V1
+- secrets ;
+- env ;
+- chemins absolus inutiles ;
+- machine-specific data sensible.
 
-## 13.1 Training sources
+------------------------------------------------------------
+13.2 Delete
+------------------------------------------------------------
 
-- review moments ;
-- failed practice items ;
-- due review items.
+DELETE /api/user-data
 
-## 13.2 Plan du jour V1
+Requires :
 
-Inputs :
+confirmation = SUPPRIMER or equivalent contract.
 
-- due items ;
-- recent review items ;
-- failed items ;
-- domain priority déterministe ;
-- time budget.
+Deletes :
 
-Output :
+- user data ;
+- derived inferences ;
+- practice attempts ;
+- training items ;
+- daily plan ;
+- reviews ;
+- settings/profile if intended.
 
-- 5–6 items ;
-- 8–12 minutes.
+Must not delete :
 
-Selection heuristic V1 (déterministe, sans SkillTrace) :
+- repo files ;
+- migrations ;
+- Stockfish binary ;
+- plan docs ;
+- source code ;
+- caches non user-data unless explicitly defined.
 
-1. due items first ;
-2. recent high criticality ;
-3. failed items ;
-4. avoid same tag too many times.
+------------------------------------------------------------
+13.3 Settings
+------------------------------------------------------------
 
-SkillTrace observe en parallèle mais n'influence pas le plan en V1.
+Settings V1 :
 
-## 13.3 ETV V1
-
-```
-ETV = w1 × criticality
-    + w2 × difficulty_fit
-    - w3 × redundancy_penalty
-```
-
-V1 weights : constantes config (statut `heuristic_v1`).
-
-Valeurs par défaut V1 indicatives :
-
-- w1 = 1.0 ;
-- w2 = 0.5 ;
-- w3 = 0.7.
-
-À calibrer en V1.1. Ne pas exposer ETV à l'utilisateur.
-
-## 13.4 simple_spaced_repetition_v1
-
-Schedule rules :
-
-- wrong : due tomorrow ;
-- hint_success : due in 3 days ;
-- success_no_hint : due in 7 days ;
-- repeated_success : interval × 1.7 (plafond 30 jours) ;
-- repeated_failure : reset à 1 jour ;
-- reveal : due tomorrow ou 2 jours max ;
-- skipped : no-op.
-
----
-
-# 14. SKILLTRACE BETA SHADOW IMPLEMENTATION
-
-For each practice_attempt :
-
-- determine tag ;
-- load skilltrace_state ;
-- update alpha/beta ;
-- log recommended_next_tag (shadow) ;
-- save.
-
-Update rules (heuristiques V1, non calibrées) :
-
-- best without hint : alpha += 1.0 ;
-- very_good : alpha += 0.8 ;
-- acceptable : alpha += 0.4, beta += 0.2 ;
-- success with hint : alpha += 0.5, beta += 0.3 ;
-- wrong : beta += 1.0 ;
-- revealed : beta += 0.7 ;
-- skipped : beta += 0.3 ou no-op.
-
-UI V1 :
-
-- ne pas exposer mastery numérique ;
-- ne pas afficher de score de domaine ;
-- ne pas générer de claim "vous progressez en X de Y%".
-
-Usage V1 :
-
-- état shadow ;
-- préparation calibration V1.1 ;
-- aucune influence forte sur le Daily Plan.
-
-Condition de sortie shadow → actif : voir 0.1.2.
-
----
-
-# 15. NEUROMONITOR / COGNITIVE MAP — V1.1 (HORS V1)
-
-V1 affiche uniquement :
-
-- carte "Cette semaine" ;
-- ratios simples ;
-- domaine prioritaire prudent si seuils atteints ;
-- sinon "Profil en construction".
-
-V1.1 ajoutera CognitiveMap :
-
-- 5 domaines : Opening, Tactics, Calculation, Conversion, Defense ;
-- 4 états : en_construction, solide, a_surveiller, prioritaire ;
-- état additionnel : en_progression ;
-- état spécial : a_mesurer (pour Calcul si Candidate Trainer inactif) ;
-- pas de décoration faux-cerveau ;
-- pas de 3D ;
-- preuve associée à chaque domaine ;
-- pas de pourcentage non calibré.
-
-Heuristique domaine (V1.1) :
-
-```
-domain_pressure =
-    0.50 × normalized_recent_criticality
-    + 0.30 × practice_failure_signal
-    + 0.20 × frequency_signal
-```
-
-- sample insuffisant : en_construction ;
-- calculation sans Candidate Trainer : a_mesurer ;
-- pression haute (≥ 0.6) : prioritaire ;
-- pression modérée (≥ 0.3) : a_surveiller ;
-- sinon : solide ;
-- amélioration récente : en_progression.
-
----
-
-# 16. PRIVACY / RGPD IMPLEMENTATION V1
-
-V1 doit inclure :
-
-- export data ;
-- delete data ;
-- local storage clarity ;
-- privacy settings ;
-- pas de collecte recherche cachée.
-
-Export format : JSON + PGN.
-
-Delete : delete games, moves, analyses, reviews, practice sessions, attempts, skilltrace, telemetry.
-
-Si intent data future : delete intent_events et inférences dérivées.
-
----
-
-# 17. SETTINGS IMPLEMENTATION
-
-Sections V1 :
-
-### Profile
-
-- display name ;
-- rating bucket.
-
-### Appearance
-
-- theme ;
-- density ;
-- animations.
-
-### Coach
-
+- session duration ;
+- coach tone ;
 - help level ;
-- tone ;
-- session duration.
+- animations ;
+- timer visible ;
+- language ;
+- theme future ;
+- Stockfish path ;
+- analysis profile ;
+- research opt-in.
 
-### Engine
+============================================================
+14. OBSERVABILITY ET RELIABILITY
+============================================================
 
-- stockfish path ;
-- test engine ;
-- analysis profile.
+NeuroChess local-first doit quand même être observable.
 
-### Privacy
+Les pratiques modernes de reliability utilisent SLO, error budgets, métriques de livraison, traces, logs et événements structurés. Plan3 adopte ces concepts de façon locale et proportionnée.
 
-- export ;
-- delete ;
-- research opt-in (futur).
+------------------------------------------------------------
+14.1 Signals
+------------------------------------------------------------
 
-### Debug
+À collecter localement ou en debug :
 
-- caché derrière dev toggle.
-
----
-
-# 18. TELEMETRY V1
-
-Catalog minimal de 14 événements V1 :
-
-- pgn_import_started ;
-- pgn_import_completed ;
-- review_started ;
-- review_quick_read_completed ;
-- lesson_started ;
+- app_start ;
+- import_started/import_success/import_failed ;
+- analysis_started/progress/stalled/completed/failed ;
+- review_opened ;
 - practice_started ;
-- practice_attempt_submitted ;
-- hint_used ;
-- solution_revealed ;
-- practice_completed ;
-- daily_plan_started ;
-- daily_plan_completed ;
-- export_data_clicked ;
-- delete_data_clicked.
+- attempt_saved ;
+- attempt_failed_to_save ;
+- daily_plan_created ;
+- export_done ;
+- delete_done ;
+- backend_unavailable ;
+- engine_timeout.
 
-Stockage : table `telemetry_events` locale.
+------------------------------------------------------------
+14.2 Logs structurés
+------------------------------------------------------------
 
-Pas d'usine analytics V1. Pas d'envoi cloud par défaut.
+Chaque log critique doit avoir :
 
-KPI produit V1 minimum :
+- timestamp ;
+- level ;
+- event_name ;
+- request_id/job_id/session_id ;
+- safe payload ;
+- error_code ;
+- recoverable.
 
-- taux d'import → review complétée ;
-- taux de Review → Practice ;
-- taux de Practice complétée ;
-- retour J+1 ;
-- retour J+3.
+Interdit :
 
----
+- secrets ;
+- raw PGN dans logs erreur visibles ;
+- stack trace utilisateur ;
+- chemins personnels inutiles.
 
-# 19. TESTING STRATEGY
+------------------------------------------------------------
+14.3 SLO V1 locaux
+------------------------------------------------------------
 
-## 19.1 Unit tests formules
+Objectifs internes :
 
-Test :
+- import PGN normal success rate >= 99% sur fixtures ;
+- analysis small PGN terminal state >= 99% en smoke ;
+- practice attempt save success >= 99% en smoke ;
+- export/delete pass >= 100% en tests temp DB ;
+- no infinite spinner in browser smokes ;
+- no network 500 in critical smokes unless expected and handled.
 
+------------------------------------------------------------
+14.4 Error budget
+------------------------------------------------------------
+
+Si un type d’échec critique apparaît plusieurs fois :
+
+- stopper nouvelles features ;
+- prioriser reliability ;
+- créer postmortem ;
+- créer mission P0.
+
+Échecs critiques :
+
+- données utilisateur perdues ;
+- attempt non sauvegardé ;
+- analyse infinie ;
+- delete dangereux ;
+- review incorrecte par inversion POV ;
+- métrique interdite visible ;
+- Stockfish cache mixé incorrectement.
+
+------------------------------------------------------------
+14.5 DORA local product metrics
+------------------------------------------------------------
+
+Suivre pour l’équipe :
+
+- lead time for changes ;
+- deployment/push frequency ;
+- change failure rate ;
+- failed deployment recovery time ;
+- reliability fixes vs features ;
+- test pass rate.
+
+Ces métriques ne sont pas utilisateur.
+
+============================================================
+15. SECURITY ET PRIVACY ENGINEERING
+============================================================
+
+------------------------------------------------------------
+15.1 Principes sécurité
+------------------------------------------------------------
+
+Même en local-first :
+
+- validation input ;
+- aucune exécution arbitraire depuis PGN ;
+- path Stockfish contrôlé ;
+- pas de secrets dans export ;
+- CORS limité ;
+- erreurs safe ;
+- suppression confirmée ;
+- tests destructifs en temp DB.
+
+------------------------------------------------------------
+15.2 Threat model V1
+------------------------------------------------------------
+
+Menaces :
+
+- PGN malformé ;
+- fichier énorme ;
+- path traversal import/export ;
+- injection via PGN metadata ;
+- suppression accidentelle ;
+- fuite chemins locaux ;
+- endpoint delete sans confirmation ;
+- engine path malveillant ;
+- crash backend par FEN invalide.
+
+Mitigations :
+
+- validation stricte ;
+- taille limite ;
+- JSON escaping ;
+- confirmation ;
+- temp DB tests ;
+- allowlist engine path future ;
+- safe error contract.
+
+------------------------------------------------------------
+15.3 OWASP alignment
+------------------------------------------------------------
+
+Plan3 s’inspire des principes OWASP ASVS pour les contrôles applicatifs :
+
+- validation ;
+- session/config ;
+- error handling ;
+- data protection ;
+- file handling ;
+- API controls.
+
+Ne pas revendiquer conformité OWASP tant qu’un audit complet n’est pas fait.
+
+============================================================
+16. TESTING STRATEGY
+============================================================
+
+------------------------------------------------------------
+16.1 Pyramide de tests
+------------------------------------------------------------
+
+Niveaux :
+
+1. Unit tests
+2. Service tests
+3. Repository/migration tests
+4. API integration tests
+5. Contract/static tests
+6. Browser smokes
+7. Manual QA
+8. User tests
+
+Chaque bug P0 doit idéalement produire :
+
+- test de reproduction ;
+- fix ;
+- test de non-régression.
+
+------------------------------------------------------------
+16.2 Unit tests formules
+------------------------------------------------------------
+
+Couvrir :
+
+- eval POV ;
 - white_percent ;
 - player_win_percent ;
 - win_loss ;
 - move_accuracy ;
-- coach_neuro_score ;
-- criticality_score ;
-- temporal_nms ;
-- SkillTrace update ;
-- simple_spaced_repetition_v1 schedule.
+- NeuroScore ;
+- criticality components ;
+- SRS.
 
-## 19.2 Backend tests
+Règle :
 
-PGN import :
+Pas de changement de snapshot sans mission scientifique.
 
-- valid pgn ;
-- invalid pgn ;
-- duplicate ;
-- multiple games.
+------------------------------------------------------------
+16.3 Backend tests
+------------------------------------------------------------
 
-Review :
+Couvrir :
 
-- job lifecycle ;
-- cache hit ;
-- cache miss ;
-- failed engine ;
-- partial analysis ;
-- stalled reconcile ;
-- legacy cache marquage.
-
-Practice :
-
-- create session ;
-- attempt correct ;
-- attempt wrong ;
-- hint ;
-- reveal ;
-- retry failed ;
-- complete.
-
-Settings :
-
-- export ;
-- delete.
-
-## 19.3 Frontend tests
-
-Tests composants si disponibles.
-
-Today :
-
-- one hero only ;
-- priority order ;
-- CTA correct.
-
-Review :
-
-- NeuroScore visible ;
-- reference accuracy hidden in details ;
-- quick read available ;
-- lesson complete available ;
-- Explorer collapsed.
-
-Practice :
-
-- focus mode hides nav ;
-- no timer default ;
-- correction after attempt ;
-- micro-pause exists.
-
-## 19.4 Smoke tests
-
-- review_regression_smoke ;
-- pgn_import_smoke ;
-- real_flow_smoke.
-
-## 19.5 Browser QA manual
-
-Critical flows :
-
-1. Import PGN → analyze → Review ;
-2. Review quick read ;
-3. Review lesson complete ;
-4. Start Practice ;
-5. Wrong attempt → micro-pause → correction ;
-6. Complete session ;
-7. Today updates ;
-8. Daily Plan affiché ;
-9. Export data ;
-10. Delete test data.
-
----
-
-# 20. DOCUMENTATION REQUIRED
-
-Pack de gouvernance Sprint 0 bis (obligatoire avant Sprint 1) :
-
-- PLAN_3_SUMMARY.md ;
-- CURRENT_SPRINT.md ;
-- RISK_REGISTER.md ;
-- DECISIONS_LOG.md.
-
-Docs core :
-
-- README.md ;
-- PROJECT_STATE.md ;
-- ARCHITECTURE.md ;
-- API_CONTRACTS.md ;
-- DB_SCHEMA.md ;
-- FORMULAS_AND_METRICS.md ;
-- METRIC_REGISTRY.md ;
-- ACTION_REGISTRY.md ;
-- SCREEN_CONTRACTS.md ;
-- ENGINE_COST_POLICY.md ;
-- ENGINE_CACHE_POLICY.md ;
-- ANNOTATION_PROTOCOL.md ;
-- VALIDATION_FRAMEWORK.md ;
-- DATA_PRIVACY_AND_INTENT_DPIA.md ;
-- QA_CHECKLIST.md ;
-- ROADMAP.md ;
-- TELEMETRY_CATALOG.md.
-
-Règle : les docs doivent refléter le code. Si le code change le comportement, la doc se met à jour dans le même sprint.
-
----
-
-# 21. ROADMAP V1
-
-Objectif V1 : a stable coach loop.
-
-V1 inclut :
-
-- onboarding 2 écrans ;
-- Today ;
-- Games ;
 - PGN import ;
-- Review summary ;
-- Quick Read ;
-- Lesson Complete ;
-- Practice linear sessions ;
-- practice_result_event ;
-- SkillTrace shadow ;
-- simple_spaced_repetition_v1 ;
-- Training Plan V1 déterministe ;
-- progression compacte (pas CognitiveMap) ;
-- profile/settings ;
+- illegal PGN ;
+- duplicate ;
+- review jobs ;
+- engine timeout ;
+- cache strict ;
+- review generation ;
+- training_items ;
+- practice attempts ;
+- daily plan ;
 - export/delete ;
-- engine config ;
-- degraded states ;
-- emotional tone ;
-- telemetry locale 14 events ;
-- tests.
+- settings ;
+- learning_summary.
 
-V1 exclut :
+------------------------------------------------------------
+16.4 Migration tests
+------------------------------------------------------------
 
-- full Intent Layer ;
-- Candidate Trainer ;
-- LLM coach ;
-- Transfer Gap display ;
-- full Progression page ;
-- CognitiveMap visuelle ;
-- SkillTrace prescriptif ;
-- Foundations ;
-- social ;
-- club/coach ;
-- 3D monitor ;
-- full cloud sync.
+Couvrir :
 
----
+- fresh DB ;
+- existing DB ;
+- repeated migration ;
+- data preservation ;
+- delete after migration ;
+- export after migration.
 
-# 22. ROADMAP V1.1
+------------------------------------------------------------
+16.5 Frontend/static tests
+------------------------------------------------------------
 
-V1.1 ajoute :
+Couvrir :
 
-- SkillTrace utilisé prudemment dans Daily Plan (après condition de sortie) ;
-- CognitiveMap compact (5 domaines, 4 états + en_progression) ;
-- ETV calibré v1 ;
-- premiers tests utilisateurs élargis ;
-- ajustement intervalles répétition espacée selon données.
+- nav exactly 3 ;
+- training exactly 3 ;
+- forbidden V1 labels absent ;
+- action labels present ;
+- data-testid present ;
+- strings centralized ;
+- debug not visible default ;
+- no raw metrics.
 
----
+------------------------------------------------------------
+16.6 Browser smokes
+------------------------------------------------------------
 
-# 23. ROADMAP V2
+Critical smokes :
 
-V2 ajoute :
+- browser_v1_flow_smoke ;
+- browser_profile_privacy_smoke ;
+- browser_daily_plan_smoke ;
+- browser_core_board_interaction_smoke ;
+- browser_analysis_stall_recovery_smoke ;
+- browser_review_exploration_real_smoke ;
+- browser_real_analysis_no_infinite_loop_smoke ;
+- browser_degraded_states_smoke ;
+- browser_mobile_responsive_smoke ;
+- browser_keyboard_accessibility_smoke.
 
-- Intent Layer opt-in ;
-- Candidate Trainer ;
-- Progression détaillée ;
-- NeuroMonitor détaillé ;
-- Lichess API ;
-- Chess.com API ;
-- motif-based repetition ;
-- external reference items ;
-- notifications ;
-- freemium ;
-- sharing Review ;
-- validation instrumentation ;
-- LLM verifier infrastructure.
+Smokes must :
 
----
+- use temp DB ;
+- capture console/page/network errors ;
+- fail on 500 unexpected ;
+- fail on infinite spinner ;
+- print evidence ;
+- cleanup processes.
 
-# 24. ROADMAP V3
+------------------------------------------------------------
+16.7 Manual QA
+------------------------------------------------------------
 
-V3 ajoute :
+Manual checklist V1 :
 
-- LLM coach verified ;
-- Transfer Gap visible ;
-- BKT/MIRT deeper models ;
-- contextual bandits ;
-- Foundations ;
-- Advanced Audit ;
-- club/coach mode ;
-- mobile premium ;
-- offline complete ;
-- accessibility advanced ;
-- scientific validation publiée.
+1. start backend ;
+2. start frontend ;
+3. open /app ;
+4. import PGN ;
+5. analyze ;
+6. verify terminal analysis state ;
+7. open Review ;
+8. explore position ;
+9. start Practice ;
+10. play correct move ;
+11. play wrong move ;
+12. reveal ;
+13. verify due_at ;
+14. create Daily Plan ;
+15. practice from plan ;
+16. export ;
+17. delete temp data ;
+18. reload app ;
+19. mobile viewport smoke.
 
----
+------------------------------------------------------------
+16.8 Test data
+------------------------------------------------------------
 
-# 25. CODEX SPRINT CATALOGUE
+Fixtures :
 
-Chaque sprint = une mission. Ne pas lancer plusieurs prompts en parallèle.
+- minimal valid PGN ;
+- PGN invalid ;
+- PGN illegal ;
+- PGN duplicate ;
+- real Sindarov PGN ;
+- short PGN ;
+- long PGN ;
+- position with promotion ;
+- black orientation ;
+- engine timeout fake ;
+- review with no moments ;
+- daily plan empty ;
+- daily plan partial.
 
-## SPRINT 0 — BASELINE / FREEZE
+------------------------------------------------------------
+16.9 Test environment
+------------------------------------------------------------
 
-ID : `V5.5.BASELINE-LOCK-1`
+Use temp DB.
 
-Goal : freeze current state, record tests, no feature.
+Never destructive tests on real DB.
 
-Tasks :
+Known reliable backend env may include :
+
+PYTHONPATH manual deps
+TEMP/TMP/TMPDIR temp test path
+.venv_repair_local python
+
+Commands must be reported exactly.
+
+============================================================
+17. CI / QUALITY GATES
+============================================================
+
+------------------------------------------------------------
+17.1 Local gates
+------------------------------------------------------------
+
+Before commit :
 
 - git status ;
-- run backend tests ;
-- run tsc/build ;
-- run smokes ;
-- document current working state.
+- git diff --check ;
+- plan_guard ;
+- relevant unit tests ;
+- frontend build/typecheck if frontend changed ;
+- browser smoke if UI flow changed ;
+- backend tests if backend changed ;
+- migration tests if DB changed.
+
+------------------------------------------------------------
+17.2 Release candidate gates
+------------------------------------------------------------
+
+RC requires :
+
+- full backend tests PASS ;
+- frontend build PASS ;
+- typecheck PASS ;
+- plan_guard PASS ;
+- all critical Python smokes PASS ;
+- all critical browser smokes PASS ;
+- export/delete PASS ;
+- no forbidden UI labels ;
+- no dirty critical files except planned release docs ;
+- release notes ;
+- rollback plan.
+
+------------------------------------------------------------
+17.3 Failure rules
+------------------------------------------------------------
+
+If a required test fails :
+
+- do not claim success ;
+- classify failure ;
+- fix if in scope ;
+- otherwise report blocker ;
+- do not commit unless commit explicitly captures failing work for branch backup and user asks.
+
+============================================================
+18. RELEASE MANAGEMENT
+============================================================
+
+------------------------------------------------------------
+18.1 Version levels
+------------------------------------------------------------
+
+Versions :
+
+- prototype ;
+- alpha_internal ;
+- V1_RC ;
+- V1_external_limited ;
+- V1_public ;
+- V1.1 ;
+- V2 ;
+- V3.
+
+------------------------------------------------------------
+18.2 V1 external gate
+------------------------------------------------------------
+
+External users allowed only if :
+
+1. 3 external users complete :
+   import PGN → analyze → Review → Practice → Daily Plan → revision J+3.
+2. At least 2/3 return next day or J+2.
+3. No blocking bug in :
+   import ;
+   analysis ;
+   Review ;
+   Practice ;
+   attempt save ;
+   Daily Plan ;
+   export/delete.
+4. Critical tests pass.
+5. User understands next action.
+6. Delete/export safe.
+7. No fake-neuro claim.
+8. No forbidden V1 feature visible.
+
+------------------------------------------------------------
+18.3 Release checklist
+------------------------------------------------------------
+
+Before release :
+
+- update PROJECT_STATE ;
+- update V1_READINESS_REPORT ;
+- update QA_CHECKLIST ;
+- update TEST_COVERAGE_MATRIX ;
+- run full tests ;
+- tag version if requested ;
+- backup DB migration strategy ;
+- prepare rollback ;
+- write known limitations.
+
+------------------------------------------------------------
+18.4 Rollback
+------------------------------------------------------------
+
+Rollback plan includes :
 
-Acceptance criteria :
+- previous commit hash ;
+- changed files ;
+- migrations impact ;
+- data impact ;
+- revert command ;
+- manual recovery ;
+- export before destructive migration if needed.
 
-1. PROJECT_STATE.md updated or created.
-2. Test commands executed or marked unavailable.
-3. Current failures documented.
-4. No feature code changed.
-5. No formatting/refactor unrelated.
-6. No commit/stage by default.
-7. Git status before/after included in report.
+============================================================
+19. GIT GOVERNANCE
+============================================================
 
-## SPRINT 0 BIS — EXECUTION LOCK (GOUVERNANCE)
+------------------------------------------------------------
+19.1 Default no commit / no stage
+------------------------------------------------------------
 
-ID : `V5.5.EXECUTION-LOCK-1`
+Codex default :
 
-Goal : créer le pack de gouvernance et figer les décisions doctrinales avant tout code applicatif.
+- no stage ;
+- no commit ;
+- no push.
 
-Livrables obligatoires :
+Except when user explicitly authorizes commit/push.
 
-- PLAN_3_SUMMARY.md (1 page max) ;
-- CURRENT_SPRINT.md (Sprint 1 détaillé) ;
-- RISK_REGISTER.md (5 risques minimum) ;
-- DECISIONS_LOG.md (avec les décisions actées : fr-only, Cognitive Map V1.1, SkillTrace shadow, simple_spaced_repetition_v1 + multiplicateur 1.7 + plafond 30j, cache strict, seuil corrélation SkillTrace 0.60, seuils domaine prioritaire 5/30/2/5, perf budgets V1) ;
-- ENGINE_CACHE_POLICY.md (règles cache strict + définition engine_hash) ;
-- TELEMETRY_CATALOG.md (14 events V1) ;
-- METRIC_REGISTRY.md (squelette + métriques connues) ;
-- ACTION_REGISTRY.md (squelette).
+------------------------------------------------------------
+19.2 Commit rules
+------------------------------------------------------------
 
-Acceptance criteria :
+One mission = one commit unless user asks otherwise.
 
-- les 8 fichiers existent et sont relus ;
-- DECISIONS_LOG contient au minimum 5 décisions actées avec date et justification ;
-- RISK_REGISTER contient 5 risques avec mitigation ;
-- aucune ligne de code applicatif modifiée ;
-- no commit by default ;
-- if user explicitly asks for a commit, use one commit only : `[GOVERNANCE] Sprint 0bis: Execution Lock`.
+Commit includes only mission files.
 
-Exclusions :
+Message format :
 
-- aucun changement frontend/backend hors documentation ;
-- aucune migration DB ;
-- aucun ajout de dépendance.
+<verb> <scope> <summary>
 
-## SPRINT 1 — BOARD UX
+Examples :
 
-ID : `V5.5.PLAY-BOARD-UX-1`
+Add V1 profile privacy export delete
+Stabilize V1 board interaction and practice flow
+Replace Plan2 with UX constitution v4
+Fix analysis job stale recovery
 
-Goal : click-to-move, legal highlights, drag preview, turn indicator.
+------------------------------------------------------------
+19.3 Stage rules
+------------------------------------------------------------
 
-Acceptance criteria détaillés :
+Never :
 
-- clic sur une pièce alliée sélectionne la pièce et affiche les cases légales ;
-- clic sur case légale joue le coup ;
-- clic sur case illégale ne joue rien et ne déclenche pas de toast agressif ;
-- second clic sur la même pièce désélectionne ;
-- drag : pièce visible pendant le drag ;
-- drag annulé : pièce retourne à sa case ;
-- turn indicator visible à tout moment ;
-- pas de régression Review / Practice ;
-- frontend build OK ;
-- typecheck OK.
+git add -A
 
-Perf budget :
+Prefer explicit :
 
-- réaction au clic : < 50 ms ;
-- mise à jour highlights : < 30 ms.
+git add file1 file2
 
-Rollback : revert vers commit Sprint 0.
+Before commit :
 
-Exclusions : pas d'engine, pas de review, pas de formules.
+git diff --cached --stat
+git diff --cached --check
+git diff --cached --name-status
 
-## SPRINT 2 — SCORE ALIGN
+If unrelated staged :
 
-ID : `V5.5.REVIEW-SCORE-ALIGN-1`
+git restore --staged <file>
 
-Goal : NeuroScore coach visible, reference accuracy cachée dans les détails.
+Do not discard.
 
-Includes :
+------------------------------------------------------------
+19.4 Dirty worktree protocol
+------------------------------------------------------------
 
-- coach_neuro_score_v1 ;
-- pas de diagnostic_gap dans l'UI principale ;
-- detail accordion replié par défaut.
+If worktree dirty :
 
-Acceptance criteria :
+1. list dirty files ;
+2. group by mission ;
+3. do not touch unrelated ;
+4. do not stage unrelated ;
+5. ask/stop only if cannot isolate ;
+6. report final dirty state.
 
-- NeuroScore visible en Review summary ;
-- reference accuracy disponible mais derrière "Détails" ;
-- pas de double affichage ;
-- pas d'incohérence entre summary et explorer.
+============================================================
+20. CODEX OPERATING MODEL
+============================================================
 
-Exclusions : refonte de formule, modification Stockfish.
+------------------------------------------------------------
+20.1 Mission lifecycle
+------------------------------------------------------------
 
-## SPRINT 3 — APP SHELL / NAV
+Every mission:
 
-ID : `V5.5.APP-SHELL-1`
+1. read relevant plans ;
+2. git status ;
+3. inspect current implementation ;
+4. identify minimal diff ;
+5. implement ;
+6. test ;
+7. update docs ;
+8. report ;
+9. no commit unless authorized.
 
-Goal : navigation Aujourd'hui / Mes parties / Entraînement + Profile icon.
+------------------------------------------------------------
+20.2 Codex must be skeptical
+------------------------------------------------------------
 
-Includes :
+Codex must not assume.
 
-- routes ;
-- header ;
-- layout ;
-- design tokens ;
-- création `frontend/src/i18n/fr.ts` (ou strings.ts) avec premières chaînes UI centralisées.
+It must inspect:
 
-Acceptance criteria :
+- current schema ;
+- current API ;
+- current components ;
+- current tests ;
+- current docs ;
+- current worktree.
 
-- 3 onglets principaux + Profile ;
-- état actif visible ;
-- responsive mobile ;
-- aucune chaîne UI nouvelle hors fichier i18n ;
-- transition d'écran < 150 ms.
+If repo differs from plan:
 
-## SPRINT 4 — TODAY PAGE
+- follow repo reality ;
+- preserve plan doctrine ;
+- report mismatch.
 
-ID : `V5.5.TODAY-1`
+------------------------------------------------------------
+20.3 Report format
+------------------------------------------------------------
 
-Goal : Aujourd'hui avec hero priority.
+Every report includes :
 
-Includes :
+1. mission name ;
+2. baseline git status ;
+3. files inspected ;
+4. root cause / implementation summary ;
+5. files changed ;
+6. tests run exact commands ;
+7. PASS/FAIL ;
+8. evidence ;
+9. limitations ;
+10. next recommendation ;
+11. commit/stage status.
 
-- GET /api/today ;
-- hero states ;
-- progress compact ;
-- active session ;
-- latest review.
+------------------------------------------------------------
+20.4 No hallucinated tests
+------------------------------------------------------------
 
-Acceptance criteria :
+Never claim a test passed if not run.
 
-- un seul Hero visible à la fois ;
-- priority order strict implémenté ;
-- pas plus de 2 cartes secondaires ;
-- chargement < 800 ms.
+If unavailable :
 
-## SPRINT 5 — GAMES PAGE
+- say not available ;
+- say closest equivalent ;
+- explain.
 
-ID : `V5.5.GAMES-1`
+============================================================
+21. DOCUMENTATION SYSTEM
+============================================================
 
-Goal : Mes parties propre.
+Required docs :
 
-Includes :
+- AGENTS.md ;
+- docs/PLAN_SOURCE_OF_TRUTH.md ;
+- docs/PLAN_CONTEXT_MIN.md ;
+- docs/PLAN_FEATURE_BOUNDARIES.md ;
+- docs/PLAN_ALIGNMENT_AUDIT.md ;
+- docs/PROJECT_STATE.md ;
+- docs/NEXT_PLAN_ACTIONS.md ;
+- docs/API_CONTRACTS.md ;
+- docs/DB_SCHEMA.md ;
+- docs/ACTION_REGISTRY.md ;
+- docs/SCREEN_CONTRACTS.md ;
+- docs/CORE_INTERACTION_CONTRACT.md ;
+- docs/DEGRADED_STATES_CONTRACT.md ;
+- docs/FULL_APPLICATION_QA_AUDIT.md ;
+- docs/TEST_COVERAGE_MATRIX.md ;
+- docs/V1_READINESS_REPORT.md ;
+- docs/QA_CHECKLIST.md ;
+- docs/DECISIONS_LOG.md future ;
+- docs/RELEASE_CHECKLIST.md future.
 
-- list ;
-- import ;
-- filters ;
-- card states ;
-- actions.
+Docs rules :
 
-Acceptance criteria :
+- update when behavior changes ;
+- no fake status ;
+- no outdated readiness ;
+- cite tests/evidence ;
+- distinguish TODO vs done.
 
-- import PGN d'une partie normale < 500 ms perçus ;
-- import PGN long/multi-game < 2 s ou feedback immédiat ;
-- déduplication fonctionne ;
-- filtres opérationnels ;
-- état vide géré.
+============================================================
+22. ROADMAP EXECUTION — CURRENT MASTER SEQUENCE
+============================================================
 
-## SPRINT 6 — REVIEW FLOW
+This roadmap is ordered by dependency.
 
-ID : `V5.5.REVIEW-FLOW-1`
+------------------------------------------------------------
+22.1 Foundation already required
+------------------------------------------------------------
 
-Goal : Review comme parcours guidé.
+- plan source of truth stabilized ;
+- Plan1 v3 ;
+- Plan2 v4 ;
+- Plan3 v4 ;
+- AGENTS/docs updated.
 
-Includes :
+------------------------------------------------------------
+22.2 P0 reliability before feature work
+------------------------------------------------------------
 
-- Summary ;
-- Quick Read ;
-- Lesson Complete ;
-- Explorer replié ;
-- pas de quatre tabs égales.
+Before any new feature:
 
-Acceptance criteria :
+- audit dirty worktree ;
+- finish runtime board/exploration/analysis repairs ;
+- commit or revert coherent work ;
+- ensure app real local flow works.
 
-- 3 moments principaux maximum dans Summary ;
-- Quick Read fonctionne en lecture seule ;
-- Lesson Complete a tous ses états (challenge → attempted → reflection_pause → correction → training_prompt) ;
-- micro-pause de 2–3 s implémentée ;
-- Explorer replié par défaut.
+------------------------------------------------------------
+22.3 V1 remaining likely missions
+------------------------------------------------------------
 
-## SPRINT 7 — PRACTICE FOCUS
+Recommended sequence :
 
-ID : `V5.5.PRACTICE-FOCUS-1`
+1. P0.DIRTY-WORKTREE-AUDIT-AND-RECOVERY
+2. P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR
+3. P1.DEGRADED-STATES-ANTI-TILT-V1
+4. P1.I18N-STRINGS-CENTRALIZATION-V1
+5. P1.RESPONSIVE-MOBILE-SMOKE-V1
+6. P1.SKILLTRACE-BETA-SHADOW-V1
+7. P1.QA-RELEASE-CANDIDATE-V1
+8. P1.EXTERNAL-USER-PILOT-PREP
 
-Goal : Practice focus mode avec discipline charge cognitive.
+------------------------------------------------------------
+22.4 Do not skip
+------------------------------------------------------------
 
-Includes :
+Do not build SkillTrace/Intent/LLM if:
 
-- hide nav ;
-- no timer default ;
-- micro-pause ;
-- correction ;
-- session summary.
+- analysis can still spin ;
+- board exploration broken ;
+- attempts not saved ;
+- Daily Plan not reliable ;
+- export/delete unsafe ;
+- mobile unusable ;
+- degraded states missing.
 
-Acceptance criteria :
+============================================================
+23. SPRINT CATALOGUE
+============================================================
 
-- nav masquée pendant session ;
-- pas de timer affiché par défaut ;
-- micro-pause après wrong ;
-- session summary affichée à la fin ;
-- attempt → feedback < 200 ms.
+Each sprint below is a catalogue entry, not a command to execute.
 
-## SPRINT 8 — TRAINING ITEM ENGINE
+------------------------------------------------------------
+23.1 P0.PLAN-SOURCE-OF-TRUTH-STABILIZATION
+------------------------------------------------------------
 
-ID : `V6.TRAINING-ITEM-ENGINE-1`
+Goal :
 
-Goal : générer training_items à partir des review_moments.
+ensure Plan1/Plan2/Plan3 canonical files and docs are aligned.
 
-Includes :
+Acceptance :
 
-- item schema ;
-- accepted moves ;
-- source links ;
-- tags.
+- markers pass ;
+- docs updated ;
+- plan_guard pass ;
+- only plan docs committed.
 
-Acceptance criteria :
+------------------------------------------------------------
+23.2 P0.DIRTY-WORKTREE-AUDIT-AND-RECOVERY
+------------------------------------------------------------
 
-- max 5 items générés par Review ;
-- accepted moves correctement extraits ;
-- source_game_id et source_ply liés ;
-- tests unitaires couvrent la génération.
+Goal :
 
-## SPRINT 9 — PRACTICE EVENTS
+classify existing dirty files and decide keep/finish/revert.
 
-ID : `V6.PRACTICE-EVENTS-1`
+Acceptance :
 
-Goal : practice_result_event riche.
+- grouped dirty files ;
+- no changes ;
+- decision table ;
+- recommended mission.
 
-Includes :
+------------------------------------------------------------
+23.3 P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR
+------------------------------------------------------------
 
-- time_spent ;
-- hint_used ;
-- reveal_used ;
-- attempt_number ;
-- result.
+Goal :
 
-Acceptance criteria :
+fix real user board exploration and infinite analysis loop.
 
-- chaque attempt génère un event complet ;
-- stockage en DB ;
-- export RGPD inclut les events.
+Acceptance :
 
-## SPRINT 10 — SKILLTRACE BETA SHADOW
+- Review local exploration works ;
+- Practice move works ;
+- Daily Plan practice works ;
+- analysis terminal/recoverable ;
+- browser real smokes pass.
 
-ID : `V6.SKILLTRACE-BETA-1`
+------------------------------------------------------------
+23.4 P1.DEGRADED-STATES-ANTI-TILT-V1
+------------------------------------------------------------
 
-Goal : implémenter alpha/beta par tag en shadow mode.
+Goal :
 
-Includes :
+implement calm recoverable states.
 
-- update rules ;
-- storage ;
-- shadow recommendation logging ;
-- tests.
+Acceptance :
 
-Acceptance criteria :
+- invalid PGN ;
+- engine unavailable ;
+- backend offline ;
+- stalled analysis ;
+- empty daily plan ;
+- interrupted practice ;
+- wrong streak anti-tilt ;
+- browser degraded smoke pass.
 
-- alpha/beta mis à jour après chaque attempt ;
-- recommendation loggée mais non utilisée par Daily Plan ;
-- pas d'affichage utilisateur ;
-- tests couvrent les règles d'update.
+------------------------------------------------------------
+23.5 P1.I18N-STRINGS-CENTRALIZATION-V1
+------------------------------------------------------------
 
-Exclusions : pas d'influence sur Daily Plan, pas d'UI.
+Goal :
 
-## SPRINT 11 — SIMPLE SPACED REPETITION V1
+centralize all UI strings.
 
-ID : `V6.SRS-V1-1`
+Acceptance :
 
-Goal : file de répétition espacée simple.
+- fr.ts/strings.ts ;
+- no critical hardcoded labels ;
+- static tests ;
+- no behavior change.
 
-Includes :
+------------------------------------------------------------
+23.6 P1.RESPONSIVE-MOBILE-SMOKE-V1
+------------------------------------------------------------
 
-- wrong tomorrow ;
-- hint 3 days ;
-- success 7 days ;
-- multiplier 1.7 ;
-- plafond 30 jours ;
-- due sessions.
+Goal :
 
-Acceptance criteria :
+prove mobile V1.
 
-- intervalles correctement appliqués ;
-- multiplicateur fonctionne ;
-- plafond respecté ;
-- file `due` correctement remontée à Today.
+Acceptance :
 
-## SPRINT 12 — DAILY PLAN V1
+- Today mobile ;
+- Review mobile ;
+- Practice mobile ;
+- tap-tap board ;
+- bottom nav ;
+- no overflow critical ;
+- browser mobile smoke.
 
-ID : `V6.DAILY-PLAN-1`
+------------------------------------------------------------
+23.7 P1.SKILLTRACE-BETA-SHADOW-V1
+------------------------------------------------------------
 
-Goal : Plan du jour déterministe.
+Goal :
 
-Includes :
+implement shadow model without visible mastery.
 
-- due items ;
-- recent critical items ;
-- failed items ;
-- redundancy penalty ;
-- intégration Today.
+Acceptance :
 
-Acceptance criteria :
+- states updated ;
+- no Daily Plan strong influence ;
+- export/delete includes ;
+- tests pass ;
+- no UI %.
 
-- 5–6 items par plan ;
-- 8–12 minutes estimées ;
-- diversité tags respectée ;
-- déterministe (mêmes inputs → même output) ;
-- SkillTrace observe sans influencer.
+------------------------------------------------------------
+23.8 P1.QA-RELEASE-CANDIDATE-V1
+------------------------------------------------------------
 
-## SPRINT 13 — PROGRESSION COMPACTE V1
+Goal :
 
-ID : `V6.PROGRESSION-COMPACT-1`
+prepare V1 RC.
 
-Goal : carte "Cette semaine" + domaine prioritaire prudent.
+Acceptance :
 
-Includes :
+- all tests ;
+- docs ;
+- readiness ;
+- known blockers ;
+- go/no-go.
 
-- ratios simples ;
-- activité ;
-- seuils de données respectés ;
-- message "profil en construction" si seuils non atteints.
+------------------------------------------------------------
+23.9 V2.INTENT-LIGHT
+------------------------------------------------------------
 
-Acceptance criteria :
+Goal :
 
-- domaine prioritaire affiché seulement si seuils 5/30/2/5 atteints ;
-- sinon message "profil en construction" ;
-- pas de Cognitive Map visuelle ;
-- pas de pourcentage non calibré.
+optional lightweight intention capture.
 
-Exclusions : pas de NeuroMonitor, pas de 5 sphères.
+Not V1.
 
-## SPRINT 14 — PROFILE / PRIVACY
+------------------------------------------------------------
+23.10 V2.CANDIDATE-TRAINER
+------------------------------------------------------------
 
-ID : `V6.PROFILE-PRIVACY-1`
+Goal :
 
-Goal : settings, export, delete.
+candidate generation/selection/calculation mode.
 
-Includes :
+Not V1.
 
-- profile ;
-- appearance ;
-- engine settings ;
-- export JSON/PGN ;
-- delete data.
+------------------------------------------------------------
+23.11 V3.LLM-COACH-VERIFIED
+------------------------------------------------------------
 
-Acceptance criteria :
+Goal :
 
-- export complet (games, moves, analyses, reviews, practice, telemetry) ;
-- delete complet et confirmé ;
-- pas de données résiduelles après delete ;
-- engine test fonctionne.
+verified LLM explanations.
 
-## SPRINT 15 — QA RELEASE CANDIDATE
+Not V1.
 
-ID : `V6.RC-QA-1`
+============================================================
+24. DEFINITION OF DONE
+============================================================
 
-Goal : stabiliser V1 candidate.
+A mission is done only if :
 
-Includes :
+1. objective satisfied ;
+2. diff controlled ;
+3. no unrelated files modified/staged ;
+4. tests run ;
+5. failures disclosed ;
+6. docs updated ;
+7. source plans respected ;
+8. no forbidden V1 features ;
+9. performance budget considered ;
+10. rollback considered ;
+11. report complete.
 
-- browser QA ;
-- smoke tests ;
-- bugfix only ;
-- docs update ;
-- vérification critère de sortie V1.
+------------------------------------------------------------
+24.1 Frontend DoD
+------------------------------------------------------------
 
-Acceptance criteria :
+- loading/empty/error states ;
+- data-testid ;
+- accessibility ;
+- mobile considered ;
+- no forbidden labels ;
+- browser smoke if flow critical ;
+- strings centralized if user text.
 
-- 3 utilisateurs externes complètent la boucle sans assistance ;
-- 2 sur 3 reviennent à J+1 ou J+2 ;
-- aucun bug bloquant ;
-- tous les smoke tests passent ;
-- docs à jour.
+------------------------------------------------------------
+24.2 Backend DoD
+------------------------------------------------------------
 
----
+- service tests ;
+- API tests ;
+- error contracts ;
+- migration tests if schema ;
+- export/delete updated if user data ;
+- no unsafe paths/secrets.
 
-# 26. DEFINITION OF DONE PER SPRINT
+------------------------------------------------------------
+24.3 Docs DoD
+------------------------------------------------------------
 
-Chaque sprint doit produire un rapport :
+- PROJECT_STATE updated if state changed ;
+- NEXT_PLAN_ACTIONS updated ;
+- QA docs updated for QA missions ;
+- API/DB docs updated for contracts/schema.
 
-- mission name ;
-- files modified ;
-- user-visible changes ;
-- backend changes ;
-- frontend changes ;
-- data model changes ;
+============================================================
+25. RISK REGISTER
+============================================================
+
+------------------------------------------------------------
+25.1 Scope creep
+------------------------------------------------------------
+
+Risk :
+
+V2/V3 features leak into V1.
+
+Mitigation :
+
+- plan guard ;
+- prompts ;
+- feature boundaries ;
+- code review ;
+- explicit sprint.
+
+------------------------------------------------------------
+25.2 Stockfish instability
+------------------------------------------------------------
+
+Risk :
+
+analysis stalls, cache invalid, engine version mismatch.
+
+Mitigation :
+
+- timeouts ;
+- retry ;
+- strict cache ;
+- reconcile ;
+- browser stall smoke.
+
+------------------------------------------------------------
+25.3 Metric misuse
+------------------------------------------------------------
+
+Risk :
+
+internal metrics shown as truth.
+
+Mitigation :
+
+- static UI tests ;
+- Plan1 registry ;
+- forbidden labels ;
+- docs.
+
+------------------------------------------------------------
+25.4 Data loss
+------------------------------------------------------------
+
+Risk :
+
+delete/export bug, migration corruption.
+
+Mitigation :
+
+- temp DB tests ;
+- confirmation ;
+- export before risky migration ;
+- idempotent delete.
+
+------------------------------------------------------------
+25.5 UX brittleness
+------------------------------------------------------------
+
+Risk :
+
+button broken, board dead, spinner infinite.
+
+Mitigation :
+
+- browser smokes ;
+- state machines ;
+- data-testid ;
+- manual QA.
+
+------------------------------------------------------------
+25.6 Codex overreach
+------------------------------------------------------------
+
+Risk :
+
+agent implements full plan.
+
+Mitigation :
+
+- warnings ;
+- mission template ;
+- no commit default ;
+- controlled diff.
+
+------------------------------------------------------------
+25.7 Dirty worktree confusion
+------------------------------------------------------------
+
+Risk :
+
+unrelated changes committed.
+
+Mitigation :
+
+- explicit git status ;
+- no git add -A ;
+- stage only named files ;
+- audit mission.
+
+------------------------------------------------------------
+25.8 Test optimism
+------------------------------------------------------------
+
+Risk :
+
+smokes pass but user real runtime broken.
+
+Mitigation :
+
+- real-runtime smokes ;
+- manual checklist ;
+- user-reported bugs override tests.
+
+============================================================
+26. INCIDENT RESPONSE
+============================================================
+
+Incident examples :
+
+- user data loss ;
+- delete unsafe ;
+- formula inversion ;
+- Stockfish cache mix ;
+- attempt not saved ;
+- analysis infinite ;
+- forbidden metric visible ;
+- app cannot start.
+
+Incident protocol :
+
+1. stop feature work ;
+2. reproduce ;
+3. preserve data ;
+4. write incident note ;
+5. create P0 mission ;
+6. add regression test ;
+7. fix ;
+8. run full relevant tests ;
+9. update docs ;
+10. postmortem.
+
+Postmortem template :
+
+- incident summary ;
+- user impact ;
+- root cause ;
+- detection ;
+- recovery ;
+- what worked ;
+- what failed ;
+- action items ;
 - tests added ;
-- tests run ;
-- résultats ;
-- screenshots si UI ;
-- perf mesurée vs budget ;
-- known risks ;
-- next recommended sprint ;
-- rollback plan exécuté ou non ;
-- confirmation des exclusions.
+- owner ;
+- due date.
 
-Confirmations standard :
+No blame.
 
-- pas de changement Stockfish sauf prévu ;
-- pas de changement de formule sauf prévu ;
-- pas de LLM ;
-- pas de feature V2 ;
-- pas de refactor non lié ;
-- pas de migration sauf prévue ;
-- responsive mobile vérifié si UI.
+============================================================
+27. DECISION LOG
+============================================================
 
----
+Important decisions require docs/DECISIONS_LOG.md future.
 
-# 27. WHAT NOT TO BUILD NOW
+Record :
 
-Ne pas construire maintenant :
+- date ;
+- decision ;
+- context ;
+- alternatives ;
+- tradeoffs ;
+- owner ;
+- revisit date.
 
-- full Intent Layer ;
-- Candidate Trainer complet ;
-- LLM coach ;
-- 3D brain / cerveau décoratif ;
-- Transfer Gap dashboard ;
-- social features ;
-- coach/club ;
-- Foundations complet ;
-- full mobile premium ;
-- cloud sync ;
-- contextual bandits ;
-- BKT/MIRT complet ;
-- exact FSRS ;
-- Syzygy trainer ;
-- Role reversal ;
-- PV Contrast Quiz comme mode ;
-- Cognitive Map visuelle V1 ;
-- SkillTrace prescriptif V1 ;
-- métriques scientifiques calibrées V1.
+Examples :
 
----
+- moving SkillTrace out of shadow ;
+- exposing Transfer Gap ;
+- changing formula ;
+- changing Stockfish profile ;
+- enabling LLM ;
+- enabling cloud sync ;
+- changing Daily Plan heuristic.
 
-# 28. FIRST PRACTICAL NEXT STEP
+============================================================
+28. FEATURE FLAGS
+============================================================
 
-La prochaine étape technique n'est pas un autre document concept.
+Use feature flags for risky/future features.
 
-Séquence immédiate recommandée :
+Flags possible :
 
-1. Sprint 0 — Baseline lock ;
-2. **Sprint 0 bis — Execution Lock (gouvernance)** ;
-3. Sprint 1 — Board UX fix ;
-4. Sprint 2 — Score align ;
-5. Sprint 3 — App shell + i18n centralisé ;
-6. Sprint 4 — Today prototype ;
-7. Sprint 5 — Games page ;
-8. Sprint 6 — Review flow ;
-9. Sprint 7 — Practice focus ;
-10. Sprint 8 — Training Item Engine ;
-11. Sprint 9 — Practice Events ;
-12. Sprint 10 — SkillTrace shadow ;
-13. Sprint 11 — Simple spaced repetition ;
-14. Sprint 12 — Daily Plan déterministe ;
-15. Sprint 13 — Progression compacte ;
-16. Sprint 14 — Profile / Privacy ;
-17. Sprint 15 — QA release candidate.
+- enable_intent_light ;
+- enable_candidate_trainer ;
+- enable_llm_coach ;
+- enable_transfer_gap_visible ;
+- enable_foundations ;
+- enable_sandbox ;
+- enable_skilltrace_in_plan ;
+- enable_light_mode ;
+- enable_notifications.
 
-Pourquoi cet ordre :
+Default V1 :
 
-- Baseline fige le point de départ ;
-- Execution Lock fige les décisions doctrinales ;
-- Board UX corrige la friction immédiate ;
-- Score align rétablit la confiance ;
-- App shell aligne Plan 2 ;
-- Today crée la boucle d'habitude centrale ;
-- Review livre la promesse produit ;
-- Practice livre l'apprentissage ;
-- Training engine ferme la boucle ;
-- SkillTrace prépare la calibration ;
-- Spaced repetition fait revenir les positions ;
-- Daily Plan oriente l'utilisateur ;
-- Progression montre l'évolution ;
-- Privacy protège l'utilisateur ;
-- QA valide la V1.
+all false except explicitly V1 features.
 
----
+Flags must not expose forbidden features accidentally.
 
-# 29. RISK REGISTER (TOP 5)
+============================================================
+29. PERFORMANCE BUDGETS
+============================================================
 
-À détailler dans RISK_REGISTER.md, mais 5 risques majeurs identifiés :
+------------------------------------------------------------
+29.1 Frontend
+------------------------------------------------------------
 
-### Risque 1 — Scope creep V2 dans V1
+Targets :
 
-Probabilité : haute. Impact : critique.
-Mitigation : section 27 affichée dans CURRENT_SPRINT.md, revue à chaque sprint.
+- /app perceived load < 1.5 s ;
+- screen transition < 150 ms ;
+- click board response < 50 ms ;
+- toast < 100 ms ;
+- modal open < 120 ms ;
+- mobile tap response < 80 ms.
 
-### Risque 2 — Instabilité Stockfish / cache invalidé
+------------------------------------------------------------
+29.2 Backend
+------------------------------------------------------------
 
-Probabilité : moyenne. Impact : élevé.
-Mitigation : engine_hash strict, marquage legacy, bouton réanalyser, jamais de comparaison silencieuse.
+Targets :
 
-### Risque 3 — Métriques heuristiques perçues comme calibrées
+- Today < 800 ms ;
+- Review loaded already computed < 1 s ;
+- Practice attempt feedback < 200 ms ;
+- import PGN normal perceived < 500 ms ;
+- Daily Plan existing < 800 ms ;
+- Daily Plan create < 1 s normal DB.
 
-Probabilité : moyenne. Impact : élevé (perte de confiance utilisateur).
-Mitigation : statuts métriques explicites, SkillTrace en shadow, pas de pourcentage non calibré affiché, copy prudent.
+------------------------------------------------------------
+29.3 Engine
+------------------------------------------------------------
 
-### Risque 4 — Perte de données utilisateur
+Targets depend machine.
 
-Probabilité : faible. Impact : critique.
-Mitigation : export RGPD en V1, sauvegardes locales, tests delete complet, confirmation destructive.
+Must have :
 
-### Risque 5 — Abandon utilisateur (V1 perçue comme analyseur sans valeur ajoutée)
+- progress ;
+- timeout ;
+- recovery ;
+- no infinite spinner.
 
-Probabilité : moyenne. Impact : critique.
-Mitigation : boucle V1 complète (training items + practice events + spaced repetition + daily plan), critère de sortie V1 mesurable (J+1 / J+3).
+============================================================
+30. ACCESSIBILITY ENGINEERING
+============================================================
 
----
+Engineering must support Plan2 accessibility.
 
-# 30. CODEX PROMPT TEMPLATE — À UTILISER POUR CHAQUE SPRINT
+Required tests/future checks :
 
-Ce template est inclus pour que ce document unique soit directement exploitable par Codex.
+- focus visible ;
+- target size ;
+- click-click board ;
+- reduced motion ;
+- keyboard minimum ;
+- contrast audit ;
+- ARIA labels actions.
 
-```text
-MISSION: [SPRINT_ID]
+No drag/drop-only interaction.
 
-Context:
-You are working on NeuroChess.
-Use this document as the single master reference.
-Do not apply the whole document at once.
-Execute only the mission described below.
+No color-only feedback.
 
-Hard constraints:
-- No commit unless explicitly requested by the user.
-- No stage unless explicitly requested by the user.
-- No unrelated refactor.
-- No V2/V3 feature.
-- No LLM.
-- No Stockfish change unless explicitly in scope.
-- No formula change unless explicitly in scope.
-- No fake metric exposure.
-- No hidden behavior change.
-- Keep code minimal and targeted.
+============================================================
+31. SOURCE CONTROL OF GENERATED ARTIFACTS
+============================================================
+
+Do not commit :
+
+- temp DB ;
+- screenshots unless explicit ;
+- logs with secrets ;
+- node_modules ;
+- build artifacts ;
+- pycache ;
+- local venv ;
+- downloaded Stockfish binaries unless project policy says.
+
+Commit if mission requires :
+
+- scripts ;
+- tests ;
+- docs ;
+- migrations ;
+- source files.
+
+============================================================
+32. CODEX PROMPT TEMPLATE
+============================================================
+
+Use this for every mission.
+
+MISSION CODEX — <SPRINT_ID>
+
+Repository:
+C:\Users\bahij\OneDrive\Desktop\NeuroChess2_vraie\NeuroChess2
+
+Read first:
+- AGENTS.md
+- docs/PLAN_SOURCE_OF_TRUTH.md
+- docs/PLAN_CONTEXT_MIN.md
+- plan/Plan1.txt
+- plan/Plan2.txt
+- plan/Plan3.md
+- relevant docs
 
 Goal:
-[clear sprint goal]
+<one precise objective>
 
-Scope included:
-- ...
+Absolute rules:
+- Do NOT commit unless explicitly authorized.
+- Do NOT stage.
+- Do NOT modify Stockfish/formulas/metrics unless mission says.
+- Do NOT add V2/V3 features.
+- Keep diff controlled.
 
-Scope excluded:
-- ...
+Tasks:
+1. git status
+2. inspect current code
+3. implement minimal diff
+4. add tests
+5. run validations
+6. update docs
+7. final report
+
+Tests:
+<exact commands>
 
 Acceptance criteria:
-1. ...
-2. ...
-3. ...
-4. ...
-5. ...
+<clear list>
 
-Performance budget:
-- ...
-
-Rollback plan:
-- ...
-
-Required checks:
-- git status before
-- inspect relevant files
-- implement minimal changes
-- run backend tests if applicable:
-  .venv\Scripts\python.exe -m unittest discover backend/tests
-- run frontend checks if applicable:
-  cd frontend
-  node node_modules\typescript\bin\tsc --noEmit
-  node node_modules\vite\bin\vite.js build
-- run smokes if available:
-  .venv\Scripts\python.exe scripts\review_regression_smoke.py
-  .venv\Scripts\python.exe scripts\pgn_import_smoke.py
-  .venv\Scripts\python.exe scripts\pgn_sindarov_real_flow_smoke.py
-
-Expected final report:
-- mission name
-- files modified
-- user-visible changes
-- backend changes
-- frontend changes
-- data model changes
-- tests added
+Final report:
+- files changed
 - tests run
-- results
-- screenshots if UI
-- performance measured vs budget
-- known risks
-- rollback plan
-- next recommended sprint
-- confirmation of exclusions
-- git status summary
-```
+- evidence
+- limitations
+- final git status
 
----
+============================================================
+33. CANONICAL VALIDATION COMMANDS
+============================================================
 
-# 31. FINAL SUMMARY
+Adjust paths if environment differs.
 
-Plan 1 dit : NeuroChess est scientifiquement fondé.
+Plan guard :
 
-Plan 2 dit : NeuroChess doit être un coach calme, clair, motivant.
+C:\Users\bahij\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe tools\plan_guard.py
 
-Plan 3 dit : on construit la plus petite boucle stable qui prouve la promesse.
+Backend tests :
 
-Boucle V1 :
+$env:PYTHONPATH=(Resolve-Path .manual_pydeps\site-packages).Path
+$env:TEMP=(Resolve-Path .tmp\test-run-local).Path
+$env:TMP=$env:TEMP
+$env:TMPDIR=$env:TEMP
+.venv_repair_local\Scripts\python.exe -m unittest discover backend/tests
 
-> Importe une partie
-> → analyse
-> → affiche la Review
-> → identifie les moments clés
-> → enseigne un moment
-> → entraîne sur 5 positions
-> → enregistre les tentatives
-> → planifie les révisions
-> → met à jour Today
-> → recommence.
+Frontend :
 
-Si cette boucle fonctionne, NeuroChess existe.
+cmd /c npm.cmd run build
+cmd /c npx tsc --noEmit
 
-Tout le reste est expansion.
+Python smokes :
 
-Règle finale :
+.venv_repair_local\Scripts\python.exe scripts\review_regression_smoke.py
+.venv_repair_local\Scripts\python.exe scripts\pgn_import_smoke.py
+.venv_repair_local\Scripts\python.exe scripts\pgn_sindarov_real_flow_smoke.py
 
-> Ne construis pas la révolution en premier.
-> Construis la boucle qui rend la révolution inévitable.
+Browser smokes :
 
----
+cmd /c node scripts\browser_v1_flow_smoke.mjs
+cmd /c node scripts\browser_profile_privacy_smoke.mjs
+cmd /c node scripts\browser_daily_plan_smoke.mjs
+cmd /c node scripts\browser_core_board_interaction_smoke.mjs
+cmd /c node scripts\browser_analysis_stall_recovery_smoke.mjs
+cmd /c node scripts\browser_review_exploration_real_smoke.mjs
+cmd /c node scripts\browser_real_analysis_no_infinite_loop_smoke.mjs
+cmd /c node scripts\browser_degraded_states_smoke.mjs
+cmd /c node scripts\browser_mobile_responsive_smoke.mjs
 
-**FIN DU PLAN 3 v2.2 — DOCUMENT UNIQUE TRANSMISSIBLE À CODEX**
+Diff :
+
+git diff --check
+git status --short --branch
+
+============================================================
+34. WHAT NOT TO BUILD NOW
+============================================================
+
+V1 forbids :
+
+- LLM coach ;
+- Candidate Trainer ;
+- Intent Deep ;
+- Transfer Gap visible ;
+- ETV visible ;
+- FSRS visible ;
+- NeuroMonitor ;
+- brain/cortex/atlas ;
+- Cognitive Map ;
+- social ;
+- multiplayer ;
+- free-play AI ;
+- cloud sync ;
+- subscriptions ;
+- advanced repertoire ;
+- MIRT/BKT visible ;
+- contextual bandit.
+
+V1 allows :
+
+- foundation for future ;
+- shadow data ;
+- internal logs ;
+- docs ;
+- tests ;
+- feature flags off.
+
+============================================================
+35. FIRST NEXT STEP AFTER PLAN3 REPLACEMENT
+============================================================
+
+After replacing Plan3, do not start new feature immediately.
+
+Recommended next mission :
+
+P0.DIRTY-WORKTREE-AUDIT-AND-RECOVERY
+
+Reason :
+
+worktree contains dirty files from runtime/board/analysis missions.
+
+Goal :
+
+classify dirty files, run relevant tests, decide commit/continue/revert.
+
+Only after that :
+
+finish real-runtime board exploration and analysis repair.
+
+============================================================
+36. FINAL SUMMARY
+============================================================
+
+Plan1 says what is scientifically true.
+Plan2 says how the user feels and acts.
+Plan3 says how to build, test, ship and recover without losing the mission.
+
+NeuroChess must be built like this :
+
+truth before beauty
+contracts before code
+tests before trust
+recovery before sophistication
+V1 before V2
+user data before convenience
+small diffs before big dreams
+evidence before confidence
+
+The final promise of Plan3 :
+
+NeuroChess will not become revolutionary because Codex implements everything.
+NeuroChess will become revolutionary because every small piece is correct, tested, humane, recoverable and aligned.
+
+============================================================
+37. SOURCES AND INSPIRATIONS
+============================================================
+
+These sources inform Plan3’s engineering doctrine:
+
+- DORA metrics: deployment frequency, lead time for changes, change failure/recovery metrics.
+- Google SRE: SLOs, error budgets, incident learning, reliability as a product property.
+- OpenTelemetry: telemetry as traces, metrics and logs, vendor-neutral observability.
+- OWASP ASVS: application security verification requirements and secure development controls.
+- Plan1 v3.0: scientific constitution.
+- Plan2 v4.0: UX/product/interface constitution.
+
+Raw source links:
+
+- https://dora.dev/guides/dora-metrics/
+- https://sre.google/sre-book/embracing-risk/
+- https://sre.google/workbook/error-budget-policy/
+- https://opentelemetry.io/docs/
+- https://opentelemetry.io/docs/concepts/observability-primer/
+- https://owasp.org/www-project-application-security-verification-standard/
+- https://github.com/OWASP/ASVS
+
+============================================================
+FIN DU PLAN 3 — EXÉCUTION TECHNIQUE NEUROCHESS v4.0 FINAL 20/20 CODEX-READY
+============================================================
