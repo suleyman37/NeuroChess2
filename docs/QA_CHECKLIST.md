@@ -1,6 +1,6 @@
 # QA Checklist
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1`
 Date: 2026-05-04
 
 ## Baseline
@@ -25,7 +25,7 @@ Date: 2026-05-04
 ## Automated Validation
 
 - [x] `tools/plan_guard.py` PASS.
-- [x] Backend full suite PASS, 459 tests.
+- [x] Backend full suite PASS, 470 tests.
 - [x] Review smoke PASS.
 - [x] PGN import smoke PASS.
 - [x] Sindarov real-flow smoke PASS.
@@ -53,6 +53,9 @@ Date: 2026-05-04
 - [x] Browser app console errors empty.
 - [x] Browser ready Review Summary validated.
 - [x] Browser Practice flow validated for reveal/correction attempt.
+- [x] Browser Profile/Privacy smoke validates top-right panel, export JSON,
+  typed delete confirmation, confirmed local-data deletion in a temp DB, and
+  Plan2 nav integrity.
 - [ ] Browser invalid PGN state not validated.
 - [ ] Mobile/responsive not validated.
 
@@ -72,10 +75,10 @@ Date: 2026-05-04
 - [x] Core PGN smoke passes.
 - [x] App shell browser smoke passes for the minimal V1 loop.
 - [x] Automated browser E2E smoke exists for the minimal V1 loop.
+- [x] Privacy/export/delete implemented and browser-smoked in isolated temp DB.
 - [ ] Deterministic backend Daily Plan missing.
 - [ ] Durable `training_items` missing.
 - [ ] SkillTrace shadow missing.
-- [ ] Privacy/export/delete missing.
 - [ ] Centralized French strings missing.
 - [ ] Strict Stockfish cache proof incomplete.
 
@@ -91,5 +94,5 @@ Date: 2026-05-04
 ## Decision
 
 - Alpha: usable internally with strong backend evidence.
-- External V1: NO-GO until privacy/export/delete, deterministic Daily Plan,
-  degraded states, and release hardening are handled.
+- External V1: NO-GO until deterministic Daily Plan, durable training items,
+  SkillTrace shadow, degraded states, and release hardening are handled.

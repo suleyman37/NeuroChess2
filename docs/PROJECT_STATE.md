@@ -28,8 +28,31 @@ et les fichiers frontend/backend inspectes.
   le Summary Review est visible, Practice se lance, `Voir la correction`
   enregistre un `practice_attempt`, `due_at` J+1 est cree, et
   `learning_summary.scheduled_count=1`.
-- Prochaine mission recommandee: `P1.PROFILE-PRIVACY` pour couvrir les
-  exigences Plan3 privacy/export/delete avant utilisateurs externes.
+- Mission suivante alors recommandee: `P1.PROFILE-PRIVACY`, maintenant
+  couverte par la mise a jour ci-dessous.
+
+## Mise a jour Profile / Privacy du 2026-05-04
+
+- `P1.PROFILE-PRIVACY-V1` est implemente.
+- Backend ajoute un service local-first `backend/neurochess/privacy_service.py`.
+- Nouveaux endpoints:
+  - `GET /api/export`
+  - `DELETE /api/user-data?confirm=SUPPRIMER`
+- Export V1 retourne JSON avec metadata, parties, coups, analyses moteur,
+  reviews, moments, sessions Practice, attempts, due reviews derivees,
+  user aliases et sections vides coherentes pour tables Plan3 non encore
+  presentes.
+- Suppression V1 refuse toute demande sans confirmation exacte `SUPPRIMER`.
+  La suppression efface les donnees utilisateur locales disponibles, pas
+  Stockfish, pas le repo Git, pas les migrations, pas les fichiers systeme.
+- Frontend ajoute un panneau `Profil / Paramètres` dans le header/top-right,
+  hors navigation principale. La nav principale reste `Aujourd'hui`,
+  `Mes parties`, `Entrainement`.
+- Smoke browser dedie: `cmd /c node scripts\browser_profile_privacy_smoke.mjs`.
+  Dernier resultat connu: PASS, avec DB temporaire isolee, export avec
+  `pgn_raw`, premier clic delete non destructif, confirmation tapee, puis
+  historique/export vides apres suppression.
+- Prochaine mission recommandee: `P1.DEGRADED-STATES-ANTI-TILT`.
 
 ## Features livrees
 
@@ -218,6 +241,8 @@ et les fichiers frontend/backend inspectes.
 - `POST /live-analysis/stop`
 - `GET /live-analysis/stream`
 - `POST /games/import-pgn/preview`
+- `GET /api/export`
+- `DELETE /api/user-data`
 - `POST /games/import-pgn`
 - `GET /games/history?scope=mine|imported|local|ai|observed|all`
 
@@ -828,7 +853,7 @@ Documents crees : `docs/FULL_APPLICATION_QA_AUDIT.md`,
 `docs/QA_CHECKLIST.md`.
 
 Preuves obtenues : Serena actif avec `typescript` et `python`; plan guard PASS;
-backend full suite PASS (`459 tests`); Review smoke PASS; PGN import smoke PASS;
+backend full suite PASS (`470 tests` apres Profile/Privacy); Review smoke PASS; PGN import smoke PASS;
 Sindarov real-flow smoke PASS; frontend build PASS; fallback typecheck
 `npx tsc --noEmit` PASS. `npm run typecheck` et `npm run lint` ne sont pas
 disponibles comme scripts npm.
@@ -841,5 +866,6 @@ ensuite ete completee par `P0.BROWSER-SMOKE-FLOW`, qui valide Review prete,
 Summary, Practice et attempt reveal avec `due_at`.
 
 Readiness apres browser smoke : alpha interne estimee a 84%, V1 externe estimee
-a 62%, decision NO-GO pour premiers utilisateurs externes. Prochaine mission
-prioritaire : `P1.PROFILE-PRIVACY`.
+a 62%, decision NO-GO pour premiers utilisateurs externes. La mission suivante
+etait `P1.PROFILE-PRIVACY`, maintenant livree; la priorite actuelle est
+`P1.DEGRADED-STATES-ANTI-TILT`.

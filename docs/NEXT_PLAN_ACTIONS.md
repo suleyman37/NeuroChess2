@@ -310,40 +310,50 @@ tool_timeout_sec = 180
 - ID: `DEGRADED-STATES-ANTI-TILT`
 - Priorite: P1
 - Titre: Make degraded states and anti-tilt copy calm and actionable
+- Etat: next recommended mission after `PROFILE-PRIVACY`.
 - Justification Plan1/Plan2: Plan2 asks for sane dopamine, recovery states, and
   emotional regulation after losses or blocked analysis.
 - Fichiers probables: `frontend/src/reviewState.ts`,
   `frontend/src/components/review/ReviewTechnicalDetails.tsx`,
-  `frontend/src/App.tsx`.
+  `frontend/src/App.tsx`, browser smoke scripts.
 - Taille: M
-- Risques: hiding actionable recovery behind too much soft copy.
-- Dependances: app shell states.
-- Definition du done: PGN invalid, Stockfish absent, slow/partial/stalled review,
-  and recent-loss states have clear next actions with no jargon.
-- Tests a lancer: frontend build, static tests, backend review tests if state
-  contracts change.
+- Risques: hiding actionable recovery behind too much soft copy, or turning
+  errors into a technical dashboard.
+- Dependances: app shell states, browser V1 flow smoke, profile/privacy smoke.
+- Definition du done: invalid PGN, backend unavailable, Stockfish absent,
+  slow/partial/stalled review, empty history, no due revisions, interrupted
+  Practice, and recent-loss states have clear next actions with no jargon and
+  no forbidden V1 UI.
+- Tests a lancer: plan guard, frontend build/typecheck, static tests, backend
+  review/API tests if state contracts change, browser degraded-state smoke plus
+  existing browser V1/profile smokes.
 
 ### P1. PROFILE-PRIVACY
 
 - ID: `PROFILE-PRIVACY`
 - Priorite: P1
 - Titre: Add minimal Profile/Settings privacy controls for V1
-- Etat: next recommended mission after `BROWSER-SMOKE-FLOW`.
+- Etat: completed on 2026-05-04 by `P1.PROFILE-PRIVACY-V1`.
 - Justification Plan1/Plan2/Plan3: Plan3 requires privacy/export/delete before
   first external users; Plan2 keeps Profile/Settings outside the main nav.
-- Fichiers probables: `frontend/src/App.tsx`, a small profile/settings
-  component if extraction is useful, backend data/export/delete routes if
-  needed, `docs/API_CONTRACTS.md`, `docs/SCREEN_CONTRACTS.md`,
-  `docs/ACTION_REGISTRY.md`.
+- Fichiers touches: `backend/neurochess/privacy_service.py`,
+  `backend/neurochess/api/game_routes.py`, `frontend/src/App.tsx`,
+  `frontend/src/api/client.ts`, `frontend/src/styles.css`,
+  `backend/tests/test_profile_privacy.py`,
+  `backend/tests/test_frontend_profile_privacy_static.py`,
+  `scripts/browser_profile_privacy_smoke.mjs`, governance/QA docs.
 - Taille: M
 - Risques: turning Profile into a dashboard or adding account/cloud scope that
   is not in V1.
 - Dependances: browser smoke proof of the core V1 loop.
 - Definition du done: Profile/Settings exposes only V1 privacy controls,
   export, delete/reset local data, clear copy, no cloud/account promise, and no
-  research metrics.
-- Tests a lancer: plan guard, backend tests for export/delete if backend is
-  touched, frontend build, browser smoke.
+  research metrics. Done with backend/static tests and browser smoke.
+- Tests a lancer: plan guard, backend full suite, browser V1 smoke,
+  browser profile/privacy smoke, frontend build, typecheck, diff check.
+- Resultat: `GET /api/export` returns local JSON with metadata and available
+  sections; `DELETE /api/user-data?confirm=SUPPRIMER` refuses missing/wrong
+  confirmation and deletes local user data only after typed confirmation.
 
 ## P2
 

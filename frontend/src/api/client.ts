@@ -1125,6 +1125,53 @@ export type ProductCapabilities = {
   review: CapabilityReview;
 };
 
+export type UserDataExport = {
+  metadata: {
+    app_name: string;
+    schema_version: string;
+    exported_at: string;
+    storage_model: string;
+    warning: string;
+  };
+  games: Array<Record<string, unknown>>;
+  moves: Array<Record<string, unknown>>;
+  engine_analysis: Array<Record<string, unknown>>;
+  review_jobs: Array<Record<string, unknown>>;
+  review_summaries: Array<Record<string, unknown>>;
+  review_moments: Array<Record<string, unknown>>;
+  practice_sessions: Array<Record<string, unknown>>;
+  practice_session_items: Array<Record<string, unknown>>;
+  practice_attempts: Array<Record<string, unknown>>;
+  due_reviews: Array<Record<string, unknown>>;
+  daily_plan_items: Array<Record<string, unknown>>;
+  skilltrace_states: Array<Record<string, unknown>>;
+  telemetry_events: Array<Record<string, unknown>>;
+  user_settings: Array<Record<string, unknown>>;
+  local_profile: Array<Record<string, unknown>>;
+  user_aliases?: Array<Record<string, unknown>>;
+};
+
+export type UserDataDeleteSummary = {
+  schema_version: string;
+  deleted_at: string;
+  games_deleted: number;
+  moves_deleted: number;
+  engine_analysis_deleted: number;
+  reviews_deleted: number;
+  review_jobs_deleted: number;
+  review_summaries_deleted: number;
+  review_moments_deleted: number;
+  practice_sessions_deleted: number;
+  practice_attempts_deleted: number;
+  due_items_deleted: number;
+  telemetry_deleted: number;
+  daily_plan_items_deleted: number;
+  skilltrace_states_deleted: number;
+  settings_deleted: number;
+  user_aliases_deleted: number;
+  total_deleted: number;
+};
+
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
@@ -1158,6 +1205,17 @@ async function request<T>(
 
 export function getCapabilities(): Promise<ProductCapabilities> {
   return request<ProductCapabilities>("/capabilities");
+}
+
+export function exportUserData(): Promise<UserDataExport> {
+  return request<UserDataExport>("/api/export");
+}
+
+export function deleteUserData(confirm: string): Promise<UserDataDeleteSummary> {
+  const params = new URLSearchParams({ confirm });
+  return request<UserDataDeleteSummary>(`/api/user-data?${params.toString()}`, {
+    method: "DELETE",
+  });
 }
 
 export function createGame(): Promise<GameState> {

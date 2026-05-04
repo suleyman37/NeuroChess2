@@ -1,6 +1,6 @@
 # Test Coverage Matrix
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1`
 Date: 2026-05-04
 
 This matrix lists available automated tests, scripts, and smoke checks. It does
@@ -9,7 +9,7 @@ not count static tests as browser or end-to-end proof.
 ## Latest Run Summary
 
 - `tools/plan_guard.py`: PASS.
-- Backend full suite: PASS, 459 tests.
+- Backend full suite: PASS, 470 tests.
 - `scripts/review_regression_smoke.py`: PASS.
 - `scripts/pgn_import_smoke.py`: PASS.
 - `scripts/pgn_sindarov_real_flow_smoke.py`: PASS.
@@ -19,6 +19,12 @@ not count static tests as browser or end-to-end proof.
 - Browser smoke: PASS via `cmd /c node scripts\browser_v1_flow_smoke.mjs`.
   The script uses an isolated temp backend DB, fake engine, Vite, and Edge CDP
   to prove nav/import/ready Review/Practice/reveal attempt/due signal.
+- Profile/privacy smoke: PASS via
+  `cmd /c node scripts\browser_profile_privacy_smoke.mjs`.
+  The script uses an isolated temp backend DB, Vite, and Edge CDP to prove the
+  top-right profile panel, export JSON, non-destructive first delete click,
+  typed delete confirmation, cleared local data, Plan2 nav integrity, and no
+  forbidden V1 labels.
 
 ## Matrix
 
@@ -37,8 +43,9 @@ not count static tests as browser or end-to-end proof.
 | `backend/tests/test_evaluation_display.py` | unit | Evaluation semantics | POV White eval, mate/eval display, player POV | UI wording in browser | PASS in full suite | high | Add golden docs examples if formulas change |
 | `backend/tests/test_frontend_app_shell_static.py` | static | App Shell | Plan2 nav, Review not main tab, Training labels, forbidden labels | Runtime browser and state branches | PASS in full suite | medium | Browser shell fixture |
 | `backend/tests/test_frontend_learning_loop_static.py` | static | Learning UI | Learning counters wired, no FSRS/ETV/SkillTrace labels | Real due data in browser | PASS in full suite | medium | Browser due/revision fixture |
+| `backend/tests/test_frontend_profile_privacy_static.py` | static | Profile/Privacy UI | Profile outside main nav, export/delete labels, typed confirmation, forbidden labels absent | Runtime API/browser behavior | PASS targeted | medium | Keep aligned with browser smoke |
 | `backend/tests/test_frontend_lesson_flow_static.py` | static | Review lesson UI | Review tabs/copy/internal details hidden | Browser interaction and board moves | PASS in full suite | medium | Browser Review/Lesson smoke |
-| `backend/tests/test_game_api.py` | API/integration | Games API | Create/list/open/moves/analysis-related API paths | Browser UX, real user import | PASS in full suite | high | Add delete/export when implemented |
+| `backend/tests/test_game_api.py` | API/integration | Games API | Create/list/open/moves/analysis-related API paths | Browser UX, real user import | PASS in full suite | high | Keep separate from profile/privacy destructive tests |
 | `backend/tests/test_game_recorder.py` | unit | Game recorder | Move recording, state persistence | PGN import and browser | PASS in full suite | high | None immediate |
 | `backend/tests/test_live_analysis_service.py` | unit/integration | Live analysis | Live session state, streaming helpers | Review stabilized snapshots | PASS in full suite | medium | Degraded UI for backend unavailable |
 | `backend/tests/test_move_categories.py` | unit | Taxonomy V0 | Move categories, labels | Browser Review tags | PASS in full suite | high | Keep taxonomy simple |
@@ -46,6 +53,7 @@ not count static tests as browser or end-to-end proof.
 | `backend/tests/test_opening_service.py` | unit/API | Opening service | Book import/classification, API paths | Opening UX browser | PASS in full suite | medium | License/data source governance |
 | `backend/tests/test_pedagogical_explanations.py` | unit | Pedagogy | Explanation generation | Browser copy/lesson flow | PASS in full suite | medium | Browser lesson smoke |
 | `backend/tests/test_pgn_import_service.py` | unit/API | PGN import | Preview/import/dedup/invalid PGN/API with TestClient | Browser form | PASS in full suite | high | Browser invalid/duplicate PGN smoke |
+| `backend/tests/test_profile_privacy.py` | API/integration | Profile/Privacy | Export empty/data, `pgn_raw`, delete confirmation, idempotent delete, no Stockfish/analysis dependency | Browser download behavior | PASS targeted | high | Keep temp DB isolation |
 | `backend/tests/test_pgn_sindarov_real_file.py` | integration | Real PGN file | Sindarov real PGN import/review job start | Browser | PASS in full suite | high | Keep fixture stable |
 | `backend/tests/test_pv_contrast_evidence.py` | unit | PV evidence | PV contrast structures | Browser PV disclosure | PASS in full suite | medium | Explorer browser smoke |
 | `backend/tests/test_rating_math.py` | unit | Math helpers | Rating/math utilities | Product flows | PASS in full suite | medium | None immediate |
@@ -65,7 +73,8 @@ not count static tests as browser or end-to-end proof.
 | `scripts/review_regression_smoke.py` | smoke | Review regression | Normal deep job and last-position hang recovery | Browser, Practice UI | PASS | high | Add ready Review browser smoke |
 | `scripts/pgn_import_smoke.py` | smoke | PGN import | PGN import smoke through backend | Browser form | PASS | high | Run with browser temp DB |
 | `scripts/pgn_sindarov_real_flow_smoke.py` | smoke | Real PGN flow | 14 Sindarov games, import/open/replay/review start | Browser Review/Practice | PASS | high | Browser E2E with one fixture |
-| `scripts/browser_v1_flow_smoke.mjs` | browser smoke | V1 user loop | `/app`, Plan2 nav, Training 3 entries, PGN import UI, Review ready, Summary visible, Practice start, reveal attempt, `due_at`, learning summary scheduled signal, forbidden labels absent | Correct drag/drop move attempt, invalid PGN, mobile/responsive, privacy/export/delete | PASS | high | Extend later for invalid/degraded/mobile states |
+| `scripts/browser_v1_flow_smoke.mjs` | browser smoke | V1 user loop | `/app`, Plan2 nav, Training 3 entries, PGN import UI, Review ready, Summary visible, Practice start, reveal attempt, `due_at`, learning summary scheduled signal, forbidden labels absent | Correct drag/drop move attempt, invalid PGN, mobile/responsive | PASS | high | Extend later for invalid/degraded/mobile states |
+| `scripts/browser_profile_privacy_smoke.mjs` | browser smoke | Profile/Privacy | `/app`, Plan2 nav exactly 3 entries, top-right Profile panel, export JSON with `pgn_raw`, first delete click preserves data, typed `SUPPRIMER`, confirmed delete clears temp local data, forbidden labels absent | Real user DB, browser download file contents beyond API payload, mobile/responsive | PASS | high | Keep port range within backend CORS regex |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |
@@ -74,7 +83,7 @@ not count static tests as browser or end-to-end proof.
 ## Coverage Gaps
 
 - No browser invalid-PGN/degraded-state smoke.
-- No backend `training_items`, deterministic `Daily Plan`, privacy/export/delete,
-  or SkillTrace shadow coverage because those capabilities are not implemented.
-- No `docs/API_CONTRACTS.md`, `docs/DB_SCHEMA.md`, or registry-vs-code checker.
+- No backend `training_items`, deterministic `Daily Plan`, or SkillTrace shadow
+  coverage because those capabilities are not implemented.
+- No registry-vs-code checker.
 - No `npm run lint` or `npm run typecheck` script; build does include `tsc`.

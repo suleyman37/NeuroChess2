@@ -1,25 +1,26 @@
 # V1 Readiness Report
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1`
 Date: 2026-05-04
 
 ## 1. Resume executif
 
-- Alpha utilisable estimee: 84%.
-- V1 reelle estimee: 62%.
+- Alpha utilisable estimee: 88%.
+- V1 reelle estimee: 70%.
 - Decision premiers utilisateurs externes: NO-GO.
 
 NeuroChess a maintenant une preuve browser automatisee du flow V1 minimal :
 `/app -> navigation Plan2 -> import PGN UI -> Review prete -> Summary ->
 Practice -> attempt reveal -> due_at/learning_summary scheduled signal`.
-La V1 externe reste NO-GO car Privacy/export/delete manque, Daily Plan
+Le minimum Profile/Settings/Privacy est maintenant browser-proven avec export
+JSON et suppression locale confirmee. La V1 externe reste NO-GO car Daily Plan
 deterministe backend manque, `training_items` durable manque, SkillTrace shadow
 manque, et les etats degrades ne sont pas assez prouves en UI reelle.
 
 ## 2. Valide automatiquement
 
 - Plan guard: PASS.
-- Backend full suite: PASS, 459 tests.
+- Backend full suite: PASS, 470 tests.
 - Review regression smoke: PASS.
 - PGN import smoke: PASS.
 - Sindarov real-flow smoke: PASS.
@@ -27,6 +28,12 @@ manque, et les etats degrades ne sont pas assez prouves en UI reelle.
 - TypeScript fallback typecheck: PASS via `npx tsc --noEmit`.
 - Browser V1 flow smoke: PASS via
   `cmd /c node scripts\browser_v1_flow_smoke.mjs`.
+- Profile/Privacy backend tests: PASS via
+  `backend.tests.test_profile_privacy`.
+- Profile/Privacy static guard: PASS via
+  `backend.tests.test_frontend_profile_privacy_static`.
+- Browser profile/privacy smoke: PASS via
+  `cmd /c node scripts\browser_profile_privacy_smoke.mjs`.
 - Learning Loop V1 service: attempt fields, due rules, due session, no-due
   summary all covered by backend tests.
 - Training V1 static guard: exactly 3 entries and no forbidden labels.
@@ -47,6 +54,10 @@ manque, et les etats degrades ne sont pas assez prouves en UI reelle.
 - Backend evidence from the browser smoke: `game_id=1`, `session_id=1`,
   `attempt_id=1`, `due_at=2026-05-05T12:08:29+00:00`,
   `learning_summary.scheduled_count=1`.
+- Profile/Privacy browser smoke opens the top-right panel, verifies the main
+  nav remains exactly `Aujourd'hui`, `Mes parties`, `Entrainement`, exports JSON
+  with `pgn_raw`, verifies the first delete click preserves data, requires
+  typed `SUPPRIMER`, then clears local game/history/export data in a temp DB.
 
 ## 4. Existe mais pas valide en browser
 
@@ -68,7 +79,8 @@ manque, et les etats degrades ne sont pas assez prouves en UI reelle.
   lesson/explorer paths remain partial.
 - Compact progress and due counts are based on real Practice counters, but only
   per available game/session signal, not a global learning queue.
-- Profile/settings is only a placeholder.
+- Profile/settings is minimal and real for V1 privacy controls; preferences and
+  engine controls remain honest placeholders.
 - i18n is French in visible UI, but strings are not centralized.
 - ACTION_REGISTRY and SCREEN_CONTRACTS are maintained manually, not checked
   against code.
@@ -97,7 +109,7 @@ manque, et les etats degrades ne sont pas assez prouves en UI reelle.
 
 - Anti-tilt is missing as a dedicated UX behavior.
 - Degraded states are partial and not browser-proven.
-- Profile/Settings/Privacy is not a real screen yet.
+- Profile/Settings/Privacy is now a minimal top-right panel, not a main tab.
 - Ready Review Summary and reveal Practice attempt are browser-proven; lesson,
   explorer, hint/skip/retry, and drag/drop move attempts still need browser
   evidence.
@@ -109,12 +121,10 @@ manque, et les etats degrades ne sont pas assez prouves en UI reelle.
 - No durable `training_items`.
 - No backend deterministic `Daily Plan`.
 - No SkillTrace shadow.
-- No privacy/export/delete.
 - No centralized French strings.
 - No strict cache policy proof matching all Plan3 conditions.
-- Automated browser smoke exists for the minimal V1 loop; release smoke still
-  needs degraded/mobile/privacy coverage.
-- No `API_CONTRACTS.md` or `DB_SCHEMA.md`.
+- Automated browser smokes exist for the minimal V1 loop and profile/privacy;
+  release smoke still needs degraded/mobile coverage.
 
 ## 10. Tests executes
 
@@ -129,7 +139,7 @@ $env:TEMP=(Resolve-Path .tmp\test-run-local).Path
 $env:TMP=$env:TEMP
 $env:TMPDIR=$env:TEMP
 .venv_repair_local\Scripts\python.exe -m unittest discover backend/tests
-# PASS: Ran 459 tests in 75.572s, OK.
+# PASS: Ran 470 tests in 125.630s, OK.
 ```
 
 ```powershell
@@ -183,6 +193,21 @@ cmd /c node scripts\browser_v1_flow_smoke.mjs
 # learning_summary scheduled_count=1, forbidden labels absent.
 ```
 
+```powershell
+$env:PYTHONPATH=(Resolve-Path .manual_pydeps\site-packages).Path
+$env:TEMP=(Resolve-Path .tmp\test-run-local).Path
+$env:TMP=$env:TEMP
+$env:TMPDIR=$env:TEMP
+.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_profile_privacy backend.tests.test_frontend_profile_privacy_static
+# PASS: Ran 11 tests, OK.
+```
+
+```powershell
+cmd /c node scripts\browser_profile_privacy_smoke.mjs
+# PASS: Profile panel, export JSON, delete confirmation, confirmed local data
+# deletion in isolated temp DB, Plan2 nav intact, forbidden labels absent.
+```
+
 ## 11. Tests non executes
 
 - Browser drag/drop correct-move attempt was not run; the automated browser
@@ -196,7 +221,6 @@ cmd /c node scripts\browser_v1_flow_smoke.mjs
 
 | Priorite | Risque | Preuve | Action |
 |---|---|---|---|
-| P1 | Privacy/export/delete missing | No API/UI found | `P1.PROFILE-PRIVACY` |
 | P1 | Daily Plan is not backend deterministic | Search found no backend daily plan API/service | `P1.DAILY-PLAN-DETERMINISTIC` |
 | P1 | Durable `training_items` missing | Search found no implementation | Add training item model after browser smoke |
 | P1 | SkillTrace shadow missing | Docs only | Add shadow-only after Daily Plan |
@@ -208,11 +232,11 @@ cmd /c node scripts\browser_v1_flow_smoke.mjs
 
 ## 13. Prochaine mission recommandee
 
-One next mission: `P1.PROFILE-PRIVACY`.
+One next mission: `P1.DEGRADED-STATES-ANTI-TILT`.
 
-Reason: the core browser V1 loop is now proven. Plan3 still blocks external V1
-until a minimal Profile/Settings privacy surface exists with export/delete or
-local-data reset semantics.
+Reason: the core browser V1 loop and Profile/Privacy flow are now proven.
+External V1 still needs calmer, browser-tested recovery states for invalid PGN,
+backend unavailable, slow/stalled analysis, empty queues, and anti-tilt copy.
 
 ## 14. Critere de sortie V1 Plan3
 
@@ -224,6 +248,6 @@ local-data reset semantics.
 | Practice | partial | Backend/API tests and browser reveal attempt | Correct drag/drop move, hint/skip/retry not browser-proven |
 | Daily Plan | missing | No backend daily plan service/API found | Frontend-derived action only |
 | Revision J+3 | pass | Backend learning loop tests for hint success -> 3 days; browser reveal creates J+1 scheduled due | Browser Training/Revisions due-flow not proven |
-| Export/delete | missing | No API/UI found | Release blocker |
-| Tests critiques | partial | Backend/build/smokes/browser V1 flow pass | Needs degraded/mobile/privacy tests |
-| Utilisateurs externes | missing | No release/browser/privacy gate complete | NO-GO |
+| Export/delete | pass | Backend tests and browser profile/privacy smoke | Deletes only after typed `SUPPRIMER` in tested temp DB |
+| Tests critiques | partial | Backend/build/smokes/browser V1 + profile/privacy flow pass | Needs degraded/mobile tests |
+| Utilisateurs externes | missing | Daily Plan/training_items/SkillTrace shadow/degraded states incomplete | NO-GO |

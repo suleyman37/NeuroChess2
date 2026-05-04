@@ -30,7 +30,7 @@ helps the user.
 | app.review.explorer | `/app` review explorer | I want to inspect the details. | Inspect and open a specific lesson. | `explorer.open_lesson_for_move` | `explorer.replay_line`, `opening.show_linked_moment` | none | sections, moves, opening, PV, folded technical details | destructive/debug options | always-visible debug, normal-flow score JSON | no annotated moves | loading review sections | unavailable evidence message | 1 | 2 | Level 3 | folded explorer details |
 | app.training | `/app` Entrainement | What should I correct now? | Start the next simple practice session. | `training.start_daily_plan` | `training.review_failed_positions`, `training.start_due_revisions` | none | Plan du jour, Mes positions ratees, Revisions, simple due/scheduled counts | formulas, domains, Transfer Gap, FSRS/ETV/SkillTrace labels | Candidate Trainer, Intent Layer, LLM, debug | profile en construction -> import/review | lightweight loading | insufficient practice data explanation | 1 | 2 | Level 2 | folded practice details only |
 | app.progress | `/app/progress` | Am I really improving? | Review progress and return to plan. | view current plan | filter period, open training | none | trends, qualitative labels, sufficient-data badges | raw formulas | precise Transfer Gap if data insufficient, debug | not enough data message | progress loading | explain unavailable data | 1 | 2 | Level 3 | advanced details |
-| app.settings | `/app/settings` | How do I configure the app? | Configure preferences. | none | save preference, export data | none | preferences, account/app settings | debug by default | normal-flow debug, hidden engine controls | default settings | saving state | setting save error | 0 | 2 | Level 4 | advanced section |
+| app.settings | header panel in `/app` | How do I control my local profile and data? | Manage minimal local settings and privacy. | none | export data, request/delete local data | none | local profile note, real preference note, engine note, privacy export/delete | debug, research metrics, fake toggles | normal-flow debug, hidden engine controls, cloud/account promises | profile en construction | export/delete progress | export/delete error with no data loss | 0 | 2 | Level 2 | none |
 | app.advanced_options | `/app/advanced` or disclosed panel | How do I control technical parameters? | Inspect or adjust technical controls. | none | advanced analysis, rebuild metrics | none | engine, cache, debug, AI/export controls if available | normal user coaching | visible by default | collapsed by default | operation progress | technical error details | 0 | 2 | Level 4 | this screen |
 
 ## Required Screen Behaviors
@@ -132,9 +132,16 @@ helps the user.
 
 ### app.settings
 
-- Question: "Comment configurer l'application ?"
+- Question: "Comment contrôler mon profil local et mes données ?"
 - Primary action: none.
+- Must remain outside the main navigation, accessible from the header/top-right.
+- Visible V1 sections: Profil local, Préférences, Moteur, Confidentialité.
+- Export uses `GET /api/export` and downloads a local JSON file.
+- Delete uses `DELETE /api/user-data?confirm=SUPPRIMER`.
+- The first delete click must never delete data; typed `SUPPRIMER` is required.
 - Destructive actions require confirmation.
+- Forbidden: cloud/account promise, fake toggles, SkillTrace/ETV/Transfer Gap,
+  debug metrics, brain/cortex/atlas visuals.
 
 ### app.advanced_options
 

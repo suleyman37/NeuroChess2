@@ -33,6 +33,7 @@ from neurochess.live_analysis_service import (
 )
 from neurochess.opening_service import OpeningService, OpeningServiceError
 from neurochess.pgn_import_service import PgnImportService
+from neurochess.privacy_service import UserDataConfirmationError, UserDataService
 from neurochess.review_job_service import ReviewJobService
 from neurochess.review_practice_service import (
     ReviewPracticeService,
@@ -115,6 +116,12 @@ def get_pgn_import_service(
     return PgnImportService(repository.db_path)
 
 
+def get_user_data_service(
+    repository: Repository = Depends(get_repository),
+) -> UserDataService:
+    return UserDataService(repository.db_path)
+
+
 @router.get("/health")
 def health() -> dict[str, str]:
     return {
@@ -122,6 +129,27 @@ def health() -> dict[str, str]:
         "app": "NeuroChess 2",
         "version": "v3",
     }
+
+
+@router.get("/api/export")
+def export_user_data(
+    user_data_service: UserDataService = Depends(get_user_data_service),
+) -> dict[str, Any]:
+    return user_data_service.export_user_data()
+
+
+@router.delete("/api/user-data")
+def delete_user_data(
+    confirm: str | None = Query(None),
+    user_data_service: UserDataService = Depends(get_user_data_service),
+) -> dict[str, Any]:
+    try:
+        return user_data_service.delete_user_data(confirm=confirm)
+    except UserDataConfirmationError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="confirmation_required",
+        ) from exc
 
 
 @router.get("/capabilities", response_model=ProductCapabilitiesResponse)

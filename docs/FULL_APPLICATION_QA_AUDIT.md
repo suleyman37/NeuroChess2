@@ -1,6 +1,6 @@
 # Full Application QA Audit V1
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1`
 Date: 2026-05-04
 
 This is an evidence audit, not a product implementation pass. Plan1, Plan2, and
@@ -52,8 +52,30 @@ New evidence added after the full audit:
   `learning_summary.practice_event_count=1`,
   `learning_summary.scheduled_count=1`.
 - Remaining browser gaps: correct drag/drop move attempt, hint/skip/retry,
-  invalid PGN, backend unavailable, slow/stalled analysis, mobile/responsive,
-  Privacy/export/delete.
+  invalid PGN, backend unavailable, slow/stalled analysis, mobile/responsive.
+
+## P1.PROFILE-PRIVACY-V1 Update
+
+Date: 2026-05-04.
+
+New evidence added after the browser V1 flow:
+
+- Backend: `GET /api/export` and `DELETE /api/user-data?confirm=SUPPRIMER`.
+- Frontend: top-right `Profil / Paramètres` panel, outside the main Plan2 nav.
+- Tests added: `backend/tests/test_profile_privacy.py`,
+  `backend/tests/test_frontend_profile_privacy_static.py`,
+  `scripts/browser_profile_privacy_smoke.mjs`.
+- Browser strategy: isolated temp backend DB, seeded PGN via API, Vite, Edge CDP.
+- Result: PASS.
+- Proven browser flow: `/app` loads, Plan2 nav still has exactly
+  `Aujourd'hui / Mes parties / Entrainement`, Profile/Privacy panel opens,
+  export button returns JSON with `pgn_raw`, first delete click preserves data,
+  typed confirmation `SUPPRIMER` is required, confirmed delete clears local
+  games/history/export in the temp DB, forbidden V1 labels remain absent.
+- Evidence from latest run:
+  `game_id=1`, `export_games_count=1`, `export_has_pgn_raw=true`,
+  `history_count_before_confirm=1`, `history_count_after_delete=0`,
+  `export_games_after_delete=0`.
 
 ## Matrix
 
@@ -68,7 +90,7 @@ New evidence added after the full audit:
 | Gouvernance | No V2/V3 visible | Aucun NeuroMonitor/Candidate/LLM/TransferGap normal | Search frontend Serena/Select-String: pas de labels interdits visibles | `frontend/src` | n/a | static tests + plan_guard | no | plan_guard PASS | forbidden labels absent in browser snapshots | A | PASS | Faux negatifs si nouveau label non liste | Etendre plan_guard si nouveaux interdits | P0 |
 | Gouvernance | Worktree hygiene | QA doit distinguer pre-existing vs new | Worktree sale avant mission; audit ne stage/commit rien | repo root | n/a | `git status --short --branch` | no | no | no | C | PARTIAL | Difficile d'attribuer certains diffs | Commit de consolidation humain apres revue | P0 |
 | App Shell | Navigation Plan2 | Aujourd'hui / Mes parties / Entrainement | Present dans `App.tsx` et browser | `frontend/src/App.tsx` | n/a | `test_frontend_app_shell_static.py` | no | no | PASS | A | PASS | `App.tsx` reste tres large | Refactor seulement mission dediee | P1 |
-| App Shell | Profile/settings hors nav | Hors nav principale | Placeholder top-right, non productise | `frontend/src/App.tsx` | none | static coverage limited | no | no | visible as placeholder only | E | PLACEHOLDER | V1 Plan3 demande privacy/export/delete | Creer Profile/Privacy minimal | P1 |
+| App Shell | Profile/settings hors nav | Hors nav principale | Top-right Profile/Settings panel, not a fourth nav tab | `frontend/src/App.tsx`, `frontend/src/styles.css` | `/api/export`, `/api/user-data` | `test_frontend_profile_privacy_static.py`, `test_profile_privacy.py` | yes | profile/privacy smoke PASS | PASS | A | PASS | Panel remains minimal; settings are mostly honest placeholders | Keep Profile out of main nav | P1 |
 | App Shell | Review non onglet permanent | Review ouverte depuis flows | Main nav ne contient pas Review; context header existe | `frontend/src/App.tsx`, `ReviewPanel.tsx` | review APIs | static app shell test | no | no | contextual opening partial | A | PASS | Context opening peut arriver sur Review non prete | Browser smoke complet Review needed | P0 |
 | App Shell | Review contextuelle | Accessible depuis games/today/training | Handler `openReviewContext` et buttons existent | `frontend/src/App.tsx` | `/games/{game_id}/review` | static + backend review tests | no | review smoke PASS | opened in browser, but only preparation state validated | A | PARTIAL | Ready Review UI not proven in browser | Build deterministic browser fixture | P0 |
 | App Shell | Responsive minimal | Plan2 mobile/desktop stable | Not exercised in this audit | CSS/app shell | n/a | none dedicated | no | no | no | D | NOT_TESTED | Layout regressions possible | Browser smoke desktop + mobile | P1 |
@@ -121,11 +143,11 @@ New evidence added after the full audit:
 | Learning Loop | Daily Plan backend | Deterministic plan API/service | No `/api/today`, `/api/training`, or daily_plan service found | backend | missing Plan3 APIs | none | no | no | no | E | MISSING | Today/Training stays frontend-derived | P1.DAILY-PLAN-DETERMINISTIC | P1 |
 | Learning Loop | SkillTrace shadow | V1 shadow only, not visible | Not implemented in backend; hidden in UI | docs/backend search | n/a | none | no | no | no | E | MISSING | Plan3 says V1 shadow should exist before release | Add shadow-only sprint after Daily Plan | P1 |
 | Backend/API | FastAPI app health | Backend launchable | `backend.app:app` launched, `/health` OK | `backend/app.py` | `/health` | API tests | no | browser support server | n/a | A | PASS | Needs standard dev command docs | Add setup docs later | P1 |
-| Backend/API | Games routes | Create/list/get/moves/history | Routes exposed and tested | `game_routes.py` | `/games*` | game API tests | no | real flow PASS | browser history PASS | A | PASS | No delete route despite Plan3 privacy | Add privacy/data sprint | P1 |
+| Backend/API | Games routes | Create/list/get/moves/history | Routes exposed and tested | `game_routes.py` | `/games*` | game API tests | no | real flow PASS | browser history PASS | A | PASS | Per-game delete is not productized; whole local-data delete exists | Keep destructive actions confirmed | P1 |
 | Backend/API | Review routes/jobs | Generate/jobs/reconcile/cancel/get | Routes exist and tests pass | `game_routes.py`, `review_job_service.py` | `/review/jobs`, `/games/{id}/review` | review tests | no | review smoke PASS | partial | A | PASS | Browser ready summary not proven | Browser fixture | P0 |
 | Backend/API | Practice routes | sessions/attempts/retry/due | Routes exist and tests pass | `game_routes.py` | `/review/practice/*` | practice tests | no | no | no | B | PASS | Browser practice missing | Browser fixture | P0 |
-| Backend/API | Schemas | Pydantic request/response shapes | Attempt schema includes V1 fields | `schemas.py` | API models | backend tests | no | no | no | B | PASS | API_CONTRACTS.md missing | Create API contract doc | P1 |
-| Backend/API | Migrations | Durable schema evolution | Learning loop migration exists | `migrations.py`, `test_database.py` | n/a | database tests | no | no | no | B | PASS | DB_SCHEMA.md missing | Create DB schema doc | P1 |
+| Backend/API | Schemas/contracts | Pydantic shapes plus V1 API contract doc | Attempt schema includes V1 fields; export/delete contracts documented | `schemas.py`, `docs/API_CONTRACTS.md` | API models | backend tests | yes | no | no | B | PASS | Contract doc remains manual | Keep API contract updated with new endpoints | P1 |
+| Backend/API | Migrations/schema doc | Durable schema evolution | Learning loop migration exists; DB export/delete scope documented | `migrations.py`, `test_database.py`, `docs/DB_SCHEMA.md` | n/a | database tests | yes | no | no | B | PASS | DB_SCHEMA doc remains manual | Update after schema migrations | P1 |
 | Backend/API | Old data compatibility | Do not break old sessions | Tests cover migration/compat paths | migrations/repos/tests | n/a | database/practice tests | no | no | no | B | PASS | Not every legacy DB path proven | Add migration fixture pack | P1 |
 | Backend/API | Error handling | Clear API errors | Many errors mapped; degraded state incomplete | routes/services/frontend state | API | backend tests partial | no | no | partial browser | B | PARTIAL | UX may show generic errors | Degraded states sprint | P1 |
 | Stockfish/Metrics | Stockfish unchanged | No engine/formula changes in QA mission | `stockfish_service.py` not modified in diff | engine files | n/a | engine tests | no | review smoke PASS | no | B | PASS | Strict cache still partial | Cache policy sprint | P1 |
@@ -149,8 +171,8 @@ New evidence added after the full audit:
 | Etats degrades | Backend indisponible | Frontend should degrade calmly | Not tested in browser | frontend API client/App | all fetches | none dedicated | no | no | no | D | NOT_TESTED | Hard crash/toast unknown | Browser offline-backend smoke | P1 |
 | Etats degrades | Session interrompue | Resume or honest fallback | Practice state/resume exists | `App.tsx`, `ReviewPracticePanel.tsx` | practice session | practice tests | no | no | no | B | PARTIAL | Browser state not tested | Practice browser smoke | P1 |
 | Etats degrades | Due queue empty | Honest no due state | Service raises `no_due_items` with learning summary | `review_practice_service.py` | revisions route | learning loop tests | no | no | no | B | PASS | UI copy not browser-proven | Browser due-empty fixture | P1 |
-| Profil/Privacy | Profil minimal | V1 top-right profile/settings | Placeholder only | `App.tsx` | none | static partial | no | no | visible placeholder | E | PLACEHOLDER | V1 release blocker | P1.PROFILE-PRIVACY | P1 |
-| Profil/Privacy | Export/delete | Required before external V1 | No settings/privacy/export/delete API found | backend/frontend | missing `/api/export`, `/api/user-data` | none | no | no | no | E | MISSING | Plan3 external-user blocker | Implement before external users | P1 |
+| Profil/Privacy | Profil minimal | V1 top-right profile/settings | Minimal top-right panel: local profile, preferences, engine note, privacy controls | `frontend/src/App.tsx`, `frontend/src/styles.css` | n/a | `test_frontend_profile_privacy_static.py` | yes | profile/privacy smoke PASS | PASS | A | PASS | No real user profile table yet | Keep copy honest until `local_profile` exists | P1 |
+| Profil/Privacy | Export/delete | Required before external V1 | Export/delete backend service and frontend controls implemented with explicit confirmation | `privacy_service.py`, `game_routes.py`, `client.ts`, `App.tsx` | `GET /api/export`, `DELETE /api/user-data?confirm=SUPPRIMER` | `test_profile_privacy.py` | yes | profile/privacy smoke PASS | PASS | A | PASS | Delete is all local user data; no per-section restore | Keep destructive confirmation and temp-DB browser smoke | P1 |
 | Telemetry | Practice events | Local learning events | Attempt rows store rich event fields | `review_practice_service.py` | attempt APIs | learning loop tests | no | no | no | B | PASS | Not generic telemetry table | Future telemetry registry | P2 |
 | Telemetry | Import/review/training events | Plan3 telemetry future/local | No broad telemetry_events implementation found | backend/frontend | missing | none | no | no | no | E | MISSING | Product learning blind spots | Add after core V1 | later |
 | i18n | French UI | V1 French | UI strings largely French | `frontend/src` | n/a | static tests partial | no | browser snapshots French | PASS basic | A | PASS | Mixed ASCII/no central file | Centralize strings | P1 |
@@ -160,13 +182,14 @@ New evidence added after the full audit:
 | Browser/UX | Import PGN UI | Paste/preview/import works | Browser filled and imported QA PGN | `App.tsx`, backend routes | import APIs | pgn tests | no | PGN smoke PASS | PASS | A | PASS | Writes to live local DB | Isolated browser DB fixture | P0 |
 | Browser/UX | Ready Review UI | Open a completed Review | Automated browser smoke opens a ready contextual Review and sees Summary/CTA | `App.tsx`, Review components, `scripts/browser_v1_flow_smoke.mjs` | review APIs | review smoke/backend tests | `scripts/browser_v1_flow_smoke.mjs` | review smoke PASS | PASS | A | PASS | Lesson/Explorer paths still need browser proof | Add broader browser fixtures later | P1 |
 | Browser/UX | Practice UI | Start and submit Practice in browser | Automated browser smoke starts Practice and records a reveal/correction attempt | Practice components, `scripts/browser_v1_flow_smoke.mjs` | practice APIs | backend practice tests | `scripts/browser_v1_flow_smoke.mjs` | browser smoke PASS | PASS for reveal attempt | A | PARTIAL | Correct drag/drop move, hint, skip, retry not browser-proven | Extend browser smoke later | P1 |
+| Browser/UX | Profile/privacy UI | Export/delete are visible, confirmed, and local-first | Automated browser smoke opens Profile panel, exports JSON, verifies no first-click delete, confirms deletion, and verifies empty history/export | `scripts/browser_profile_privacy_smoke.mjs`, `App.tsx`, `privacy_service.py` | `/api/export`, `/api/user-data` | profile/privacy backend/static tests | `scripts/browser_profile_privacy_smoke.mjs` | profile/privacy smoke PASS | PASS | A | PASS | One favicon 404 in browser smoke, non-app blocking | Ignore favicon or add asset later | P2 |
 | Browser/UX | Console errors | No major app crash | Browser `tab.dev.logs(error)` returned empty | frontend runtime | n/a | no | no | no | PASS | A | PASS | Browser plugin printed non-app Statsig/network noise | Ignore plugin noise unless app logs appear | P1 |
 
 ## Summary Counts
 
-- PASS: 62
+- PASS: 66
 - PARTIAL: 29
 - FAIL: 0
 - NOT_TESTED: 3
-- MISSING: 6
-- PLACEHOLDER: 2
+- MISSING: 5
+- PLACEHOLDER: 0

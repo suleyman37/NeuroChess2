@@ -9,6 +9,8 @@ import {
   getGame,
   getGameHistory,
   cancelReviewJob,
+  deleteUserData,
+  exportUserData,
   getReviewJob,
   getGameMoves,
   getGameOpening,
@@ -53,6 +55,7 @@ import {
   type ReviewPracticeSummary,
   type ReviewPvLineMove,
   type ReviewResponse,
+  type UserDataDeleteSummary,
 } from "./api/client";
 import { ChessBoardPanel, type BoardArrow } from "./components/ChessBoardPanel";
 import {
@@ -444,6 +447,19 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   );
   const [selectedHistoryGame, setSelectedHistoryGame] =
     useState<GameHistoryItem | null>(null);
+  const [profilePanelOpen, setProfilePanelOpen] = useState(false);
+  const [profileExportStatus, setProfileExportStatus] = useState<string | null>(
+    null,
+  );
+  const [profileDeleteConfirmOpen, setProfileDeleteConfirmOpen] =
+    useState(false);
+  const [profileDeleteInput, setProfileDeleteInput] = useState("");
+  const [profileDeleteStatus, setProfileDeleteStatus] = useState<string | null>(
+    null,
+  );
+  const [profilePrivacyBusy, setProfilePrivacyBusy] = useState<
+    "idle" | "exporting" | "deleting"
+  >("idle");
   const boardFenRef = useRef<string | null>(null);
   const currentBoardContextRef = useRef<BoardEvaluationContext>("live");
   const currentLiveSessionRef = useRef<string | null>(null);
@@ -1986,6 +2002,90 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       setHistoryError(messageFromError(err));
     } finally {
       setHistoryLoading(false);
+    }
+  }
+
+  function resetLocalUserDataViewState() {
+    clearPersistedAppState();
+    setGameId(null);
+    setCurrentFen(null);
+    setViewedFen(null);
+    setLegalMoves([]);
+    setMoves([]);
+    setMoveHistory(null);
+    setMoveHistoryError(null);
+    setDisplayedPositionPly(0);
+    setPositionMode("LIVE");
+    setEvaluation(null);
+    setEvaluationSource(null);
+    setEvaluationFen(null);
+    setPositionEvaluationCache({});
+    setReview(null);
+    setReviewJob(null);
+    setReviewPracticeState(null);
+    setReviewPracticeHistory([]);
+    setReviewPracticeLearningSummary(null);
+    setSelectedHistoryGame(null);
+    setHistoryItems([]);
+    setPgnPreview(null);
+    setPgnImportResult(null);
+    setPgnText("");
+    setPgnFile(null);
+    setWarnings([]);
+    setError(null);
+    setActiveShellPage("today");
+    setActiveTab("moves");
+    dispatchReviewEvent({ type: "reset" });
+  }
+
+  async function handleExportUserData() {
+    setProfilePrivacyBusy("exporting");
+    setProfileExportStatus(null);
+    setProfileDeleteStatus(null);
+    try {
+      const payload = await exportUserData();
+      const serialized = JSON.stringify(payload, null, 2);
+      const blob = new Blob([serialized], {
+        type: "application/json;charset=utf-8",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "neurochess-export.json";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setProfileExportStatus("Export JSON généré.");
+    } catch (err) {
+      setProfileExportStatus(`Export impossible : ${messageFromError(err)}`);
+    } finally {
+      setProfilePrivacyBusy("idle");
+    }
+  }
+
+  async function handleDeleteUserDataConfirmed() {
+    if (profileDeleteInput !== "SUPPRIMER") {
+      setProfileDeleteStatus("Tape SUPPRIMER pour confirmer la suppression.");
+      return;
+    }
+
+    setProfilePrivacyBusy("deleting");
+    setProfileDeleteStatus(null);
+    setProfileExportStatus(null);
+    try {
+      const summary: UserDataDeleteSummary = await deleteUserData(profileDeleteInput);
+      resetLocalUserDataViewState();
+      setProfilePanelOpen(true);
+      setProfileDeleteConfirmOpen(false);
+      setProfileDeleteInput("");
+      setProfileDeleteStatus(
+        `Suppression terminée : ${summary.total_deleted} éléments locaux supprimés.`,
+      );
+    } catch (err) {
+      setProfileDeleteStatus(`Suppression impossible : ${messageFromError(err)}`);
+    } finally {
+      setProfilePrivacyBusy("idle");
     }
   }
 
@@ -4190,7 +4290,15 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
           </button>
         </nav>
         <div className="app-header-tools">
-          <span className="profile-status">Profil en construction</span>
+          <button
+            type="button"
+            className="profile-status profile-settings-button"
+            aria-expanded={profilePanelOpen}
+            aria-controls="profile-privacy-panel"
+            onClick={() => setProfilePanelOpen(open => !open)}
+          >
+            Profil / Paramètres
+          </button>
           <label className="evaluation-toggle">
             <input
               type="checkbox"
@@ -4201,6 +4309,146 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
           </label>
         </div>
       </header>
+
+      {profilePanelOpen && (
+        <section
+          id="profile-privacy-panel"
+          className="profile-privacy-panel"
+          aria-labelledby="profile-privacy-title"
+          data-testid="profile-privacy-panel"
+        >
+          <div className="profile-privacy-header">
+            <div>
+              <span>Paramètres V1</span>
+              <h1 id="profile-privacy-title">Profil / Paramètres</h1>
+              <p>NeuroChess fonctionne en local pour cette V1.</p>
+            </div>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => setProfilePanelOpen(false)}
+            >
+              Fermer
+            </button>
+          </div>
+
+          <div className="profile-privacy-grid">
+            <section className="profile-privacy-section" aria-labelledby="local-profile-title">
+              <span>Profil local</span>
+              <h2 id="local-profile-title">Profil local</h2>
+              <p>Profil en construction.</p>
+            </section>
+
+            <section className="profile-privacy-section" aria-labelledby="preferences-title">
+              <span>Préférences</span>
+              <h2 id="preferences-title">Préférences</h2>
+              <p>
+                Le masquage de l'évaluation est disponible dans l'en-tête.
+                Préférences avancées à venir.
+              </p>
+            </section>
+
+            <section className="profile-privacy-section" aria-labelledby="engine-title">
+              <span>Moteur</span>
+              <h2 id="engine-title">Moteur</h2>
+              <p>
+                Le moteur est utilisé pendant les analyses. Test moteur dédié à
+                venir, sans changer Stockfish.
+              </p>
+            </section>
+
+            <section
+              className="profile-privacy-section profile-privacy-section-wide"
+              aria-labelledby="privacy-title"
+            >
+              <span>Confidentialité</span>
+              <h2 id="privacy-title">Confidentialité</h2>
+              <p>
+                Exporte un fichier JSON local ou supprime les parties, reviews,
+                entraînements, tentatives et données locales.
+              </p>
+              <div className="profile-privacy-actions">
+                <button
+                  type="button"
+                  onClick={handleExportUserData}
+                  disabled={profilePrivacyBusy !== "idle"}
+                >
+                  {profilePrivacyBusy === "exporting"
+                    ? "Export en cours..."
+                    : "Exporter mes données"}
+                </button>
+                <button
+                  type="button"
+                  className="danger"
+                  onClick={() => {
+                    setProfileDeleteConfirmOpen(true);
+                    setProfileDeleteStatus(null);
+                  }}
+                  disabled={profilePrivacyBusy !== "idle"}
+                >
+                  Supprimer mes données
+                </button>
+              </div>
+              {profileExportStatus && (
+                <p className="profile-privacy-status">{profileExportStatus}</p>
+              )}
+              {profileDeleteConfirmOpen && (
+                <div
+                  className="profile-delete-confirmation"
+                  aria-label="Confirmation suppression données locales"
+                >
+                  <strong>Confirmation obligatoire</strong>
+                  <p>
+                    Cette action supprimera les parties, reviews, entraînements,
+                    tentatives et données locales. Elle ne touche pas au repo Git,
+                    à Stockfish, aux migrations ou aux fichiers système.
+                  </p>
+                  <label>
+                    Tape SUPPRIMER pour confirmer.
+                    <input
+                      type="text"
+                      value={profileDeleteInput}
+                      onChange={event => setProfileDeleteInput(event.currentTarget.value)}
+                      placeholder="SUPPRIMER"
+                      autoComplete="off"
+                    />
+                  </label>
+                  <div className="profile-delete-actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => {
+                        setProfileDeleteConfirmOpen(false);
+                        setProfileDeleteInput("");
+                        setProfileDeleteStatus(null);
+                      }}
+                      disabled={profilePrivacyBusy !== "idle"}
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="button"
+                      className="danger"
+                      onClick={handleDeleteUserDataConfirmed}
+                      disabled={
+                        profilePrivacyBusy !== "idle" ||
+                        profileDeleteInput !== "SUPPRIMER"
+                      }
+                    >
+                      {profilePrivacyBusy === "deleting"
+                        ? "Suppression..."
+                        : "Confirmer la suppression"}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {profileDeleteStatus && (
+                <p className="profile-privacy-status">{profileDeleteStatus}</p>
+              )}
+            </section>
+          </div>
+        </section>
+      )}
 
       {error && <div className="alert">{error}</div>}
       {visibleWarnings.length > 0 && (

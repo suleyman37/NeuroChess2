@@ -30,7 +30,7 @@ normal user-facing interface, not folded Explorer/debug/research docs.
 | Aujourd'hui | V1 | yes | yes | Main "what now" screen | `frontend/src/App.tsx` | simplify |
 | Mes parties | V1 | yes | yes | Game library/import/review entry | `frontend/src/App.tsx`, `pgn_import_service.py` | simplify |
 | Entrainement | V1 | yes | yes | Plan du jour, missed positions, revisions only | `frontend/src/App.tsx`, Review Practice services | keep |
-| Profil/Parametres | V1 | yes | yes | Minimal preferences/privacy/engine/data controls | missing/minimal | backlog |
+| Profil/Parametres | V1 | yes | yes | Minimal preferences/privacy/engine/data controls, outside main nav | `frontend/src/App.tsx`, `frontend/src/styles.css`, `backend/tests/test_frontend_profile_privacy_static.py` | keep |
 | Anti-tilt | V1 | yes | yes | Recent loss tone and defer/review choices | missing | backlog |
 | degraded states | V1 | yes | yes | Clear recovery messages, no jargon | `reviewState.ts`, `ReviewTechnicalDetails.tsx` | keep |
 | offline | V1 partial | yes, badge/state | yes | Calculated Reviews/Practice/import queue only | missing | backlog |
@@ -41,5 +41,5 @@ normal user-facing interface, not folded Explorer/debug/research docs.
 | LLM coach | V3 research | no | placeholder only | Verifier + evidence grounding required | `backend/neurochess/llm/__init__.py` | backlog |
 | Transfer Gap | V2 | no | yes, future | Enough Practice and future-game data | docs only | backlog |
 | domain scores | V2/research | no | yes, future | Calibrated and sufficient data only | docs/registry; removed UI heuristics | hide |
-| Privacy/export/delete | V1 required | yes | yes | Profile/settings must support data export and complete delete before V1 external release | missing/minimal | backlog |
+| Privacy/export/delete | V1 required | yes | yes | Profile/settings supports JSON export and complete local delete with typed `SUPPRIMER` confirmation | `backend/neurochess/privacy_service.py`, `game_routes.py`, `client.ts`, `scripts/browser_profile_privacy_smoke.mjs` | keep |
 | i18n centralized strings | V1 hygiene | no separate feature | yes | V1 stays French; new UI strings should move toward centralized `fr.ts`/`strings.ts` without language switch | scattered strings in frontend | backlog |

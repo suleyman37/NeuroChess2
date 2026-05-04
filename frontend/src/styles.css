@@ -4755,6 +4755,138 @@ button:focus-visible {
   padding: 0.58rem 0.78rem;
 }
 
+.profile-settings-button {
+  cursor: pointer;
+}
+
+.profile-settings-button:hover,
+.profile-settings-button[aria-expanded="true"] {
+  background: rgba(67, 231, 255, 0.13);
+  border-color: rgba(67, 231, 255, 0.34);
+  color: #f5fbff;
+}
+
+.profile-privacy-panel {
+  background: rgba(5, 9, 24, 0.92);
+  border: 1px solid rgba(154, 172, 204, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.22);
+  color: #dce9ff;
+  display: grid;
+  gap: 18px;
+  margin: 0 auto 18px;
+  max-width: 1180px;
+  padding: 20px;
+  width: calc(100% - 32px);
+}
+
+.profile-privacy-header,
+.profile-privacy-actions,
+.profile-delete-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.profile-privacy-header span,
+.profile-privacy-section span {
+  color: #8eb4d8;
+  font-size: 0.75rem;
+  font-weight: 860;
+  text-transform: uppercase;
+}
+
+.profile-privacy-header h1,
+.profile-privacy-section h2 {
+  color: #f5fbff;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.profile-privacy-header p,
+.profile-privacy-section p,
+.profile-delete-confirmation p,
+.profile-delete-confirmation label {
+  color: #b8c8df;
+  margin: 0;
+}
+
+.profile-privacy-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.profile-privacy-section {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(154, 172, 204, 0.18);
+  border-radius: 10px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.profile-privacy-section-wide {
+  grid-column: 1 / -1;
+}
+
+.profile-privacy-actions {
+  justify-content: flex-start;
+}
+
+.profile-privacy-actions button,
+.profile-delete-actions button,
+.profile-privacy-header button {
+  min-height: 40px;
+}
+
+button.danger {
+  background: #fff1f0;
+  border-color: #f2aaa5;
+  color: #9f1f17;
+}
+
+button.danger:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.profile-delete-confirmation {
+  background: rgba(255, 241, 240, 0.08);
+  border: 1px solid rgba(242, 170, 165, 0.5);
+  border-radius: 10px;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.profile-delete-confirmation strong {
+  color: #ffd6d2;
+}
+
+.profile-delete-confirmation input {
+  background: #ffffff;
+  border: 1px solid #f2aaa5;
+  border-radius: 8px;
+  color: #172033;
+  display: block;
+  font: inherit;
+  margin-top: 6px;
+  padding: 0.58rem 0.68rem;
+  width: min(100%, 320px);
+}
+
+.profile-privacy-status {
+  background: rgba(67, 231, 255, 0.08);
+  border: 1px solid rgba(67, 231, 255, 0.24);
+  border-radius: 8px;
+  color: #dff7ff;
+  font-weight: 760;
+  padding: 0.58rem 0.68rem;
+}
+
 .plan2-page {
   display: grid;
   gap: 18px;
@@ -4956,15 +5088,22 @@ button:focus-visible {
   .app-shell-nav,
   .app-header-tools,
   .games-page-actions,
+  .profile-privacy-header,
   .review-context-header {
     align-items: stretch;
     flex-direction: column;
     width: 100%;
   }
 
+  .profile-privacy-grid {
+    grid-template-columns: 1fr;
+  }
+
   .app-shell-nav button,
+  .app-header-tools button,
   .app-header-tools label,
   .games-page-actions button,
+  .profile-privacy-header button,
   .review-context-header button {
     width: 100%;
   }
