@@ -2088,6 +2088,7 @@ ETV_full_v2 ne peut piloter fortement le plan que si :
 
 ============================================================
 31. TRANSFER OPPORTUNITY MODEL — VERSION OPÉRATIONNELLE
+Canonical marker: Transfer Opportunity Model
 ============================================================
 
 C’est le cœur révolutionnaire.
@@ -2864,6 +2865,7 @@ progress frozen sans recovery
 
 ============================================================
 54. ANNEXE A — SCIENCE CLAIMS REGISTRY
+Canonical file marker: SCIENCE_CLAIMS_REGISTRY.md
 ============================================================
 
 Chaque claim visible doit être classé avant d’être affiché.
@@ -3224,6 +3226,7 @@ No SkillTrace mastery visible.
 
 ============================================================
 64. ANNEXE K — SCIENTIFIC DEFINITION OF DONE
+Canonical marker: DEFINITION OF DONE SCIENTIFIQUE
 ============================================================
 
 Une couche scientifique est “done” seulement si :
