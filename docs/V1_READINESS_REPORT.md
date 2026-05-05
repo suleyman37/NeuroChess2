@@ -1,6 +1,6 @@
 # V1 Readiness Report
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` + `P1.I18N-STRINGS-CATALOG-V1`
 Date: 2026-05-05
 
 Mission Control note: `docs/mission_control/` now records Golden Flows,
@@ -39,8 +39,9 @@ clavier visible pour nav, import, PGN textarea, board Practice et boutons
 Practice, et CSS `prefers-reduced-motion`. Le bug de confiance Practice
 exact-best est maintenant corrige et browser-proven: un meilleur coup joue au
 board est sauvegarde `best`, sans contradiction `Ton coup - Probleme` /
-`Le meilleur coup etait`. La V1 externe reste NO-GO car
-SkillTrace shadow manque, les strings francaises ne sont pas centralisees,
+`Le meilleur coup etait`. Le P1 i18n catalog centralise maintenant les strings
+francaises critiques V1 sans runtime language switch ni changement de
+comportement. La V1 externe reste NO-GO car SkillTrace shadow manque,
 l'accessibilite n'est pas une certification WCAG complete, et les scenarios
 Practice interrupted/repeated-wrong restent statiques ou couverts indirectement
 plutot que par un smoke dedie complet.
@@ -181,7 +182,8 @@ plutot que par un smoke dedie complet.
   per available game/session signal, not a global learning queue.
 - Profile/settings is minimal and real for V1 privacy controls; preferences and
   engine controls remain honest placeholders.
-- i18n is French in visible UI, but strings are not centralized.
+- i18n is French-only in V1 and critical strings are centralized in
+  `frontend/src/i18n/fr.ts`; this is not a multi-language runtime.
 - ACTION_REGISTRY and SCREEN_CONTRACTS are maintained manually, not checked
   against code.
 
@@ -225,7 +227,7 @@ plutot que par un smoke dedie complet.
 - Durable `training_items` implemented for V1 Review moments.
 - Backend deterministic `Daily Plan` implemented and browser-smoked.
 - No SkillTrace shadow.
-- No centralized French strings.
+- French V1 critical strings centralized; no multi-language runtime.
 - No strict cache policy proof matching all Plan3 conditions.
 - Automated browser smokes exist for the minimal V1 loop, profile/privacy,
   Daily Plan, degraded states, mobile responsive flow, and keyboard/focus
@@ -394,20 +396,21 @@ cmd /c node scripts\browser_practice_best_move_feedback_success_smoke.mjs
 |---|---|---|---|
 | P1 | SkillTrace shadow missing | Docs only | Add shadow-only after Daily Plan |
 | P1 | Degraded states incomplete | Browser-tested for key import/offline/daily-plan states, but not every contract state | Extend focused degraded smoke only when fixtures are stable |
-| P1 | i18n strings not centralized | No `frontend/src/i18n/fr.ts` found | Centralize French strings |
+| P1 | i18n runtime still French-only | `frontend/src/i18n/fr.ts` exists and static tests cover critical strings | Multi-language/i18n runtime remains out of V1 scope |
 | P1 | Strict Stockfish cache policy partial | Plan3 conditions not fully proved | Cache policy audit/sprint |
 | P2 | Registries not code-checked | Manual docs only | Registry/code checker |
 | P2 | `App.tsx` remains large | Serena overview shows many responsibilities | Safe extraction later |
 
 ## 13. Prochaine mission recommandee
 
-One next mission after P0 live-analysis validations pass:
-`P1.I18N-STRINGS-CATALOG-V1`.
+One next mission after P1 i18n catalog validations pass:
+`P1.QA-RELEASE-CANDIDATE-V1`.
 
 Reason: the core browser V1 loop, board interaction, analysis recovery,
 Profile/Privacy, Daily Plan, key degraded states, mobile responsive flow, and
-keyboard/focus basics are now proven. External V1 still needs French string
-centralization/catalog coverage before inviting non-technical users.
+keyboard/focus basics are now proven, and critical French strings are now
+cataloged. External V1 still needs a release-candidate QA gate before inviting
+non-technical users.
 
 ## 14. Critere de sortie V1 Plan3
 
@@ -421,4 +424,4 @@ centralization/catalog coverage before inviting non-technical users.
 | Revision J+3 | pass | Backend learning loop tests for hint success -> 3 days; browser reveal creates J+1 scheduled due | Browser Training/Revisions due-flow not proven |
 | Export/delete | pass | Backend tests and browser profile/privacy smoke | Deletes only after typed `SUPPRIMER` in tested temp DB |
 | Tests critiques | partial | Backend/build/smokes/browser V1 + profile/privacy + daily-plan + degraded + mobile/a11y basics pass | Needs physical-device and full a11y/manual release QA |
-| Utilisateurs externes | missing | SkillTrace shadow/i18n incomplete; repeated-wrong anti-tilt browser fixture partial; full a11y certification absent | NO-GO |
+| Utilisateurs externes | missing | SkillTrace shadow missing; repeated-wrong anti-tilt browser fixture partial; full a11y certification absent; release-candidate QA not complete | NO-GO |

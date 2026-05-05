@@ -16,6 +16,7 @@ def read(path: Path) -> str:
 class FrontendAppShellStaticTests(unittest.TestCase):
     def setUp(self) -> None:
         self.app = read(FRONTEND_SRC / "App.tsx")
+        self.i18n = read(FRONTEND_SRC / "i18n" / "fr.ts")
         self.styles = read(FRONTEND_SRC / "styles.css")
         self.action_registry = read(DOCS_DIR / "ACTION_REGISTRY.md")
         self.screen_contracts = read(DOCS_DIR / "SCREEN_CONTRACTS.md")
@@ -26,7 +27,9 @@ class FrontendAppShellStaticTests(unittest.TestCase):
         self.assertIn('className="app-shell-nav"', self.app)
 
         for label in ("Aujourd'hui", "Mes parties", "Entraînement"):
-            self.assertIn(label, self.app)
+            self.assertIn(label, self.app + self.i18n)
+        for catalog_token in ("fr.nav.today", "fr.nav.games", "fr.nav.training"):
+            self.assertIn(catalog_token, self.app)
 
         for page in (
             'activeShellPage === "today"',
@@ -46,10 +49,10 @@ class FrontendAppShellStaticTests(unittest.TestCase):
             "À revoir",
             "profil en construction",
         ):
-            self.assertIn(today_token, self.app)
+            self.assertIn(today_token, self.app + self.i18n)
 
         for training_token in ("Plan du jour", "Mes positions ratées", "Révisions"):
-            self.assertIn(training_token, self.app)
+            self.assertIn(training_token, self.app + self.i18n)
 
         for training_v1_token in (
             "trainingPrimaryLabel",
@@ -75,11 +78,11 @@ class FrontendAppShellStaticTests(unittest.TestCase):
             "cortex",
             "atlas",
         ):
-            self.assertNotIn(forbidden_label, self.app)
+            self.assertNotIn(forbidden_label, self.app + self.i18n)
 
         self.assertIn("review-context-header", self.app)
         self.assertIn("Review contextuelle", self.app)
-        self.assertIn("Retour aux parties", self.app)
+        self.assertIn("Retour aux parties", self.app + self.i18n)
         self.assertIn('openReviewContext("today")', self.app)
         self.assertIn('openReviewContext("training")', self.app)
         self.assertIn('openGamesPanel("import")', self.app)

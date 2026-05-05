@@ -1,5 +1,6 @@
 import type { DailyPlanResponse, PgnImportPreview, PgnImportResult } from "./api/client";
 import type { StateNoticeVariant } from "./components/StateNotice";
+import { fr } from "./i18n";
 
 export type DegradedStateId =
   | "IMPORT_EMPTY_PGN"
@@ -40,14 +41,14 @@ export function isBackendUnavailableMessage(message: string | null | undefined):
 }
 
 export function buildBackendUnavailableNotice(message?: string | null): DegradedStateNotice {
+  const copy = fr.degradedStates.backendUnavailable;
   return {
     stateId: "BACKEND_UNAVAILABLE",
     variant: "danger",
-    title: "NeuroChess local ne répond pas",
-    message:
-      "L’interface est ouverte, mais le service local ne répond pas pour le moment.",
-    primaryActionLabel: "Réessayer",
-    secondaryActionLabel: "Voir l’aide locale",
+    title: copy.title,
+    message: copy.message,
+    primaryActionLabel: copy.primaryActionLabel,
+    secondaryActionLabel: copy.secondaryActionLabel,
     details: safeDetails(message),
   };
 }
@@ -69,9 +70,9 @@ export function buildPgnImportNotice({
     return {
       stateId: "IMPORT_EMPTY_PGN",
       variant: "info",
-      title: "Colle une partie pour commencer",
-      message: "Ajoute un PGN ou importe une partie pour lancer l’analyse.",
-      primaryActionLabel: "Coller un PGN",
+      title: fr.import.emptyTitle,
+      message: fr.import.emptyMessage,
+      primaryActionLabel: fr.actions.pastePgn,
     };
   }
 
@@ -82,22 +83,20 @@ export function buildPgnImportNotice({
       return {
         stateId: "IMPORT_ILLEGAL_MOVES",
         variant: "warning",
-        title: "Un coup n’est pas légal",
-        message:
-          "La partie contient un coup que NeuroChess ne peut pas rejouer correctement.",
-        primaryActionLabel: "Corriger le PGN",
-        secondaryActionLabel: "Importer une autre partie",
+        title: fr.import.illegalTitle,
+        message: fr.import.illegalMessage,
+        primaryActionLabel: fr.actions.correctPgn,
+        secondaryActionLabel: fr.actions.importGame,
         details: detail,
       };
     }
     return {
       stateId: "IMPORT_INVALID_PGN",
       variant: "warning",
-      title: "PGN non reconnu",
-      message:
-        "Le texte ne ressemble pas à une partie PGN complète. Vérifie le copier-coller puis réessaie.",
-      primaryActionLabel: "Corriger le PGN",
-      secondaryActionLabel: "Voir un exemple",
+      title: fr.import.invalidTitle,
+      message: fr.import.invalidMessage,
+      primaryActionLabel: fr.actions.correctPgn,
+      secondaryActionLabel: fr.actions.seeExample,
       details: detail,
     };
   }
@@ -111,11 +110,10 @@ export function buildPgnImportNotice({
     return {
       stateId: "IMPORT_INVALID_PGN",
       variant: "warning",
-      title: "PGN non reconnu",
-      message:
-        "Le texte ne ressemble pas à une partie PGN complète. Vérifie le copier-coller puis réessaie.",
-      primaryActionLabel: "Corriger le PGN",
-      secondaryActionLabel: "Voir un exemple",
+      title: fr.import.invalidTitle,
+      message: fr.import.invalidMessage,
+      primaryActionLabel: fr.actions.correctPgn,
+      secondaryActionLabel: fr.actions.seeExample,
     };
   }
 
@@ -128,10 +126,10 @@ export function buildPgnImportNotice({
     return {
       stateId: "IMPORT_DUPLICATE_GAME",
       variant: "info",
-      title: "Partie déjà importée",
-      message: "Cette partie est déjà dans Mes parties.",
-      primaryActionLabel: "Ouvrir la partie",
-      secondaryActionLabel: "Importer une autre partie",
+      title: fr.import.duplicateTitle,
+      message: fr.import.duplicateMessage,
+      primaryActionLabel: fr.actions.openGame,
+      secondaryActionLabel: fr.actions.importGame,
     };
   }
 
@@ -139,10 +137,9 @@ export function buildPgnImportNotice({
     return {
       stateId: "BACKEND_REQUEST_FAILED",
       variant: "warning",
-      title: "Action non terminée",
-      message:
-        "L’action n’a pas pu être terminée. Tes données déjà enregistrées restent conservées.",
-      primaryActionLabel: "Réessayer",
+      title: fr.degradedStates.requestFailed.title,
+      message: fr.degradedStates.requestFailed.message,
+      primaryActionLabel: fr.degradedStates.requestFailed.primaryActionLabel,
       details: safeDetails(errorMessage),
     };
   }
@@ -164,9 +161,9 @@ export function buildDailyPlanNotice({
     return {
       stateId: "DAILY_PLAN_CREATE_FAILED",
       variant: "warning",
-      title: "Plan indisponible",
-      message: "Le plan du jour n’a pas pu être préparé.",
-      primaryActionLabel: "Réessayer",
+      title: fr.degradedStates.dailyPlanCreateFailed.title,
+      message: fr.degradedStates.dailyPlanCreateFailed.message,
+      primaryActionLabel: fr.degradedStates.dailyPlanCreateFailed.primaryActionLabel,
       details: safeDetails(errorMessage),
     };
   }
@@ -174,19 +171,18 @@ export function buildDailyPlanNotice({
     return {
       stateId: "DAILY_PLAN_EMPTY",
       variant: "info",
-      title: "Plan en construction",
-      message: "Importe quelques parties et termine des exercices pour obtenir un plan fiable.",
-      primaryActionLabel: "Importer une partie",
+      title: fr.degradedStates.dailyPlanEmpty.title,
+      message: fr.degradedStates.dailyPlanEmpty.message,
+      primaryActionLabel: fr.degradedStates.dailyPlanEmpty.primaryActionLabel,
     };
   }
   if (dailyPlan?.status === "partial") {
     return {
       stateId: "DAILY_PLAN_PARTIAL",
       variant: "warning",
-      title: "Plan court aujourd’hui",
-      message:
-        "On a moins de positions que prévu, mais tu peux déjà travailler utilement.",
-      primaryActionLabel: "Commencer",
+      title: fr.degradedStates.dailyPlanPartial.title,
+      message: fr.degradedStates.dailyPlanPartial.message,
+      primaryActionLabel: fr.degradedStates.dailyPlanPartial.primaryActionLabel,
     };
   }
   return null;
@@ -197,19 +193,19 @@ export function buildPracticeSaveFailedNotice(message?: string | null): Degraded
     return {
       ...buildBackendUnavailableNotice(message),
       stateId: "PRACTICE_ATTEMPT_SAVE_FAILED",
-      title: "Tentative non enregistrée",
-      message: "Le coup a été joué, mais la sauvegarde n’a pas abouti.",
-      primaryActionLabel: "Réessayer d’enregistrer",
-      secondaryActionLabel: "Voir la correction",
+      title: fr.degradedStates.practiceSaveFailed.title,
+      message: fr.degradedStates.practiceSaveFailed.message,
+      primaryActionLabel: fr.degradedStates.practiceSaveFailed.primaryActionLabel,
+      secondaryActionLabel: fr.degradedStates.practiceSaveFailed.secondaryActionLabel,
     };
   }
   return {
     stateId: "PRACTICE_ATTEMPT_SAVE_FAILED",
     variant: "warning",
-    title: "Tentative non enregistrée",
-    message: "Le coup a été joué, mais la sauvegarde n’a pas abouti.",
-    primaryActionLabel: "Réessayer d’enregistrer",
-    secondaryActionLabel: "Voir la correction",
+    title: fr.degradedStates.practiceSaveFailed.title,
+    message: fr.degradedStates.practiceSaveFailed.message,
+    primaryActionLabel: fr.degradedStates.practiceSaveFailed.primaryActionLabel,
+    secondaryActionLabel: fr.degradedStates.practiceSaveFailed.secondaryActionLabel,
     details: safeDetails(message),
   };
 }
@@ -217,43 +213,42 @@ export function buildPracticeSaveFailedNotice(message?: string | null): Degraded
 export const PRACTICE_NO_ITEMS_NOTICE: DegradedStateNotice = {
   stateId: "PRACTICE_NO_ITEMS",
   variant: "info",
-  title: "Pas encore d’exercice",
-  message: "Importe et analyse quelques parties pour créer des positions d’entraînement.",
-  primaryActionLabel: "Importer une partie",
+  title: fr.degradedStates.practiceNoItems.title,
+  message: fr.degradedStates.practiceNoItems.message,
+  primaryActionLabel: fr.degradedStates.practiceNoItems.primaryActionLabel,
 };
 
 export const PRACTICE_ILLEGAL_MOVE_NOTICE: DegradedStateNotice = {
   stateId: "PRACTICE_ILLEGAL_MOVE",
   variant: "warning",
-  title: "Ce coup n’est pas légal",
-  message: "Essaie un coup autorisé dans cette position.",
-  primaryActionLabel: "Réessayer",
+  title: fr.degradedStates.practiceIllegalMove.title,
+  message: fr.degradedStates.practiceIllegalMove.message,
+  primaryActionLabel: fr.degradedStates.practiceIllegalMove.primaryActionLabel,
 };
 
 export const PRACTICE_REVEAL_NOTICE: DegradedStateNotice = {
   stateId: "PRACTICE_REVEAL_USED",
   variant: "info",
-  title: "Correction consultée",
-  message: "Bonne décision de regarder. Cette position reviendra bientôt.",
+  title: fr.degradedStates.practiceRevealUsed.title,
+  message: fr.degradedStates.practiceRevealUsed.message,
 };
 
 export const PRACTICE_COMPLETED_NOTICE: DegradedStateNotice = {
   stateId: "PRACTICE_COMPLETED",
   variant: "success",
-  title: "Session terminée",
-  message: "Ces positions reviendront au bon moment.",
-  primaryActionLabel: "Retour à Aujourd’hui",
-  secondaryActionLabel: "Revoir mes erreurs",
+  title: fr.degradedStates.practiceCompleted.title,
+  message: fr.degradedStates.practiceCompleted.message,
+  primaryActionLabel: fr.degradedStates.practiceCompleted.primaryActionLabel,
+  secondaryActionLabel: fr.degradedStates.practiceCompleted.secondaryActionLabel,
 };
 
 export const ANTI_TILT_REPEATED_WRONG_NOTICE: DegradedStateNotice = {
   stateId: "ANTI_TILT_REPEATED_WRONG",
   variant: "info",
-  title: "Position difficile",
-  message:
-    "Cette position est difficile. Prends ton temps : l’objectif est d’apprendre, pas de réussir du premier coup.",
-  primaryActionLabel: "Réessayer",
-  secondaryActionLabel: "Voir la correction",
+  title: fr.degradedStates.antiTiltRepeatedWrong.title,
+  message: fr.degradedStates.antiTiltRepeatedWrong.message,
+  primaryActionLabel: fr.degradedStates.antiTiltRepeatedWrong.primaryActionLabel,
+  secondaryActionLabel: fr.degradedStates.antiTiltRepeatedWrong.secondaryActionLabel,
 };
 
 function firstError(errors?: string[] | null): string | null {

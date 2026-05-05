@@ -1,6 +1,6 @@
 # Test Coverage Matrix
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` + `P1.I18N-STRINGS-CATALOG-V1`
 Date: 2026-05-05
 
 This matrix lists available automated tests, scripts, and smoke checks. It does
@@ -81,6 +81,11 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
   problem/best-was copy, saved `practice_attempt.result=best`, `due_at`
   present, legacy SAN `Bxf7+` API normalization, and no review job/moment or
   training item side effect from feedback classification.
+- French V1 strings catalog static suite: PASS via
+  `.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_frontend_i18n_strings_static ...`.
+  It proves `frontend/src/i18n/fr.ts`, critical V1 strings, Plan2 nav labels,
+  Training labels, Practice feedback catalog usage, forbidden-label absence and
+  no raw metric labels in normal critical UI paths.
 
 ## Matrix
 
@@ -105,6 +110,7 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
 | `backend/tests/test_frontend_mobile_accessibility_static.py` | static | Mobile/a11y V1 | Final responsive CSS overrides, focus-visible, reduced motion, board tab focus, mobile/keyboard smoke scripts, Plan2 nav and Training contracts | Real browser rendering and keyboard traversal | PASS targeted | medium | Keep paired with browser smokes |
 | `backend/tests/test_frontend_profile_privacy_static.py` | static | Profile/Privacy UI | Profile outside main nav, export/delete labels, typed confirmation, forbidden labels absent | Runtime API/browser behavior | PASS targeted | medium | Keep aligned with browser smoke |
 | `backend/tests/test_frontend_lesson_flow_static.py` | static | Review lesson UI | Review tabs/copy/internal details hidden | Browser interaction and board moves | PASS in full suite | medium | Browser Review/Lesson smoke |
+| `backend/tests/test_frontend_i18n_strings_static.py` | static | French V1 strings catalog | Catalog existence, critical nav/Training/feedback/degraded/analysis/live/Profile strings, component usage, no contradiction labels for best/accepted, no forbidden labels | Browser runtime copy rendering in every branch; full multilingual i18n | PASS targeted | high | Expand only as more critical strings are migrated |
 | `backend/tests/test_game_api.py` | API/integration | Games API | Create/list/open/moves/analysis-related API paths | Browser UX, real user import | PASS in full suite | high | Keep separate from profile/privacy destructive tests |
 | `backend/tests/test_game_recorder.py` | unit | Game recorder | Move recording, state persistence | PGN import and browser | PASS in full suite | high | None immediate |
 | `backend/tests/test_live_analysis_service.py` | unit/integration | Live analysis | Live session state, streaming helpers | Review stabilized snapshots | PASS in full suite | medium | Degraded UI for backend unavailable |
@@ -164,5 +170,7 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
   manual QA and full WCAG accessibility certification remain open.
 - SkillTrace shadow coverage is still absent because that capability is not
   implemented.
+- French critical strings are centralized for V1 flows, but this is not a
+  multi-language runtime or full extraction of every incidental string.
 - No registry-vs-code checker.
 - No `npm run lint` or `npm run typecheck` script; build does include `tsc`.

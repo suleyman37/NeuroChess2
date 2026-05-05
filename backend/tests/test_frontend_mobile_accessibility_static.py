@@ -16,6 +16,7 @@ def read(path: Path) -> str:
 class FrontendMobileAccessibilityStaticTests(unittest.TestCase):
     def setUp(self) -> None:
         self.app = read(FRONTEND_SRC / "App.tsx")
+        self.i18n = read(FRONTEND_SRC / "i18n" / "fr.ts")
         self.styles = read(FRONTEND_SRC / "styles.css")
         self.board = read(FRONTEND_SRC / "components" / "ChessBoardPanel.tsx")
         self.helper = read(SCRIPTS_DIR / "browser_test_helpers.mjs")
@@ -111,12 +112,13 @@ class FrontendMobileAccessibilityStaticTests(unittest.TestCase):
             'data-testid="training-failed-card"',
             'data-testid="training-due-card"',
         ):
-            self.assertIn(token, self.app)
+            self.assertIn(token, self.app + self.i18n)
         self.assertNotIn('id="tab-review"', self.app)
 
     def test_no_forbidden_v1_labels_in_mobile_accessibility_sources(self) -> None:
         combined = "\n".join([
             self.app,
+            self.i18n,
             self.styles,
             self.board,
             self.mobile_smoke,

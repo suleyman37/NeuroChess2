@@ -21,6 +21,7 @@ if str(BACKEND_ROOT) not in sys.path:
 def read_review_panel_source() -> str:
     review_dir = PROJECT_ROOT / "frontend" / "src" / "components" / "review"
     ordered_files = [
+        PROJECT_ROOT / "frontend" / "src" / "i18n" / "fr.ts",
         PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx",
         review_dir / "ReviewPanel.tsx",
         review_dir / "ReviewFocusTabs.tsx",
@@ -42,6 +43,12 @@ def read_review_panel_source() -> str:
         review_dir / "reviewTypes.ts",
     ]
     return "\n".join(path.read_text(encoding="utf-8") for path in ordered_files)
+
+
+def read_frontend_i18n_source() -> str:
+    return (
+        PROJECT_ROOT / "frontend" / "src" / "i18n" / "fr.ts"
+    ).read_text(encoding="utf-8")
 
 from neurochess.analysis_service import AnalysisService
 from neurochess.core.evaluation_display import make_evaluation_display
@@ -222,9 +229,9 @@ class CalibrationLogicTests(unittest.TestCase):
 
     def test_frontend_review_sections_contract_is_staticly_present(self) -> None:
         review_panel_source = read_review_panel_source()
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
@@ -522,7 +529,7 @@ class CalibrationLogicTests(unittest.TestCase):
         training_start = normalized_panel.index('data-public-lesson-step="training"')
         challenge_body = normalized_panel[challenge_start:correction_start]
         correction_body = normalized_panel[correction_start:training_start]
-        self.assertIn("Trouve le meilleur coup.", challenge_body)
+        self.assertIn("Trouve le meilleur coup.", challenge_body + read_frontend_i18n_source())
         self.assertIn("hiddenCoachObjective", challenge_body)
         self.assertIn("practiceHintForAnnotation", challenge_body)
         self.assertNotIn("solutionMove", challenge_body)
@@ -530,7 +537,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertNotIn("Voir la ligne", challenge_body)
         self.assertIn('publicStep === "correction" && canShowSolutionData', normalized_panel)
         self.assertIn("solutionMove", correction_body)
-        self.assertIn("Le meilleur coup était", correction_body)
+        self.assertIn("Le meilleur coup était", correction_body + read_frontend_i18n_source())
 
         self.assertIn("reviewSolutionRevealState", app_source)
         self.assertIn("setSolutionRevealForAnnotation", app_source)
@@ -666,18 +673,18 @@ class CalibrationLogicTests(unittest.TestCase):
         challenge_body = normalized_panel[challenge_start:correction_start]
         correction_body = normalized_panel[correction_start:training_start]
         training_body = normalized_panel[training_start:]
-        self.assertIn("Trouve le meilleur coup.", challenge_body)
+        self.assertIn("Trouve le meilleur coup.", challenge_body + read_frontend_i18n_source())
         self.assertIn("Impact potentiel", challenge_body)
         self.assertIn("Essayer", challenge_body)
-        self.assertIn("Voir la correction", challenge_body)
+        self.assertIn("Voir la correction", challenge_body + read_frontend_i18n_source())
         self.assertNotIn("solutionMove", challenge_body)
         self.assertNotIn("best_move_san", challenge_body)
         self.assertNotIn("Voir la ligne", challenge_body)
 
-        self.assertIn("Voici ce que ton coup a permis.", correction_body)
-        self.assertIn("Le meilleur coup était", correction_body)
+        self.assertIn("Voici ce que ton coup a permis.", correction_body + read_frontend_i18n_source())
+        self.assertIn("Le meilleur coup était", correction_body + read_frontend_i18n_source())
         self.assertIn("Voir la ligne", correction_body)
-        self.assertIn("Réessayer", correction_body)
+        self.assertIn("Réessayer", correction_body + read_frontend_i18n_source())
         self.assertIn("Continuer", correction_body)
 
         self.assertIn("Transforme ce moment en entraînement.", training_body)
@@ -799,9 +806,9 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertNotIn("best branch", app_source.lower())
 
     def test_v5_4_ui_3d1_neuroflow_panel_is_removed_from_v1_ui(self) -> None:
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         cockpit_source = (
             PROJECT_ROOT
             / "frontend"
@@ -857,16 +864,24 @@ class CalibrationLogicTests(unittest.TestCase):
         panel_source = (review_dir / "ReviewPanel.tsx").read_text(encoding="utf-8")
         pov_source = (review_dir / "ReviewScoreDetails.tsx").read_text(encoding="utf-8")
         lab_source = (review_dir / "ReviewLaboratoryPanel.tsx").read_text(encoding="utf-8")
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
             encoding="utf-8"
         )
         normalized_panel = panel_source.replace("\r\n", "\n")
 
+        i18n_source = read_frontend_i18n_source()
+        for usage in (
+            "fr.review.focusSummary",
+            "fr.review.focusLearn",
+            "fr.review.focusPractice",
+            "fr.review.focusExplorer",
+        ):
+            self.assertIn(usage, labels_source)
         for label in ("Résumé", "Apprendre", "S'entraîner", "Explorer"):
-            self.assertIn(f'label: "{label}"', labels_source)
+            self.assertIn(label, i18n_source)
         for old_key in ('key: "opening"', 'key: "lesson"', 'key: "explorer"'):
             self.assertNotIn(old_key, labels_source)
 
@@ -949,9 +964,9 @@ class CalibrationLogicTests(unittest.TestCase):
     def test_v5_5_review_summary_has_no_neuro_visual_contract(self) -> None:
         review_dir = PROJECT_ROOT / "frontend" / "src" / "components" / "review"
         cockpit_source = (review_dir / "ReviewCockpitSummary.tsx").read_text(encoding="utf-8")
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
             encoding="utf-8"
         )
@@ -981,9 +996,9 @@ class CalibrationLogicTests(unittest.TestCase):
             self.assertNotIn(forbidden_selector, styles_source)
 
     def test_v5_4_landing_1_landing_page_navigation_contract_is_staticly_present(self) -> None:
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         landing_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "LandingPage.tsx"
         ).read_text(encoding="utf-8")
@@ -1079,9 +1094,9 @@ class CalibrationLogicTests(unittest.TestCase):
             self.assertNotIn(marker, logo_source)
 
     def test_v5_5_home_ux_removes_monitor_and_keeps_calm_entry_contract(self) -> None:
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         landing_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "LandingPage.tsx"
         ).read_text(encoding="utf-8")
@@ -1144,9 +1159,9 @@ class CalibrationLogicTests(unittest.TestCase):
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         evaluation_bar_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "EvaluationBar.tsx"
         ).read_text(encoding="utf-8")
@@ -1326,7 +1341,7 @@ class CalibrationLogicTests(unittest.TestCase):
         review_panel_source = read_review_panel_source()
         review_state_source = (
             PROJECT_ROOT / "frontend" / "src" / "reviewState.ts"
-        ).read_text(encoding="utf-8")
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
 
         self.assertIn("export type ReviewResponse", client_source)
         self.assertIn("generateReview", client_source)
@@ -1384,7 +1399,7 @@ class CalibrationLogicTests(unittest.TestCase):
         )
         review_state_source = (
             PROJECT_ROOT / "frontend" / "src" / "reviewState.ts"
-        ).read_text(encoding="utf-8")
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         review_panel_source = read_review_panel_source()
         normalized_state = review_state_source.replace("\r\n", "\n")
 
@@ -1423,12 +1438,12 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertNotIn("loading:", review_panel_source)
 
     def test_frontend_review_visible_spinner_timeout_contract_is_staticly_present(self) -> None:
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         review_state_source = (
             PROJECT_ROOT / "frontend" / "src" / "reviewState.ts"
-        ).read_text(encoding="utf-8")
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         review_panel_source = read_review_panel_source()
         normalized_app = app_source.replace("\r\n", "\n")
         normalized_state = review_state_source.replace("\r\n", "\n")
@@ -1493,7 +1508,7 @@ class CalibrationLogicTests(unittest.TestCase):
         )
         review_state_source = (
             PROJECT_ROOT / "frontend" / "src" / "reviewState.ts"
-        ).read_text(encoding="utf-8")
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         review_panel_source = read_review_panel_source()
 
         self.assertIn("empty_reason", client_source)
@@ -2109,9 +2124,9 @@ class CalibrationLogicTests(unittest.TestCase):
             self.assertIn(log_name, app_source)
 
     def test_v5_3_a4d_frontend_review_hardening_is_present(self) -> None:
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         review_panel_source = read_review_panel_source()
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
@@ -2324,9 +2339,9 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("placeholder?.label", evaluation_bar_source)
 
     def test_frontend_v5_0_1_review_bar_uses_eval_before_not_live_or_after(self) -> None:
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         normalized = app_source.replace("\r\n", "\n")
         review_start = normalized.index("const moment =", normalized.index("function evaluationBarStateForBoardFen"))
         review_block = normalized[review_start:normalized.index("function positionBadge")]
@@ -2699,9 +2714,9 @@ class CalibrationLogicTests(unittest.TestCase):
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
             encoding="utf-8"
         )
@@ -2755,9 +2770,9 @@ class CalibrationLogicTests(unittest.TestCase):
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
             encoding="utf-8"
         )
@@ -2851,11 +2866,11 @@ class CalibrationLogicTests(unittest.TestCase):
             normalized,
         )
         self.assertIn(
-            'setLiveInfoStatus("Analyse live en pause pendant la Review")',
+            "fr.liveAnalysis.pausedDuringReview",
             normalized,
         )
         self.assertIn(
-            "setLiveInfoStatus(\"Analyse live en pause pendant l'exercice\")",
+            "fr.liveAnalysis.pausedDuringPractice",
             normalized,
         )
         self.assertNotIn('liveSuspendedForReview = activeTab === "review"', normalized)

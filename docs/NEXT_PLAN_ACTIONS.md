@@ -526,12 +526,13 @@ tool_timeout_sec = 180
 - ID: `I18N-STRINGS-CATALOG-V1`
 - Priorite: P1
 - Titre: Centralize V1 French strings without changing product behavior
-- Etat: recommended next mission after Mobile/A11Y.
+- Etat: implemented on 2026-05-05. A focused French V1 catalog now exists in
+  `frontend/src/i18n/fr.ts` with `frontend/src/i18n/index.ts`.
 - Justification Plan2/Plan3: the V1 surface is now browser-proven across core,
-  degraded, mobile and keyboard flows, but visible French strings remain
-  scattered. Centralizing strings reduces copy drift without adding features.
-- Fichiers probables: a focused frontend strings module, limited component
-  imports, static tests, and QA docs.
+  degraded, mobile and keyboard flows. Centralizing critical strings reduces
+  copy drift without adding features or runtime language switching.
+- Fichiers touches: focused frontend strings module, limited component imports,
+  static tests, and QA docs.
 - Taille: M
 - Risques: accidentally rewriting UX copy, changing i18n scope into a product
   redesign, or touching forbidden V2/V3 labels.
@@ -540,7 +541,9 @@ tool_timeout_sec = 180
   behavior, nav labels, Training entries, degraded-state messages, board flows,
   and forbidden-label guards remain unchanged.
 - Tests a lancer: plan guard, backend static tests, frontend build/typecheck,
-  existing browser smokes, mobile/accessibility smokes.
+  targeted browser smokes for Practice feedback, analysis lifecycle, degraded
+  states, no-spoiler and mobile shell.
+- Prochaine mission recommandee apres PASS: `P1.QA-RELEASE-CANDIDATE-V1`.
 
 ### P1. PROFILE-PRIVACY
 
@@ -676,4 +679,4 @@ tool_timeout_sec = 180
   pass.
 - Tests a lancer: full backend suite, frontend build/typecheck, existing smokes,
   and the four new browser smokes.
-- Prochaine mission recommandee apres PASS: `P1.I18N-STRINGS-CATALOG-V1`.
+- Prochaine mission recommandee apres PASS: `P1.QA-RELEASE-CANDIDATE-V1`.

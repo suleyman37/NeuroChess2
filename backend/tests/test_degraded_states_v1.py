@@ -51,6 +51,7 @@ class DegradedStatesStaticTests(unittest.TestCase):
         self.app = read(FRONTEND_SRC / "App.tsx")
         self.state_notice = read(FRONTEND_SRC / "components" / "StateNotice.tsx")
         self.degraded_states = read(FRONTEND_SRC / "degradedStates.ts")
+        self.i18n = read(FRONTEND_SRC / "i18n" / "fr.ts")
         self.practice_panel = read(
             FRONTEND_SRC / "components" / "review" / "ReviewPracticePanel.tsx"
         )
@@ -81,10 +82,10 @@ class DegradedStatesStaticTests(unittest.TestCase):
             'testId="practice-save-failed-notice"',
             'testId="practice-illegal-move-notice"',
         ):
-            self.assertIn(token, "\n".join([self.app, self.degraded_states, self.practice_panel]))
+            self.assertIn(token, "\n".join([self.app, self.degraded_states, self.practice_panel, self.i18n]))
 
     def test_required_v1_copy_is_present_and_calm(self) -> None:
-        combined = "\n".join([self.degraded_states, self.practice_panel])
+        combined = "\n".join([self.degraded_states, self.practice_panel, self.i18n])
         for copy in (
             "Colle une partie pour commencer",
             "PGN non reconnu",
@@ -114,7 +115,7 @@ class DegradedStatesStaticTests(unittest.TestCase):
             self.assertIn(token, self.styles)
 
     def test_forbidden_v1_labels_are_not_added_to_user_facing_sources(self) -> None:
-        combined = "\n".join([self.app, self.state_notice, self.degraded_states, self.practice_panel])
+        combined = "\n".join([self.app, self.state_notice, self.degraded_states, self.practice_panel, self.i18n])
         for forbidden in (
             "NeuroMonitor",
             "Candidate Trainer",

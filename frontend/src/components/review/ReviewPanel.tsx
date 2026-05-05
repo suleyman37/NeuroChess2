@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { ReviewJobResponse, ReviewMoment, ReviewMoveAnnotation } from "../../api/client";
+import { fr } from "../../i18n";
 import {
   REVIEW_FAILED_DEEP_MESSAGE,
   REVIEW_NOT_REVIEWABLE_MESSAGE,
@@ -33,7 +34,7 @@ import {
 } from "./reviewViewModel";
 import type { GameStoryEvent, ReviewFocusKey, ReviewLessonStep, ReviewPanelProps, ReviewPov, ReviewSectionKey } from "./reviewTypes";
 
-const REVIEW_RETRY_COPY = "Vous pouvez reprendre l'analyse.";
+const REVIEW_RETRY_COPY = fr.analysis.retryCopy;
 
 function reviewJobElapsedSeconds(job: ReviewJobResponse): number {
   const storedElapsed = Number(job.elapsed_seconds ?? 0);
@@ -408,13 +409,13 @@ export function ReviewPanel({
               onClick={onReconcileJob}
               disabled={reviewReconcileInFlight}
             >
-              {reviewReconcileInFlight ? "Vérification..." : "Vérifier / réparer l'analyse"}
+              {reviewReconcileInFlight ? fr.actions.checkRepairing : fr.actions.repairAnalysis}
             </button>
             <button data-testid="review-resume" onClick={() => onRetry()}>
-              Reprendre
+              {fr.actions.resume}
             </button>
             <button onClick={() => setResetPickerOpen((open) => !open)}>
-              Relancer depuis zéro
+              {fr.actions.restartFromZero}
             </button>
           </div>
           {resetPicker}
@@ -439,7 +440,7 @@ export function ReviewPanel({
         <div className="review-job-progress" data-testid="review-progress">
           <strong>
             {isFinalizing
-              ? "Finalisation de la Review... Toutes les positions ont été analysées."
+              ? fr.analysis.finalizingReview
               : `Analyse ${reviewJob.profile} en cours`}
           </strong>
           <progress data-testid="review-progress-bar" value={reviewJob.percent} max={100} />
@@ -505,9 +506,9 @@ export function ReviewPanel({
             </details>
           )}
           <div className="review-action-row">
-            <button data-testid="review-resume" onClick={() => onRetry()}>Reprendre</button>
+            <button data-testid="review-resume" onClick={() => onRetry()}>{fr.actions.resume}</button>
             <button onClick={() => setResetPickerOpen((open) => !open)}>
-              Relancer depuis zéro
+              {fr.actions.restartFromZero}
             </button>
           </div>
           {resetPicker}
@@ -543,7 +544,7 @@ export function ReviewPanel({
     return (
       <ReviewMessage>
         <span>{uiState.error ?? error ?? "L'analyse n'a pas pu se terminer."}</span>
-        <button onClick={() => onRetry()}>Relancer l'analyse</button>
+        <button onClick={() => onRetry()}>{fr.actions.relaunchAnalysis}</button>
       </ReviewMessage>
     );
   }
@@ -558,7 +559,7 @@ export function ReviewPanel({
             : uiState.error ?? error ?? review?.message ?? REVIEW_STALLED_MESSAGE}
         </span>
         <button onClick={() => onRetry({ forceRetryFailed: hasFailedDeep })}>
-          Relancer l'analyse
+          {fr.actions.relaunchAnalysis}
         </button>
       </ReviewMessage>
     );
@@ -568,7 +569,7 @@ export function ReviewPanel({
     return (
       <ReviewMessage>
         <span>{uiState.error ?? REVIEW_TIMEOUT_MESSAGE}</span>
-        <button onClick={() => onRetry()}>Relancer l'analyse</button>
+        <button onClick={() => onRetry()}>{fr.actions.relaunchAnalysis}</button>
       </ReviewMessage>
     );
   }
@@ -587,7 +588,7 @@ export function ReviewPanel({
     return (
       <ReviewMessage>
         <span>{uiState.error ?? REVIEW_PENDING_BACKGROUND_MESSAGE}</span>
-        <button onClick={onCheck}>Vérifier à nouveau</button>
+        <button onClick={onCheck}>{fr.actions.checkAgain}</button>
       </ReviewMessage>
     );
   }

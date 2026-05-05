@@ -17,6 +17,7 @@ def read(path: Path) -> str:
 class FrontendCoreBoardInteractionStaticTests(unittest.TestCase):
     def setUp(self) -> None:
         self.app = read(FRONTEND_SRC / "App.tsx")
+        self.i18n = read(FRONTEND_SRC / "i18n" / "fr.ts")
         self.board = read(FRONTEND_SRC / "components" / "ChessBoardPanel.tsx")
         self.practice = read(REVIEW_DIR / "ReviewPracticePanel.tsx")
         self.summary = read(REVIEW_DIR / "ReviewCockpitSummary.tsx")
@@ -101,17 +102,17 @@ class FrontendCoreBoardInteractionStaticTests(unittest.TestCase):
             self.assertIn(token, self.app + self.summary + self.practice)
 
         for label in ("Aujourd'hui", "Mes parties", "Entra"):
-            self.assertIn(label, self.app)
+            self.assertIn(label, self.app + self.i18n)
         self.assertNotIn('id="tab-review"', self.app)
         self.assertNotIn("Profil / ParamÃ¨tres</button>\n          </nav>", self.app)
 
     def test_stalled_analysis_retry_copy_is_not_duplicated(self) -> None:
         self.assertIn("REVIEW_RETRY_COPY", self.panel)
         self.assertIn("!reviewJob.error_message?.includes(REVIEW_RETRY_COPY)", self.panel)
-        self.assertEqual(self.panel.count("Vous pouvez reprendre l'analyse."), 1)
+        self.assertEqual((self.panel + self.i18n).count("Vous pouvez reprendre l'analyse."), 1)
 
     def test_no_forbidden_v1_or_raw_debug_labels_in_main_sources(self) -> None:
-        combined = "\n".join([self.app, self.board, self.practice, self.summary, self.panel])
+        combined = "\n".join([self.app, self.board, self.practice, self.summary, self.panel, self.i18n])
         for forbidden_label in (
             "Candidate Trainer",
             "Intent Layer",

@@ -1,4 +1,5 @@
 import type { ReviewMoveAnnotation } from "../../api/client";
+import { fr } from "../../i18n";
 import type { ReviewFocusKey, ReviewLessonStep, ReviewPov, ReviewPublicLessonStep, ReviewSectionKey } from "./reviewTypes";
 
 export const REVIEW_SECTION_TABS: Array<{
@@ -13,10 +14,10 @@ export const REVIEW_SECTION_TABS: Array<{
 ];
 
 export const REVIEW_FOCUS_TABS: Array<{ key: ReviewFocusKey; label: string }> = [
-  { key: "summary", label: "Résumé" },
-  { key: "learn", label: "Apprendre" },
-  { key: "practice", label: "S'entraîner" },
-  { key: "lab", label: "Explorer" },
+  { key: "summary", label: fr.review.focusSummary },
+  { key: "learn", label: fr.review.focusLearn },
+  { key: "practice", label: fr.review.focusPractice },
+  { key: "lab", label: fr.review.focusExplorer },
 ];
 
 export const REVIEW_LESSON_STEPS: Array<{ key: ReviewLessonStep; label: string }> = [

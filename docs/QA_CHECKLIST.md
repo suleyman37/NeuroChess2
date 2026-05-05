@@ -1,6 +1,6 @@
 # QA Checklist
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` + `P1.I18N-STRINGS-CATALOG-V1`
 Date: 2026-05-05
 
 ## Mission Control
@@ -97,6 +97,9 @@ Date: 2026-05-05
   board move is saved as `best`, shows success feedback, does not show
   `Ton coup - Probleme` / `Le meilleur coup etait` contradiction, and does not
   create review jobs, review moments, or training items during classification.
+- [x] French V1 strings catalog exists at `frontend/src/i18n/fr.ts`.
+- [x] Static i18n tests validate critical nav, Training, feedback, degraded,
+  analysis, live-analysis, Profile/Privacy and forbidden-label contracts.
 - [ ] Full WCAG audit/certification not performed.
 
 ## V1 Boundaries
@@ -128,8 +131,8 @@ Date: 2026-05-05
 - [x] Privacy/export/delete implemented and browser-smoked in isolated temp DB.
 - [x] Deterministic backend Daily Plan implemented and browser-smoked.
 - [x] Durable `training_items` implemented and exported/deleted.
+- [x] Centralized French strings catalog for critical V1 copy.
 - [ ] SkillTrace shadow missing.
-- [ ] Centralized French strings missing.
 - [ ] Strict Stockfish cache proof incomplete.
 
 ## Documentation
@@ -145,7 +148,7 @@ Date: 2026-05-05
 ## Decision
 
 - Alpha: usable internally with strong backend evidence.
-- External V1: NO-GO until SkillTrace shadow, centralized French strings,
+- External V1: NO-GO until SkillTrace shadow, release-candidate QA gate,
   release hardening, and deeper accessibility/manual device checks are handled.
   Mobile/responsive and keyboard basics are now browser-smoked, but this is not
   a full accessibility certification.

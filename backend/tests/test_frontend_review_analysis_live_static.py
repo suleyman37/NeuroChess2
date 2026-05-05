@@ -16,6 +16,7 @@ def read(path: Path) -> str:
 class FrontendReviewAnalysisLiveStaticTests(unittest.TestCase):
     def setUp(self) -> None:
         self.app = read(FRONTEND_SRC / "App.tsx")
+        self.i18n = read(FRONTEND_SRC / "i18n" / "fr.ts")
         self.review_panel = read(
             FRONTEND_SRC / "components" / "review" / "ReviewPanel.tsx"
         )
@@ -53,12 +54,12 @@ class FrontendReviewAnalysisLiveStaticTests(unittest.TestCase):
             "Analyse interrompue temporairement. Tu peux reprendre l'analyse.",
             "setReviewError(reviewJobUserMessage(stalledJob))",
         ):
-            self.assertIn(token, self.app)
+            self.assertIn(token, self.app + self.i18n)
 
         self.assertIn("review-progress", self.review_panel)
         self.assertIn("review-status", self.review_panel)
         self.assertIn("review-resume", self.review_panel)
-        self.assertEqual(self.review_panel.count("Vous pouvez reprendre l'analyse."), 1)
+        self.assertEqual((self.review_panel + self.i18n).count("Vous pouvez reprendre l'analyse."), 1)
 
     def test_review_job_timer_uses_stable_job_timestamp_not_progress_only(self) -> None:
         for token in (
@@ -81,15 +82,15 @@ class FrontendReviewAnalysisLiveStaticTests(unittest.TestCase):
             "evaluationBarStateForBoardFen",
             'mode === "HISTORICAL"',
         ):
-            self.assertIn(token, self.app)
+            self.assertIn(token, self.app + self.i18n)
 
         self.assertNotIn('liveSuspendedForReview = activeTab === "review"', self.app)
 
     def test_live_analysis_is_hidden_in_active_practice(self) -> None:
         for token in (
             "const liveSuspendedForPractice = reviewPracticeState?.active === true",
-            "Analyse live en pause pendant l'exercice",
-            "analyse live masquee pendant l'exercice",
+            "fr.liveAnalysis.pausedDuringPractice",
+            "fr.liveAnalysis.hiddenDuringPractice",
             ': "Mode entrainement"',
         ):
             self.assertIn(token, self.app)
@@ -154,7 +155,7 @@ class FrontendReviewAnalysisLiveStaticTests(unittest.TestCase):
             self.assertIn(token, self.no_spoiler_smoke)
 
     def test_no_forbidden_v1_labels_or_raw_engine_debug_in_live_ui_sources(self) -> None:
-        combined = "\n".join([self.app, self.review_panel])
+        combined = "\n".join([self.app, self.review_panel, self.i18n])
         for forbidden in (
             "NeuroMonitor",
             "Candidate Trainer",

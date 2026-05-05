@@ -15,6 +15,7 @@ def read(path: Path) -> str:
 class FrontendProfilePrivacyStaticTests(unittest.TestCase):
     def setUp(self) -> None:
         self.app = read(FRONTEND_SRC / "App.tsx")
+        self.i18n = read(FRONTEND_SRC / "i18n" / "fr.ts")
         self.client = read(FRONTEND_SRC / "api" / "client.ts")
         self.styles = read(FRONTEND_SRC / "styles.css")
 
@@ -25,14 +26,14 @@ class FrontendProfilePrivacyStaticTests(unittest.TestCase):
             1,
         )[0]
 
-        self.assertIn("Aujourd'hui", nav_block)
-        self.assertIn("Mes parties", nav_block)
-        self.assertIn("Entra", nav_block)
+        self.assertIn("fr.nav.today", nav_block)
+        self.assertIn("fr.nav.games", nav_block)
+        self.assertIn("fr.nav.training", nav_block)
         self.assertNotIn("Profil", nav_block)
         self.assertNotIn("Param", nav_block)
 
         self.assertIn("profile-settings-button", self.app)
-        self.assertIn("Profil / Param", self.app)
+        self.assertIn("Profil / Param", self.app + self.i18n)
         self.assertIn("profile-privacy-panel", self.app)
 
     def test_export_delete_controls_are_visible_and_confirmed(self) -> None:
@@ -46,11 +47,11 @@ class FrontendProfilePrivacyStaticTests(unittest.TestCase):
             "exportUserData",
             "deleteUserData",
         ):
-            self.assertIn(token, self.app + self.client)
+            self.assertIn(token, self.app + self.client + self.i18n)
 
         self.assertIn("/api/export", self.client)
         self.assertIn("/api/user-data", self.client)
-        self.assertIn('profileDeleteInput !== "SUPPRIMER"', self.app)
+        self.assertIn("profileDeleteInput !== fr.confirmation.deleteKeyword", self.app)
         self.assertIn('params = new URLSearchParams({ confirm })', self.client)
 
     def test_profile_privacy_styles_are_local_and_destructive(self) -> None:
@@ -76,7 +77,7 @@ class FrontendProfilePrivacyStaticTests(unittest.TestCase):
             "ETV",
             "FSRS",
         ):
-            self.assertNotIn(forbidden_label, self.app)
+            self.assertNotIn(forbidden_label, self.app + self.i18n)
 
 
 if __name__ == "__main__":

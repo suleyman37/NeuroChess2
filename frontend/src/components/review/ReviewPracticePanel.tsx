@@ -1,4 +1,5 @@
 import type { ReviewPracticeItem } from "../../api/client";
+import { fr } from "../../i18n";
 import { StateNotice } from "../StateNotice";
 import {
   ANTI_TILT_REPEATED_WRONG_NOTICE,
@@ -27,10 +28,10 @@ export function ReviewPracticeLaunch({
 }) {
   const displayedCount = Math.min(5, eligibleCount);
   return (
-    <section className="review-practice-launch" aria-label="Entraînement Review">
+    <section className="review-practice-launch" aria-label={fr.practice.reviewTrainingAria}>
       <div>
-        <span>Session recommandée</span>
-        <strong>{eligibleCount > 0 ? "S'entraîner sur cette Review" : "Plan en construction"}</strong>
+        <span>{fr.practice.recommendedSession}</span>
+        <strong>{eligibleCount > 0 ? fr.practice.startReviewPractice : fr.practice.planBuilding}</strong>
         <span>
           {eligibleCount > 0
             ? `${displayedCount} position${displayedCount > 1 ? "s" : ""} issues de cette Review · thème : ${dominantTheme ?? "moments prioritaires"}.`
@@ -44,11 +45,11 @@ export function ReviewPracticeLaunch({
           data-testid="review-practice-button"
           onClick={onStartPractice}
         >
-          Commencer l'entraînement
+          {fr.actions.startPractice}
         </button>
       ) : (
         <button type="button" className="primary" onClick={onOpenExplorer}>
-          Explorer les moments
+          {fr.actions.exploreMoments}
         </button>
       )}
     </section>
@@ -98,10 +99,10 @@ export function ReviewPracticeSessionPanel({
     return (
       <section className="review-practice-panel">
         <div className="review-block-title">
-          <span>Entraînement Review</span>
-          <strong>Préparation...</strong>
+          <span>{fr.practice.reviewTrainingAria}</span>
+          <strong>{fr.practice.preparing}</strong>
         </div>
-        <p>Préparation des positions à travailler.</p>
+        <p>{fr.practice.preparingPositions}</p>
       </section>
     );
   }
@@ -126,7 +127,7 @@ export function ReviewPracticeSessionPanel({
         aria-label="Résumé de session"
       >
         <div className="review-block-title">
-          <span>Session terminée</span>
+          <span>{fr.practice.completed}</span>
           <strong>{solvedCount} / {itemCount} positions réussies</strong>
         </div>
         <StateNotice
@@ -162,7 +163,7 @@ export function ReviewPracticeSessionPanel({
             value={wrongCount + illegalCount}
           />
           <PracticeSummaryMetric
-            label="Solutions révélées"
+            label={fr.practice.revealedSolutions}
             value={revealedCount}
           />
           <PracticeSummaryMetric
@@ -172,9 +173,9 @@ export function ReviewPracticeSessionPanel({
         </div>
         <div className="review-practice-theme">
           <span>Thème principal à revoir</span>
-          <strong>{summary?.dominant_theme_label ?? "Inconnu"}</strong>
+          <strong>{summary?.dominant_theme_label ?? fr.practice.unknown}</strong>
         </div>
-        <p>{summary?.summary_sentence ?? summary?.message ?? "Session terminée."}</p>
+        <p>{summary?.summary_sentence ?? summary?.message ?? fr.practice.completedSentence}</p>
         <div className="review-action-row">
           {reviewCount > 0 ? (
             <>
@@ -208,7 +209,7 @@ export function ReviewPracticeSessionPanel({
     return (
       <section className="review-practice-panel">
         <div className="review-block-title">
-          <span>Entraînement Review</span>
+          <span>{fr.practice.reviewTrainingAria}</span>
           <strong>0 position</strong>
         </div>
         <StateNotice
@@ -253,12 +254,12 @@ export function ReviewPracticeSessionPanel({
   return (
     <section
       className="review-practice-panel"
-      aria-label="Mode entraînement Review"
+      aria-label={fr.practice.modeAria}
       data-testid="practice-panel"
     >
       <div className="review-practice-head">
         <div>
-          <span>Entraînement Review</span>
+          <span>{fr.practice.reviewTrainingAria}</span>
           <h3>Position {state.currentIndex + 1} / {state.items.length}</h3>
         </div>
         <button type="button" onClick={onQuit}>
@@ -276,7 +277,7 @@ export function ReviewPracticeSessionPanel({
         <p>{subjectLabel}</p>
         {state.hintVisible && (
           <div className="review-practice-hint">
-            Indice : {practiceHintForItem(item)}
+            {fr.practice.hintPrefix} : {practiceHintForItem(item)}
           </div>
         )}
         {state.feedback && (
@@ -287,7 +288,7 @@ export function ReviewPracticeSessionPanel({
             <strong>{coachTextForPov(state.feedback.message, povContext, itemAnnotation)}</strong>
             {state.attemptedUci && (
               <span>
-                {povContext.isUserPov ? "Ton coup" : "Coup joué"} :{" "}
+                {povContext.isUserPov ? fr.feedback.yourMove : fr.feedback.playedMove} :{" "}
                 {state.attemptedSan ?? state.attemptedUci}
               </span>
             )}
@@ -295,12 +296,12 @@ export function ReviewPracticeSessionPanel({
         )}
         {showSolution && (
           <div className="review-practice-solution" data-testid="practice-result">
-            Solution : {item.best_move_san ?? item.best_move_uci}
+            {fr.practice.solutionPrefix} : {item.best_move_san ?? item.best_move_uci}
           </div>
         )}
         {showSolution && explanation && (
           <div className="review-practice-explanation">
-            <span>Pourquoi la solution aide</span>
+            <span>{fr.practice.solutionWhy}</span>
             <p>{coachTextForPov(explanation.why_best_move_good, povContext, itemAnnotation)}</p>
           </div>
         )}
@@ -371,7 +372,7 @@ export function ReviewPracticeSessionPanel({
               onClick={onHint}
               disabled={state.saving}
             >
-              Indice
+              {fr.actions.hint}
             </button>
             <button
               className="primary"
@@ -380,17 +381,17 @@ export function ReviewPracticeSessionPanel({
               onClick={onRevealSolution}
               disabled={state.saving}
             >
-              Voir la correction
+              {fr.actions.showCorrection}
             </button>
             <button type="button" onClick={onSkip} disabled={state.saving}>
-              Passer
+              {fr.actions.skip}
             </button>
           </>
         )}
         {showSolution && (
           <>
             <button type="button" onClick={onTryAgain} disabled={state.saving}>
-              Essayer encore
+              {fr.actions.tryAgain}
             </button>
             {canShowPv && (
               <button
@@ -403,7 +404,7 @@ export function ReviewPracticeSessionPanel({
                 disabled={state.saving}
                 title="Voir la ligne proposée"
               >
-                Voir la ligne
+                {fr.actions.showLine}
               </button>
             )}
             <button
@@ -414,8 +415,8 @@ export function ReviewPracticeSessionPanel({
               disabled={state.saving}
             >
               {state.currentIndex + 1 >= state.items.length
-                ? "Terminer"
-                : "Position suivante"}
+                ? fr.actions.finish
+                : fr.actions.nextPosition}
             </button>
           </>
         )}
@@ -461,7 +462,7 @@ function ReviewPracticeContrastFeedback({
   }
   return (
     <div className="review-practice-explanation review-practice-contrast">
-      <span>{isBest ? "Idée clé" : "Contraste des lignes"}</span>
+      <span>{isBest ? fr.practice.keyIdea : fr.practice.lineContrast}</span>
       {primaryText && (
         <p>{coachTextForPov(primaryText, povContext, annotation)}</p>
       )}

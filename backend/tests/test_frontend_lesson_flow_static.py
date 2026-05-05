@@ -25,6 +25,7 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.types = read(REVIEW_DIR / "reviewTypes.ts")
         self.step_status = read(REVIEW_DIR / "ReviewStepStatus.tsx")
         self.app = read(PROJECT_ROOT / "frontend" / "src" / "App.tsx")
+        self.i18n = read(PROJECT_ROOT / "frontend" / "src" / "i18n" / "fr.ts")
 
     def section(self, name: str) -> str:
         start = self.lesson.index(f'data-public-lesson-step="{name}"')
@@ -37,8 +38,15 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         return self.lesson[start:end]
 
     def test_review_tabs_are_four_guided_contract_tabs(self) -> None:
+        for usage in (
+            "fr.review.focusSummary",
+            "fr.review.focusLearn",
+            "fr.review.focusPractice",
+            "fr.review.focusExplorer",
+        ):
+            self.assertIn(usage, self.labels)
         for label in ("Résumé", "Apprendre", "S'entraîner", "Explorer"):
-            self.assertIn(label, self.labels + self.summary + self.laboratory)
+            self.assertIn(label, self.i18n + self.summary + self.laboratory)
         self.assertNotIn('label: "Laboratoire"', self.labels)
         self.assertIn('aria-label="Explorer Review"', self.laboratory)
         self.assertIn("<strong>Explorer la partie en profondeur</strong>", self.laboratory)
@@ -76,10 +84,10 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
 
     def test_challenge_step_does_not_reveal_solution_or_line(self) -> None:
         challenge = self.section("challenge")
-        self.assertIn("Trouve le meilleur coup.", challenge)
+        self.assertIn("Trouve le meilleur coup.", challenge + self.i18n)
         self.assertIn("Essayer", challenge)
-        self.assertIn("Indice", challenge)
-        self.assertIn("Voir la correction", challenge)
+        self.assertIn("Indice", challenge + self.i18n)
+        self.assertIn("Voir la correction", challenge + self.i18n)
         self.assertNotIn("solutionMove", challenge)
         self.assertNotIn("best_move_san", challenge)
         self.assertNotIn("ReviewLineComparison", challenge)
@@ -91,8 +99,8 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertIn('onShowAnnotation(lessonAnnotation, index, "best")', self.lesson)
         self.assertIn('publicStep === "correction" && canShowSolutionData', self.lesson)
         self.assertIn("const correctionMain", self.lesson)
-        self.assertIn("Voici ce que ton coup a permis.", self.lesson)
-        self.assertIn("Le meilleur coup était", correction)
+        self.assertIn("Voici ce que ton coup a permis.", self.lesson + self.i18n)
+        self.assertIn("Le meilleur coup était", correction + self.i18n)
         self.assertIn("solutionMove", correction)
         self.assertIn("ReviewLineComparison", correction)
         self.assertIn('<details className="review-line-comparison-disclosure">', correction)
@@ -110,10 +118,10 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertIn('tryFeedbackResult === "very_good"', self.lesson)
         self.assertIn('tryFeedbackResult === "acceptable"', self.lesson)
         self.assertIn("correctionPlayedLabel", self.lesson)
-        self.assertIn("Bonne id", self.lesson)
+        self.assertIn("Bonne id", self.lesson + self.i18n)
         self.assertIn("{!tryMoveAccepted && !tryMoveNeedsRebuild && (", self.lesson)
-        self.assertIn("Review ", self.lesson)
-        self.assertIn(" reconstruire", self.lesson)
+        self.assertIn("Review ", self.lesson + self.i18n)
+        self.assertIn(" reconstruire", self.lesson + self.i18n)
 
     def test_training_step_has_takeaway_and_training_action(self) -> None:
         training = self.section("training")
@@ -154,11 +162,11 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertNotIn("criticality_score", self.summary)
         self.assertNotIn("diagnostic_gap", self.summary)
         self.assertNotIn("neuro_score_diag", self.summary)
-        self.assertIn("Commencer l'entraînement", self.practice)
-        self.assertIn("Session recommandée", self.practice)
-        self.assertIn("Plan en construction", self.practice)
-        self.assertIn("Explorer les moments", self.practice)
-        self.assertIn("Voir la correction", self.practice)
+        self.assertIn("Commencer l'entraînement", self.practice + self.i18n)
+        self.assertIn("Session recommandée", self.practice + self.i18n)
+        self.assertIn("Plan en construction", self.practice + self.i18n)
+        self.assertIn("Explorer les moments", self.practice + self.i18n)
+        self.assertIn("Voir la correction", self.practice + self.i18n)
         self.assertNotIn("Voir solution", self.practice)
         self.assertIn("Revoir les positions ratées", self.practice)
         self.assertIn("Faire une nouvelle session", self.practice)

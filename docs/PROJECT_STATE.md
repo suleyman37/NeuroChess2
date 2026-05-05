@@ -24,6 +24,22 @@ et les fichiers frontend/backend inspectes.
 - Cette couche ne remplace pas `plan/Plan1.txt`, `plan/Plan2.txt`, ni
   `plan/Plan3.md`; elle rend les futures missions plus verificables.
 
+## Mise a jour I18N / Strings Catalog V1 du 2026-05-05
+
+- `P1.I18N-STRINGS-CATALOG-V1` ajoute un catalogue francais V1 minimal:
+  `frontend/src/i18n/fr.ts` et `frontend/src/i18n/index.ts`.
+- Les libelles critiques V1 sont centralises pour la navigation, Today/Games,
+  Training, Review, Practice, analyse Review, live analysis, degraded states,
+  import PGN, Profile/Privacy, confirmations destructives et feedback court.
+- Les composants critiques migrent vers `fr.*` sans changement intentionnel de
+  comportement, de route, de data-testid, de layout ou de contrat API.
+- Des tests statiques verrouillent l'existence du catalogue, les libelles V1
+  critiques, les labels Plan2, les feedbacks Practice sans contradiction et
+  l'absence de labels V1 interdits.
+- Ce n'est pas une internationalisation multi-langue: V1 reste francaise, sans
+  runtime language switch.
+- Prochaine mission recommandee: `P1.QA-RELEASE-CANDIDATE-V1`.
+
 ## Mise a jour QA du 2026-05-04
 
 - `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` est implemente.

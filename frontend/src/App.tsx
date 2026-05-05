@@ -89,6 +89,7 @@ import {
   buildPgnImportNotice,
 } from "./degradedStates";
 import { makeEvaluationDisplayFromEngineScore } from "./evaluationDisplay";
+import { fr } from "./i18n";
 import {
   INITIAL_REVIEW_STATE,
   MIN_REVIEW_HALF_MOVES,
@@ -307,9 +308,9 @@ const EVALUATION_SOURCE_KINDS = new Set([
 ]);
 
 const HISTORY_SCOPE_FILTERS: Array<{ scope: HistoryScope; label: string }> = [
-  { scope: "mine", label: "Mes parties" },
-  { scope: "imported", label: "Importées" },
-  { scope: "local", label: "Locales" },
+  { scope: "mine", label: fr.nav.games },
+  { scope: "imported", label: fr.games.imported },
+  { scope: "local", label: fr.games.local },
   { scope: "ai", label: "IA" },
   { scope: "observed", label: "Observées" },
   { scope: "all", label: "Toutes" },
@@ -893,9 +894,9 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         setEvaluationFen(null);
       }
       if (liveSuspendedForReview) {
-        setLiveInfoStatus("Analyse live en pause pendant la Review");
+        setLiveInfoStatus(fr.liveAnalysis.pausedDuringReview);
       } else if (liveSuspendedForPractice) {
-        setLiveInfoStatus("Analyse live en pause pendant l'exercice");
+        setLiveInfoStatus(fr.liveAnalysis.pausedDuringPractice);
       }
       return;
     }
@@ -2342,17 +2343,19 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      setProfileExportStatus("Export JSON généré.");
+      setProfileExportStatus(fr.profilePrivacy.exportGenerated);
     } catch (err) {
-      setProfileExportStatus(`Export impossible : ${messageFromError(err)}`);
+      setProfileExportStatus(
+        `${fr.profilePrivacy.exportFailedPrefix} : ${messageFromError(err)}`,
+      );
     } finally {
       setProfilePrivacyBusy("idle");
     }
   }
 
   async function handleDeleteUserDataConfirmed() {
-    if (profileDeleteInput !== "SUPPRIMER") {
-      setProfileDeleteStatus("Tape SUPPRIMER pour confirmer la suppression.");
+    if (profileDeleteInput !== fr.confirmation.deleteKeyword) {
+      setProfileDeleteStatus(fr.confirmation.typeDeleteToConfirm);
       return;
     }
 
@@ -2369,7 +2372,9 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         `Suppression terminée : ${summary.total_deleted} éléments locaux supprimés.`,
       );
     } catch (err) {
-      setProfileDeleteStatus(`Suppression impossible : ${messageFromError(err)}`);
+      setProfileDeleteStatus(
+        `${fr.profilePrivacy.deleteFailedPrefix} : ${messageFromError(err)}`,
+      );
     } finally {
       setProfilePrivacyBusy("idle");
     }
@@ -2659,7 +2664,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     setLiveInfoStatus(null);
     if (!hasValidEvaluationRef.current) {
       debugLog("engine_warning_confirmed_after_retries");
-      setLiveStatus("analyse live indisponible");
+      setLiveStatus(fr.liveAnalysis.unavailable);
     }
   }
 
@@ -4711,7 +4716,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             data-testid="nav-today"
             onClick={() => openShellPage("today")}
           >
-            Aujourd'hui
+            {fr.nav.today}
           </button>
           <button
             type="button"
@@ -4720,7 +4725,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             data-testid="nav-games"
             onClick={() => openShellPage("games")}
           >
-            Mes parties
+            {fr.nav.games}
           </button>
           <button
             type="button"
@@ -4729,7 +4734,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             data-testid="nav-training"
             onClick={() => openShellPage("training")}
           >
-            Entraînement
+            {fr.nav.training}
           </button>
         </nav>
         <div className="app-header-tools">
@@ -4741,7 +4746,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             data-testid="profile-settings-button"
             onClick={() => setProfilePanelOpen(open => !open)}
           >
-            Profil / Paramètres
+            {fr.nav.profileSettings}
           </button>
           <label className="evaluation-toggle">
             <input
@@ -4764,7 +4769,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
           <div className="profile-privacy-header">
             <div>
               <span>Paramètres V1</span>
-              <h1 id="profile-privacy-title">Profil / Paramètres</h1>
+              <h1 id="profile-privacy-title">{fr.profilePrivacy.title}</h1>
               <p>NeuroChess fonctionne en local pour cette V1.</p>
             </div>
             <button
@@ -4818,8 +4823,8 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                   disabled={profilePrivacyBusy !== "idle"}
                 >
                   {profilePrivacyBusy === "exporting"
-                    ? "Export en cours..."
-                    : "Exporter mes données"}
+                    ? fr.profilePrivacy.exportInProgress
+                    : fr.profilePrivacy.exportData}
                 </button>
                 <button
                   type="button"
@@ -4830,7 +4835,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                   }}
                   disabled={profilePrivacyBusy !== "idle"}
                 >
-                  Supprimer mes données
+                  {fr.profilePrivacy.deleteData}
                 </button>
               </div>
               {profileExportStatus && (
@@ -4841,19 +4846,19 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                   className="profile-delete-confirmation"
                   aria-label="Confirmation suppression données locales"
                 >
-                  <strong>Confirmation obligatoire</strong>
+                  <strong>{fr.profilePrivacy.confirmRequired}</strong>
                   <p>
                     Cette action supprimera les parties, reviews, entraînements,
                     tentatives et données locales. Elle ne touche pas au repo Git,
                     à Stockfish, aux migrations ou aux fichiers système.
                   </p>
                   <label>
-                    Tape SUPPRIMER pour confirmer.
+                    {fr.confirmation.typeDeleteLabel}
                     <input
                       type="text"
                       value={profileDeleteInput}
                       onChange={event => setProfileDeleteInput(event.currentTarget.value)}
-                      placeholder="SUPPRIMER"
+                      placeholder={fr.confirmation.deleteKeyword}
                       autoComplete="off"
                     />
                   </label>
@@ -4876,7 +4881,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                       onClick={handleDeleteUserDataConfirmed}
                       disabled={
                         profilePrivacyBusy !== "idle" ||
-                        profileDeleteInput !== "SUPPRIMER"
+                        profileDeleteInput !== fr.confirmation.deleteKeyword
                       }
                     >
                       {profilePrivacyBusy === "deleting"
@@ -4922,7 +4927,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         <section className="plan2-page today-page" aria-labelledby="today-title">
           <div className="plan2-hero">
             <span className="plan2-kicker">{todayHero.kicker}</span>
-            <h1 id="today-title">Aujourd'hui</h1>
+            <h1 id="today-title">{fr.nav.today}</h1>
             <strong className="plan2-hero-title">{todayHero.title}</strong>
             <p>{todayHero.detail}</p>
             <button
@@ -4974,7 +4979,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         <section className="plan2-page training-page" aria-labelledby="training-title">
           <div className="plan2-hero compact">
             <span className="plan2-kicker">Session recommandée</span>
-            <h1 id="training-title">Entraînement</h1>
+            <h1 id="training-title">{fr.nav.training}</h1>
             <p>
               V1 reste volontairement simple : un plan du jour, les positions
               ratées et les révisions, sans mode supplémentaire.
@@ -5014,13 +5019,13 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
           )}
           <div className="plan2-card-grid training-grid">
             <article className="plan2-card" data-testid="training-daily-plan-card">
-              <span>Plan du jour</span>
+              <span>{fr.training.dailyPlan}</span>
               <strong>{trainingPlanStatus}</strong>
               <p>{trainingPlanDetail}</p>
               <span className="training-card-cta">{trainingPrimaryLabel}</span>
             </article>
             <article className="plan2-card" data-testid="training-failed-card">
-              <span>Mes positions ratées</span>
+              <span>{fr.training.failedPositions}</span>
               <strong>{failedPositionsLabel}</strong>
               <p>{failedPositionsDetail}</p>
               {canOpenFailedPositions ? (
@@ -5038,7 +5043,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
               )}
             </article>
             <article className="plan2-card" data-testid="training-due-card">
-              <span>Révisions</span>
+              <span>{fr.training.revisions}</span>
               <strong>{revisionsStatus}</strong>
               <p>{revisionsDetail}</p>
               {canOpenDueRevisions ? (
@@ -5238,17 +5243,17 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                 }}
               >
                 {activeShellPage === "training"
-                  ? "Retour entraînement"
+                  ? fr.training.returnTraining
                   : activeShellPage === "today"
-                    ? "Retour aujourd'hui"
-                    : "Retour aux parties"}
+                    ? fr.training.returnToday
+                    : fr.training.returnGames}
               </button>
             </div>
           ) : (
             <>
-              <div className="games-page-actions" aria-label="Actions Mes parties">
+              <div className="games-page-actions" aria-label={fr.games.actionsAria}>
                 <div>
-                  <span>Mes parties</span>
+                  <span>{fr.nav.games}</span>
                   <strong>Importer, analyser ou revoir</strong>
                 </div>
                 <button
@@ -5266,7 +5271,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                   Voir historique
                 </button>
               </div>
-              <div className="tabs" role="tablist" aria-label="Panneau Mes parties">
+              <div className="tabs" role="tablist" aria-label={fr.games.panelAria}>
                 <button
                   id="tab-moves"
                   role="tab"
@@ -6270,7 +6275,7 @@ function evaluationBarStateForBoardFen(
           ? `Mode entrainement - ${formatGuidedImpact(selectedReviewAnnotation.win_loss)}`
           : "Mode entrainement",
         sourceLabel: "review",
-        sourceTitle: "analyse live masquee pendant l'exercice",
+        sourceTitle: fr.liveAnalysis.hiddenDuringPractice,
       },
       delta: null,
       deltaOverlay: null,
@@ -6952,7 +6957,7 @@ function boardEvaluationPendingPlaceholder(
     evaluation: null,
     source: null,
     placeholder: {
-      label: "analyse live continue",
+      label: fr.liveAnalysis.continuous,
       sourceLabel,
       sourceTitle: `Stockfish analyse la position ${sourceLabel} tant qu'elle reste affichee`,
     },
@@ -7014,8 +7019,7 @@ function makeFrontendStalledReviewJob(job: ReviewJobResponse): ReviewJobResponse
     status: "stalled",
     can_cancel: false,
     retryable: true,
-    error_message:
-      "Analyse interrompue temporairement. Tu peux reprendre l'analyse.",
+    error_message: fr.analysis.interruptedWithResume,
     failed_reason: job.failed_reason ?? "frontend_no_progress_watchdog",
     last_error: job.last_error ?? "frontend_no_progress_watchdog",
     current_phase: "stalled",
@@ -7036,8 +7040,7 @@ function makeFrontendIncompleteReviewJob(
     status: "incomplete",
     can_cancel: false,
     retryable: true,
-    error_message:
-      "Review incomplète. L'analyse est terminée, mais la Review finale n'est pas disponible.",
+    error_message: fr.analysis.incompleteReviewDetail,
     failed_reason: job.failed_reason ?? reason,
     last_error: job.last_error ?? reason,
     current_phase: "incomplete_review",

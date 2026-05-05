@@ -1,4 +1,5 @@
 import type { ReviewMoveAnnotation } from "../../api/client";
+import { fr } from "../../i18n";
 import {
   impactLabelFromLoss,
   lessonTypeLabel,
@@ -102,7 +103,7 @@ function ReviewCoachMomentCard({
   } = buildLessonStepState(annotation, lessonStep, tryMoveState, solutionRevealState);
   const tryActiveForAnnotation =
     tryMoveState?.active && tryMoveState.annotationPly === annotation.ply;
-  const playedMove = annotation.san ?? annotation.uci ?? "coup non disponible";
+  const playedMove = annotation.san ?? annotation.uci ?? fr.feedback.moveUnavailable;
   const displayedPlayedMove =
     tryActiveForAnnotation && tryMoveState?.attemptedUci
       ? tryMoveState.attemptedSan ?? tryMoveState.attemptedUci
@@ -117,7 +118,7 @@ function ReviewCoachMomentCard({
     tryFeedbackResult === "acceptable";
   const tryMoveNeedsRebuild = tryFeedbackResult === "needs_rebuild";
   const solutionMove =
-    annotation.best_move_san ?? annotation.best_move_uci ?? "solution indisponible";
+    annotation.best_move_san ?? annotation.best_move_uci ?? fr.feedback.solutionUnavailable;
   const lessonType = lessonTypeLabel(explanation?.error_type);
   const impactLabel = annotation.impact_label ?? impactLabelFromLoss(annotation.win_loss);
   const qualityLabel =
@@ -138,16 +139,16 @@ function ReviewCoachMomentCard({
     publicMainDifferenceText(contrastCoach, explanation) ??
     "La solution garde davantage l'initiative et limite le contre-jeu.";
   const correctionMain = tryMoveAccepted
-    ? "Bien joué : ton coup répond à l'idée critique."
+    ? fr.feedback.acceptedMain
     : tryMoveNeedsRebuild
-      ? "Cette position doit être reconstruite avant correction."
-      : "Voici ce que ton coup a permis.";
-  const playedMoveLabel = isUserLanguage ? "Ton coup" : "Coup joué";
+      ? fr.feedback.rebuildMain
+      : fr.feedback.wrongMain;
+  const playedMoveLabel = isUserLanguage ? fr.feedback.yourMove : fr.feedback.playedMove;
   const correctionPlayedLabel = tryMoveAccepted
-    ? `${playedMoveLabel} · Bonne idée`
+    ? `${playedMoveLabel} · ${fr.feedback.acceptedIdea}`
     : tryMoveNeedsRebuild
-      ? `${playedMoveLabel} · À vérifier`
-      : `${playedMoveLabel} · Problème`;
+      ? `${playedMoveLabel} · ${fr.feedback.needsReview}`
+      : `${playedMoveLabel} · ${fr.feedback.problem}`;
   const correctionPlayedText = tryMoveAccepted || tryMoveNeedsRebuild
     ? coachTextForPov(
         tryMoveState?.feedback?.message,
@@ -238,7 +239,7 @@ function ReviewCoachMomentCard({
 
       {publicStep === "challenge" && (
         <div className="review-lesson-card" data-public-lesson-step="challenge">
-          <p className="review-coach-main">Trouve le meilleur coup.</p>
+          <p className="review-coach-main">{fr.practice.challengeTitle}</p>
           <div className="review-challenge-meta">
             <span>{lessonType}</span>
             <span>{moveTitle}</span>
@@ -255,7 +256,7 @@ function ReviewCoachMomentCard({
             />
             {hintVisible && (
               <CoachExplanationBlock
-                title="Indice"
+                title={fr.actions.hint}
                 text={practiceHintForAnnotation(annotation)}
               />
             )}
@@ -271,7 +272,7 @@ function ReviewCoachMomentCard({
               </button>
             )}
             <button type="button" onClick={handleHintStep}>
-              Indice
+              {fr.actions.hint}
             </button>
             <button
               className={
@@ -280,7 +281,7 @@ function ReviewCoachMomentCard({
               type="button"
               onClick={handleShowCorrection}
             >
-              Voir la correction
+              {fr.actions.showCorrection}
             </button>
           </div>
           {tryActiveForAnnotation && tryMoveState?.feedback && (
@@ -295,16 +296,16 @@ function ReviewCoachMomentCard({
               </span>
               {tryMoveState.attemptedUci && (
                 <span>
-                  {isUserLanguage ? "Ton coup" : "Coup joué"} :{" "}
+                  {isUserLanguage ? fr.feedback.yourMove : fr.feedback.playedMove} :{" "}
                   {tryMoveState.attemptedSan ?? tryMoveState.attemptedUci}
                 </span>
               )}
               <div className="review-action-row">
                 <button type="button" onClick={onTryMoveReset}>
-                  Réessayer
+                  {fr.actions.retry}
                 </button>
                 <button className="primary" type="button" onClick={handleTryRevealSolution}>
-                  Voir la correction
+                  {fr.actions.showCorrection}
                 </button>
               </div>
             </div>
@@ -323,15 +324,15 @@ function ReviewCoachMomentCard({
             </article>
             {!tryMoveAccepted && !tryMoveNeedsRebuild && (
               <article>
-                <span>Meilleure idée</span>
-                <strong>Le meilleur coup était : {solutionMove}</strong>
+                <span>{fr.feedback.bestIdea}</span>
+                <strong>{fr.feedback.bestMoveMissed(solutionMove)}</strong>
                 <p>{correctionWhy}</p>
               </article>
             )}
             {tryMoveNeedsRebuild && (
               <article>
-                <span>Review à reconstruire</span>
-                <p>Réanalyse cette Review avant de corriger cette position.</p>
+                <span>{fr.feedback.reviewNeedsRebuild}</span>
+                <p>{fr.feedback.rebuildBeforeCorrection}</p>
               </article>
             )}
             <article>
@@ -387,7 +388,7 @@ function ReviewCoachMomentCard({
             )}
             {annotation.try_move_supported && (
               <button type="button" onClick={handleTryStep}>
-                Réessayer
+                {fr.actions.retry}
               </button>
             )}
           </div>
