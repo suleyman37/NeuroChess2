@@ -1352,6 +1352,133 @@ export function buildLessonStepState(
   };
 }
 
+export type ReviewCorrectionFeedbackView = {
+  accepted: boolean;
+  acceptedSource: "backend" | "best_match" | "accepted_move" | null;
+  needsRebuild: boolean;
+  showMissedBest: boolean;
+  visibleTagLabels: string[];
+  categoryLabel: string;
+  categoryIsNegative: boolean;
+};
+
+const ACCEPTED_TRY_MOVE_RESULTS = new Set(["best", "very_good", "acceptable"]);
+
+export function buildReviewCorrectionFeedbackView(
+  annotation: ReviewMoveAnnotation,
+  displayedPlayedMove: string | null | undefined,
+  tryMoveState: ReviewTryMoveViewState | null,
+): ReviewCorrectionFeedbackView {
+  const tryActiveForAnnotation =
+    tryMoveState?.active && tryMoveState.annotationPly === annotation.ply;
+  const tryFeedbackResult =
+    tryActiveForAnnotation && tryMoveState?.feedback
+      ? String(tryMoveState.feedback.result ?? "")
+      : null;
+  const acceptedSource = correctionAcceptedSource(
+    annotation,
+    displayedPlayedMove,
+    tryActiveForAnnotation ? tryMoveState : null,
+    tryFeedbackResult,
+  );
+  const accepted = acceptedSource !== null;
+  const needsRebuild = tryFeedbackResult === "needs_rebuild";
+  const rawTags = annotation.tag_labels?.length
+    ? annotation.tag_labels
+    : annotation.tags;
+  return {
+    accepted,
+    acceptedSource,
+    needsRebuild,
+    showMissedBest: !accepted && !needsRebuild,
+    visibleTagLabels: accepted
+      ? rawTags.filter((tag) => !isNegativeCorrectionLabel(tag))
+      : rawTags,
+    categoryLabel: annotation.category_label,
+    categoryIsNegative: accepted && isNegativeCorrectionLabel(annotation.category_label),
+  };
+}
+
+function correctionAcceptedSource(
+  annotation: ReviewMoveAnnotation,
+  displayedPlayedMove: string | null | undefined,
+  tryMoveState: ReviewTryMoveViewState | null,
+  tryFeedbackResult: string | null,
+): ReviewCorrectionFeedbackView["acceptedSource"] {
+  if (tryFeedbackResult && ACCEPTED_TRY_MOVE_RESULTS.has(tryFeedbackResult)) {
+    return "backend";
+  }
+
+  const attemptMoveCandidates =
+    tryMoveState?.attemptedUci || tryMoveState?.attemptedSan
+      ? [tryMoveState.attemptedUci, tryMoveState.attemptedSan, displayedPlayedMove]
+      : null;
+  const userMoveCandidates =
+    attemptMoveCandidates ?? [displayedPlayedMove, annotation.uci, annotation.san];
+  const bestMoveCandidates = [annotation.best_move_uci, annotation.best_move_san];
+  if (moveCandidateSetsIntersect(userMoveCandidates, bestMoveCandidates)) {
+    return "best_match";
+  }
+
+  const acceptedMoveCandidates = (annotation.acceptable_moves ?? []).flatMap((move) => [
+    move.uci,
+    move.san,
+  ]);
+  if (moveCandidateSetsIntersect(userMoveCandidates, acceptedMoveCandidates)) {
+    return "accepted_move";
+  }
+
+  return null;
+}
+
+function moveCandidateSetsIntersect(
+  leftCandidates: Array<string | null | undefined>,
+  rightCandidates: Array<string | null | undefined>,
+): boolean {
+  const left = moveComparisonKeys(leftCandidates);
+  const right = moveComparisonKeys(rightCandidates);
+  return [...left].some((key) => right.has(key));
+}
+
+function moveComparisonKeys(
+  candidates: Array<string | null | undefined>,
+): Set<string> {
+  const keys = new Set<string>();
+  for (const candidate of candidates) {
+    const key = normalizeReviewMoveForComparison(candidate);
+    if (key) {
+      keys.add(key);
+    }
+  }
+  return keys;
+}
+
+export function normalizeReviewMoveForComparison(
+  value: string | null | undefined,
+): string | null {
+  const normalized = String(value ?? "")
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[!?]+/g, "")
+    .replace(/[+#]+$/g, "")
+    .replace(/\s+/g, "")
+    .replace(/0-0/gi, "o-o")
+    .toLowerCase();
+  return normalized.length > 0 ? normalized : null;
+}
+
+export function isNegativeCorrectionLabel(value: string | null | undefined): boolean {
+  const normalized = normalizeReviewMoveForComparison(value)?.replace(/[._-]+/g, "") ?? "";
+  return (
+    normalized.includes("opportunitemanquee") ||
+    normalized.includes("missedopportunity") ||
+    normalized.includes("ressourcedefensivemanquee") ||
+    normalized.includes("defensiveresourcemissed") ||
+    normalized.includes("probleme")
+  );
+}
+
 export function getPublicLessonStep(
   lessonStep: ReviewLessonStep,
   solutionRevealState: ReviewSolutionRevealViewState | null,

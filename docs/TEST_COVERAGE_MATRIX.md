@@ -81,6 +81,11 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
   problem/best-was copy, saved `practice_attempt.result=best`, `due_at`
   present, legacy SAN `Bxf7+` API normalization, and no review job/moment or
   training item side effect from feedback classification.
+- Review Correction contradiction browser smoke: PASS via
+  `cmd /c node scripts\browser_review_correction_no_contradiction_smoke.mjs`.
+  It proves a legacy Review/Lesson Correction payload with displayed move
+  `Nxe4` equal to best move `Nxe4` renders success/accepted feedback and does
+  not render problem, missed-opportunity, or missed-best reproach copy.
 - French V1 strings catalog static suite: PASS via
   `.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_frontend_i18n_strings_static ...`.
   It proves `frontend/src/i18n/fr.ts`, critical V1 strings, Plan2 nav labels,
@@ -156,6 +161,7 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
 | `scripts/browser_live_analysis_pauses_during_review_smoke.mjs` | browser smoke | Live analysis priority | Live analysis pause copy while standard Review job runs, Review job reaches terminal/recoverable state | Long real-engine queue contention | added in P0 live mission | medium/high if PASS | Add real Stockfish stress test later |
 | `scripts/browser_practice_no_live_spoiler_smoke.mjs` | browser smoke | Practice spoiler protection | Practice hides live eval/best move before attempt, then normal attempt persists | Every Practice branch after reveal | added in P0 live mission | high if PASS | Extend after richer Practice fixture |
 | `scripts/browser_practice_best_move_feedback_success_smoke.mjs` | browser smoke | Practice feedback trust | Exact best move through real board is success, no contradictory problem copy, attempt saved as best with due_at, legacy Bxf7+ API probe, no feedback classification side effects | Rich chess explanation quality and future LLM wording | PASS | high | Keep evidence pack for regression review |
+| `scripts/browser_review_correction_no_contradiction_smoke.mjs` | browser smoke | Review Correction feedback trust | Legacy Review/Lesson Correction payload with displayed move equal to best move shows success/accepted feedback and suppresses `Ton coup - Probleme`, `Opportunite manquee`, and missed-best reproach copy | Real user DB payload variety and future LLM commentary quality | PASS | high | Keep paired with F002/GF-005b anti-regression checks |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |

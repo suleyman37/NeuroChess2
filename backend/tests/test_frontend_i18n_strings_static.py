@@ -122,11 +122,11 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
         self.assertIn("const feedbackWantsCorrection", self.practice_panel)
         self.assertIn("state.feedback?.show_best_move", self.practice_panel)
         self.assertNotIn("state.feedback ||", self.practice_panel)
-        self.assertIn("const tryMoveAccepted", self.lesson_panel)
-        self.assertIn('tryFeedbackResult === "best"', self.lesson_panel)
-        self.assertIn('tryFeedbackResult === "very_good"', self.lesson_panel)
-        self.assertIn('tryFeedbackResult === "acceptable"', self.lesson_panel)
-        self.assertIn("{!tryMoveAccepted && !tryMoveNeedsRebuild && (", self.lesson_panel)
+        self.assertIn("buildReviewCorrectionFeedbackView", self.lesson_panel)
+        self.assertIn("correctionMoveAccepted", self.lesson_panel)
+        self.assertIn("{correctionFeedback.showMissedBest && (", self.lesson_panel)
+        self.assertIn("fr.feedback.bestMoveSuccess(displayedPlayedMove)", self.lesson_panel)
+        self.assertIn("correctionFeedback.categoryIsNegative", self.lesson_panel)
 
     def test_main_nav_and_training_catalog_contract(self) -> None:
         for usage in ("fr.nav.today", "fr.nav.games", "fr.nav.training"):

@@ -65,6 +65,21 @@ requests. They define the minimum evidence future missions should preserve.
 - Relevant docs/tests: `docs/API_CONTRACTS.md`,
   `backend/tests/test_try_move_model.py`.
 
+### GF-005b Review Correction No Contradiction
+
+- Purpose: preserve the same best/accepted-move trust invariant in the
+  Review/Lesson Correction tab, including legacy Review payloads.
+- User-visible success criteria: if the displayed move equals the displayed best
+  or accepted move, Correction shows success/accepted feedback.
+- Forbidden regression: `Ton coup - Probleme`, `Opportunite manquee`, or
+  `Le meilleur coup etait X` as a reproach when X was played.
+- Suggested automated smoke:
+  `scripts/browser_review_correction_no_contradiction_smoke.mjs`.
+- Suggested evidence: Correction-tab screenshot, DOM absence checks for the
+  negative labels, and the intercepted/seeded Review payload used by the smoke.
+- Relevant docs/tests: `docs/API_CONTRACTS.md`,
+  `backend/tests/test_frontend_lesson_flow_static.py`.
+
 ## GF-006 accepted_moves_json Feedback
 
 - Purpose: accepted alternatives must not be punished.

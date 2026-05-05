@@ -100,6 +100,10 @@ Date: 2026-05-05
   board move is saved as `best`, shows success feedback, does not show
   `Ton coup - Probleme` / `Le meilleur coup etait` contradiction, and does not
   create review jobs, review moments, or training items during classification.
+- [x] Browser Review Correction no-contradiction smoke validates that a legacy
+  Correction payload with displayed move `Nxe4` equal to best move `Nxe4`
+  renders success/accepted feedback and does not show `Ton coup - Probleme`,
+  `Opportunite manquee`, or `Le meilleur coup etait` as missed-best reproach.
 - [x] French V1 strings catalog exists at `frontend/src/i18n/fr.ts`.
 - [x] Static i18n tests validate critical nav, Training, feedback, degraded,
   analysis, live-analysis, Profile/Privacy and forbidden-label contracts.

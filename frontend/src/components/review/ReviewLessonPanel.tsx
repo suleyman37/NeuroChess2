@@ -9,6 +9,7 @@ import {
 } from "./reviewLabels";
 import { CoachExplanationBlock, ReviewLineComparison } from "./ReviewLineComparison";
 import {
+  buildReviewCorrectionFeedbackView,
   buildLessonStepState,
   coachTextForPov,
   coachTone,
@@ -87,9 +88,6 @@ function ReviewCoachMomentCard({
   const contrastCoach = annotation.contrast_coach_explanation;
   const hasContrastCoach = Boolean(contrastCoach?.available);
   const tone = coachTone(annotation, explanation?.error_type);
-  const tags = annotation.tag_labels?.length
-    ? annotation.tag_labels
-    : annotation.tags;
   const moveTitle = `Coup ${annotation.move_number} — ${reviewColorLabel(
     annotation.color,
   )} au trait`;
@@ -108,17 +106,16 @@ function ReviewCoachMomentCard({
     tryActiveForAnnotation && tryMoveState?.attemptedUci
       ? tryMoveState.attemptedSan ?? tryMoveState.attemptedUci
       : playedMove;
-  const tryFeedbackResult =
-    tryActiveForAnnotation && tryMoveState?.feedback
-      ? String(tryMoveState.feedback.result ?? "")
-      : null;
-  const tryMoveAccepted =
-    tryFeedbackResult === "best" ||
-    tryFeedbackResult === "very_good" ||
-    tryFeedbackResult === "acceptable";
-  const tryMoveNeedsRebuild = tryFeedbackResult === "needs_rebuild";
   const solutionMove =
     annotation.best_move_san ?? annotation.best_move_uci ?? fr.feedback.solutionUnavailable;
+  const correctionFeedback = buildReviewCorrectionFeedbackView(
+    annotation,
+    displayedPlayedMove,
+    tryMoveState,
+  );
+  const correctionMoveAccepted = correctionFeedback.accepted;
+  const tryMoveNeedsRebuild = correctionFeedback.needsRebuild;
+  const visibleTags = correctionFeedback.visibleTagLabels;
   const lessonType = lessonTypeLabel(explanation?.error_type);
   const impactLabel = annotation.impact_label ?? impactLabelFromLoss(annotation.win_loss);
   const qualityLabel =
@@ -138,24 +135,31 @@ function ReviewCoachMomentCard({
     coachTextForPov(contrastCoach?.why_solution_is_better, povContext, annotation) ??
     publicMainDifferenceText(contrastCoach, explanation) ??
     "La solution garde davantage l'initiative et limite le contre-jeu.";
-  const correctionMain = tryMoveAccepted
+  const correctionMain = correctionMoveAccepted
     ? fr.feedback.acceptedMain
     : tryMoveNeedsRebuild
       ? fr.feedback.rebuildMain
       : fr.feedback.wrongMain;
   const playedMoveLabel = isUserLanguage ? fr.feedback.yourMove : fr.feedback.playedMove;
-  const correctionPlayedLabel = tryMoveAccepted
+  const correctionPlayedLabel = correctionMoveAccepted
     ? `${playedMoveLabel} · ${fr.feedback.acceptedIdea}`
     : tryMoveNeedsRebuild
       ? `${playedMoveLabel} · ${fr.feedback.needsReview}`
       : `${playedMoveLabel} · ${fr.feedback.problem}`;
-  const correctionPlayedText = tryMoveAccepted || tryMoveNeedsRebuild
-    ? coachTextForPov(
-        tryMoveState?.feedback?.message,
-        povContext,
-        annotation,
-      ) ?? correctionProblem
-    : correctionProblem;
+  const activeTryFeedbackMessage = tryActiveForAnnotation
+    ? tryMoveState?.feedback?.message
+    : null;
+  const acceptedCorrectionText =
+    coachTextForPov(
+      activeTryFeedbackMessage,
+      povContext,
+      annotation,
+    ) ?? fr.feedback.bestMoveSuccess(displayedPlayedMove);
+  const correctionPlayedText = correctionMoveAccepted
+    ? acceptedCorrectionText
+    : tryMoveNeedsRebuild
+      ? fr.feedback.rebuildBeforeCorrection
+      : correctionProblem;
   const trainingTakeaway =
     coachTextForPov(explanation?.training_takeaway, povContext, annotation) ??
     "Dans une position tactique, cherche d'abord les coups forcing.";
@@ -228,9 +232,11 @@ function ReviewCoachMomentCard({
 
       <div className="review-coach-badges">
         <span className={`review-coach-badge review-coach-badge-${tone}`}>
-          {annotation.category_label}
+          {correctionFeedback.categoryIsNegative
+            ? fr.feedback.acceptedIdea
+            : correctionFeedback.categoryLabel}
         </span>
-        {tags.slice(0, 2).map((tag) => (
+        {visibleTags.slice(0, 2).map((tag) => (
           <span className="review-tag" key={tag}>
             {tag}
           </span>
@@ -322,7 +328,7 @@ function ReviewCoachMomentCard({
               <strong>{displayedPlayedMove}</strong>
               <p>{correctionPlayedText}</p>
             </article>
-            {!tryMoveAccepted && !tryMoveNeedsRebuild && (
+            {correctionFeedback.showMissedBest && (
               <article>
                 <span>{fr.feedback.bestIdea}</span>
                 <strong>{fr.feedback.bestMoveMissed(solutionMove)}</strong>

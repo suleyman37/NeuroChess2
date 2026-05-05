@@ -34,6 +34,23 @@ Each item should be consulted before related missions.
   practice_attempt `result=best`, no contradictory DOM labels.
 - Owner/status: Codex / fixed, keep under regression watch.
 
+### F002a - Review Correction Best Move Marked As Problem
+
+- Symptom: in Review/Lesson Correction, the displayed user move `Nxe4` was also
+  shown as the best move, while the UI still rendered `Ton coup - Probleme`,
+  `Opportunite manquee`, and a missed-best reproach.
+- Risk: reopens the same trust failure outside the Practice smoke path.
+- Fixed by: pending commit `Fix Review correction feedback contradiction`.
+- Anti-regression rule: Correction must not render `Ton coup - Probleme` when
+  the displayed move equals the best or accepted move; Correction must not
+  render `Opportunite manquee` for best/accepted moves; Correction must not say
+  `Le meilleur coup etait X` as a reproach when X was played.
+- Required tests/smokes:
+  `scripts/browser_review_correction_no_contradiction_smoke.mjs`.
+- Evidence required: Correction-tab DOM assertions and screenshots proving
+  success/accepted feedback for the exact displayed best move.
+- Owner/status: Codex / fixed locally, commit pending.
+
 ## F003 - Live Analysis Spoiler Risk In Practice
 
 - Symptom: live analysis could reveal best move, PV, or eval during an active
