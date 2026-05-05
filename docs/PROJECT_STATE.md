@@ -16,6 +16,14 @@ et les fichiers frontend/backend inspectes.
   prochaines versions.
 - V6 : non demarree.
 
+## Mise a jour Mission Control du 2026-05-05
+
+- `docs/mission_control/` existe comme couche de gouvernance operationnelle.
+- Elle documente le protocole Codex, les Golden Flows V1, le Failure Ledger des
+  bugs critiques, le contrat de preuves visuelles/runtime, et le Release Radar.
+- Cette couche ne remplace pas `plan/Plan1.txt`, `plan/Plan2.txt`, ni
+  `plan/Plan3.md`; elle rend les futures missions plus verificables.
+
 ## Mise a jour QA du 2026-05-04
 
 - `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` est implemente.

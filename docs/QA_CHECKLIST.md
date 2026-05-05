@@ -3,6 +3,14 @@
 Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1`
 Date: 2026-05-05
 
+## Mission Control
+
+- [x] Mission Control docs created under `docs/mission_control/`.
+- [x] Golden Flows, Failure Ledger, Visual Evidence Contract, Release Radar, and
+  reusable Codex mission protocol are now documented for future missions.
+- [x] Mission Control does not replace Plan1/Plan2/Plan3; it is an operational
+  checklist layer for safer QA/release work.
+
 ## Baseline
 
 - [x] Read AGENTS and Plan governance docs.

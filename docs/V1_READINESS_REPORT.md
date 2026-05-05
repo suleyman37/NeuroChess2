@@ -3,6 +3,11 @@
 Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1`
 Date: 2026-05-05
 
+Mission Control note: `docs/mission_control/` now records Golden Flows,
+trust-critical Failure Ledger entries, evidence-pack rules, release posture,
+and the reusable Codex mission protocol. It is a governance overlay only and
+does not replace Plan1/Plan2/Plan3.
+
 ## 1. Resume executif
 
 - Alpha utilisable estimee: 96%.

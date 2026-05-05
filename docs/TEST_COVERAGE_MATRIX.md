@@ -6,6 +6,11 @@ Date: 2026-05-05
 This matrix lists available automated tests, scripts, and smoke checks. It does
 not count static tests as browser or end-to-end proof.
 
+Mission Control reference: Golden Flow and anti-regression expectations are
+centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
+`docs/mission_control/FAILURE_LEDGER.md`. Evidence-pack rules live in
+`docs/mission_control/VISUAL_EVIDENCE_CONTRACT.md`.
+
 ## Latest Run Summary
 
 - `tools/plan_guard.py`: PASS.

@@ -314,6 +314,29 @@ tool_timeout_sec = 180
 
 ## P1
 
+### P1. MISSION-CONTROL-GOLDEN-FLOWS-AND-FAILURE-LEDGER-V1
+
+- ID: `MISSION-CONTROL-GOLDEN-FLOWS-AND-FAILURE-LEDGER-V1`
+- Priorite: P1
+- Titre: Create Mission Control governance docs for Golden Flows and known
+  trust-critical failures
+- Etat: implemented on 2026-05-05 as a docs-only governance layer under
+  `docs/mission_control/`.
+- Justification Plan3: future Codex missions need a stable protocol, Golden
+  Flow anti-regression list, visual evidence contract, Failure Ledger, and
+  Release Radar to avoid false confidence after runtime/browser fixes.
+- Fichiers touches: `docs/mission_control/MISSION_PROTOCOL.md`,
+  `docs/mission_control/GOLDEN_FLOWS.md`,
+  `docs/mission_control/FAILURE_LEDGER.md`,
+  `docs/mission_control/VISUAL_EVIDENCE_CONTRACT.md`,
+  `docs/mission_control/RELEASE_RADAR.md`, plus narrow references in QA docs.
+- Taille: S
+- Risques: treating Mission Control as product truth. It is only an operational
+  checklist layer; Plan1/Plan2/Plan3 remain authoritative.
+- Definition du done: docs created, references added, plan guard passes, no
+  product code touched, no stage/commit/push unless separately authorized.
+- Tests a lancer: plan guard, `git diff --check`.
+
 ### P1. APP-SHELL-PLAN2-1
 
 - ID: `APP-SHELL-PLAN2-1`
