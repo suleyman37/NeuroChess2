@@ -17,22 +17,23 @@ not override Plan1, Plan2, or Plan3.
 
 ## Current P0 Status
 
-- No known open P0 after `f308568`.
-- Real-user manual validation remains recommended because browser smokes use
+- No known open P0 after `1f45b8a`.
+- Automated QA RC rerun is GO for controlled local testers.
+- Real-user manual validation remains required because browser smokes use
   controlled temp environments and fixtures.
 
 ## Current External User Posture
 
-- Controlled local testers: possible after QA release gate and manual pilot
-  checklist.
-- Public or broad external users: NO-GO until release candidate evidence and
-  manual pilot checklist are complete.
+- Controlled local testers: GO after the automated QA RC rerun, using
+  `docs/pilot/`.
+- Public or broad external users: NO-GO until controlled tester feedback and
+  the manual pilot checklist are complete.
 
 ## Recommended Next Missions
 
-1. `P1.I18N-STRINGS-CATALOG-V1`
-2. `P1.QA-RELEASE-CANDIDATE-V1`
-3. `P1.SKILLTRACE-BETA-SHADOW-V1` only after QA/i18n readiness
+1. `P1.CONTROLLED-LOCAL-TESTER-PILOT-V1`
+2. `P1.PILOT-FEEDBACK-TRIAGE-V1`
+3. `P1.SKILLTRACE-BETA-SHADOW-V1` only after pilot feedback triage
 4. `P1.PROGRESSION-COMPACT-POLISH-V1`
 5. `P1.APP-STRUCTURE-SAFE-EXTRACTION-V1`
 

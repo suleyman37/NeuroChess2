@@ -8,6 +8,13 @@ trust-critical Failure Ledger entries, evidence-pack rules, release posture,
 and the reusable Codex mission protocol. It is a governance overlay only and
 does not replace Plan1/Plan2/Plan3.
 
+Controlled local tester pilot note: the automated QA Release Candidate rerun
+after `1f45b8a` passed the backend suite, frontend build/typecheck, required
+Python smokes, required browser smokes, Golden Flows GF-001 to GF-012, and
+Failure Ledger F001 to F005. NeuroChess V1 is GO for 2-3 controlled local
+testers using `docs/pilot/`. Public or broad external release remains NO-GO
+until manual pilot feedback is complete.
+
 ## 1. Resume executif
 
 - Alpha utilisable estimee: 96%.

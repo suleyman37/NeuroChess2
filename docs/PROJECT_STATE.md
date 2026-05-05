@@ -40,6 +40,17 @@ et les fichiers frontend/backend inspectes.
   runtime language switch.
 - Prochaine mission recommandee: `P1.QA-RELEASE-CANDIDATE-V1`.
 
+## Mise a jour QA RC / Pilot local controle du 2026-05-05
+
+- `P1.QA-RELEASE-CANDIDATE-V1-RERUN` est GO pour testeurs locaux controles:
+  backend full suite, frontend build/typecheck, Python smokes, browser smokes,
+  Golden Flows GF-001 a GF-012 et Failure Ledger F001 a F005 sont PASS.
+- `P1.CONTROLLED-LOCAL-TESTER-PILOT-PACK-V1` ajoute `docs/pilot/` avec le
+  cadrage pilote, le script testeur, la checklist facilitateur, le template de
+  bug, le formulaire de feedback, les limites/safety et les criteres GO/NO-GO.
+- Statut externe: 2-3 testeurs locaux controles GO; public/broad external users
+  restent NO-GO jusqu'au retour pilote manuel.
+
 ## Mise a jour QA du 2026-05-04
 
 - `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` est implemente.

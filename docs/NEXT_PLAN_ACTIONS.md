@@ -314,6 +314,24 @@ tool_timeout_sec = 180
 
 ## P1
 
+### P1. CONTROLLED-LOCAL-TESTER-PILOT-PACK-V1
+
+- ID: `CONTROLLED-LOCAL-TESTER-PILOT-PACK-V1`
+- Priorite: P1
+- Titre: Prepare the controlled local tester pilot pack after QA RC GO
+- Etat: prepared on 2026-05-05 by
+  `P1.CONTROLLED-LOCAL-TESTER-PILOT-PACK-V1`.
+- Justification Plan1/Plan2/Plan3: automated RC evidence is necessary but not
+  sufficient for external confidence; Plan3 release governance requires
+  controlled manual validation before broad users.
+- Fichiers touches: `docs/pilot/` plus narrow references in release/readiness
+  docs.
+- Definition du done: 2-3 tester pilot scope, tester script, facilitator
+  checklist, bug template, feedback form, safety limits, and pilot GO/NO-GO
+  criteria are documented.
+- Prochaine action recommandee: run the controlled local tester pilot and
+  collect P0/P1 feedback before adding new V2/V3 features.
+
 ### P1. MISSION-CONTROL-GOLDEN-FLOWS-AND-FAILURE-LEDGER-V1
 
 - ID: `MISSION-CONTROL-GOLDEN-FLOWS-AND-FAILURE-LEDGER-V1`

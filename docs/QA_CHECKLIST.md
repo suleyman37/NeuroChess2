@@ -10,6 +10,9 @@ Date: 2026-05-05
   reusable Codex mission protocol are now documented for future missions.
 - [x] Mission Control does not replace Plan1/Plan2/Plan3; it is an operational
   checklist layer for safer QA/release work.
+- [x] Controlled local tester pilot checklist exists at
+  `docs/pilot/PILOT_CHECKLIST_V1.md`.
+- [x] Pilot bug report and feedback forms exist under `docs/pilot/`.
 
 ## Baseline
 
