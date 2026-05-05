@@ -135,3 +135,19 @@ Date: 2026-05-05
   release hardening, and deeper accessibility/manual device checks are handled.
   Mobile/responsive and keyboard basics are now browser-smoked, but this is not
   a full accessibility certification.
+
+## P0 Review Analysis Lifecycle / Live Analysis Checklist
+
+- [ ] UI-started Review analysis reaches terminal/recoverable state under a hard
+  deadline.
+- [ ] Frontend polling stops on completed, warning/partial, stalled, failed,
+  cancelled, or incomplete states.
+- [ ] Stale `queued`, `running`, and `finalizing` jobs become retryable/recoverable.
+- [ ] No duplicated `Vous pouvez reprendre l'analyse.` copy.
+- [ ] Live analysis appears by default on Review board.
+- [ ] Live analysis updates when local Review exploration changes the board FEN.
+- [ ] Live analysis pauses during standard/deep Review analysis.
+- [ ] Live analysis is hidden/paused before an active Practice attempt/reveal.
+- [ ] Live analysis does not create Practice attempts, training items, due dates,
+  or learning summary changes.
+- [ ] New browser smokes PASS and write evidence JSON.

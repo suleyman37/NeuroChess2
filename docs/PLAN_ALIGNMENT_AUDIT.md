@@ -46,3 +46,16 @@ state. Plan3 governs execution order, not a one-shot roadmap refactor.
 | domain scores | Future calibrated only | Brain/domain visual UI removed; docs mention future | docs, removed frontend visual model | aligned | Do not show numeric domain /100 in V1 | RESEARCH |
 | app shell/navigation | Aujourd'hui/Mes parties/Entrainement, Review contextual | Main nav has Aujourd'hui/Mes parties/Entrainement; Review is contextual with return-to-source, and V5.5-2 reduces board dominance outside Mes parties/Review | `frontend/src/App.tsx`, `frontend/src/styles.css`, `ReviewFocusTabs.tsx` | partial | Next stabilize Training data and degraded states, then extract only if safe | P1 |
 | debug/internal metrics exposure | Internal metrics folded/debug only | API/types/folded debug remain; plan guard blocks Summary/UI leaks | `frontend/src/api/client.ts`, `ReviewTechnicalDetails.tsx`, `tools/plan_guard.py` | partial | Keep debug isolated and folded | P0 |
+
+## P0 Review Analysis Lifecycle / Live Analysis Alignment
+
+- Plan1 alignment: live analysis is lightweight board assistance only. It does
+  not change formulas, NeuroScore, Practice scheduling, training item creation,
+  or durable Review metrics.
+- Plan2 alignment: live analysis is contextual to the Review board/exploration,
+  not a new main nav tab or product mode. Practice challenge hides live eval to
+  preserve attempt-before-reveal.
+- Plan3 alignment: mission is bounded to Review lifecycle/live analysis, tests,
+  browser smokes, and docs. No broad refactor or full plan implementation.
+- Forbidden V1 surfaces remain absent: no Candidate Trainer, LLM coach, Intent
+  Layer, Transfer Gap, ETV, FSRS, NeuroMonitor, brain/cortex/atlas/Cognitive Map.

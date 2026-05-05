@@ -2121,7 +2121,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("restorePersistedAppState", app_source)
         self.assertIn("activeReviewJobId", app_source)
         self.assertIn("liveSuspendedForReview", app_source)
-        self.assertIn("Live suspendu pendant la Review", app_source)
+        self.assertIn("Analyse live en pause pendant la Review", app_source)
         self.assertIn("ForceReanalysisPicker", review_panel_source)
         self.assertIn("Standard recommandée", review_panel_source)
         self.assertIn("Approfondie", review_panel_source)
@@ -2843,14 +2843,22 @@ class CalibrationLogicTests(unittest.TestCase):
         normalized = app_source.replace("\r\n", "\n")
 
         self.assertIn(
-            'const liveSuspendedForReview = activeTab === "review" || reviewJobRunning;',
+            "const liveSuspendedForReview = reviewJobRunning;",
             normalized,
         )
         self.assertIn(
-            'if (liveSuspendedForReview || positionMode === "REVIEW")',
+            "if (liveSuspendedForReview || liveSuspendedForPractice)",
             normalized,
         )
-        self.assertIn('setLiveInfoStatus("Live suspendu pendant la Review")', normalized)
+        self.assertIn(
+            'setLiveInfoStatus("Analyse live en pause pendant la Review")',
+            normalized,
+        )
+        self.assertIn(
+            "setLiveInfoStatus(\"Analyse live en pause pendant l'exercice\")",
+            normalized,
+        )
+        self.assertNotIn('liveSuspendedForReview = activeTab === "review"', normalized)
         self.assertIn("activeReviewJobId", normalized)
         self.assertIn("getReviewJob(saved.activeReviewJobId)", normalized)
 

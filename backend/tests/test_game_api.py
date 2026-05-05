@@ -137,6 +137,39 @@ class ApiFakeLiveAnalysisService:
         self.stopped_sessions.append(session_id)
         return {"session_id": session_id, "status": "stopped"}
 
+    def wait_for_latest(
+        self,
+        session_id: str,
+        timeout_seconds: float = 0.35,
+    ) -> dict[str, Any] | None:
+        session = next(
+            (
+                item
+                for item in self.started
+                if item["session_id"] == session_id
+            ),
+            None,
+        )
+        if session is None:
+            return None
+        return {
+            "type": "analysis_update",
+            "session_id": session_id,
+            "fen": session["fen"],
+            "context": session["context"] or "live",
+            "analysis_kind": "live",
+            "evaluation_display": {
+                "white_percent": 53.9,
+                "black_percent": 46.1,
+                "label": "+0.42",
+                "is_mate": False,
+            },
+            "evaluation_source": {
+                "kind": "live",
+                "analysis_profile": "live_continuous",
+            },
+        }
+
     def stream_session(self, session_id: str) -> list[str]:
         _ = session_id
         return []
@@ -398,6 +431,11 @@ class GameApiTests(unittest.TestCase):
         self.assertEqual(start_payload["status"], "started")
         self.assertEqual(start_payload["context"], "historical")
         self.assertEqual(start_payload["fen"], "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        self.assertEqual(start_payload["latest_payload"]["analysis_kind"], "live")
+        self.assertEqual(
+            start_payload["latest_payload"]["evaluation_source"]["kind"],
+            "live",
+        )
 
         stop_response = self.client.post(
             "/live-analysis/stop",
@@ -406,6 +444,44 @@ class GameApiTests(unittest.TestCase):
 
         self.assertEqual(stop_response.status_code, 200)
         self.assertEqual(stop_response.json()["status"], "stopped")
+
+    def test_live_analysis_start_does_not_create_review_or_training_rows(self) -> None:
+        game_id = self._create_game()
+
+        response = self.client.post(
+            "/live-analysis/start",
+            json={
+                "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                "game_id": game_id,
+                "ply": 0,
+                "context": "review",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], "started")
+        self.assertEqual(payload["context"], "review")
+        self.assertEqual(payload["session_id"], "fake-live-1")
+        self.assertEqual(payload["latest_payload"]["analysis_kind"], "live")
+        self.assertEqual(self.live_analysis_service.started[0]["context"], "review")
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            counts = {
+                table: connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                for table in (
+                    "review_jobs",
+                    "game_reviews",
+                    "review_moments",
+                    "training_items",
+                    "review_practice_attempts",
+                )
+            }
+
+        self.assertEqual(counts["review_jobs"], 0)
+        self.assertEqual(counts["game_reviews"], 0)
+        self.assertEqual(counts["review_moments"], 0)
+        self.assertEqual(counts["training_items"], 0)
+        self.assertEqual(counts["review_practice_attempts"], 0)
 
     def test_post_move_does_not_depend_on_deep_result(self) -> None:
         game_id = self._create_game()

@@ -252,6 +252,41 @@ class ReviewJobServiceTests(unittest.TestCase):
         self.assertTrue(payload["can_reconcile"])
         self.assertIsNone(payload["derived_reconcile_reason"])
 
+    def test_get_review_job_status_materializes_stale_queued_job_as_recoverable(self) -> None:
+        game_id, _positions = self._create_finished_game()
+        job = self.job_service.start_job(game_id, profile="standard")
+        stale = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat(
+            timespec="seconds"
+        )
+
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            connection.execute(
+                """
+                UPDATE review_jobs
+                SET status = 'queued',
+                    heartbeat_at = ?,
+                    updated_at = ?,
+                    current_phase = 'queued'
+                WHERE job_id = ?
+                """,
+                (stale, stale, job["job_id"]),
+            )
+            connection.commit()
+
+        before = self._job_snapshot(job["job_id"])
+        payload = self.job_service.get_job(job["job_id"])
+        after = self._job_snapshot(job["job_id"])
+
+        self.assertEqual(before["status"], "queued")
+        self.assertEqual(after["status"], "stalled")
+        self.assertEqual(payload["status"], "stalled")
+        self.assertTrue(payload["retryable"])
+        self.assertEqual(payload["current_phase"], "stalled")
+        self.assertEqual(payload["stalled_reason"], "heartbeat_timeout")
+        self.assertTrue(payload["derived_is_stale"])
+        self.assertFalse(payload["derived_needs_reconcile"])
+        self.assertTrue(payload["can_reconcile"])
+
     def test_post_reconcile_mutates_stale_job(self) -> None:
         game_id, _positions = self._create_finished_game()
         job = self.job_service.start_job(game_id, profile="standard")

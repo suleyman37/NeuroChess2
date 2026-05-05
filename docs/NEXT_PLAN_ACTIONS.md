@@ -597,3 +597,27 @@ tool_timeout_sec = 180
 - Definition du done: remains research-only; no frontend dependency or normal UI
   entry.
 - Tests a lancer: `python tools/plan_guard.py`.
+
+## Hotfix ajoute - P0 REVIEW ANALYSIS LIVE
+
+### P0. REVIEW-ANALYSIS-INFINITE-TIMER-AND-LIVE-ANALYSIS-V1
+
+- ID: `REVIEW-ANALYSIS-INFINITE-TIMER-AND-LIVE-ANALYSIS-V1`
+- Priorite: P0
+- Etat: implementation candidate 2026-05-05, commit seulement si validations
+  PASS.
+- Titre: Fix Review analysis no-infinite-timer and activate safe live board
+  analysis.
+- Justification: le retour utilisateur reel prime sur les smokes optimistes.
+  Review analysis ne doit jamais rester en spinner/timer indefini; l'analyse
+  live doit aider sur board Review/exploration sans spoiler Practice.
+- Fichiers probables: `backend/neurochess/review_job_service.py`,
+  `backend/neurochess/live_analysis_service.py`, `frontend/src/App.tsx`,
+  browser smokes, docs lifecycle/contracts.
+- Definition du done: UI-started Review job reaches terminal/recoverable state;
+  live analysis visible in Review/exploration; live paused during Review job;
+  live hidden before Practice attempt/reveal; backend tests and browser smokes
+  pass.
+- Tests a lancer: full backend suite, frontend build/typecheck, existing smokes,
+  and the four new browser smokes.
+- Prochaine mission recommandee apres PASS: `P1.I18N-STRINGS-CATALOG-V1`.

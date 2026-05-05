@@ -35,15 +35,37 @@ Plan1, Plan2, and Plan3 remain authoritative.
 ### `GET /review/jobs/{job_id}`
 
 - Purpose: return the current Review analysis job state for frontend polling.
-- V1 anti-infinite-loop behavior: if a `running` or `finalizing` job is stale
-  according to the watchdog, the service materializes it as retryable
+- V1 anti-infinite-loop behavior: if a `queued`, `running`, or `finalizing` job
+  is stale according to the watchdog, the service materializes it as retryable
   `status = "stalled"` with a calm recovery message instead of continuing to
   present it as active forever.
 - Stalled payloads must include `retryable = true`, `current_phase = "stalled"`,
   `stalled_reason`, `error_message`, and `can_reconcile = true`.
 - This does not modify Stockfish and does not cache timeout output as valid
   analysis.
-- Browser proof: `scripts/browser_real_analysis_no_infinite_loop_smoke.mjs`.
+- Browser proof:
+  - `scripts/browser_real_analysis_no_infinite_loop_smoke.mjs`
+  - `scripts/browser_review_analysis_from_ui_no_infinite_timer_smoke.mjs`
+
+### Live analysis endpoints
+
+- `POST /live-analysis/start`: starts a lightweight live board analysis session
+  for one FEN. In V1 this is allowed for Review/static/exploration board
+  contexts and hidden/paused for active Practice challenges.
+  - Response includes `session_id`, `fen`, `context`, `status`, and may include
+    `latest_payload` with the first live update if it is already available.
+    This avoids a Review-board race where the SSE stream is not connected before
+    the first lightweight update is produced.
+- `POST /live-analysis/stop`: stops one live session.
+- `GET /live-analysis/stream`: emits SSE `analysis_update`,
+  `analysis_stopped`, or `analysis_error` events.
+- Live analysis uses `analysis_kind = "live"` / live profile data and must not
+  create `review_jobs`, `game_reviews`, `review_moments`, `training_items`, or
+  Practice attempts.
+- Live analysis must not affect `due_at`, `learning_summary`, NeuroScore, or
+  durable Review/deep cache semantics.
+- When fake engine mode is active for browser QA, the live analyzer uses a
+  deterministic fake live analyzer; real Stockfish behavior is unchanged.
 
 ## Training Items / Daily Plan V1
 

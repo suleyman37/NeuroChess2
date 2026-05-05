@@ -262,6 +262,7 @@ type OpeningLoadStatus = "idle" | "loading" | "ready" | "not_found" | "error";
 
 const ENGINE_WARMUP_GRACE_MS = 3500;
 const BOARD_EVALUATION_RETRY_DELAYS_MS = [500, 1500, 3000, 5000];
+const REVIEW_JOB_NO_PROGRESS_WATCHDOG_MS = 45_000;
 const EVAL_VISIBILITY_STORAGE_KEY = "neurochess.hideEvaluation";
 const APP_STATE_STORAGE_KEY = "neurochess.appState.v5_3a4d";
 const REVIEW_POV_STORAGE_KEY_PREFIX = "neurochess.reviewPov";
@@ -430,6 +431,8 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   >({});
   const [liveAnalysisSessionId, setLiveAnalysisSessionId] =
     useState<string | null>(null);
+  const [liveAnalysisTargetFen, setLiveAnalysisTargetFen] =
+    useState<string | null>(null);
   const [liveStatus, setLiveStatus] = useState<string | null>(null);
   const [liveInfoStatus, setLiveInfoStatus] = useState<string | null>(null);
   const [engineWarningGraceActive, setEngineWarningGraceActive] =
@@ -516,6 +519,8 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   const reviewJobPollIntervalRef = useRef<number | null>(null);
   const reviewJobPollInFlightRef = useRef(false);
   const reviewJobRunIdRef = useRef(0);
+  const reviewJobLastProgressAtRef = useRef<number | null>(null);
+  const reviewJobLastProgressSignatureRef = useRef<string | null>(null);
   const reviewReconcileInFlightRef = useRef(false);
   const reviewVisibleSpinnerTimerRef = useRef<number | null>(null);
   const reviewVisibleSpinnerTimedOutRef = useRef(false);
@@ -557,7 +562,8 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     reviewJob?.status === "queued" ||
     reviewJob?.status === "running" ||
     reviewJob?.status === "finalizing";
-  const liveSuspendedForReview = activeTab === "review" || reviewJobRunning;
+  const liveSuspendedForReview = reviewJobRunning;
+  const liveSuspendedForPractice = reviewPracticeState?.active === true;
   const reviewUiError = reviewUiState.error ?? reviewError;
   const reviewTabVisible =
     canRequestReview || review !== null || reviewUiBusy || reviewUiError !== null;
@@ -621,6 +627,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     positionEvaluationCache,
     boardEvaluationContext,
     liveAnalysisSessionId,
+    liveAnalysisTargetFen,
     reviewBarPhase,
     reviewReplayMoveMode,
     selectedReviewAnnotation,
@@ -870,17 +877,24 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   }, [currentFen, positionMode, review, selectedReviewIndex, viewedFen]);
 
   useEffect(() => {
-    if (!boardFen || !gameId) {
+    if (!boardFen) {
       stopCurrentBoardEvaluationSession();
       resetBoardEvaluationRetry(null);
       return;
     }
 
-    if (liveSuspendedForReview || positionMode === "REVIEW") {
+    if (liveSuspendedForReview || liveSuspendedForPractice) {
       stopCurrentBoardEvaluationSession();
       resetBoardEvaluationRetry(null);
+      if (evaluationSource?.kind?.includes("live")) {
+        setEvaluation(null);
+        setEvaluationSource(null);
+        setEvaluationFen(null);
+      }
       if (liveSuspendedForReview) {
-        setLiveInfoStatus("Live suspendu pendant la Review");
+        setLiveInfoStatus("Analyse live en pause pendant la Review");
+      } else if (liveSuspendedForPractice) {
+        setLiveInfoStatus("Analyse live en pause pendant l'exercice");
       }
       return;
     }
@@ -888,7 +902,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     const targetKey = boardEvaluationTargetKey(
       boardFen,
       boardEvaluationContext,
-      gameId,
+      gameId ?? 0,
       selectedReviewMomentId,
     );
     if (boardEvaluationRetryTargetRef.current !== targetKey) {
@@ -909,6 +923,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     lastLiveUpdateAtRef.current = 0;
     setLiveStatus(null);
     setLiveInfoStatus(null);
+    setLiveAnalysisTargetFen(boardFen);
 
     let cancelled = false;
     const timeoutId = window.setTimeout(() => {
@@ -931,6 +946,22 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             response.context,
           );
           setLiveAnalysisSessionId(response.session_id);
+          setLiveAnalysisTargetFen(response.fen);
+          const initialUpdate = response.latest_payload;
+          if (initialUpdate?.evaluation_display) {
+            setEvaluation(initialUpdate.evaluation_display);
+            setEvaluationFen(initialUpdate.fen ?? boardFen);
+            if (initialUpdate.evaluation_source) {
+              setEvaluationSource({
+                ...initialUpdate.evaluation_source,
+                kind: liveSourceKindForContext(boardEvaluationContext),
+              });
+            }
+            hasValidLiveUpdateRef.current = true;
+            debugLog("engine_warmup_cleared_by_live");
+            clearTransientEngineStartupState();
+            setLiveStatus(null);
+          }
         })
         .catch(() => {
           if (!cancelled) {
@@ -947,8 +978,10 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     boardEvaluationContext,
     boardFen,
     displayedPositionPly,
+    evaluationSource,
     gameId,
     liveSuspendedForReview,
+    liveSuspendedForPractice,
     boardEvaluationRetryNonce,
     positionMode,
     selectedReviewMomentId,
@@ -1338,6 +1371,8 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       reviewJobPollIntervalRef.current = null;
     }
     reviewJobPollInFlightRef.current = false;
+    reviewJobLastProgressAtRef.current = null;
+    reviewJobLastProgressSignatureRef.current = null;
     debugLog("review_job_poll_cleared", { reason });
   }
 
@@ -1651,6 +1686,8 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     clearReviewJobPolling("replace_review_job_poll");
     const runId = reviewJobRunIdRef.current;
     const intervalMs = job.status === "finalizing" ? 1_800 : 1_200;
+    reviewJobLastProgressAtRef.current = Date.now();
+    reviewJobLastProgressSignatureRef.current = reviewJobProgressSignature(job);
     reviewJobPollIntervalRef.current = window.setInterval(() => {
       void pollReviewJobOnce(job.job_id, runId);
     }, intervalMs);
@@ -1671,6 +1708,27 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         return;
       }
       setReviewJob(nextJob);
+      if (reviewJobIsActive(nextJob)) {
+        const nextSignature = reviewJobProgressSignature(nextJob);
+        if (reviewJobLastProgressSignatureRef.current !== nextSignature) {
+          reviewJobLastProgressSignatureRef.current = nextSignature;
+          reviewJobLastProgressAtRef.current = Date.now();
+        } else if (
+          reviewJobLastProgressAtRef.current !== null &&
+          Date.now() - reviewJobLastProgressAtRef.current >=
+            reviewJobFrontendWatchdogMs(nextJob)
+        ) {
+          const stalledJob = makeFrontendStalledReviewJob(nextJob);
+          setReviewJob(stalledJob);
+          clearReviewJobPolling("review_job_frontend_watchdog");
+          dispatchReviewEvent({
+            type: "request_failed",
+            message: reviewJobUserMessage(stalledJob),
+          });
+          setReviewError(reviewJobUserMessage(stalledJob));
+          return;
+        }
+      }
       if (reviewJobNeedsExplicitReconcile(nextJob)) {
         clearReviewJobPolling("review_job_needs_reconcile");
         dispatchReviewEvent({
@@ -1696,6 +1754,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
           type: "request_failed",
           message: reviewJobUserMessage(nextJob),
         });
+        setReviewError(reviewJobUserMessage(nextJob));
       }
     } catch (_err) {
       if (runId !== reviewJobRunIdRef.current) {
@@ -1715,11 +1774,42 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       const nextReview = await getReview(job.game_id, {
         profile: job.profile,
       });
+      const nextStatus = reviewStatusFromResponse(nextReview);
+      if (
+        nextStatus === "pending" ||
+        nextStatus === "generating" ||
+        nextStatus === "idle"
+      ) {
+        const incompleteJob = makeFrontendIncompleteReviewJob(
+          job,
+          "completed_without_review",
+        );
+        setReview(nextReview);
+        setReviewJob(incompleteJob);
+        dispatchReviewEvent({
+          type: "request_failed",
+          message: reviewJobUserMessage(incompleteJob),
+        });
+        setReviewError(reviewJobUserMessage(incompleteJob));
+        setReviewLoading(false);
+        return;
+      }
       applyReviewResponse(nextReview, Date.now());
+      setReviewJob(null);
       setReviewError(null);
       setReviewLoading(false);
     } catch (_err) {
-      setReviewError("Analyse terminee, mais la review finale est indisponible.");
+      const incompleteJob = makeFrontendIncompleteReviewJob(
+        job,
+        "completed_review_fetch_failed",
+      );
+      setReviewJob(incompleteJob);
+      dispatchReviewEvent({
+        type: "request_failed",
+        message: reviewJobUserMessage(incompleteJob),
+      });
+      setReviewError(reviewJobUserMessage(incompleteJob));
+      setReviewLoading(false);
     }
   }
 
@@ -2581,6 +2671,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     currentLiveSessionFenRef.current = null;
     currentLiveSessionContextRef.current = null;
     setLiveAnalysisSessionId(null);
+    setLiveAnalysisTargetFen(null);
   }
 
   function applyState(state: GameState, resetPosition: boolean) {
@@ -2619,6 +2710,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     currentLiveSessionFenRef.current = nextLiveSessionId ? state.fen : null;
     currentLiveSessionContextRef.current = nextLiveSessionId ? "live" : null;
     setLiveAnalysisSessionId(nextLiveSessionId);
+    setLiveAnalysisTargetFen(nextLiveSessionId ? state.fen : null);
     setWarnings(
       nextHasEvaluation
         ? removeAnalysisUnavailableWarnings(nextWarnings)
@@ -6141,13 +6233,42 @@ function evaluationBarStateForBoardFen(
   positionEvaluationCache: Record<string, PositionEvaluationLookup>,
   context: BoardEvaluationContext,
   liveAnalysisSessionId: string | null,
+  liveAnalysisTargetFen: string | null,
   reviewBarPhase: ReviewBarPhase,
   reviewReplayMoveMode: ReviewReplayMoveMode,
   selectedReviewAnnotation: ReviewMoveAnnotation | null,
   reviewPracticeState: ReviewPracticeState | null,
 ): EvaluationBarState {
+  const liveAllowedMode =
+    mode === "LIVE" || mode === "REVIEW" || mode === "HISTORICAL";
+
+  if (reviewPracticeState?.active) {
+    return {
+      evaluation: null,
+      source: null,
+      placeholder: {
+        label: selectedReviewAnnotation
+          ? `Mode entrainement - ${formatGuidedImpact(selectedReviewAnnotation.win_loss)}`
+          : "Mode entrainement",
+        sourceLabel: "review",
+        sourceTitle: "analyse live masquee pendant l'exercice",
+      },
+      delta: null,
+      deltaOverlay: null,
+    };
+  }
+
   if (
-    mode === "LIVE" &&
+    liveAllowedMode &&
+    boardFen &&
+    (liveAnalysisSessionId || liveAnalysisTargetFen === boardFen) &&
+    !source?.kind?.includes("live")
+  ) {
+    return boardEvaluationPendingPlaceholder(context);
+  }
+
+  if (
+    liveAllowedMode &&
     boardFen &&
     evaluationFen === boardFen &&
     evaluation &&
@@ -6839,6 +6960,73 @@ function reviewJobUserMessage(job: ReviewJobResponse): string {
 
 function reviewJobNeedsExplicitReconcile(job: ReviewJobResponse): boolean {
   return Boolean(job.derived_needs_reconcile && job.can_reconcile);
+}
+
+function reviewJobIsActive(job: ReviewJobResponse): boolean {
+  return (
+    job.status === "queued" ||
+    job.status === "running" ||
+    job.status === "finalizing"
+  );
+}
+
+function reviewJobProgressSignature(job: ReviewJobResponse): string {
+  return [
+    job.status,
+    job.completed_position_count,
+    job.failed_position_count,
+    job.current_fen_index,
+    job.percent,
+    job.current_phase ?? "",
+  ].join(":");
+}
+
+function reviewJobFrontendWatchdogMs(job: ReviewJobResponse): number {
+  const perPositionMs = Number(job.per_position_time_ms ?? 0);
+  return Math.max(
+    REVIEW_JOB_NO_PROGRESS_WATCHDOG_MS,
+    perPositionMs * 3 + 30_000,
+  );
+}
+
+function makeFrontendStalledReviewJob(job: ReviewJobResponse): ReviewJobResponse {
+  return {
+    ...job,
+    status: "stalled",
+    can_cancel: false,
+    retryable: true,
+    error_message:
+      "Analyse interrompue temporairement. Tu peux reprendre l'analyse.",
+    failed_reason: job.failed_reason ?? "frontend_no_progress_watchdog",
+    last_error: job.last_error ?? "frontend_no_progress_watchdog",
+    current_phase: "stalled",
+    stalled_reason: "frontend_no_progress_watchdog",
+    derived_is_stale: true,
+    derived_needs_reconcile: true,
+    can_reconcile: true,
+    derived_reconcile_reason: "frontend_no_progress_watchdog",
+  };
+}
+
+function makeFrontendIncompleteReviewJob(
+  job: ReviewJobResponse,
+  reason: string,
+): ReviewJobResponse {
+  return {
+    ...job,
+    status: "incomplete",
+    can_cancel: false,
+    retryable: true,
+    error_message:
+      "Review incomplète. L'analyse est terminée, mais la Review finale n'est pas disponible.",
+    failed_reason: job.failed_reason ?? reason,
+    last_error: job.last_error ?? reason,
+    current_phase: "incomplete_review",
+    derived_is_stale: false,
+    derived_needs_reconcile: false,
+    can_reconcile: true,
+    derived_reconcile_reason: reason,
+  };
 }
 
 function reviewJobReconcileMessage(job: ReviewJobResponse): string {

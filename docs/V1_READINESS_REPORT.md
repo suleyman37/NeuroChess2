@@ -362,6 +362,9 @@ cmd /c node scripts\browser_keyboard_accessibility_smoke.mjs
 - Mobile/responsive browser check now passes at 390x844, but physical-device QA
   was not run.
 - Invalid-PGN browser check now passes through the degraded-states smoke.
+- Review analysis live mission adds targeted browser proof for UI-started
+  analysis no-infinite-timer, live default, live pause during Review job, and
+  Practice no-spoiler. These must PASS before raising readiness.
 - Lint could not run because no `lint` script exists.
 
 ## 12. Risques critiques
@@ -377,7 +380,8 @@ cmd /c node scripts\browser_keyboard_accessibility_smoke.mjs
 
 ## 13. Prochaine mission recommandee
 
-One next mission: `P1.I18N-STRINGS-CATALOG-V1`.
+One next mission after P0 live-analysis validations pass:
+`P1.I18N-STRINGS-CATALOG-V1`.
 
 Reason: the core browser V1 loop, board interaction, analysis recovery,
 Profile/Privacy, Daily Plan, key degraded states, mobile responsive flow, and

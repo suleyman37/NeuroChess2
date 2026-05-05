@@ -353,3 +353,23 @@ Updated conservative readiness effect: degraded-state coverage improves from
 keyboard/focus browser proof, but External V1 remains NO-GO until i18n
 centralization, SkillTrace shadow, full accessibility certification, physical
 device QA, and release hardening are handled.
+
+## P0 Review Analysis Lifecycle / Live Analysis Addendum
+
+- Mission: `P0.REVIEW-ANALYSIS-INFINITE-TIMER-AND-LIVE-ANALYSIS-V1`.
+- Purpose: guard against the real-runtime Review analysis timer/spinner running
+  indefinitely, and enable safe live analysis for the currently displayed board
+  FEN.
+- Scope: Review job lifecycle, frontend polling watchdog, live analysis
+  default/pause/hide behavior, targeted tests and docs.
+- New evidence candidates:
+  - `scripts/browser_review_analysis_from_ui_no_infinite_timer_smoke.mjs`
+  - `scripts/browser_live_analysis_default_smoke.mjs`
+  - `scripts/browser_live_analysis_pauses_during_review_smoke.mjs`
+  - `scripts/browser_practice_no_live_spoiler_smoke.mjs`
+- Important boundary: live analysis is lightweight and must not create Review
+  jobs, Review moments, training items, Practice attempts, `due_at`, or
+  `learning_summary`.
+- External users remain NO-GO until this P0 mission is committed with full
+  validation PASS and at least one real local runtime spot check if the user
+  still sees the issue.

@@ -1007,3 +1007,35 @@ Cote analyse, `ReviewJobService.get_job()` materialise maintenant un job
 un timeout. Le browser smoke `scripts/browser_real_analysis_no_infinite_loop_smoke.mjs`
 impose un hard deadline de 90s et a observe `queued -> running -> completed`
 avec progression `0/13 -> 12/13 -> 13/13`.
+
+## P0.REVIEW-ANALYSIS-INFINITE-TIMER-AND-LIVE-ANALYSIS-V1
+
+Etat : implementation candidate 2026-05-05, a valider par la suite de tests
+complete avant commit.
+
+Objectif : traiter le retour utilisateur prioritaire selon lequel la minuterie
+/ spinner d'analyse Review peut tourner indefiniment dans l'app reelle, et
+activer l'analyse live par defaut sur la position de board affichee quand cela
+ne casse pas la boucle d'apprentissage.
+
+Changements de contrat :
+- `docs/ANALYSIS_LIFECYCLE_CONTRACT.md` definit les modes
+  `standard_review`, `deep_review` et `live_analysis`.
+- Les jobs Review `queued`, `running` et `finalizing` stale doivent devenir
+  recuperables au lieu de rester actifs indefiniment.
+- Le frontend suit `job_id`, status, phase et progression avec un watchdog de
+  non-progression.
+- L'analyse live est autorisee sur Review board et Exploration locale.
+- L'analyse live est suspendue pendant une analyse Review standard/deep.
+- L'analyse live est masquee pendant une Practice active avant tentative/reveal.
+
+Preuves ajoutees dans cette mission :
+- `scripts/browser_review_analysis_from_ui_no_infinite_timer_smoke.mjs`
+- `scripts/browser_live_analysis_default_smoke.mjs`
+- `scripts/browser_live_analysis_pauses_during_review_smoke.mjs`
+- `scripts/browser_practice_no_live_spoiler_smoke.mjs`
+- `backend/tests/test_frontend_review_analysis_live_static.py`
+
+Risques restants : les smokes utilisent une DB temporaire et le fake engine par
+defaut; ils ne modifient pas la DB utilisateur reelle. Stockfish reel depend
+toujours de la configuration locale.

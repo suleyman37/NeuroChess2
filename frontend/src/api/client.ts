@@ -1093,6 +1093,7 @@ export type StartLiveAnalysisResponse = {
   fen: string;
   context: BoardEvaluationContext | string;
   status: string;
+  latest_payload?: LiveAnalysisUpdate | null;
 };
 
 export type CapabilityProduct = {

@@ -55,3 +55,14 @@ Current P1 coverage:
 - Implemented in UI: import empty/invalid/illegal/duplicate, backend unavailable/request failed copy, daily-plan empty/partial/create failed, practice no-items/save failed/illegal/completed, repeated-wrong anti-tilt, reveal-used copy.
 - Proven before P1: analysis no-infinite-loop and stalled recovery via P0 browser smokes.
 - Deferred intentionally: full offline mode, i18n centralization, mobile redesign, queue UI, advanced engine settings UI, broad toast/modal system.
+
+P0 review analysis/live update:
+- Stale `queued`, `running`, and `finalizing` Review jobs must become
+  recoverable instead of timer-only UI.
+- Frontend polling has a no-progress watchdog and shows a recoverable message
+  instead of spinning indefinitely.
+- `Analyse live en pause pendant la Review` and `analyse live indisponible` are
+  non-blocking board states, not Practice feedback and not durable Review
+  failures.
+- Live analysis must stay hidden/paused during active Practice challenge so the
+  user can attempt before reveal/correction.

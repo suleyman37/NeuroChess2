@@ -809,6 +809,7 @@ def start_live_analysis(
         "fen": request.fen,
         "context": request.context or "live",
         "status": "started",
+        "latest_payload": live_analysis_service.wait_for_latest(session_id),
     }
 
 

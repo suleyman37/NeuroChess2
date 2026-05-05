@@ -37,6 +37,7 @@ export function createEvidence(mission, outputFileName) {
     started_at: new Date().toISOString(),
     stages: {},
     api: {},
+    ui: {},
     browser_errors: {
       console: [],
       page: [],
@@ -70,6 +71,146 @@ export function fixturePgn() {
   const nextGameMatch = text.slice(1).match(/\r?\n\r?\n\[Event /);
   const endIndex = nextGameMatch?.index === undefined ? text.length : nextGameMatch.index + 1;
   return text.slice(0, endIndex).trim() + "\n";
+}
+
+export async function pollReviewJobToTerminal(harness, jobPayload, timeoutMs = 120_000) {
+  const jobId = jobPayload.job_id;
+  if (!jobId || jobPayload.status === "completed") {
+    return jobPayload;
+  }
+  const deadline = Date.now() + timeoutMs;
+  let payload = jobPayload;
+  while (Date.now() < deadline) {
+    payload = await fetchJson(`${harness.backendBaseUrl}/review/jobs/${jobId}`);
+    const status = payload.status ?? payload.review_status;
+    if (status === "completed" || status === "done") {
+      return payload;
+    }
+    if (["failed", "stalled", "cancelled", "incomplete"].includes(String(status))) {
+      throw new Error(`Review job ended with ${status}: ${JSON.stringify(payload)}`);
+    }
+    await delay(750);
+  }
+  throw new Error(`Review job timeout: ${JSON.stringify(payload)}`);
+}
+
+export async function prepareReviewFixture(harness, options = {}) {
+  const importPayload = await fetchJson(`${harness.backendBaseUrl}/games/import-pgn`, {
+    method: "POST",
+    body: JSON.stringify({
+      pgn_text: fixturePgn(),
+      user_alias: "SindarovGM",
+      platform: "lichess",
+    }),
+  });
+  const imported =
+    importPayload.games?.[0] ??
+    importPayload.imported_games?.[0] ??
+    importPayload[0];
+  const gameId = imported?.game_id ?? imported?.id ?? importPayload.imported_game_ids?.[0];
+  if (!gameId) {
+    harness.fail("review_fixture_import", JSON.stringify(importPayload));
+  }
+
+  const reviewJob = await fetchJson(`${harness.backendBaseUrl}/games/${gameId}/review/jobs`, {
+    method: "POST",
+    body: JSON.stringify({ profile: "standard", force_reanalysis: true }),
+  });
+  const completedJob = await pollReviewJobToTerminal(harness, reviewJob);
+  if (options.seedEligibleMoment !== false) {
+    await seedEligibleReviewMoment(harness, gameId);
+  }
+  const review = await fetchJson(`${harness.backendBaseUrl}/games/${gameId}/review?profile=standard`);
+  return { gameId, review, reviewJob: completedJob };
+}
+
+export async function seedEligibleReviewMoment(harness, gameId) {
+  const dbPath = path.join(harness.evidence.temp_db_dir, "neurochess.db");
+  const script = String.raw`
+import json
+import sqlite3
+import sys
+
+db_path = sys.argv[1]
+game_id = int(sys.argv[2])
+start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+played_fen = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1"
+top_moves = [
+    {"uci": "e2e4", "san": "e4", "rank": 1, "eval_cp": 85, "mate_in": None, "pv": ["e2e4", "e7e5", "g1f3"]},
+    {"uci": "d2d4", "san": "d4", "rank": 2, "eval_cp": -120, "mate_in": None, "pv": ["d2d4", "d7d5"]},
+]
+with sqlite3.connect(db_path) as connection:
+    connection.row_factory = sqlite3.Row
+    review = connection.execute(
+        "SELECT id FROM game_reviews WHERE game_id = ? ORDER BY id DESC LIMIT 1",
+        (game_id,),
+    ).fetchone()
+    if review is None:
+        raise SystemExit("missing game_review")
+    review_id = int(review["id"])
+    connection.execute("DELETE FROM review_moments WHERE game_id = ?", (game_id,))
+    connection.execute("DELETE FROM training_items WHERE source_game_id = ?", (game_id,))
+    connection.execute("DELETE FROM daily_plan_items")
+    connection.execute(
+        """
+        INSERT INTO review_moments (
+            review_id, game_id, move_id, ply, played_by, side_to_move_before,
+            fen_before, fen_after, played_uci, played_san, best_move_uci,
+            best_move_san, eval_before_cp, eval_after_cp, mate_before,
+            mate_after, cp_loss, cp_loss_label, importance_score,
+            reliability_score, reliability_label, top_moves_json, review_type,
+            created_at
+        )
+        VALUES (?, ?, NULL, 1, 'white', 'white', ?, ?, 'd2d4', 'd4',
+                'e2e4', 'e4', 85, -120, NULL, NULL, 205, 'large',
+                99.0, 1.0, 'stable', ?, 'player_loss', datetime('now'))
+        """,
+        (review_id, game_id, start_fen, played_fen, json.dumps(top_moves)),
+    )
+`;
+  const result = spawnSync(findPython(), ["-c", script, dbPath, String(gameId)], {
+    cwd: harness.evidence.temp_db_dir,
+    encoding: "utf8",
+    env: process.env,
+  });
+  if (result.status !== 0) {
+    harness.fail("eligible_review_moment_seed", `${result.stdout}\n${result.stderr}`);
+  }
+}
+
+export async function openReviewFromPersistedState(harness, gameId, options = {}) {
+  await harness.startBrowser("/app");
+  await harness.loadApp();
+  await harness.evalPage(
+    ({ gameId: nextGameId, jobId }) => {
+      window.localStorage.setItem(
+        "neurochess.appState.v5_3a4d",
+        JSON.stringify({
+          gameId: nextGameId,
+          activeTab: "review",
+          displayedPositionPly: 0,
+          activeReviewJobId: jobId ?? null,
+          reviewAnalysisProfile: "standard",
+          updatedAt: Date.now(),
+        }),
+      );
+      return { ok: true };
+    },
+    { gameId, jobId: options.jobId ?? null },
+  );
+  await harness.browserClient.send("Page.navigate", {
+    url: `${harness.frontendBaseUrl}/app`,
+  });
+  await harness.waitForPagePredicate("review board restored", () => {
+    const text = document.body?.innerText ?? "";
+    return {
+      ok:
+        Boolean(document.querySelector('[data-testid="review-board"]')) ||
+        text.includes("Review") ||
+        text.includes("Analyse"),
+      text,
+    };
+  }, options.timeoutMs ?? 30_000);
 }
 
 export function findPython() {

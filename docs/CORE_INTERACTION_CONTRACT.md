@@ -101,12 +101,35 @@ authoritative.
 ## Analysis Stall / Recovery Contract
 
 - A failed, incomplete, or stalled Review job must show one clear recovery path.
+- Stale `queued`, `running`, or `finalizing` jobs must become terminal or
+  recoverable; the frontend must not spin forever with only a timer.
+- Frontend polling tracks `job_id`, progress, status, and phase, and has a
+  no-progress watchdog that turns a frozen active job into a recoverable UI
+  state.
 - The retry copy must not be duplicated when the backend message already says:
   `Vous pouvez reprendre l'analyse.`
 - A retryable job must expose a `Reprendre` action.
 - Timeout/failure evidence must not be cached as strict-valid analysis.
 - Retry/recovery should complete if only one controlled timeout/failure was
   injected and the remaining analyses are available.
+
+## Live Analysis Board Contract
+
+- Live analysis is a lightweight analysis of the current displayed board FEN.
+- It is enabled by default on the Review static board and Review local
+  exploration, including Review positions rendered through historical/replay
+  board state.
+- The first live update may be applied from `/live-analysis/start.latest_payload`
+  before the SSE stream emits, so the Review board does not remain on a stale
+  stable snapshot while live analysis is active.
+- It pauses while a standard/deep Review job is active and may show:
+  `Analyse live en pause pendant la Review`.
+- It is hidden/paused during active Practice before attempt/reveal so the user
+  can try before seeing a solution.
+- Live analysis must not create Practice attempts, `due_at`, training items,
+  Review moments, or learning summary updates.
+- Live analysis is not AI play, not an opponent, and not durable Review
+  analysis.
 
 ## Non-Goals
 
@@ -140,6 +163,17 @@ authoritative.
   2026-05-04. Proves a browser-restored Review job reaches terminal/recoverable
   state under a hard 90s deadline; latest evidence observed `queued -> running
   -> completed` and `0/13 -> 12/13 -> 13/13`.
+- `scripts/browser_review_analysis_from_ui_no_infinite_timer_smoke.mjs`: added
+  in P0 live-analysis mission. Proves a UI-started Review analysis reaches a
+  terminal/recoverable state under a hard deadline.
+- `scripts/browser_live_analysis_default_smoke.mjs`: added in P0 live-analysis
+  mission. Proves live analysis appears on Review board and updates after local
+  exploration.
+- `scripts/browser_live_analysis_pauses_during_review_smoke.mjs`: added in P0
+  live-analysis mission. Proves live analysis pauses during Review job.
+- `scripts/browser_practice_no_live_spoiler_smoke.mjs`: added in P0
+  live-analysis mission. Proves Practice hides live eval/best-move spoilers
+  before attempt.
 - Backend contract tests:
   - `backend/tests/test_core_board_practice_contract.py`
   - `backend/tests/test_engine_config.py`

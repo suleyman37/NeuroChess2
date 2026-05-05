@@ -270,7 +270,7 @@ class ReviewJobService:
                 else None
             )
             if (
-                status in {"running", "finalizing"}
+                status in {"queued", "running", "finalizing"}
                 and self._watchdog_action(row, coverage) == "stalled"
             ):
                 reason = self._stalled_reason(row)
@@ -324,7 +324,7 @@ class ReviewJobService:
             settings = _parse_json(row["settings_json"])
             watchdog_action = (
                 self._watchdog_action(row, coverage)
-                if str(row["status"]) in {"running", "finalizing"}
+                if str(row["status"]) in {"queued", "running", "finalizing"}
                 else None
             )
             final_review_exists = (
@@ -703,7 +703,7 @@ class ReviewJobService:
         elif status == "completed" and coverage is not None and not coverage_is_complete(coverage):
             derived_needs_reconcile = True
             derived_reconcile_reason = "completed_without_full_coverage"
-        elif status in {"running", "finalizing"} and coverage is not None:
+        elif status in {"queued", "running", "finalizing"} and coverage is not None:
             action = self._watchdog_action(row, coverage)
             if action == "finalize":
                 derived_needs_reconcile = True
@@ -760,7 +760,7 @@ class ReviewJobService:
                 )
                 return self.get_job(job_id)
 
-            if row["status"] in {"running", "finalizing"}:
+            if row["status"] in {"queued", "running", "finalizing"}:
                 action = self._watchdog_action(row, coverage)
                 if action == "stalled":
                     self._mark_job_stalled(

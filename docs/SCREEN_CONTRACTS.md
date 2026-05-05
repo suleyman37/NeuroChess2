@@ -92,9 +92,13 @@ helps the user.
 ### app.review.running_job
 
 - Question: "L'analyse avance-t-elle correctement ?"
-- Primary action: none, except resume/reconcile when action is required.
+- Primary action: none while progressing; `Reprendre` when the job is stalled or
+  recoverable.
 - Secondary action: cancel.
 - Forbidden: final score, moments, practice.
+- V1 no-infinite-spinner rule: a Review job screen must always show status and
+  progress or a recovery action. Stale queued/running/finalizing jobs must not
+  remain as timer-only UI.
 
 ### app.review.summary
 
@@ -104,6 +108,9 @@ helps the user.
 - Board-side secondary action: `Explorer la position` may start local-only
   exploration from the selected Review FEN. It is not AI play, not Practice, and
   must not save attempts or update learning data.
+- Live analysis may appear as a compact board eval for the displayed Review FEN
+  and local exploration FEN. It pauses during standard/deep Review analysis and
+  is hidden during active Practice challenge.
 - Visible score: coach NeuroScore as the main score, reference precision as a
   secondary line.
 - Forbidden: debug, engine options, score JSON.
