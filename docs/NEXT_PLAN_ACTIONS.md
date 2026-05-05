@@ -125,6 +125,39 @@ python tools/plan_guard.py
   existing browser board/profile/daily/V1 smokes, backend full suite, frontend
   build/typecheck, plan guard, `git diff --check`.
 
+### P0. PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1
+
+- ID: `PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1`
+- Priorite: P0
+- Titre: Prevent contradictory Practice feedback when the user played the best
+  move
+- Etat: implemented on 2026-05-05 in the working tree. The mission centralizes
+  Practice/Review try-move feedback classification in the backend, normalizes
+  user/best/accepted moves to UCI from FEN, and adds a browser smoke for exact
+  best-move success feedback.
+- Justification Plan1/Plan2/Plan3: V1 learning trust requires objective,
+  backend-authoritative feedback. A move equal to the best/accepted move must
+  never be shown as a problem, and legacy incomplete Review data must be
+  rebuildable instead of producing false negative feedback.
+- Fichiers probables: `backend/neurochess/metrics/try_move.py`,
+  `backend/neurochess/review_practice_service.py`,
+  `backend/neurochess/api/game_routes.py`, `frontend/src/App.tsx`,
+  `frontend/src/components/review/ReviewLessonPanel.tsx`,
+  `frontend/src/components/review/ReviewPracticePanel.tsx`,
+  `scripts/browser_practice_best_move_feedback_success_smoke.mjs`,
+  docs and targeted tests.
+- Taille: M
+- Risques: legacy Reviews may still require explicit rebuild if FEN or best move
+  is missing/unparseable; do not silently mutate old reviews.
+- Definition du done: targeted backend/static tests pass, browser smoke proves
+  exact best move success with no contradictory labels, evidence pack is written,
+  no formulas/Stockfish/NeuroScore change, no stage/commit/push unless later
+  explicitly authorized.
+- Tests a lancer: plan guard, targeted backend Practice/try-move/static tests,
+  frontend build/typecheck, `cmd /c node
+  scripts\browser_practice_best_move_feedback_success_smoke.mjs`, impacted
+  Practice browser smokes, `git diff --check`.
+
 ### P0. INTEGRATE-PLAN3-MD
 
 - ID: `INTEGRATE-PLAN3-MD`

@@ -44,7 +44,7 @@ helps the user.
 | app.review.running_job | `/app` review job | Is the analysis progressing correctly? | Monitor review generation. | none or `review.resume_review_job` when stalled | `review.cancel_review_job`, `review.reconcile_job` | none | progress, job state, retryable status | final score, moments, practice | score final, practice, lesson cards | queued job message | progress indicator | stalled/failed with recovery action | 1 | 2 | Level 2 | app.advanced_options |
 | app.review.summary | `/app` review summary | What does this game reveal? | Decide what to learn from the review. | `review.start_practice` | `review.open_key_lesson`, `review.open_explorer` | none | headline synthesis, up to three key moments, one training card, folded score detail | debug, engine settings, raw score JSON, research visuals | debug, options moteur, score JSON, brain/atlas/cortex visuals | no significant moments explanation | review loading/progress if needed | incomplete review message | 1 | 2 | Level 2 | app.review.explorer or app.advanced_options |
 | app.review.learn.challenge | `/app` review learn challenge | Which move should I find? | Try solving the moment. | `lesson.try_move` | `lesson.show_hint`, `lesson.show_correction` | none | type, move title, main prompt, impact | correction, PV, best move | solution, best move, PV, best_branch, debug | no selected lesson message | none | unsupported try falls back to correction CTA | 1 | 2 | Level 2 | none |
-| app.review.learn.correction | `/app` review learn correction | Why is my move a problem? | Understand the correction. | `lesson.continue` | `lesson.show_line`, `lesson.retry` | none | played move, correction, impact, main idea | full PV comparison until requested | debug, best_branch raw JSON, engine settings | no correction data message | none | missing PV hides line action | 1 | 2 | Level 2 | line comparison, explorer |
+| app.review.learn.correction | `/app` review learn correction | What did my move change? | Understand the correction or confirmed success. | `lesson.continue` | `lesson.show_line`, `lesson.retry` | none | played move, correction or accepted-success feedback, impact, main idea | full PV comparison until requested | debug, best_branch raw JSON, engine settings | no correction data message | none | missing PV hides line action | 1 | 2 | Level 2 | line comparison, explorer |
 | app.review.learn.training | `/app` review learn training | How do I turn this lesson into exercise? | Convert lesson into practice. | `practice.start_session` or `lesson.next_moment` if no practice | `lesson.next_moment`, return summary | none | takeaway, next action, training CTA | advanced details | debug, raw metrics | no practice items message | none | training unavailable fallback | 1 | 2 | Level 2 | none |
 | app.review.training | `/app` review training | What should I correct in this game? | Practice review items. | depends on session state: `practice.start_session`, `practice.resume_session`, `practice.retry_failed`, or `practice.redo_all` | `practice.reveal_solution`, `practice.skip_item` during item | `practice.skip_item` | current item, feedback, session summary | PV until reveal/show line | debug, raw score JSON | no eligible positions | saving/loading session | session error with retry/quit | 1 | 2 | Level 2 | summary or explorer |
 | app.review.explorer | `/app` review explorer | I want to inspect the details. | Inspect and open a specific lesson. | `explorer.open_lesson_for_move` | `explorer.replay_line`, `opening.show_linked_moment` | none | sections, moves, opening, PV, folded technical details | destructive/debug options | always-visible debug, normal-flow score JSON | no annotated moves | loading review sections | unavailable evidence message | 1 | 2 | Level 3 | folded explorer details |
@@ -124,10 +124,12 @@ helps the user.
 
 ### app.review.learn.correction
 
-- Question: "Pourquoi mon coup pose problème ?"
+- Question: "Qu'est-ce que mon coup a change ?"
 - Primary action: continue.
 - Secondary actions: show line, retry.
 - Visible: played move, correction, impact, main idea.
+- Exact-best or accepted try-move feedback must not be labelled as a problem and
+  must not say "the best move was X" as a reproach when the user played X.
 
 ### app.review.learn.training
 
@@ -143,6 +145,11 @@ helps the user.
   and drag/drop support where available. Correct, wrong legal, illegal, and
   reveal attempts must persist through the backend and update `due_at` /
   `learning_summary`. See `docs/CORE_INTERACTION_CONTRACT.md`.
+- Feedback trust contract: if backend canonical move classification returns
+  `best`, `very_good`, or `acceptable`, Practice shows success/accepted feedback
+  and does not reveal the solution as missed unless the user explicitly asks for
+  correction. Legacy rebuild-required states must be recoverable, not false
+  wrong feedback.
 - Degraded states: no item, illegal move, attempt-save failure, reveal-used
   reassurance and repeated wrong attempts must use calm copy. Repeated wrong
   attempts may encourage the user to retry or reveal, but must not blame, shame,

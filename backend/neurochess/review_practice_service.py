@@ -319,6 +319,7 @@ class ReviewPracticeService:
         attempted_uci = feedback.get("attempted_uci")
         attempted_san = feedback.get("attempted_san")
         snapshot = _evidence_snapshot(item)
+        snapshot["attempt_classification"] = feedback.get("evidence") or {}
         created_at = _utc_now()
         normalized_hint_used = bool(hint_used)
         normalized_reveal_used = bool(reveal_used) or normalized_result == "revealed"
@@ -326,6 +327,7 @@ class ReviewPracticeService:
         normalized_source_context = _normalize_source_context(
             source_context or item.get("source_context")
         )
+        expected_best_uci = feedback.get("best_move_uci") or item.get("best_move_uci")
         attempt_game_id = int(item.get("game_id") or session["game_id"])
         raw_item_id = item.get("item_id")
         item_id = str(raw_item_id) if raw_item_id else _practice_item_id(attempt_game_id, int(ply))
@@ -370,7 +372,7 @@ class ReviewPracticeService:
                             str(item.get("color") or ""),
                             attempted_uci,
                             attempted_san,
-                            item.get("best_move_uci"),
+                            expected_best_uci,
                             normalized_result,
                             attempt_number,
                             json.dumps(snapshot, ensure_ascii=False, sort_keys=True),
@@ -397,7 +399,7 @@ class ReviewPracticeService:
                     "color": str(item.get("color") or ""),
                     "attempted_uci": attempted_uci,
                     "attempted_san": attempted_san,
-                    "expected_best_uci": item.get("best_move_uci"),
+                    "expected_best_uci": expected_best_uci,
                     "result": normalized_result,
                     "attempt_number": attempt_number,
                     "item_id": item_id,
@@ -740,6 +742,7 @@ def _practice_item_from_annotation(annotation: dict[str, Any]) -> dict[str, Any]
         "best_move_uci": annotation.get("best_move_uci"),
         "best_move_san": annotation.get("best_move_san"),
         "acceptable_moves": annotation.get("acceptable_moves") or [],
+        "accepted_moves_json": annotation.get("accepted_moves_json"),
         "pedagogical_explanation": annotation.get("pedagogical_explanation") or {},
         "contrast_coach_explanation": annotation.get("contrast_coach_explanation") or {},
         "impact_label": annotation.get("impact_label"),
@@ -864,19 +867,47 @@ def _practice_attempt_feedback(
         feedback = dict(evaluate_try_move_attempt(normalized_attempt_uci, item))
     else:
         feedback = _explicit_practice_action_feedback(requested_result)
+    if str(feedback.get("result") or "") == "needs_rebuild":
+        evidence = feedback.get("evidence") if isinstance(feedback.get("evidence"), dict) else {}
+        raise ReviewPracticeServiceError(
+            "review_legacy_rebuild_required",
+            status_code=409,
+            payload={
+                "status": "review_legacy_rebuild_required",
+                "error_code": "REVIEW_LEGACY_REBUILD_REQUIRED",
+                "message": "Cette position vient d'une ancienne Review. Reconstruis la Review avant de corriger cet exercice.",
+                "recoverable": True,
+                "recommended_action": "reanalyze_review",
+                "feedback": feedback,
+                "debug": {
+                    "reason_code": feedback.get("reason_code"),
+                    "ply": item.get("ply"),
+                    "source_context": item.get("source_context"),
+                    "classifier_version": evidence.get("classifier_version"),
+                },
+            },
+        )
     feedback["result"] = _normalize_result(str(feedback.get("result") or ""))
     feedback["attempted_uci"] = normalized_attempt_uci
-    feedback["attempted_san"] = attempted_san
-    feedback["best_move_uci"] = item.get("best_move_uci")
-    feedback["best_move_san"] = item.get("best_move_san")
+    feedback["attempted_san"] = feedback.get("evidence", {}).get("user_move_san") or attempted_san
+    feedback["best_move_uci"] = feedback.get("evidence", {}).get("best_move_uci") or item.get("best_move_uci")
+    feedback["best_move_san"] = feedback.get("evidence", {}).get("best_move_san") or item.get("best_move_san")
     feedback["try_move_model_version"] = (
         item.get("try_move_model_version") or TRY_MOVE_MODEL_VERSION
     )
+    classification_evidence = (
+        dict(feedback.get("evidence"))
+        if isinstance(feedback.get("evidence"), dict)
+        else {}
+    )
     feedback["evidence"] = {
+        **classification_evidence,
         "ply": item.get("ply"),
         "color": item.get("color"),
         "accepted_move_count": len(item.get("acceptable_moves") or []),
         "try_move_model_version": feedback["try_move_model_version"],
+        "source_context": item.get("source_context"),
+        "item_id": item.get("item_id"),
     }
     return feedback
 
@@ -1314,10 +1345,12 @@ def _evidence_snapshot(item: dict[str, Any]) -> dict[str, Any]:
         "ply": item.get("ply"),
         "color": item.get("color"),
         "san": item.get("san"),
+        "uci": item.get("uci"),
         "fen_before": item.get("fen_before"),
         "best_move_uci": item.get("best_move_uci"),
         "best_move_san": item.get("best_move_san"),
         "acceptable_moves": item.get("acceptable_moves") or [],
+        "accepted_moves_json": item.get("accepted_moves_json"),
         "pedagogical_explanation": item.get("pedagogical_explanation") or {},
         "contrast_coach_explanation": item.get("contrast_coach_explanation") or {},
         "primary_category": item.get("primary_category"),

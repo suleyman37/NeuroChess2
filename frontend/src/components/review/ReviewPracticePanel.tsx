@@ -233,10 +233,10 @@ export function ReviewPracticeSessionPanel({
     ? "À toi de jouer : trouve le meilleur coup."
     : `À toi de jouer pour les ${colorLabel.toLowerCase()}.`;
   const canShowPv = reviewAnnotationHasAnyPvLine(itemAnnotation);
+  const feedbackWantsCorrection = Boolean(state.feedback?.show_best_move);
   const showSolution = Boolean(
-    state.feedback ||
+    feedbackWantsCorrection ||
       state.solutionRevealed ||
-      state.itemState === "attempted" ||
       state.itemState === "solution_revealed" ||
       state.itemState === "pv_line",
   );

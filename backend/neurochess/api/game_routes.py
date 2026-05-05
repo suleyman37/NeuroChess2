@@ -18,6 +18,7 @@ from neurochess.api.schemas import (
     PlayMoveRequest,
     ProductCapabilitiesResponse,
     RecordReviewPracticeAttemptRequest,
+    ReviewTryMoveEvaluationRequest,
     StartLiveAnalysisRequest,
     StartReviewPracticeSessionRequest,
     StartReviewJobRequest,
@@ -32,6 +33,7 @@ from neurochess.live_analysis_service import (
     LiveAnalysisService,
     get_default_live_analysis_service,
 )
+from neurochess.metrics.try_move import evaluate_try_move_attempt
 from neurochess.daily_plan_service import DailyPlanService
 from neurochess.opening_service import OpeningService, OpeningServiceError
 from neurochess.pgn_import_service import PgnImportService
@@ -697,6 +699,15 @@ def record_review_practice_attempt(
         if exc.payload is not None:
             return JSONResponse(status_code=exc.status_code, content=exc.payload)
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+
+@router.post("/review/try-move/evaluate")
+def evaluate_review_try_move(
+    request: ReviewTryMoveEvaluationRequest,
+) -> Any:
+    payload = request.model_dump() if hasattr(request, "model_dump") else request.dict()
+    move_played = str(payload.pop("move_played") or "")
+    return evaluate_try_move_attempt(move_played, payload)
 
 
 @router.post("/review/practice/sessions/{session_id}/abandon")

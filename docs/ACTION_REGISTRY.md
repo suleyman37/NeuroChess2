@@ -148,6 +148,12 @@ and screens that ask the user to make too many decisions.
   browser-proven to persist `reveal_used=true`. Review/Daily Plan Practice
   attempts remain backend-authored through
   `POST /review/practice/sessions/{session_id}/attempts`.
+- P0 Practice feedback trust note: `practice.submit_attempt` and Review
+  `lesson.try_move` now use backend canonical move classification. If the
+  normalized attempted move equals the normalized best move or accepted moves,
+  the action must return/display success or accepted feedback, never a problem
+  label or missed-best reproach. Legacy unparseable Review data must ask for
+  reanalysis/rebuild instead of saving a false wrong attempt.
 
 - P0 real-runtime exploration note: `review.start_local_exploration`,
   `review.undo_local_exploration`, `review.reset_local_exploration`, and

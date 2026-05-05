@@ -11,6 +11,7 @@ import {
   getGameHistory,
   cancelReviewJob,
   deleteUserData,
+  evaluateReviewTryMoveAttempt,
   exportUserData,
   getReviewJob,
   getGameMoves,
@@ -1274,7 +1275,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       return;
     }
     if (reviewTryMoveState?.active && positionMode === "REVIEW") {
-      handleTryMoveAttempt(uci);
+      await handleTryMoveAttempt(uci);
       return;
     }
     if (reviewExplorationState?.active && positionMode === "REVIEW") {
@@ -3014,7 +3015,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     });
   }
 
-  function handleTryMoveAttempt(uci: string) {
+  async function handleTryMoveAttempt(uci: string) {
     if (!reviewTryMoveState?.active || !reviewTryMoveState.annotation) {
       return;
     }
@@ -3023,12 +3024,30 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     setReviewPvLineState(null);
     setGuidedPvIndex(null);
     const attempt = tryMoveFenAfter(annotation.fen_before, uci);
-    const feedback: NonNullable<TryMoveFeedback> = {
-      result: "attempted",
-      message: "Tentative jouée. Ouvre la correction pour comparer avec la réponse de Review.",
-      show_best_move: false,
-    };
-    setSolutionRevealForAnnotation(annotation, "attempted");
+    let feedback: NonNullable<TryMoveFeedback>;
+    try {
+      feedback = await evaluateReviewTryMoveAttempt({
+        fenBefore: annotation.fen_before,
+        movePlayed: uci,
+        bestMoveUci: annotation.best_move_uci,
+        bestMoveSan: annotation.best_move_san,
+        acceptableMoves: annotation.acceptable_moves ?? [],
+        sourceContext: "review_try_move",
+        reviewMomentId: annotation.ply,
+        ply: annotation.ply,
+        winLoss: annotation.win_loss ?? null,
+        primaryCategory: annotation.primary_category ?? null,
+      });
+    } catch {
+      feedback = {
+        result: "needs_rebuild",
+        message: "Review a reconstruire avant de corriger cette position.",
+        show_best_move: false,
+      };
+    }
+    if (feedback.show_best_move) {
+      setSolutionRevealForAnnotation(annotation, "attempted");
+    }
     setReviewTryMoveState({
       ...reviewTryMoveState,
       attemptedUci: uci,

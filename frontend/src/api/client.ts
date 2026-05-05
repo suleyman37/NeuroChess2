@@ -517,6 +517,10 @@ export type ReviewPracticeAttemptFeedback = {
   evidence?: Record<string, unknown>;
 };
 
+export type ReviewTryMoveEvaluationResponse = ReviewPracticeAttemptFeedback & {
+  reason_code?: string | null;
+};
+
 export type ReviewPracticeAttempt = {
   id: number;
   session_id: number;
@@ -1489,6 +1493,35 @@ export function recordReviewPracticeAttempt(
       body: JSON.stringify(body),
     },
   );
+}
+
+export function evaluateReviewTryMoveAttempt(payload: {
+  fenBefore?: string | null;
+  movePlayed: string;
+  bestMoveUci?: string | null;
+  bestMoveSan?: string | null;
+  acceptableMoves?: ReviewAcceptableMove[];
+  sourceContext?: string | null;
+  reviewMomentId?: number | string | null;
+  ply?: number | null;
+  winLoss?: number | null;
+  primaryCategory?: string | null;
+}): Promise<ReviewTryMoveEvaluationResponse> {
+  return request<ReviewTryMoveEvaluationResponse>("/review/try-move/evaluate", {
+    method: "POST",
+    body: JSON.stringify({
+      fen_before: payload.fenBefore ?? null,
+      move_played: payload.movePlayed,
+      best_move_uci: payload.bestMoveUci ?? null,
+      best_move_san: payload.bestMoveSan ?? null,
+      acceptable_moves: payload.acceptableMoves ?? [],
+      source_context: payload.sourceContext ?? "review_try_move",
+      review_moment_id: payload.reviewMomentId ?? null,
+      ply: payload.ply ?? null,
+      win_loss: payload.winLoss ?? null,
+      primary_category: payload.primaryCategory ?? null,
+    }),
+  });
 }
 
 export function abandonReviewPracticeSession(

@@ -1375,7 +1375,7 @@ export function getPublicLessonStep(
     revealMode === "played_move_shown" ||
     revealMode === "solution_revealed" ||
     revealMode === "pv_line" ||
-    Boolean(attemptMatches && attemptState?.feedback) ||
+    Boolean(attemptMatches && attemptState?.feedback?.show_best_move) ||
     Boolean(attemptMatches && attemptState?.solutionRevealed)
   ) {
     return "correction";

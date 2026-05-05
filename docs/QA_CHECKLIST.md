@@ -1,6 +1,6 @@
 # QA Checklist
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1`
 Date: 2026-05-05
 
 ## Baseline
@@ -85,6 +85,10 @@ Date: 2026-05-05
   rings for main nav, import, PGN textarea, Practice board, Indice, Voir la
   correction, Passer, Profile/Settings focus, reduced-motion CSS, and no
   network 500.
+- [x] Browser Practice best-move feedback smoke validates that an exact best
+  board move is saved as `best`, shows success feedback, does not show
+  `Ton coup - Probleme` / `Le meilleur coup etait` contradiction, and does not
+  create review jobs, review moments, or training items during classification.
 - [ ] Full WCAG audit/certification not performed.
 
 ## V1 Boundaries
@@ -111,6 +115,8 @@ Date: 2026-05-05
   recovery copy.
 - [x] Automated browser E2E smoke exists for mobile responsive core flows.
 - [x] Automated browser E2E smoke exists for keyboard/focus basics.
+- [x] Automated browser E2E smoke exists for Practice exact-best feedback
+  correctness and legacy SAN normalization.
 - [x] Privacy/export/delete implemented and browser-smoked in isolated temp DB.
 - [x] Deterministic backend Daily Plan implemented and browser-smoked.
 - [x] Durable `training_items` implemented and exported/deleted.

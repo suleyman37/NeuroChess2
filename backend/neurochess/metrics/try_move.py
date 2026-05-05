@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import chess
@@ -8,6 +9,7 @@ from neurochess.metrics.review_metrics import player_percent_from_eval
 
 
 TRY_MOVE_MODEL_VERSION = "try_move_v0_cached_candidates"
+PRACTICE_FEEDBACK_CLASSIFIER_VERSION = "practice_feedback_canonical_uci_v1"
 PV_LINE_MAX_PLIES = 8
 
 
@@ -24,7 +26,7 @@ def build_try_move_payload(
             "acceptable_moves": [],
             "pv_line": [],
             "pv_line_available": False,
-            "pv_line_message": "Meilleur coup indisponible dans les données de Review.",
+            "pv_line_message": "Meilleur coup indisponible dans les donnees de Review.",
             "try_move_model_version": TRY_MOVE_MODEL_VERSION,
         }
 
@@ -72,63 +74,124 @@ def build_try_move_payload(
         "pv_line": pv_line,
         "pv_line_available": bool(pv_line),
         "pv_line_message": (
-            "Ligne proposée par le moteur."
+            "Ligne proposee par le moteur."
             if pv_line
-            else "Ligne complète indisponible ; seul le meilleur coup est affiché."
+            else "Ligne complete indisponible ; seul le meilleur coup est affiche."
         ),
         "try_move_model_version": TRY_MOVE_MODEL_VERSION,
     }
 
 
 def evaluate_try_move_attempt(
-    attempt_uci: str,
+    attempt_move: str,
     annotation: dict[str, Any],
 ) -> dict[str, Any]:
     fen_before = annotation.get("fen_before")
     board = _board_from_fen(str(fen_before) if fen_before is not None else None)
-    if board is None or not _is_legal_uci(board, attempt_uci):
+    evidence = _base_attempt_evidence(board, attempt_move, annotation)
+    if board is None:
+        evidence.update(result="needs_rebuild", reason_code="missing_or_invalid_fen")
+        return {
+            "result": "needs_rebuild",
+            "message": "Review a reconstruire avant de corriger cette position.",
+            "show_best_move": False,
+            "reason_code": "missing_or_invalid_fen",
+            "evidence": evidence,
+        }
+
+    attempt = _move_from_notation(board, attempt_move)
+    if attempt is None:
+        evidence.update(
+            is_legal=False,
+            result="illegal",
+            reason_code="illegal_or_unparseable_user_move",
+        )
         return {
             "result": "illegal",
-            "message": "Ce coup est illégal dans cette position.",
+            "message": "Ce coup n'est pas legal dans cette position.",
             "show_best_move": False,
+            "reason_code": "illegal_or_unparseable_user_move",
+            "evidence": evidence,
         }
 
-    best_move_uci = annotation.get("best_move_uci")
-    if not best_move_uci:
+    attempt_uci = attempt.uci()
+    evidence.update(
+        is_legal=True,
+        user_move_uci=attempt_uci,
+        user_move_san=_san_for_move(board, attempt),
+    )
+
+    best_move = _best_move_from_annotation(board, annotation)
+    if best_move is None:
+        evidence.update(
+            result="needs_rebuild",
+            reason_code="best_move_missing_or_unparseable",
+        )
         return {
-            "result": "unknown",
-            "message": "Coup joué. Les données disponibles ne permettent pas de l'évaluer précisément.",
+            "result": "needs_rebuild",
+            "message": "Review a reconstruire avant de corriger cette position.",
             "show_best_move": False,
+            "reason_code": "best_move_missing_or_unparseable",
+            "evidence": evidence,
         }
+
+    best_move_uci = best_move.uci()
+    best_move_san = _san_for_move(board, best_move)
+    evidence.update(best_move_uci=best_move_uci, best_move_san=best_move_san)
 
     if attempt_uci == best_move_uci:
+        evidence.update(
+            accepted_moves_uci=[best_move_uci],
+            is_exact_best=True,
+            is_accepted=True,
+            result="best",
+            reason_code="exact_best_move",
+            should_show_best_move=False,
+            should_schedule_review=True,
+        )
         return {
             "result": "best",
-            "message": "Excellent : tu as trouvé le meilleur coup.",
+            "message": f"Bien joué. Tu as trouvé l’idée critique : {best_move_san or best_move_uci}.",
             "show_best_move": False,
+            "reason_code": "exact_best_move",
+            "evidence": evidence,
         }
 
-    for accepted in annotation.get("acceptable_moves") or []:
-        if not isinstance(accepted, dict) or accepted.get("uci") != attempt_uci:
+    accepted_moves = _accepted_moves_from_annotation(board, annotation, best_move)
+    evidence["accepted_moves_uci"] = [entry["uci"] for entry in accepted_moves]
+    for accepted in accepted_moves:
+        if accepted["uci"] != attempt_uci:
             continue
-        quality = accepted.get("quality")
-        if quality == "very_good":
-            return {
-                "result": "very_good",
-                "message": "Très bon : ce coup garde presque autant de chances.",
-                "show_best_move": False,
-            }
-        if quality == "acceptable":
-            return {
-                "result": "acceptable",
-                "message": "Jouable : ce coup fonctionne, mais le meilleur coup était plus précis.",
-                "show_best_move": False,
-            }
+        quality = accepted.get("quality") or "acceptable"
+        result = "very_good" if quality == "very_good" else "acceptable"
+        reason_code = f"accepted_move_{quality}"
+        evidence.update(
+            is_accepted=True,
+            result=result,
+            reason_code=reason_code,
+            should_show_best_move=False,
+            should_schedule_review=True,
+        )
+        return {
+            "result": result,
+            "message": "Bonne idee. Ce coup repond au probleme principal de la position.",
+            "show_best_move": False,
+            "reason_code": reason_code,
+            "evidence": evidence,
+        }
 
+    evidence.update(
+        result="wrong",
+        reason_code="legal_not_best_or_accepted",
+        should_show_best_move=True,
+        should_schedule_review=True,
+    )
     return {
         "result": "wrong",
-        "message": "À revoir : ce coup ne résout pas le problème principal.",
+        "message": f"Pas encore. Le coup cle etait {best_move_san or best_move_uci}.",
         "show_best_move": True,
+        "reason_code": "legal_not_best_or_accepted",
+        "evidence": evidence,
     }
 
 
@@ -207,4 +270,138 @@ def _san_for_uci(board: chess.Board | None, uci: str | None) -> str | None:
     move = _move_from_uci(uci)
     if move is None or move not in board.legal_moves:
         return None
+    return _san_for_move(board, move)
+
+
+def _san_for_move(board: chess.Board, move: chess.Move) -> str | None:
+    if move not in board.legal_moves:
+        return None
     return board.san(move)
+
+
+def _move_from_notation(board: chess.Board, value: Any) -> chess.Move | None:
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    move = _move_from_uci(raw)
+    if move is not None and move in board.legal_moves:
+        return move
+    san_candidates = [raw]
+    if "0-0" in raw:
+        san_candidates.append(raw.replace("0-0", "O-O"))
+    for candidate in san_candidates:
+        try:
+            parsed = board.parse_san(candidate)
+        except ValueError:
+            continue
+        if parsed in board.legal_moves:
+            return parsed
+    return None
+
+
+def _best_move_from_annotation(
+    board: chess.Board,
+    annotation: dict[str, Any],
+) -> chess.Move | None:
+    for key in ("best_move_uci", "best_move_san", "best_move"):
+        move = _move_from_notation(board, annotation.get(key))
+        if move is not None:
+            return move
+    return None
+
+
+def _accepted_moves_from_annotation(
+    board: chess.Board,
+    annotation: dict[str, Any],
+    best_move: chess.Move,
+) -> list[dict[str, str]]:
+    accepted_by_uci: dict[str, dict[str, str]] = {
+        best_move.uci(): {
+            "uci": best_move.uci(),
+            "san": _san_for_move(board, best_move) or best_move.uci(),
+            "quality": "best",
+        }
+    }
+    for entry in _accepted_move_entries(annotation):
+        if isinstance(entry, dict):
+            raw_move = entry.get("uci") or entry.get("san") or entry.get("move")
+            raw_quality = str(entry.get("quality") or "acceptable").strip().lower()
+        else:
+            raw_move = entry
+            raw_quality = "acceptable"
+        move = _move_from_notation(board, raw_move)
+        if move is None:
+            continue
+        quality = raw_quality if raw_quality in {"best", "very_good", "acceptable"} else "acceptable"
+        uci = move.uci()
+        if uci == best_move.uci():
+            quality = "best"
+        accepted_by_uci[uci] = {
+            "uci": uci,
+            "san": _san_for_move(board, move) or uci,
+            "quality": quality,
+        }
+    return list(accepted_by_uci.values())
+
+
+def _accepted_move_entries(annotation: dict[str, Any]) -> list[Any]:
+    entries: list[Any] = []
+    acceptable = annotation.get("acceptable_moves")
+    if isinstance(acceptable, list):
+        entries.extend(acceptable)
+    accepted = annotation.get("accepted_moves")
+    if isinstance(accepted, list):
+        entries.extend(accepted)
+    accepted_json = annotation.get("accepted_moves_json")
+    if isinstance(accepted_json, str) and accepted_json.strip():
+        try:
+            parsed = json.loads(accepted_json)
+        except ValueError:
+            parsed = None
+        if isinstance(parsed, list):
+            entries.extend(parsed)
+    elif isinstance(accepted_json, list):
+        entries.extend(accepted_json)
+    return entries
+
+
+def _base_attempt_evidence(
+    board: chess.Board | None,
+    attempt_move: Any,
+    annotation: dict[str, Any],
+) -> dict[str, Any]:
+    side_to_move = None
+    if board is not None:
+        side_to_move = "white" if board.turn == chess.WHITE else "black"
+    return {
+        "classifier_version": PRACTICE_FEEDBACK_CLASSIFIER_VERSION,
+        "fen": annotation.get("fen_before"),
+        "side_to_move": side_to_move,
+        "user_move_raw": str(attempt_move or ""),
+        "user_move_uci": None,
+        "user_move_san": None,
+        "best_move_raw": (
+            annotation.get("best_move_uci")
+            or annotation.get("best_move_san")
+            or annotation.get("best_move")
+        ),
+        "best_move_uci": None,
+        "best_move_san": None,
+        "accepted_moves_uci": [],
+        "is_legal": False,
+        "is_exact_best": False,
+        "is_accepted": False,
+        "result": None,
+        "reason_code": None,
+        "source_context": annotation.get("source_context"),
+        "review_moment_id": annotation.get("review_moment_id")
+        or annotation.get("source_moment_id"),
+        "training_item_id": annotation.get("training_item_id"),
+        "eval_before": annotation.get("eval_before"),
+        "eval_after_user_move": annotation.get("eval_after_user_move"),
+        "eval_after_best_move": annotation.get("eval_after_best_move"),
+        "win_loss": annotation.get("win_loss"),
+        "primary_tag": annotation.get("primary_category") or annotation.get("primary_tag"),
+        "should_show_best_move": False,
+        "should_schedule_review": None,
+    }

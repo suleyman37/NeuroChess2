@@ -72,6 +72,16 @@ authoritative.
 - Correct move produces backend-authored success feedback.
 - Wrong legal move produces backend-authored wrong feedback.
 - Illegal move produces calm illegal feedback or a safe rejection.
+- Backend Practice classification is canonical UCI/board-state authoritative:
+  the backend parses the attempted move, best move, and accepted moves from the
+  item's `fen_before`, accepting UCI and SAN legacy strings. Exact best move or
+  accepted equivalent must never be shown as a problem.
+- V1 UI must not show a contradiction such as `Ton coup - Probleme` while also
+  saying the best move was the same move. If the user played the best/accepted
+  move, the UI stays in success feedback unless the user explicitly opens
+  correction, and correction copy remains non-reproachful.
+- Legacy/incomplete Review data that cannot normalize a best move must surface a
+  recoverable rebuild/reanalysis state, not a false wrong result.
 - Reveal/correction remains available as fallback.
 - Attempts are persisted by the backend with enriched V1 fields:
   - `session_id`
@@ -174,6 +184,11 @@ authoritative.
 - `scripts/browser_practice_no_live_spoiler_smoke.mjs`: added in P0
   live-analysis mission. Proves Practice hides live eval/best-move spoilers
   before attempt.
+- `scripts/browser_practice_best_move_feedback_success_smoke.mjs`: added in
+  P0 Practice feedback mission. Proves exact-best Practice board move is saved
+  as `best`, shows success feedback, does not show `Ton coup - Probleme` or
+  `Le meilleur coup etait` as a reproach, and does not create review jobs,
+  review moments, or training items during feedback classification.
 - Backend contract tests:
   - `backend/tests/test_core_board_practice_contract.py`
   - `backend/tests/test_engine_config.py`

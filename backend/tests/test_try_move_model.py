@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -18,6 +19,7 @@ from neurochess.metrics.try_move import (  # noqa: E402
 
 
 FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+FEN_BXF7 = "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4"
 
 
 class TryMoveModelTests(unittest.TestCase):
@@ -83,6 +85,89 @@ class TryMoveModelTests(unittest.TestCase):
 
     def test_pv_line_missing_is_empty(self) -> None:
         self.assertEqual(build_pv_line(FEN, {"uci": "e2e4"}), [])
+
+    def test_san_suffix_exact_best_is_success(self) -> None:
+        feedback = evaluate_try_move_attempt(
+            "Bxf7+",
+            {
+                "fen_before": FEN_BXF7,
+                "best_move_san": "Bxf7+",
+                "source_context": "review_practice",
+            },
+        )
+
+        self.assertEqual(feedback["result"], "best")
+        self.assertFalse(feedback["show_best_move"])
+        self.assertEqual(feedback["reason_code"], "exact_best_move")
+        self.assertEqual(feedback["evidence"]["user_move_uci"], "c4f7")
+        self.assertEqual(feedback["evidence"]["best_move_uci"], "c4f7")
+        self.assertTrue(feedback["evidence"]["is_exact_best"])
+
+    def test_san_and_uci_normalization_are_equivalent(self) -> None:
+        san_user_uci_best = evaluate_try_move_attempt(
+            "Bxf7+",
+            {"fen_before": FEN_BXF7, "best_move_uci": "c4f7"},
+        )
+        uci_user_san_best = evaluate_try_move_attempt(
+            "c4f7",
+            {"fen_before": FEN_BXF7, "best_move_san": "Bxf7+"},
+        )
+
+        self.assertEqual(san_user_uci_best["result"], "best")
+        self.assertEqual(uci_user_san_best["result"], "best")
+        self.assertEqual(san_user_uci_best["evidence"]["best_move_san"], "Bxf7+")
+        self.assertEqual(uci_user_san_best["evidence"]["user_move_san"], "Bxf7+")
+
+    def test_accepted_moves_json_is_respected(self) -> None:
+        feedback = evaluate_try_move_attempt(
+            "d4",
+            {
+                "fen_before": FEN,
+                "best_move_uci": "e2e4",
+                "accepted_moves_json": json.dumps(
+                    [{"san": "d4", "quality": "acceptable"}]
+                ),
+            },
+        )
+
+        self.assertEqual(feedback["result"], "acceptable")
+        self.assertFalse(feedback["show_best_move"])
+        self.assertTrue(feedback["evidence"]["is_accepted"])
+        self.assertIn("d2d4", feedback["evidence"]["accepted_moves_uci"])
+
+    def test_missing_accepted_moves_still_accepts_exact_best(self) -> None:
+        feedback = evaluate_try_move_attempt(
+            "e4",
+            {"fen_before": FEN, "best_move_uci": "e2e4", "acceptable_moves": []},
+        )
+
+        self.assertEqual(feedback["result"], "best")
+        self.assertEqual(feedback["evidence"]["accepted_moves_uci"], ["e2e4"])
+
+    def test_wrong_illegal_and_legacy_rebuild_are_never_false_success(self) -> None:
+        wrong = evaluate_try_move_attempt(
+            "a3",
+            {"fen_before": FEN, "best_move_uci": "e2e4"},
+        )
+        illegal = evaluate_try_move_attempt(
+            "e5",
+            {"fen_before": FEN, "best_move_uci": "e2e4"},
+        )
+        missing_best = evaluate_try_move_attempt(
+            "e4",
+            {"fen_before": FEN},
+        )
+        bad_fen = evaluate_try_move_attempt(
+            "e4",
+            {"fen_before": "not-a-fen", "best_move_uci": "e2e4"},
+        )
+
+        self.assertEqual(wrong["result"], "wrong")
+        self.assertTrue(wrong["show_best_move"])
+        self.assertEqual(illegal["result"], "illegal")
+        self.assertFalse(illegal["show_best_move"])
+        self.assertEqual(missing_best["result"], "needs_rebuild")
+        self.assertEqual(bad_fen["result"], "needs_rebuild")
 
 
 if __name__ == "__main__":

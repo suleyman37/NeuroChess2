@@ -1,6 +1,6 @@
 # V1 Readiness Report
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1`
 Date: 2026-05-05
 
 ## 1. Resume executif
@@ -31,7 +31,10 @@ Le P1 Mobile / A11Y ajoute maintenant une preuve browser a 390x844: pas
 d'overflow horizontal sur les ecrans critiques, Review exploration par
 tap/click, Practice Review, Daily Plan Practice, Profile/Privacy visible, focus
 clavier visible pour nav, import, PGN textarea, board Practice et boutons
-Practice, et CSS `prefers-reduced-motion`. La V1 externe reste NO-GO car
+Practice, et CSS `prefers-reduced-motion`. Le bug de confiance Practice
+exact-best est maintenant corrige et browser-proven: un meilleur coup joue au
+board est sauvegarde `best`, sans contradiction `Ton coup - Probleme` /
+`Le meilleur coup etait`. La V1 externe reste NO-GO car
 SkillTrace shadow manque, les strings francaises ne sont pas centralisees,
 l'accessibilite n'est pas une certification WCAG complete, et les scenarios
 Practice interrupted/repeated-wrong restent statiques ou couverts indirectement
@@ -74,6 +77,8 @@ plutot que par un smoke dedie complet.
   `cmd /c node scripts\browser_mobile_responsive_smoke.mjs`.
 - Keyboard/accessibility smoke: PASS via
   `cmd /c node scripts\browser_keyboard_accessibility_smoke.mjs`.
+- Practice best-move feedback smoke: PASS via
+  `cmd /c node scripts\browser_practice_best_move_feedback_success_smoke.mjs`.
 - Learning Loop V1 service: attempt fields, due rules, due session, no-due
   summary all covered by backend tests.
 - Training V1 static guard: exactly 3 entries and no forbidden labels.
@@ -139,6 +144,11 @@ plutot que par un smoke dedie complet.
   Importer PGN, PGN textarea, import primary action, Practice board, Indice,
   Voir la correction, Passer and Profile/Settings; it also verifies
   `prefers-reduced-motion` CSS and no network 500.
+- Practice best-move feedback smoke proves a real board exact-best move
+  (`f3g5` / `Ng5` in the fixture) is saved as `result=best`, `due_at` J+7 is
+  present, the UI shows success feedback, no `Ton coup - Probleme` nor
+  `Le meilleur coup etait` reproach appears, and legacy SAN `Bxf7+` normalizes
+  to `c4f7` as `best`.
 
 ## 4. Existe mais pas valide en browser
 
@@ -353,6 +363,12 @@ cmd /c node scripts\browser_mobile_responsive_smoke.mjs
 ```powershell
 cmd /c node scripts\browser_keyboard_accessibility_smoke.mjs
 # PASS: keyboard focus rings, Practice board/buttons focusable, reduced motion.
+```
+
+```powershell
+cmd /c node scripts\browser_practice_best_move_feedback_success_smoke.mjs
+# PASS: exact-best Practice board move saved as best, no contradictory
+# problem/best-was copy, due_at present, legacy Bxf7+ API probe PASS.
 ```
 
 ## 11. Tests non executes

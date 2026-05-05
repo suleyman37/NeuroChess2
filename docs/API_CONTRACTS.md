@@ -13,6 +13,16 @@ Plan1, Plan2, and Plan3 remain authoritative.
   fallback action.
 - Frontend sends UCI through `attempted_uci`; backend remains authoritative for
   legal/correct/wrong/illegal grading.
+- Practice feedback classification uses canonical UCI comparison from the item
+  `fen_before`. The backend parses user moves, `best_move`, and accepted moves
+  from UCI or SAN, including legacy SAN suffixes such as check/mate markers.
+- If the normalized user move equals the normalized best move, or appears in
+  normalized accepted moves, the response must be `best`, `very_good`, or
+  `acceptable`; it must never return a wrong/problem feedback for that move.
+- Missing `accepted_moves_json` is not fatal: the parsed best move is always
+  accepted as the minimum safe set. If FEN/best-move data is insufficient or
+  unparseable, the endpoint returns a recoverable legacy/rebuild state instead
+  of a false wrong classification.
 - V1 accepted results include `best`, `very_good`, `acceptable`, `wrong`,
   `illegal`, `revealed`, and `skipped`.
 - Persisted enriched fields include `item_id`, `time_spent_ms`, `hint_used`,
@@ -22,6 +32,17 @@ Plan1, Plan2, and Plan3 remain authoritative.
 - `source_context` is `review_practice` for Review sessions and `daily_plan`
   for Daily Plan sessions.
 - The endpoint must not call Stockfish and must not change scoring formulas.
+
+### `POST /review/try-move/evaluate`
+
+- Purpose: evaluate a Review lesson try-move without persisting a Practice
+  attempt.
+- Request accepts `fen_before`, `move_played`, optional best move fields, and
+  optional accepted moves.
+- Response uses the same backend canonical move classifier as Practice attempts
+  and includes a safe internal evidence object for future verified LLM use.
+- This endpoint has no DB side effects: it must not create `review_jobs`,
+  `review_moments`, `training_items`, `practice_attempts`, or `due_at`.
 
 ### Fake-engine QA timeout hook
 

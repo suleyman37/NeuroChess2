@@ -107,6 +107,15 @@ function ReviewCoachMomentCard({
     tryActiveForAnnotation && tryMoveState?.attemptedUci
       ? tryMoveState.attemptedSan ?? tryMoveState.attemptedUci
       : playedMove;
+  const tryFeedbackResult =
+    tryActiveForAnnotation && tryMoveState?.feedback
+      ? String(tryMoveState.feedback.result ?? "")
+      : null;
+  const tryMoveAccepted =
+    tryFeedbackResult === "best" ||
+    tryFeedbackResult === "very_good" ||
+    tryFeedbackResult === "acceptable";
+  const tryMoveNeedsRebuild = tryFeedbackResult === "needs_rebuild";
   const solutionMove =
     annotation.best_move_san ?? annotation.best_move_uci ?? "solution indisponible";
   const lessonType = lessonTypeLabel(explanation?.error_type);
@@ -128,6 +137,24 @@ function ReviewCoachMomentCard({
     coachTextForPov(contrastCoach?.why_solution_is_better, povContext, annotation) ??
     publicMainDifferenceText(contrastCoach, explanation) ??
     "La solution garde davantage l'initiative et limite le contre-jeu.";
+  const correctionMain = tryMoveAccepted
+    ? "Bien joué : ton coup répond à l'idée critique."
+    : tryMoveNeedsRebuild
+      ? "Cette position doit être reconstruite avant correction."
+      : "Voici ce que ton coup a permis.";
+  const playedMoveLabel = isUserLanguage ? "Ton coup" : "Coup joué";
+  const correctionPlayedLabel = tryMoveAccepted
+    ? `${playedMoveLabel} · Bonne idée`
+    : tryMoveNeedsRebuild
+      ? `${playedMoveLabel} · À vérifier`
+      : `${playedMoveLabel} · Problème`;
+  const correctionPlayedText = tryMoveAccepted || tryMoveNeedsRebuild
+    ? coachTextForPov(
+        tryMoveState?.feedback?.message,
+        povContext,
+        annotation,
+      ) ?? correctionProblem
+    : correctionProblem;
   const trainingTakeaway =
     coachTextForPov(explanation?.training_takeaway, povContext, annotation) ??
     "Dans une position tactique, cherche d'abord les coups forcing.";
@@ -287,18 +314,26 @@ function ReviewCoachMomentCard({
 
       {publicStep === "correction" && canShowSolutionData && (
         <div className="review-lesson-card" data-public-lesson-step="correction">
-          <p className="review-coach-main">Voici ce que ton coup a permis.</p>
+          <p className="review-coach-main">{correctionMain}</p>
           <div className="review-correction-narrative premium">
             <article>
-              <span>Ton coup · Problème</span>
+              <span>{correctionPlayedLabel}</span>
               <strong>{displayedPlayedMove}</strong>
-              <p>{correctionProblem}</p>
+              <p>{correctionPlayedText}</p>
             </article>
-            <article>
-              <span>Meilleure idée</span>
-              <strong>Le meilleur coup était : {solutionMove}</strong>
-              <p>{correctionWhy}</p>
-            </article>
+            {!tryMoveAccepted && !tryMoveNeedsRebuild && (
+              <article>
+                <span>Meilleure idée</span>
+                <strong>Le meilleur coup était : {solutionMove}</strong>
+                <p>{correctionWhy}</p>
+              </article>
+            )}
+            {tryMoveNeedsRebuild && (
+              <article>
+                <span>Review à reconstruire</span>
+                <p>Réanalyse cette Review avant de corriger cette position.</p>
+              </article>
+            )}
             <article>
               <span>Pourquoi ça marche</span>
               <p>{formatImpact(annotation.win_loss)} · {impactLabel}</p>

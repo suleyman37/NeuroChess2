@@ -1,6 +1,6 @@
 # Test Coverage Matrix
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1`
 Date: 2026-05-05
 
 This matrix lists available automated tests, scripts, and smoke checks. It does
@@ -70,6 +70,12 @@ not count static tests as browser or end-to-end proof.
   It proves visible keyboard focus for main nav, Importer, PGN textarea,
   Practice board, Indice, Voir la correction, Passer, Profile/Settings focus,
   reduced-motion CSS presence, and no network 500.
+- Practice feedback correctness browser smoke: PASS via
+  `cmd /c node scripts\browser_practice_best_move_feedback_success_smoke.mjs`.
+  It proves exact-best Practice board move success feedback, no contradictory
+  problem/best-was copy, saved `practice_attempt.result=best`, `due_at`
+  present, legacy SAN `Bxf7+` API normalization, and no review job/moment or
+  training item side effect from feedback classification.
 
 ## Matrix
 
@@ -114,11 +120,11 @@ not count static tests as browser or end-to-end proof.
 | `backend/tests/test_review_practice_learning_loop.py` | unit/integration | Learning Loop V1 | Attempt fields, delay rules, due session, no-due summary | Browser due UI | PASS in full suite | high | Global daily plan/due queue |
 | `backend/tests/test_review_practice_no_engine.py` | unit/integration | Practice no-engine | Practice remains available without Stockfish calls | Browser degraded state | PASS in full suite | high | Browser no-engine practice |
 | `backend/tests/test_review_practice_reveal_skip.py` | unit | Practice reveal/skip | Reveal and skip event paths | Browser buttons | PASS in full suite | high | Browser reveal/skip |
-| `backend/tests/test_review_practice_sessions.py` | integration/API | Practice sessions | Start/attempt/complete/retry/abandon API | Browser board interactions | PASS in full suite | high | Browser full Practice flow |
+| `backend/tests/test_review_practice_sessions.py` | integration/API | Practice sessions | Start/attempt/complete/retry/abandon API, exact-best SAN legacy success, original move not reused as user attempt, rebuild required for unparseable legacy best move | Browser board interactions | PASS targeted | high | Keep paired with browser Practice smoke |
 | `backend/tests/test_review_practice_summary.py` | unit | Practice summary | Summary counts and messages | Browser summary presentation | PASS in full suite | high | Browser session summary |
 | `backend/tests/test_review_service.py` | unit/API | Review service | Review generation, scoring, jobs, API error states | Browser full Review path | PASS in full suite | high | Ready-review browser fixture |
 | `backend/tests/test_stockfish_service.py` | unit/integration | Stockfish service | UCI service wrapper/engine executable | UI states | PASS in full suite | medium | Strict cache policy |
-| `backend/tests/test_try_move_model.py` | unit | Try move | Legal/illegal move model | Browser board input | PASS in full suite | medium | Browser try-move |
+| `backend/tests/test_try_move_model.py` | unit | Try move / feedback correctness | Legal/illegal move model, SAN/UCI normalization, accepted moves, missing accepted list, legacy rebuild state | Browser board input | PASS targeted | high | Keep paired with best-move feedback smoke |
 | `backend/tests/test_v3_7_full_system_qa.py` | integration/API | Full-system legacy QA | Broad API/review/game integration | Current Plan2 browser shell | PASS in full suite | medium | Rename/split by V1 domains later |
 | `scripts/review_regression_smoke.py` | smoke | Review regression | Normal deep job and last-position hang recovery | Browser, Practice UI | PASS | high | Add ready Review browser smoke |
 | `scripts/pgn_import_smoke.py` | smoke | PGN import | PGN import smoke through backend | Browser form | PASS | high | Run with browser temp DB |
@@ -138,6 +144,7 @@ not count static tests as browser or end-to-end proof.
 | `scripts/browser_live_analysis_default_smoke.mjs` | browser smoke | Live analysis Review board | Live analysis visible by default on Review board, updates after local exploration FEN change | Real Stockfish latency and long navigation sessions | added in P0 live mission | high if PASS | Add manual check on user machine after commit |
 | `scripts/browser_live_analysis_pauses_during_review_smoke.mjs` | browser smoke | Live analysis priority | Live analysis pause copy while standard Review job runs, Review job reaches terminal/recoverable state | Long real-engine queue contention | added in P0 live mission | medium/high if PASS | Add real Stockfish stress test later |
 | `scripts/browser_practice_no_live_spoiler_smoke.mjs` | browser smoke | Practice spoiler protection | Practice hides live eval/best move before attempt, then normal attempt persists | Every Practice branch after reveal | added in P0 live mission | high if PASS | Extend after richer Practice fixture |
+| `scripts/browser_practice_best_move_feedback_success_smoke.mjs` | browser smoke | Practice feedback trust | Exact best move through real board is success, no contradictory problem copy, attempt saved as best with due_at, legacy Bxf7+ API probe, no feedback classification side effects | Rich chess explanation quality and future LLM wording | PASS | high | Keep evidence pack for regression review |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |

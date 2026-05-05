@@ -126,6 +126,29 @@ et les fichiers frontend/backend inspectes.
 - Ce n'est pas une certification WCAG complete ni une QA physique multi-device.
 - Prochaine mission recommandee: `P1.I18N-STRINGS-CATALOG-V1`.
 
+## Mise a jour Practice Feedback Trust du 2026-05-05
+
+- `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` corrige le
+  bug de confiance ou un coup identique au meilleur coup pouvait etre presente
+  comme un probleme.
+- Backend: `evaluate_try_move_attempt` normalise maintenant le coup utilisateur,
+  le meilleur coup et les coups acceptes en UCI depuis le FEN via `python-chess`.
+  Les formats UCI et SAN legacy sont acceptes, y compris `+`, `#`, captures,
+  disambiguation, roque et promotion legalement parsees par la position.
+- Practice: l'exact best move et les coups acceptes ne peuvent plus retourner un
+  resultat wrong/problem. Si les donnees legacy ne permettent pas de normaliser
+  le meilleur coup, le service retourne un etat recuperable de Review a
+  reconstruire au lieu d'un faux wrong.
+- Frontend: Review lesson et Practice n'affichent plus automatiquement la
+  correction sur un feedback success; `Le meilleur coup etait...` n'est affiche
+  comme reproche que lorsque le backend demande explicitement `show_best_move`.
+- Nouveau smoke: `scripts/browser_practice_best_move_feedback_success_smoke.mjs`.
+  Il prouve un exact best move joue sur le board Practice, feedback succes,
+  tentative sauvegardee `result=best`, `due_at` present, absence de contradiction
+  UI, normalisation legacy `Bxf7+`, et aucun side-effect `review_jobs`,
+  `review_moments` ou `training_items` pendant la classification.
+- Prochaine mission recommandee: `P1.I18N-STRINGS-CATALOG-V1`.
+
 ## P1.TRAINING-ITEMS-DAILY-PLAN-V1
 
 Etat : implemente le 2026-05-04, validations finales PASS.

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class CreateGameRequest(BaseModel):
@@ -112,6 +112,23 @@ class RecordReviewPracticeAttemptRequest(BaseModel):
     hint_used: bool = False
     reveal_used: bool = False
     source_context: str | None = None
+
+
+class ReviewTryMoveEvaluationRequest(BaseModel):
+    fen_before: str | None = None
+    move_played: str
+    best_move_uci: str | None = None
+    best_move_san: str | None = None
+    best_move: str | None = None
+    acceptable_moves: list[dict[str, Any] | str] = Field(default_factory=list)
+    accepted_moves_json: str | list[Any] | None = None
+    source_context: str | None = None
+    review_moment_id: int | str | None = None
+    training_item_id: int | str | None = None
+    ply: int | None = None
+    win_loss: float | None = None
+    primary_category: str | None = None
+    primary_tag: str | None = None
 
 
 class DailyPlanRequest(BaseModel):
