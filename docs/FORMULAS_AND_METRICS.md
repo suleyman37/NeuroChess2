@@ -48,7 +48,7 @@ The product should keep a motivating visible score named `NeuroScore`.
 
 - coach communication score;
 - severity-aware blend of Lichess-like precision and NeuroDiagnostic score;
-- backed by the existing `headline_neurochess_score_v1` implementation and
+- backed by the existing `headline_neurochess_score_v2` implementation and
   exposed as `coach_neuro_score_v1`;
 - useful for user motivation and coaching friction, not a scientific truth.
 
@@ -660,7 +660,7 @@ diagnostic_gap = lichess_like_accuracy - neuro_score_diag
 ### 17. coach_neuro_score_v1 / headline_score_v0
 
 - formula_id: `coach_neuro_score_v1`
-- version: current code label `headline_neurochess_score_v1`
+- version: current code label `headline_neurochess_score_v2`
 - implementation_status: `implemented_now`
 - purpose: coach communication / severity-aware UX score
 - inputs: `lichess_like_accuracy`, `neuro_score_diag`, optional `diagnostic_gap`
@@ -671,7 +671,7 @@ Current code when diagnostic score exists:
 
 ```text
 headline_score = clamp(
-    0.55 * lichess_like_accuracy + 0.45 * neuro_score_diag,
+    0.35 * lichess_like_accuracy + 0.65 * neuro_score_diag,
     0,
     100
 )
@@ -680,7 +680,7 @@ headline_score = clamp(
 Fallback when diagnostic score is missing but diagnostic gap exists:
 
 ```text
-headline_score = clamp(lichess_like_accuracy - 0.45 * max(0, diagnostic_gap), 0, 100)
+headline_score = clamp(lichess_like_accuracy - 0.65 * max(0, diagnostic_gap), 0, 100)
 ```
 
 Fallback when no diagnostic signal exists:
@@ -698,7 +698,7 @@ headline_score = clamp(lichess_like_accuracy, 0, 100)
     public precision was too flattering.
   - Does not drive training.
   - Must be displayed separately from public reference precision.
-  - example: `0.55 * 82 + 0.45 * 70 = 76.6`.
+  - example: `0.35 * 82 + 0.65 * 70 = 74.2`.
 - registry_link: `coach_neuro_score_v1`, legacy alias `headline_score_v0`
 - source_semantics: implemented in `headline_neurochess_score`.
 

@@ -9,7 +9,9 @@ MOVE_ACCURACY_FORMULA_VERSION = "lichess_exp_uncertainty_v1"
 GAME_ACCURACY_FORMULA_VERSION = "lichess_weighted_harmonic_v1"
 NEURO_SCORE_FORMULA_VERSION = "neuro_diagnostic_regularized_v1"
 DUAL_REVIEW_SCORE_FORMULA_VERSION = "dual_lichess_neuro_v1"
-HEADLINE_SCORE_FORMULA_VERSION = "headline_neurochess_score_v1"
+HEADLINE_SCORE_FORMULA_VERSION = "headline_neurochess_score_v2"
+COACH_REFERENCE_ACCURACY_WEIGHT = 0.35
+COACH_NEURO_DIAG_WEIGHT = 0.65
 
 
 def clamp(value: float, minimum: float, maximum: float) -> float:
@@ -92,10 +94,18 @@ def headline_neurochess_score(
     if neuro_score is None:
         if diagnostic_gap is None:
             return _round_optional(clamp(lichess_score, 0.0, 100.0), 2)
-        penalty = 0.45 * max(0.0, float(diagnostic_gap))
+        penalty = COACH_NEURO_DIAG_WEIGHT * max(0.0, float(diagnostic_gap))
         return _round_optional(clamp(lichess_score - penalty, 0.0, 100.0), 2)
     raw_neuro = float(neuro_score)
-    return _round_optional(clamp(0.55 * lichess_score + 0.45 * raw_neuro, 0.0, 100.0), 2)
+    return _round_optional(
+        clamp(
+            COACH_REFERENCE_ACCURACY_WEIGHT * lichess_score
+            + COACH_NEURO_DIAG_WEIGHT * raw_neuro,
+            0.0,
+            100.0,
+        ),
+        2,
+    )
 
 
 def _round_optional(value: float | None, digits: int = 3) -> float | None:

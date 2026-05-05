@@ -9,7 +9,7 @@ coach communication score:
 
 - visible `NeuroScore` now uses the severity-aware coach composite score;
 - the source is `coach_neuro_score` / `*_coach_neuro_score`, backed by the
-  existing `headline_neurochess_score_v1` family;
+  existing `headline_neurochess_score_v2` family;
 - Lichess-like precision remains visible as `Precision de reference`;
 - diagnostic gap remains internal/audit and does not explain the main Review
   summary;
@@ -46,8 +46,8 @@ Current implementation:
 
 ```text
 coach_neuro_score_v1 =
-  headline_neurochess_score_v1 =
-  clamp(0.55 * lichess_like_precision + 0.45 * neuro_diagnostic_score, 0, 100)
+  headline_neurochess_score_v2 =
+  clamp(0.35 * lichess_like_precision + 0.65 * neuro_diagnostic_score, 0, 100)
 ```
 
 When diagnostic score is unavailable, the existing legacy fallback can use the
@@ -83,7 +83,7 @@ UI copy: `Precision de reference : XX %`.
 
 ## Headline Score Status
 
-`headline_neurochess_score_v1` is no longer rejected as a visible coach signal.
+`headline_neurochess_score_v2` is no longer rejected as a visible coach signal.
 It is the existing implementation backing `coach_neuro_score_v1`.
 
 Rules:

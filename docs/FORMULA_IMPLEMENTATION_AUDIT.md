@@ -7,7 +7,7 @@ LLM, V6, or Memory Loop change was made by this audit.
 
 Post-audit note, 2026-05-02: V5.4.REVIEW-SCORE-UX-R1 intentionally restored
 the visible `NeuroScore` as a coach composite backed by
-`headline_neurochess_score_v1`, with Lichess-like precision shown separately as
+`headline_neurochess_score_v2`, with Lichess-like precision shown separately as
 reference precision. The high risk below is therefore resolved by changing the
 product contract, not by changing engine formulas or Lichess constants.
 
@@ -72,7 +72,7 @@ ReviewCockpitSummary
 -> headlineScoreForReview(...)
 -> review.user_headline_neurochess_score / headline_neurochess_score
 -> backend headline_neurochess_score(...)
--> 0.55 * lichess_like_accuracy + 0.45 * neuro_score_diag
+-> 0.35 * lichess_like_accuracy + 0.65 * neuro_score_diag
 ```
 
 Target docs say:
@@ -129,7 +129,7 @@ technical details, or legacy compatibility.
 | `neuro_severity_raw_v1` | Diagnostic loss with persistence and cluster weights. | `metrics/review_metrics.py neuro_diagnostic_score` | Same current documented implementation: diagnostic loss = win loss * omega. | yes | medium | debug/details/indirect | no | Keep internal until calibrated. | Current UI exposes related diagnostic values in score details. |
 | `neuro_score_diag_v1` | `100 * exp(-0.035 * Z)` with mean/tail diagnostic loss. | `metrics/review_metrics.py`, `review_service._review_score_payload`. | Same. | yes | medium | yes in details/indirect | no | Move out of normal UI details or label clearly as audit/internal. | Current frontend labels include "Score diagnostic brut" / "diagnostic". |
 | `diagnostic_gap_v1` | `lichess_like_accuracy - neuro_score_diag`. | `metrics/review_metrics.py`, `review_service._review_score_payload`, `reviewViewModel`. | Same. | yes | high | yes in details and summary logic | no | Restrict to debug/technical details; remove from normal narrative logic. | Target registry says audit/debug only. |
-| `headline_score_v0` | Legacy fusion: `0.55 * accuracy + 0.45 * diagnostic`, with fallback penalty. | `metrics/review_metrics.py headline_neurochess_score`, `review_service._review_score_payload`, `reviewViewModel.headlineScoreForReview`. | Same, and still used as visible main score. | yes formula; no product alignment | high | yes | no | Stop using headline as public NeuroScore; keep only legacy/audit compatibility. | Product decision says rejected/legacy direction. |
+| `headline_score_v0` | Legacy fusion: `0.35 * accuracy + 0.65 * diagnostic`, with fallback penalty. | `metrics/review_metrics.py headline_neurochess_score`, `review_service._review_score_payload`, `reviewViewModel.headlineScoreForReview`. | Same, and still used as visible main score. | yes formula; no product alignment | high | yes | no | Stop using headline as public NeuroScore; keep only legacy/audit compatibility. | Product decision says rejected/legacy direction. |
 | `expected_score_wdl_sfXX_v1` | Future Stockfish WDL expected score `(W + 0.5D)/(W+D+L)`. | No implementation found. | No `UCI_ShowWDL` or WDL scoring path found. | yes as future/unimplemented | info | no | no | None now; keep separate if introduced later. | No mixing with Lichess Win% found. |
 | `tail_mean_topk_v1` | Mean of top diagnostic losses; current docs say top 10% with min 3 behavior. | `metrics/review_metrics.py neuro_diagnostic_score` | `tail_count = min(max(3, ceil(0.10*n)), n)` for diagnostic and win losses. | yes | info | debug/details | no | Avoid CVaR naming in UI; add bootstrap CI later. | No `CVaR_90` implementation found. |
 | `domain_scores_v1` | Future Bayesian domain estimates; visible only when data sufficient. | No backend skill model; frontend heuristics in `neuroBrainVisualModel.ts`, `NeuroFlowPanel.tsx`, `reviewViewModel.ts`. | Domain visuals score opening/tactical/conversion/defense/plan via counts/loss heuristics. | no for future target | high | yes | indirect | Move visible domain scores to qualitative/status display or mark as heuristic until calibrated. | NeuroMonitor 3D shows `/100` domain scores. |
@@ -202,7 +202,7 @@ NeuroChess X / 100
 This means the visible NeuroScore is currently:
 
 ```text
-headline_score = 0.55 * lichess_like_accuracy + 0.45 * neuro_score_diag
+headline_score = 0.35 * lichess_like_accuracy + 0.65 * neuro_score_diag
 ```
 
 or the documented fallback variant.

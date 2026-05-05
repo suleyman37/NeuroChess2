@@ -86,6 +86,9 @@ class CapabilitiesApiTests(unittest.TestCase):
             "exp(",
             "100 / (1 +",
             "0.55 *",
+            "0.45 *",
+            "0.35 *",
+            "0.65 *",
             "win_loss =",
             "criticality_score =",
         )

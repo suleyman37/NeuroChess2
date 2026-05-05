@@ -548,7 +548,7 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertEqual(payload["headline_score_subject"], "user")
         self.assertEqual(
             payload["headline_score_formula_version"],
-            "headline_neurochess_score_v1",
+            "headline_neurochess_score_v2",
         )
         self.assertIsInstance(payload["review_summary_sentence"], str)
         self.assertTrue(payload["review_summary_sentence"])
@@ -857,7 +857,7 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertEqual(payload["coach_score_formula_version"], "coach_neuro_score_v1")
         self.assertEqual(
             payload["headline_score_formula_version"],
-            "headline_neurochess_score_v1",
+            "headline_neurochess_score_v2",
         )
         self.assertIsInstance(payload["review_summary_sentence"], str)
         self.assertEqual(
@@ -874,7 +874,7 @@ class ReviewServiceTests(unittest.TestCase):
         )
         self.assertEqual(
             payload["formula_versions"]["headline_score_formula_version"],
-            "headline_neurochess_score_v1",
+            "headline_neurochess_score_v2",
         )
         self.assertEqual(
             payload["formula_versions"]["coach_score_formula_version"],
@@ -923,7 +923,7 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertEqual(cached["coach_score_formula_version"], "coach_neuro_score_v1")
         self.assertEqual(
             cached["headline_score_formula_version"],
-            "headline_neurochess_score_v1",
+            "headline_neurochess_score_v2",
         )
         self.assertTrue(cached["review_summary_sentence"])
         self.assertEqual(cached["move_category_formula_version"], "neuro_move_categories_v1")

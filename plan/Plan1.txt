@@ -1206,8 +1206,8 @@ coach_neuro_score_v1
 Formule V1 :
 
 coach_neuro_score_v1 =
-0.55 * reference_accuracy
-+ 0.45 * neuro_score_diag
+0.35 * reference_accuracy
++ 0.65 * neuro_score_diag
 
 Rôle :
 
