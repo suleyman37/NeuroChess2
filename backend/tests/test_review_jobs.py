@@ -339,6 +339,60 @@ class ReviewJobServiceTests(unittest.TestCase):
         self.assertEqual(reconciled["completed_position_count"], len(positions))
         self.assertEqual(review["status"], "done")
 
+    def test_get_job_auto_finalizes_standard_when_last_ply_cache_is_complete(self) -> None:
+        game_id, positions = self._create_finished_game()
+        job = self.job_service.start_job(game_id, profile="standard")
+        self._insert_done_standard_cache(positions)
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            connection.execute(
+                """
+                UPDATE review_jobs
+                SET status = 'running',
+                    completed_position_count = ?,
+                    current_fen_index = ?,
+                    current_phase = 'analyzing_position'
+                WHERE job_id = ?
+                """,
+                (len(positions) - 1, len(positions), job["job_id"]),
+            )
+            connection.commit()
+
+        completed = self.job_service.get_job(job["job_id"])
+        review = self.review_service.get_review(game_id)
+
+        self.assertEqual(completed["status"], "completed")
+        self.assertEqual(completed["completed_position_count"], len(positions))
+        self.assertEqual(completed["required_position_count"], len(positions))
+        self.assertEqual(completed["percent"], 100)
+        self.assertFalse(completed["derived_needs_reconcile"])
+        self.assertFalse(completed["can_reconcile"])
+        self.assertEqual(review["status"], "done")
+
+    def test_active_job_elapsed_uses_stable_created_at_when_started_at_is_missing(self) -> None:
+        game_id, _positions = self._create_finished_game()
+        job = self.job_service.start_job(game_id, profile="standard")
+        created_at = (datetime.now(timezone.utc) - timedelta(seconds=37)).isoformat(
+            timespec="seconds"
+        )
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            connection.execute(
+                """
+                UPDATE review_jobs
+                SET status = 'queued',
+                    created_at = ?,
+                    started_at = NULL,
+                    elapsed_seconds = 0
+                WHERE job_id = ?
+                """,
+                (created_at, job["job_id"]),
+            )
+            connection.commit()
+
+        payload = self.job_service.get_job(job["job_id"])
+
+        self.assertGreaterEqual(payload["elapsed_seconds"], 30)
+        self.assertEqual(payload["status"], "queued")
+
     def test_run_job_stalls_when_only_running_analysis_remains(self) -> None:
         game_id, _positions = self._create_finished_game()
         job = self.job_service.start_job(game_id, profile="standard")

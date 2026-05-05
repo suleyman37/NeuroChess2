@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import type { ReviewMoment, ReviewMoveAnnotation } from "../../api/client";
+import type { ReviewJobResponse, ReviewMoment, ReviewMoveAnnotation } from "../../api/client";
 import {
   REVIEW_FAILED_DEEP_MESSAGE,
   REVIEW_NOT_REVIEWABLE_MESSAGE,
@@ -34,6 +34,24 @@ import {
 import type { GameStoryEvent, ReviewFocusKey, ReviewLessonStep, ReviewPanelProps, ReviewPov, ReviewSectionKey } from "./reviewTypes";
 
 const REVIEW_RETRY_COPY = "Vous pouvez reprendre l'analyse.";
+
+function reviewJobElapsedSeconds(job: ReviewJobResponse): number {
+  const storedElapsed = Number(job.elapsed_seconds ?? 0);
+  if (
+    job.status !== "queued" &&
+    job.status !== "running" &&
+    job.status !== "finalizing"
+  ) {
+    return Math.max(0, storedElapsed);
+  }
+  const stableStartedAt = job.started_at ?? job.created_at;
+  const parsedStartedAt = stableStartedAt ? Date.parse(stableStartedAt) : Number.NaN;
+  if (!Number.isFinite(parsedStartedAt)) {
+    return Math.max(0, storedElapsed);
+  }
+  const monotonicElapsed = Math.floor((Date.now() - parsedStartedAt) / 1000);
+  return Math.max(0, storedElapsed, monotonicElapsed);
+}
 
 export function ReviewPanel({
   review,
@@ -415,6 +433,7 @@ export function ReviewPanel({
       !isFinalizing &&
       reviewJob.current_phase === "analyzing_position" &&
       reviewJob.percent >= 95;
+    const elapsedSeconds = reviewJobElapsedSeconds(reviewJob);
     return (
       <ReviewMessage>
         <div className="review-job-progress" data-testid="review-progress">
@@ -428,7 +447,7 @@ export function ReviewPanel({
             {reviewJob.completed_position_count}/{reviewJob.required_position_count} positions · {reviewJob.percent} %
           </span>
           <span>
-            Temps écoulé : {reviewJob.elapsed_seconds}s · restant estimé : {reviewJob.estimated_remaining_seconds}s
+            Temps écoulé : {elapsedSeconds}s · restant estimé : {reviewJob.estimated_remaining_seconds}s
           </span>
           <span>
             Stockfish · Threads {String(reviewJob.settings?.analysis_threads ?? "?")} · Hash {String(reviewJob.settings?.analysis_hash_mb ?? "?")} MB · MultiPV {String(reviewJob.settings?.requested_multipv ?? "?")} · time-only

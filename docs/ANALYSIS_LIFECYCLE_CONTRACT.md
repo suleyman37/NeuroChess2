@@ -1,6 +1,9 @@
 # Analysis Lifecycle Contract
 
-Mission source: `P0.REVIEW-ANALYSIS-INFINITE-TIMER-AND-LIVE-ANALYSIS-V1`.
+Mission sources:
+
+- `P0.REVIEW-ANALYSIS-INFINITE-TIMER-AND-LIVE-ANALYSIS-V1`
+- `P0.STANDARD-ANALYSIS-LAST-PLY-HANG-ROOT-CAUSE-FIX-V1`
 
 Plan1, Plan2, and Plan3 remain authoritative. This contract only stabilizes the
 runtime behavior for Review analysis jobs and lightweight board live analysis.
@@ -63,6 +66,12 @@ recoverable/final UI states when the payload exposes retry or recovery copy.
 11. Debug details stay collapsed by default.
 12. Recovery copy must not duplicate `Vous pouvez reprendre l'analyse.`
 13. Live analysis pauses while `standard_review` or `deep_review` is running.
+14. When coverage is complete, `GET /review/jobs/{job_id}` must not leave an
+    active job waiting for a manual last-ply reconciliation; it materializes
+    Review finalization and returns terminal/recoverable state.
+15. The visible analysis timer is based on stable `started_at`/`created_at`,
+    not on per-position progress writes. Progress may update per move, but
+    elapsed time must remain monotonic.
 
 ## Live Analysis V1 Contract
 
@@ -127,11 +136,16 @@ Display:
   analysis pauses during a standard Review job.
 - `scripts/browser_practice_no_live_spoiler_smoke.mjs` proves live analysis is
   hidden before active Practice attempts.
+- `scripts/browser_standard_analysis_last_ply_no_hang_smoke.mjs` proves the
+  standard UI path reaches terminal/recoverable state at the final ply with a
+  monotonic timer, and compares it with the deep path using real bundled
+  Stockfish in a temp DB.
 
 ## Remaining Risks
 
-- The browser smokes use temp DB and fake engine by default; they guard the
-  runtime contract but do not mutate the user's real local DB.
+- Most browser smokes use temp DB and fake engine by default; the standard
+  last-ply smoke uses temp DB with bundled real Stockfish to cover the
+  standard/deep divergence without mutating the user's real local DB.
 - Real Stockfish availability still depends on local engine configuration.
 - Live analysis is lightweight and must never be treated as durable Review
   analysis.

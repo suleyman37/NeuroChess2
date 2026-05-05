@@ -24,6 +24,9 @@ class FrontendReviewAnalysisLiveStaticTests(unittest.TestCase):
             SCRIPTS_DIR
             / "browser_review_analysis_from_ui_no_infinite_timer_smoke.mjs"
         )
+        self.standard_last_ply_smoke = read(
+            SCRIPTS_DIR / "browser_standard_analysis_last_ply_no_hang_smoke.mjs"
+        )
         self.live_default_smoke = read(
             SCRIPTS_DIR / "browser_live_analysis_default_smoke.mjs"
         )
@@ -56,6 +59,16 @@ class FrontendReviewAnalysisLiveStaticTests(unittest.TestCase):
         self.assertIn("review-status", self.review_panel)
         self.assertIn("review-resume", self.review_panel)
         self.assertEqual(self.review_panel.count("Vous pouvez reprendre l'analyse."), 1)
+
+    def test_review_job_timer_uses_stable_job_timestamp_not_progress_only(self) -> None:
+        for token in (
+            "reviewJobElapsedSeconds",
+            "stableStartedAt",
+            "job.started_at ?? job.created_at",
+            "Date.now() - parsedStartedAt",
+            "Temps écoulé : {elapsedSeconds}s",
+        ):
+            self.assertIn(token, self.review_panel)
 
     def test_live_analysis_is_enabled_for_review_but_paused_for_review_jobs(self) -> None:
         for token in (
@@ -101,6 +114,20 @@ class FrontendReviewAnalysisLiveStaticTests(unittest.TestCase):
             "progress_seen",
         ):
             self.assertIn(token, self.no_timer_smoke)
+
+        for token in (
+            "browser_standard_analysis_last_ply_no_hang",
+            "P0_STANDARD_ANALYSIS_LAST_PLY_HANG_ROOT_CAUSE_FIX_V1",
+            "standard_job_poll_trace.jsonl",
+            "deep_job_poll_trace.jsonl",
+            "NEUROCHESS_ENGINE_MODE: \"\"",
+            "standard_backend_elapsed_monotonic",
+            "standard_ui_timer_monotonic",
+            "02_standard_analysis_mid_progress",
+            "03_standard_analysis_last_move_or_finalizing",
+            "07_deep_analysis_completed",
+        ):
+            self.assertIn(token, self.standard_last_ply_smoke)
 
         for token in (
             "browser_live_analysis_default_smoke_latest.json",
