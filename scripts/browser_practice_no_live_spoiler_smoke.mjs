@@ -42,10 +42,24 @@ async function latestSessionForGame(gameId) {
 }
 
 async function openPracticeFromReview(gameId) {
+  await harness.waitForPagePredicate("review practice entry ready", () => {
+    const text = document.body?.innerText ?? "";
+    return {
+      ok:
+        Boolean(document.querySelector('[data-testid="review-practice-button"]')) ||
+        Boolean(document.querySelector('[data-testid="review-focus-practice"]')) ||
+        text.includes("S'entraîner"),
+      text,
+    };
+  }, 30_000);
   try {
     await harness.clickByTestId("review-practice-button", { afterMs: 1000 });
   } catch {
-    await harness.clickByText("S'entraîner", { exact: true, afterMs: 700 });
+    try {
+      await harness.clickByTestId("review-focus-practice", { afterMs: 700 });
+    } catch {
+      await harness.clickByText("S'entraîner", { exact: false, afterMs: 700 });
+    }
     await harness.clickByTestId("review-practice-button", { afterMs: 1000 });
   }
   await harness.waitForPagePredicate("practice panel visible", () => {

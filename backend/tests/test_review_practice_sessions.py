@@ -39,6 +39,8 @@ from neurochess.review_service import (  # noqa: E402
 
 
 START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+AFTER_E4_FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
+AFTER_E4_E5_FEN = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
 FEN_BXF7 = "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4"
 
 
@@ -65,7 +67,7 @@ def practice_review(game_id: int, user_color: str | None = "white") -> dict[str,
             "san": "e4",
             "uci": "e2e4",
             "fen_before": START_FEN,
-            "fen_after": START_FEN,
+            "fen_after": AFTER_E4_FEN,
             "primary_category": "critical",
             "category_label": "Critique",
             "tags": ["missed_opportunity"],
@@ -89,7 +91,7 @@ def practice_review(game_id: int, user_color: str | None = "white") -> dict[str,
                 "why_best_move_good": "Le meilleur coup force la position.",
             },
             "pv_line": [
-                {"ply_offset": 1, "uci": "e2e4", "san": "e4", "fen_after": START_FEN}
+                {"ply_offset": 1, "uci": "e2e4", "san": "e4", "fen_after": AFTER_E4_FEN}
             ],
             "pv_line_available": True,
             "coach_priority_rank": 1,
@@ -101,8 +103,8 @@ def practice_review(game_id: int, user_color: str | None = "white") -> dict[str,
             "side": "black",
             "san": "e5",
             "uci": "e7e5",
-            "fen_before": START_FEN,
-            "fen_after": START_FEN,
+            "fen_before": AFTER_E4_FEN,
+            "fen_after": AFTER_E4_E5_FEN,
             "primary_category": "inexact",
             "category_label": "Imprecis",
             "tags": ["cluster"],

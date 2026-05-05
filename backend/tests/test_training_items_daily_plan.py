@@ -119,7 +119,7 @@ class TrainingItemsDailyPlanTests(unittest.TestCase):
         practice_service.record_attempt(
             int(session["session_id"]),
             ply=int(items[1]["source_ply"]),
-            attempted_uci="d2d4",
+            attempted_uci="d7d5",
             result="wrong",
             source_context="daily_plan",
         )

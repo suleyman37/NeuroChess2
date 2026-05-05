@@ -99,6 +99,7 @@ export function ReviewFocusTabs({
           key={tab.key}
           type="button"
           role="tab"
+          data-testid={`review-focus-${tab.key}`}
           className={`review-focus-tab ${activeFocus === tab.key ? "active" : ""}`}
           aria-selected={activeFocus === tab.key}
           onClick={() => onFocusChange(tab.key)}
