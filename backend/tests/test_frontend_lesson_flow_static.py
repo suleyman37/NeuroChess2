@@ -24,6 +24,7 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.view_model = read(REVIEW_DIR / "reviewViewModel.ts")
         self.types = read(REVIEW_DIR / "reviewTypes.ts")
         self.step_status = read(REVIEW_DIR / "ReviewStepStatus.tsx")
+        self.line_comparison = read(REVIEW_DIR / "ReviewLineComparison.tsx")
         self.app = read(PROJECT_ROOT / "frontend" / "src" / "App.tsx")
         self.i18n = read(PROJECT_ROOT / "frontend" / "src" / "i18n" / "fr.ts")
 
@@ -103,8 +104,34 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertIn("Le meilleur coup était", correction + self.i18n)
         self.assertIn("solutionMove", correction)
         self.assertIn("ReviewLineComparison", correction)
-        self.assertIn('<details className="review-line-comparison-disclosure">', correction)
-        self.assertNotIn('<details className="review-line-comparison-disclosure" open', correction)
+        self.assertIn('<details className="review-line-comparison-disclosure" open>', correction)
+
+    def test_current_attempt_wrong_feedback_does_not_reuse_historical_commentary(self) -> None:
+        correction = self.section("correction")
+        self.assertIn("hasCurrentAttempt", self.view_model)
+        self.assertIn("showAttemptSpecificFeedback", self.view_model)
+        self.assertIn(
+            "const showHistoricalMoveDiagnostics = !hasCurrentAttempt && !accepted && !needsRebuild",
+            self.view_model,
+        )
+        self.assertIn("const shouldShowLine = accepted || !hasCurrentAttempt", self.view_model)
+        self.assertIn("fr.feedback.currentAttemptWrong", self.lesson)
+        self.assertIn("fr.feedback.currentAttemptPlayable", self.lesson)
+        self.assertIn("fr.feedback.currentAttemptIllegal", self.lesson)
+        self.assertIn("correctionFeedback.showAttemptSpecificFeedback", self.lesson)
+        self.assertIn("currentAttemptFeedbackText", self.lesson)
+        self.assertIn("Pas encore. Ce coup ne répond pas à l'idée clé de la position.", self.i18n)
+
+        attempt_branch_start = correction.index("correctionFeedback.showAttemptSpecificFeedback ? (")
+        historical_branch_start = correction.index(
+            "correctionFeedback.showHistoricalMoveDiagnostics",
+            attempt_branch_start,
+        )
+        attempt_branch = correction[attempt_branch_start:historical_branch_start]
+        self.assertIn("currentAttemptFeedbackText", attempt_branch)
+        self.assertNotIn("correctionProblem", attempt_branch)
+        self.assertNotIn("formatImpact(annotation.win_loss)", attempt_branch)
+        self.assertNotIn("fr.feedback.qualityLabel(qualityLabel)", attempt_branch)
 
     def test_practice_feedback_best_or_accepted_cannot_force_problem_copy(self) -> None:
         self.assertIn("evaluateReviewTryMoveAttempt", self.app)
@@ -139,6 +166,61 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertIn("correctionFeedback.categoryIsNegative", self.lesson)
         self.assertIn("correctionFeedback.showMissedBest", self.lesson)
         self.assertNotIn("Ouvre la correction pour comparer", self.lesson + self.app + self.step_status)
+
+    def test_correction_success_uses_safe_historical_impact_semantics(self) -> None:
+        correction = self.section("correction")
+        self.assertIn("showSuccessHistoricalContext", self.view_model)
+        self.assertIn("showHistoricalMoveDiagnostics", self.view_model)
+        self.assertIn("showRecoveredGain", self.view_model)
+        self.assertIn("recoveredGainPointsFromWinLoss", self.view_model)
+        self.assertIn("correctionFeedback.showSuccessHistoricalContext ? (", correction)
+        self.assertIn("fr.feedback.historicalIdeaMissed", correction)
+        self.assertIn("fr.feedback.recoveredGain(", correction)
+        self.assertIn("fr.feedback.historicalImpact(impactLabel)", correction)
+        self.assertIn("correctionFeedback.showHistoricalMoveDiagnostics ? (", correction)
+        self.assertIn("formatImpact(annotation.win_loss)", correction)
+        self.assertIn("fr.feedback.qualityLabel(qualityLabel)", correction)
+
+        success_start = correction.index("correctionFeedback.showSuccessHistoricalContext")
+        diagnostics_start = correction.index("correctionFeedback.showHistoricalMoveDiagnostics")
+        success_branch = correction[success_start:diagnostics_start]
+        self.assertNotIn("formatImpact(annotation.win_loss)", success_branch)
+        self.assertNotIn("fr.feedback.qualityLabel(qualityLabel)", success_branch)
+        self.assertIn("Dans la partie", self.i18n)
+        self.assertIn("Gain récupéré", self.i18n)
+        self.assertIn("Impact :", self.i18n)
+
+    def test_success_attempt_uses_success_ctas_not_retry_or_correction(self) -> None:
+        challenge = self.section("challenge")
+        self.assertIn("tryFeedbackSucceeded", self.lesson)
+        self.assertIn("fr.feedback.successAttemptTitle", self.lesson)
+        self.assertIn("fr.feedback.viewWhyItWorks", challenge)
+        self.assertIn("fr.actions.continue", challenge)
+        self.assertIn("correctionFeedback.shouldShowRetry", challenge)
+        self.assertIn("correctionFeedback.shouldShowCorrection", challenge)
+        self.assertIn("tryFeedbackCanShowLine", challenge)
+        success_start = challenge.index("tryFeedbackSucceeded ? (")
+        wrong_start = challenge.index(") : (", success_start)
+        success_branch = challenge[success_start:wrong_start]
+        self.assertIn("handleTrainingStep", success_branch)
+        self.assertIn("handleTryRevealSolution", success_branch)
+        self.assertNotIn("onTryMoveReset", success_branch)
+        self.assertNotIn("fr.actions.showCorrection", success_branch)
+        self.assertIn("Tentative réussie", self.i18n)
+        self.assertIn("Voir pourquoi ça marche", self.i18n)
+        self.assertIn("Continuer", self.i18n)
+
+    def test_line_action_requires_real_line_and_opens_visible_panel(self) -> None:
+        correction = self.section("correction")
+        self.assertIn("canShowAnyPvLine", self.lesson)
+        self.assertIn("correctionFeedback.shouldShowLine", self.lesson)
+        self.assertIn("canShowAnyPvLine && (", correction)
+        self.assertNotIn("canShowAnyPvLine || hasContrastCoach", self.lesson)
+        self.assertNotIn("hasContrastCoach", self.lesson)
+        self.assertIn('<details className="review-line-comparison-disclosure" open>', correction)
+        self.assertIn("fr.feedback.lineHistoricalContext", self.line_comparison)
+        self.assertIn("fr.feedback.historicalPlayedMove(view.playedMove)", self.line_comparison)
+        self.assertNotIn("Après ton coup", self.line_comparison)
 
     def test_training_step_has_takeaway_and_training_action(self) -> None:
         training = self.section("training")

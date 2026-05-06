@@ -86,7 +86,6 @@ function ReviewCoachMomentCard({
   const lessonAnnotation = annotation;
   const explanation = annotation.pedagogical_explanation;
   const contrastCoach = annotation.contrast_coach_explanation;
-  const hasContrastCoach = Boolean(contrastCoach?.available);
   const tone = coachTone(annotation, explanation?.error_type);
   const moveTitle = `Coup ${annotation.move_number} — ${reviewColorLabel(
     annotation.color,
@@ -149,17 +148,38 @@ function ReviewCoachMomentCard({
   const activeTryFeedbackMessage = tryActiveForAnnotation
     ? tryMoveState?.feedback?.message
     : null;
+  const tryFeedbackSucceeded = Boolean(
+    tryActiveForAnnotation &&
+      tryMoveState?.feedback &&
+      correctionFeedback.isSuccessAttempt,
+  );
+  const tryFeedbackTitle = tryFeedbackSucceeded
+    ? fr.feedback.successAttemptTitle
+    : fr.feedback.attemptSentTitle;
+  const tryFeedbackCanShowLine =
+    tryFeedbackSucceeded &&
+    correctionFeedback.shouldShowLine &&
+    !canShowLineComparison &&
+    canShowAnyPvLine;
   const acceptedCorrectionText =
     coachTextForPov(
       activeTryFeedbackMessage,
       povContext,
       annotation,
     ) ?? fr.feedback.bestMoveSuccess(displayedPlayedMove);
+  const currentAttemptFeedbackText =
+    correctionFeedback.attemptResult === "illegal"
+      ? fr.feedback.currentAttemptIllegal
+      : correctionFeedback.attemptResult === "playable"
+        ? fr.feedback.currentAttemptPlayable
+        : fr.feedback.currentAttemptWrong;
   const correctionPlayedText = correctionMoveAccepted
     ? acceptedCorrectionText
     : tryMoveNeedsRebuild
       ? fr.feedback.rebuildBeforeCorrection
-      : correctionProblem;
+      : correctionFeedback.showAttemptSpecificFeedback
+        ? currentAttemptFeedbackText
+        : correctionProblem;
   const trainingTakeaway =
     coachTextForPov(explanation?.training_takeaway, povContext, annotation) ??
     "Dans une position tactique, cherche d'abord les coups forcing.";
@@ -292,7 +312,7 @@ function ReviewCoachMomentCard({
           </div>
           {tryActiveForAnnotation && tryMoveState?.feedback && (
             <div className="review-try-move-panel">
-              <strong>Tentative envoyée</strong>
+              <strong>{tryFeedbackTitle}</strong>
               <span>
                 {coachTextForPov(
                   tryMoveState.feedback.message,
@@ -306,13 +326,48 @@ function ReviewCoachMomentCard({
                   {tryMoveState.attemptedSan ?? tryMoveState.attemptedUci}
                 </span>
               )}
+              {tryFeedbackSucceeded && (
+                <span>{fr.feedback.historicalIdeaMissed}</span>
+              )}
               <div className="review-action-row">
-                <button type="button" onClick={onTryMoveReset}>
-                  {fr.actions.retry}
-                </button>
-                <button className="primary" type="button" onClick={handleTryRevealSolution}>
-                  {fr.actions.showCorrection}
-                </button>
+                {tryFeedbackSucceeded ? (
+                  <>
+                    <button
+                      className="primary"
+                      type="button"
+                      onClick={handleTrainingStep}
+                    >
+                      {fr.actions.continue}
+                    </button>
+                    {correctionFeedback.shouldShowWhyItWorks && (
+                      <button type="button" onClick={handleTryRevealSolution}>
+                        {fr.feedback.viewWhyItWorks}
+                      </button>
+                    )}
+                    {tryFeedbackCanShowLine && (
+                      <button type="button" onClick={handleCompareStep}>
+                        {fr.actions.showLine}
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {correctionFeedback.shouldShowRetry && (
+                      <button type="button" onClick={onTryMoveReset}>
+                        {fr.actions.retry}
+                      </button>
+                    )}
+                    {correctionFeedback.shouldShowCorrection && (
+                      <button
+                        className="primary"
+                        type="button"
+                        onClick={handleTryRevealSolution}
+                      >
+                        {fr.actions.showCorrection}
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -342,9 +397,30 @@ function ReviewCoachMomentCard({
               </article>
             )}
             <article>
-              <span>Pourquoi ça marche</span>
-              <p>{formatImpact(annotation.win_loss)} · {impactLabel}</p>
-              <p>Qualité : {qualityLabel}</p>
+              <span>{fr.feedback.correctionWhyTitle}</span>
+              {correctionFeedback.showSuccessHistoricalContext ? (
+                <>
+                  <p>{fr.feedback.historicalIdeaMissed}</p>
+                  {correctionFeedback.showRecoveredGain &&
+                    correctionFeedback.recoveredGainPoints !== null && (
+                      <p>
+                        {fr.feedback.recoveredGain(
+                          correctionFeedback.recoveredGainPoints,
+                        )}
+                      </p>
+                    )}
+                  <p>{fr.feedback.historicalImpact(impactLabel)}</p>
+                </>
+              ) : correctionFeedback.showAttemptSpecificFeedback ? (
+                <p>{currentAttemptFeedbackText}</p>
+              ) : correctionFeedback.showHistoricalMoveDiagnostics ? (
+                <>
+                  <p>{formatImpact(annotation.win_loss)} · {impactLabel}</p>
+                  <p>{fr.feedback.qualityLabel(qualityLabel)}</p>
+                </>
+              ) : (
+                <p>{fr.feedback.rebuildBeforeCorrection}</p>
+              )}
             </article>
             <article>
               <span>À retenir</span>
@@ -364,7 +440,7 @@ function ReviewCoachMomentCard({
             )}
           </div>
           {canShowLineComparison && (
-            <details className="review-line-comparison-disclosure">
+            <details className="review-line-comparison-disclosure" open>
               <summary>Comparer les lignes</summary>
               <ReviewLineComparison
                 annotation={annotation}
@@ -382,17 +458,19 @@ function ReviewCoachMomentCard({
               type="button"
               onClick={handleTrainingStep}
             >
-              Continuer
+              {fr.actions.continue}
             </button>
-            {!canShowLineComparison && (canShowAnyPvLine || hasContrastCoach) && (
-              <button
-                type="button"
-                onClick={handleCompareStep}
-              >
-                Voir la ligne
-              </button>
-            )}
-            {annotation.try_move_supported && (
+            {correctionFeedback.shouldShowLine &&
+              !canShowLineComparison &&
+              canShowAnyPvLine && (
+                <button
+                  type="button"
+                  onClick={handleCompareStep}
+                >
+                  {fr.actions.showLine}
+                </button>
+              )}
+            {annotation.try_move_supported && correctionFeedback.shouldShowRetry && (
               <button type="button" onClick={handleTryStep}>
                 {fr.actions.retry}
               </button>

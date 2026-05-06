@@ -1355,8 +1355,24 @@ export function buildLessonStepState(
 export type ReviewCorrectionFeedbackView = {
   accepted: boolean;
   acceptedSource: "backend" | "best_match" | "accepted_move" | null;
+  hasCurrentAttempt: boolean;
+  attemptResult: string | null;
+  isSuccessAttempt: boolean;
+  isAcceptedAttempt: boolean;
   needsRebuild: boolean;
   showMissedBest: boolean;
+  showHistoricalMoveDiagnostics: boolean;
+  showAttemptSpecificFeedback: boolean;
+  showSuccessHistoricalContext: boolean;
+  showHistoricalContext: boolean;
+  showRecoveredGain: boolean;
+  recoveredGainPoints: number | null;
+  shouldShowRetry: boolean;
+  shouldShowCorrection: boolean;
+  shouldShowWhyItWorks: boolean;
+  shouldShowLine: boolean;
+  primaryCta: "continue" | "show_correction";
+  secondaryCtas: Array<"retry" | "show_correction" | "show_why" | "show_line">;
   visibleTagLabels: string[];
   categoryLabel: string;
   categoryIsNegative: boolean;
@@ -1383,20 +1399,57 @@ export function buildReviewCorrectionFeedbackView(
   );
   const accepted = acceptedSource !== null;
   const needsRebuild = tryFeedbackResult === "needs_rebuild";
+  const hasCurrentAttempt = Boolean(tryActiveForAnnotation && tryMoveState?.feedback);
+  const showHistoricalMoveDiagnostics = !hasCurrentAttempt && !accepted && !needsRebuild;
+  const showAttemptSpecificFeedback = hasCurrentAttempt && !accepted && !needsRebuild;
+  const shouldShowLine = accepted || !hasCurrentAttempt;
+  const recoveredGainPoints = recoveredGainPointsFromWinLoss(annotation.win_loss);
   const rawTags = annotation.tag_labels?.length
     ? annotation.tag_labels
     : annotation.tags;
   return {
     accepted,
     acceptedSource,
+    hasCurrentAttempt,
+    attemptResult: tryFeedbackResult,
+    isSuccessAttempt: accepted,
+    isAcceptedAttempt: accepted,
     needsRebuild,
     showMissedBest: !accepted && !needsRebuild,
+    showHistoricalMoveDiagnostics,
+    showAttemptSpecificFeedback,
+    showSuccessHistoricalContext: accepted,
+    showHistoricalContext: accepted,
+    showRecoveredGain: accepted && recoveredGainPoints !== null,
+    recoveredGainPoints,
+    shouldShowRetry: !accepted && !needsRebuild,
+    shouldShowCorrection: !accepted,
+    shouldShowWhyItWorks: accepted,
+    shouldShowLine,
+    primaryCta: accepted ? "continue" : "show_correction",
+    secondaryCtas: accepted
+      ? ["show_why", "show_line"]
+      : needsRebuild
+        ? []
+        : shouldShowLine
+          ? ["retry", "show_correction", "show_line"]
+          : ["retry", "show_correction"],
     visibleTagLabels: accepted
       ? rawTags.filter((tag) => !isNegativeCorrectionLabel(tag))
       : rawTags,
     categoryLabel: annotation.category_label,
     categoryIsNegative: accepted && isNegativeCorrectionLabel(annotation.category_label),
   };
+}
+
+export function recoveredGainPointsFromWinLoss(
+  value: number | string | null | undefined,
+): number | null {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric <= 0) {
+    return null;
+  }
+  return Math.round(numeric);
 }
 
 function correctionAcceptedSource(

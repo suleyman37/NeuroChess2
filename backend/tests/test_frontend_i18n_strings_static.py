@@ -28,6 +28,9 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
         self.lesson_panel = read(
             FRONTEND_SRC / "components" / "review" / "ReviewLessonPanel.tsx"
         )
+        self.line_comparison = read(
+            FRONTEND_SRC / "components" / "review" / "ReviewLineComparison.tsx"
+        )
         self.practice_panel = read(
             FRONTEND_SRC / "components" / "review" / "ReviewPracticePanel.tsx"
         )
@@ -59,10 +62,18 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
             "Bien joué. Tu as trouvé l’idée critique",
             "Bonne idée. Ce coup répond au problème principal",
             "Pas encore. Le coup clé était",
+            "Pas encore. Ce coup ne répond pas à l'idée clé de la position.",
             "Ce coup n’est pas légal dans cette position.",
             "Ton coup",
             "Problème",
             "Meilleure idée",
+            "Tentative réussie",
+            "Voir pourquoi ça marche",
+            "Dans la partie, cette idée avait été manquée.",
+            "Gain récupéré",
+            "Impact :",
+            "Qualité :",
+            "Coup joué dans la partie",
             "Analyse interrompue temporairement",
             "Review incomplète",
             "S'entraîner",
@@ -102,6 +113,15 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
             "fr.feedback.problem",
             "fr.feedback.bestIdea",
             "fr.actions.showCorrection",
+            "fr.actions.continue",
+            "fr.feedback.successAttemptTitle",
+            "fr.feedback.viewWhyItWorks",
+            "fr.feedback.recoveredGain",
+            "fr.feedback.currentAttemptWrong",
+            "fr.feedback.currentAttemptPlayable",
+            "fr.feedback.currentAttemptIllegal",
+            "fr.feedback.lineHistoricalContext",
+            "fr.feedback.historicalPlayedMove",
         ):
             self.assertIn(
                 usage,
@@ -113,6 +133,7 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
                         self.review_panel,
                         self.review_labels,
                         self.lesson_panel,
+                        self.line_comparison,
                         self.practice_panel,
                     ]
                 ),
@@ -127,6 +148,18 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
         self.assertIn("{correctionFeedback.showMissedBest && (", self.lesson_panel)
         self.assertIn("fr.feedback.bestMoveSuccess(displayedPlayedMove)", self.lesson_panel)
         self.assertIn("correctionFeedback.categoryIsNegative", self.lesson_panel)
+        self.assertIn("fr.feedback.historicalIdeaMissed", self.lesson_panel)
+        self.assertIn("fr.feedback.recoveredGain", self.lesson_panel)
+        self.assertIn("fr.feedback.historicalImpact(impactLabel)", self.lesson_panel)
+        self.assertIn("fr.feedback.qualityLabel(qualityLabel)", self.lesson_panel)
+        self.assertIn("fr.feedback.successAttemptTitle", self.lesson_panel)
+        self.assertIn("fr.feedback.viewWhyItWorks", self.lesson_panel)
+        self.assertIn("fr.actions.continue", self.lesson_panel)
+        self.assertIn("fr.feedback.currentAttemptWrong", self.lesson_panel)
+        self.assertIn("fr.feedback.currentAttemptPlayable", self.lesson_panel)
+        self.assertIn("fr.feedback.currentAttemptIllegal", self.lesson_panel)
+        self.assertIn("fr.feedback.lineHistoricalContext", self.line_comparison)
+        self.assertIn("fr.feedback.historicalPlayedMove", self.line_comparison)
 
     def test_main_nav_and_training_catalog_contract(self) -> None:
         for usage in ("fr.nav.today", "fr.nav.games", "fr.nav.training"):

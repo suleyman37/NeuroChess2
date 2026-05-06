@@ -40,16 +40,33 @@ Each item should be consulted before related missions.
   shown as the best move, while the UI still rendered `Ton coup - Probleme`,
   `Opportunite manquee`, and a missed-best reproach.
 - Risk: reopens the same trust failure outside the Practice smoke path.
-- Fixed by: pending commit `Fix Review correction feedback contradiction`.
+- Fixed by: `e37c4cc Fix Review correction feedback contradiction`.
 - Anti-regression rule: Correction must not render `Ton coup - Probleme` when
   the displayed move equals the best or accepted move; Correction must not
   render `Opportunite manquee` for best/accepted moves; Correction must not say
   `Le meilleur coup etait X` as a reproach when X was played.
+- Success-state anti-regression: after a best/accepted Review try, the success
+  panel must offer `Continuer` and `Voir pourquoi ca marche`, not prominent
+  retry/correction CTAs; historical diagnostics must be framed as recovered
+  context such as `Gain recupere : +N pts par rapport au coup joue`, never as a
+  negative current-attempt delta or `Qualite : Moyenne`.
+- Attempt-specific feedback anti-regression: after a current Review try-move,
+  concrete historical commentary from the original game must not be presented as
+  if it describes the attempted move. If no attempt-specific reply/PV exists,
+  use short safe feedback; any historical line comparison must be clearly
+  labelled as `Dans la partie`.
+- Line-action anti-regression: `Voir la ligne` must either open a visible line
+  panel or be hidden when no playable line is available.
 - Required tests/smokes:
-  `scripts/browser_review_correction_no_contradiction_smoke.mjs`.
+  `scripts/browser_review_correction_no_contradiction_smoke.mjs`,
+  `scripts/browser_review_correction_player_pov_impact_smoke.mjs`, and
+  `scripts/browser_review_success_state_ux_smoke.mjs`,
+  `scripts/browser_review_attempt_specific_feedback_and_line_smoke.mjs`.
 - Evidence required: Correction-tab DOM assertions and screenshots proving
-  success/accepted feedback for the exact displayed best move.
-- Owner/status: Codex / fixed locally, commit pending.
+  success/accepted feedback for the exact displayed best move, clean success
+  CTAs, player-safe historical gain copy, no stale historical reply after a
+  current wrong attempt, and visible/non-dead line action behavior.
+- Owner/status: Codex / fixed, keep under regression watch.
 
 ## F003 - Live Analysis Spoiler Risk In Practice
 

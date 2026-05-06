@@ -104,6 +104,15 @@ Date: 2026-05-05
   Correction payload with displayed move `Nxe4` equal to best move `Nxe4`
   renders success/accepted feedback and does not show `Ton coup - Probleme`,
   `Opportunite manquee`, or `Le meilleur coup etait` as missed-best reproach.
+- [x] Browser Review success-state UX smoke validates that exact-best Review
+  try feedback uses `Tentative reussie`, primary `Continuer`, and
+  `Voir pourquoi ca marche`; it also checks recovered historical gain copy and
+  blocks negative raw deltas, `Qualite : Moyenne`, duplicate `important`, and
+  retry/correction CTAs in the success state.
+- [ ] Browser Review attempt-specific feedback smoke validates that a current
+  wrong try-move does not reuse stale historical reply text, and that
+  `Voir la ligne` opens a visible line panel or stays hidden when no line is
+  available.
 - [x] French V1 strings catalog exists at `frontend/src/i18n/fr.ts`.
 - [x] Static i18n tests validate critical nav, Training, feedback, degraded,
   analysis, live-analysis, Profile/Privacy and forbidden-label contracts.

@@ -7,6 +7,7 @@ export const fr = {
   },
   actions: {
     retry: "Réessayer",
+    continue: "Continuer",
     resume: "Reprendre",
     resumeAnalysis: "Reprendre l'analyse",
     repairAnalysis: "Vérifier / réparer l'analyse",
@@ -188,6 +189,23 @@ export const fr = {
     acceptedMain: "Bien joué : ton coup répond à l'idée critique.",
     rebuildMain: "Cette position doit être reconstruite avant correction.",
     wrongMain: "Voici ce que ton coup a permis.",
+    currentAttemptWrong:
+      "Pas encore. Ce coup ne répond pas à l'idée clé de la position.",
+    currentAttemptPlayable:
+      "C'est jouable, mais l'idée critique était plus forte.",
+    currentAttemptIllegal: "Ce coup n'est pas légal dans cette position.",
+    successAttemptTitle: "Tentative réussie",
+    attemptSentTitle: "Tentative envoyée",
+    viewWhyItWorks: "Voir pourquoi ça marche",
+    correctionWhyTitle: "Pourquoi ça marche",
+    historicalIdeaMissed: "Dans la partie, cette idée avait été manquée.",
+    recoveredGain: (points: number) =>
+      `Gain récupéré : +${points} pts par rapport au coup joué.`,
+    historicalImpact: (impact: string) => `Impact : ${impact}.`,
+    qualityLabel: (quality: string) => `Qualité : ${quality}`,
+    lineHistoricalContext: "Dans la partie",
+    historicalPlayedMove: (move: string) =>
+      `Coup joué dans la partie : ${move}`,
     bestMoveMissed: (move: string) => `Le meilleur coup était : ${move}`,
     bestMoveSuccess: (move: string) =>
       `Bien joué. Tu as trouvé l’idée critique : ${move}.`,

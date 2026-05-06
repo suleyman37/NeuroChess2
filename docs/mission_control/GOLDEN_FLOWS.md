@@ -73,8 +73,23 @@ requests. They define the minimum evidence future missions should preserve.
   or accepted move, Correction shows success/accepted feedback.
 - Forbidden regression: `Ton coup - Probleme`, `Opportunite manquee`, or
   `Le meilleur coup etait X` as a reproach when X was played.
+- Success-state CTA rule: after a best/accepted Review try, the primary action
+  is `Continuer`; explanation uses `Voir pourquoi ca marche`; `Reessayer` and
+  `Voir la correction` must not be prominent success CTAs.
+- Historical context rule: if the original game missed the idea, success may
+  show `Gain recupere : +N pts par rapport au coup joue`; it must not show a
+  negative raw delta, `Qualite : Moyenne`, or duplicate `important` labels as
+  if judging the current successful attempt.
+- Attempt-specific feedback rule: after a current Review try-move, the visible
+  feedback must describe that attempt. Concrete historical replies from the
+  imported game must not appear as `ton coup` feedback unless computed for the
+  current attempted move.
+- Line-action rule: `Voir la ligne` must not be a dead CTA; it opens a visible
+  line panel/playback state when a line exists, otherwise it is hidden.
 - Suggested automated smoke:
-  `scripts/browser_review_correction_no_contradiction_smoke.mjs`.
+  `scripts/browser_review_correction_no_contradiction_smoke.mjs`,
+  `scripts/browser_review_success_state_ux_smoke.mjs`, and
+  `scripts/browser_review_attempt_specific_feedback_and_line_smoke.mjs`.
 - Suggested evidence: Correction-tab screenshot, DOM absence checks for the
   negative labels, and the intercepted/seeded Review payload used by the smoke.
 - Relevant docs/tests: `docs/API_CONTRACTS.md`,

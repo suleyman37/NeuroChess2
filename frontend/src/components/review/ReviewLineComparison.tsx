@@ -1,4 +1,5 @@
 import type { ReviewMoveAnnotation } from "../../api/client";
+import { fr } from "../../i18n";
 import { buildLineComparisonView } from "./reviewViewModel";
 import type { ReviewPovContext, ReviewPvLineMode } from "./reviewTypes";
 
@@ -21,7 +22,6 @@ export function ReviewLineComparison({
     lineMode?: ReviewPvLineMode,
   ) => void;
 }) {
-  const isUserLanguage = povContext.isUserPov;
   const view = buildLineComparisonView(annotation, contrastCoach, explanation, povContext);
   return (
     <div className="review-line-comparison" aria-label="Comparaison des lignes">
@@ -31,8 +31,8 @@ export function ReviewLineComparison({
       </div>
       <div className="review-line-comparison-grid">
         <article className="review-line-card review-line-card-played">
-          <span>{isUserLanguage ? "Après ton coup" : "Après le coup joué"}</span>
-          <strong>Coup joué : {view.playedMove}</strong>
+          <span>{fr.feedback.lineHistoricalContext}</span>
+          <strong>{fr.feedback.historicalPlayedMove(view.playedMove)}</strong>
           <p>{view.playedSummary}</p>
           <p>
             Ligne du coup joué :{" "}

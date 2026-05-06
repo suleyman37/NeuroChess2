@@ -86,6 +86,17 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
   It proves a legacy Review/Lesson Correction payload with displayed move
   `Nxe4` equal to best move `Nxe4` renders success/accepted feedback and does
   not render problem, missed-opportunity, or missed-best reproach copy.
+- Review success-state UX browser smoke: PASS via
+  `cmd /c node scripts\browser_review_success_state_ux_smoke.mjs`.
+  It proves exact-best Review try feedback uses `Tentative reussie`,
+  `Continuer`, and `Voir pourquoi ca marche`, then shows recovered historical
+  gain without negative delta, `Qualite : Moyenne`, duplicate `important`, or
+  retry/correction success CTAs.
+- Review attempt-specific feedback and line-action browser smoke: added via
+  `cmd /c node scripts\browser_review_attempt_specific_feedback_and_line_smoke.mjs`.
+  It proves a current wrong Review try-move uses attempt-safe feedback instead
+  of stale historical reply text, exact-best retry remains success, and
+  `Voir la ligne` opens a visible line panel only when a line exists.
 - French V1 strings catalog static suite: PASS via
   `.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_frontend_i18n_strings_static ...`.
   It proves `frontend/src/i18n/fr.ts`, critical V1 strings, Plan2 nav labels,
@@ -162,6 +173,8 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
 | `scripts/browser_practice_no_live_spoiler_smoke.mjs` | browser smoke | Practice spoiler protection | Practice hides live eval/best move before attempt, then normal attempt persists | Every Practice branch after reveal | added in P0 live mission | high if PASS | Extend after richer Practice fixture |
 | `scripts/browser_practice_best_move_feedback_success_smoke.mjs` | browser smoke | Practice feedback trust | Exact best move through real board is success, no contradictory problem copy, attempt saved as best with due_at, legacy Bxf7+ API probe, no feedback classification side effects | Rich chess explanation quality and future LLM wording | PASS | high | Keep evidence pack for regression review |
 | `scripts/browser_review_correction_no_contradiction_smoke.mjs` | browser smoke | Review Correction feedback trust | Legacy Review/Lesson Correction payload with displayed move equal to best move shows success/accepted feedback and suppresses `Ton coup - Probleme`, `Opportunite manquee`, and missed-best reproach copy | Real user DB payload variety and future LLM commentary quality | PASS | high | Keep paired with F002/GF-005b anti-regression checks |
+| `scripts/browser_review_success_state_ux_smoke.mjs` | browser smoke | Review success-state CTA / historical context | Exact-best Review try move shows `Tentative reussie`, primary `Continuer`, `Voir pourquoi ca marche`, recovered gain copy, and no retry/correction success CTA, negative delta, `Qualite : Moyenne`, duplicate `important`, or problem labels | Real user DB payload variety and richer future explanation quality | added in P1 success UX mission | high if PASS | Pair with player-POV impact smoke |
+| `scripts/browser_review_attempt_specific_feedback_and_line_smoke.mjs` | browser smoke | Review try-move feedback / line action | Current wrong Review try-move shows the attempted move and safe generic feedback instead of stale historical reply text; exact-best retry stays success; `Voir la ligne` opens a visible line panel when a line exists | Rich attempt-specific engine PV for every wrong move; full manual animation perception | added in P1 attempt feedback mission | high if PASS | Keep paired with F002/GF-005b anti-regression checks |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |
