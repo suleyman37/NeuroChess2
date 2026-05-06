@@ -80,9 +80,11 @@ import {
   type ReviewSolutionRevealViewState,
   type ReviewTryMoveViewState,
 } from "./components/ReviewPanel";
+import { ReviewPvStepper } from "./components/review/ReviewPvStepper";
 import { ReviewStepStatus } from "./components/review/ReviewStepStatus";
 import {
   annotationIndex,
+  normalizedAnnotationColor,
 } from "./components/review/reviewViewModel";
 import {
   buildDailyPlanNotice,
@@ -3001,6 +3003,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     setSolutionRevealForAnnotation(annotation, "hidden");
     setGuidedReplayPhase(null);
     setGuidedPvIndex(null);
+    setReviewPvLineState(null);
     setReviewReplayMoveMode("played");
     setReviewBarPhase("before");
     setReviewReplayState("idle");
@@ -3237,11 +3240,11 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         : state.moves[nextIndex - 1]?.fen_after ?? annotation.fen_before;
     const applied = tryMoveFenAfter(previousFen, move.uci);
     if (!applied.legal) {
-      setReviewPvLineState({
-        ...state,
-        autoplay: false,
-        message: "La ligne complète n'est pas disponible jusqu'au bout.",
-      });
+    setReviewPvLineState({
+      ...state,
+      autoplay: false,
+      message: fr.lines.incomplete,
+    });
       return;
     }
     const nextFen = move.fen_after || applied.fenAfter || previousFen;
@@ -4306,18 +4309,15 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       !practiceMoveActive &&
       !reviewExplorationActive &&
       (isGameCompleted || positionMode !== "LIVE"));
-  const reviewUserColor = normalizedReviewUserColor(review);
-  const boardOrientation: "white" | "black" =
-    reviewPracticeState?.active && activePracticeItem
-      ? String(activePracticeItem.color).toLowerCase() === "black"
-        ? "black"
-        : "white"
-      : activeTab === "review" &&
-          (selectedReviewPov === "black" ||
-            (selectedReviewPov === "user" && reviewUserColor === "black") ||
-            (selectedReviewPov === "both" && reviewUserColor === "black"))
-        ? "black"
-        : "white";
+  const boardOrientation = resolveReviewBoardOrientation({
+    activeTab,
+    selectedReviewPov,
+    review,
+    activePracticeItem,
+    selectedReviewAnnotation,
+    selectedReviewMoment,
+    selectedReviewMovePly,
+  });
   const boardTestId = reviewPracticeState?.active
     ? "practice-board"
     : activeTab === "review"
@@ -5063,7 +5063,10 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       )}
 
       {(activeTab === "review" || activeShellPage === "games") && (
-      <section className="analysis-layout">
+      <section
+        className={`analysis-layout${activeTab === "review" ? " review-focus-layout" : ""}`}
+        data-testid={activeTab === "review" ? "review-focus-layout" : undefined}
+      >
         <EvaluationBar
           evaluation={evaluationBarState.evaluation}
           source={evaluationBarState.source}
@@ -5073,7 +5076,10 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
           hidden={hideEvaluation}
         />
 
-        <section className="board-column">
+        <section
+          className={`board-column${activeTab === "review" ? " review-board-sticky-column" : ""}`}
+          data-testid={activeTab === "review" ? "review-board-sticky-column" : undefined}
+        >
           {boardBadge && <div className="position-badge">{boardBadge}</div>}
           {reviewReplayBadge && (
             <div
@@ -5081,6 +5087,19 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
               aria-live="polite"
             >
               {reviewReplayBadge}
+            </div>
+          )}
+          {activeTab === "review" && reviewPvLineState?.active && (
+            <div className="review-line-player-dock" data-testid="review-line-player-dock">
+              <ReviewPvStepper
+                state={reviewPvLineState}
+                onPrevious={showPreviousPvLineStep}
+                onNext={showNextPvLineStep}
+                onRestart={restartManualPvLine}
+                onToggleAutoplay={toggleManualPvLineAutoplay}
+                onSelectLine={selectManualPvLineMode}
+                onClose={closeManualPvLine}
+              />
             </div>
           )}
           <ChessBoardPanel
@@ -5393,7 +5412,6 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                 onSolutionHintAnnotation={handleSolutionHintAnnotation}
                 onSolutionReset={resetSolutionReveal}
                 practiceState={reviewPracticeState}
-                practicePvLineState={reviewPvLineState}
                 onStartPractice={handleStartReviewPractice}
                 onPracticeHint={showPracticeHint}
                 onPracticeRevealSolution={revealPracticeSolution}
@@ -5401,12 +5419,6 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                 onPracticeTryAgain={resetPracticeAttempt}
                 onPracticeNext={goToNextPracticeItem}
                 onPracticeShowPvLine={showPracticePvLine}
-                onPracticePvPrevious={showPreviousPvLineStep}
-                onPracticePvNext={showNextPvLineStep}
-                onPracticePvRestart={restartManualPvLine}
-                onPracticePvToggleAutoplay={toggleManualPvLineAutoplay}
-                onPracticePvSelectLine={selectManualPvLineMode}
-                onPracticePvClose={closeManualPvLine}
                 onPracticeQuit={quitPracticeSession}
                 onPracticeRetryFailed={() => retryFailedPracticeSession()}
                 onPracticeRedoAll={redoPracticeSession}
@@ -6639,7 +6651,7 @@ function readReviewPovPreference(
   gameId: number | null,
   review: ReviewResponse | null,
 ): ReviewPov {
-  const fallback = normalizedReviewUserColor(review) ? "user" : "white";
+  const fallback = normalizedReviewUserColor(review) ? "user" : "both";
   if (typeof window === "undefined" || !gameId) {
     return fallback;
   }
@@ -6705,12 +6717,99 @@ function normalizeReviewPovForReview(
 ): ReviewPov {
   const userColor = normalizedReviewUserColor(review);
   if (value === "user") {
-    return userColor ? "user" : "white";
+    return userColor ? "user" : "both";
   }
   if (value === "white" || value === "black" || value === "both") {
     return value;
   }
-  return userColor ? "user" : "white";
+  return userColor ? "user" : "both";
+}
+
+function resolveReviewBoardOrientation({
+  activeTab,
+  selectedReviewPov,
+  review,
+  activePracticeItem,
+  selectedReviewAnnotation,
+  selectedReviewMoment,
+  selectedReviewMovePly,
+}: {
+  activeTab: ActiveTab;
+  selectedReviewPov: ReviewPov;
+  review: ReviewResponse | null;
+  activePracticeItem: ReviewPracticeItem | null;
+  selectedReviewAnnotation: ReviewMoveAnnotation | null;
+  selectedReviewMoment: ReviewMoment | null;
+  selectedReviewMovePly: number | null;
+}): "white" | "black" {
+  if (activeTab !== "review") {
+    return "white";
+  }
+  const practiceColor = normalizedColor(activePracticeItem?.color);
+  if (practiceColor) {
+    return practiceColor;
+  }
+  const userColor = normalizedReviewUserColor(review);
+  if (selectedReviewPov === "white" || selectedReviewPov === "black") {
+    return selectedReviewPov;
+  }
+  if (selectedReviewPov === "user" && userColor) {
+    return userColor;
+  }
+  const decisionColor =
+    reviewAnnotationDecisionColor(selectedReviewAnnotation) ??
+    reviewAnnotationDecisionColor(reviewAnnotationForPly(review, selectedReviewMovePly)) ??
+    reviewMomentDecisionColor(selectedReviewMoment) ??
+    "white";
+  if (selectedReviewPov === "both") {
+    return decisionColor;
+  }
+  return decisionColor;
+}
+
+function reviewAnnotationDecisionColor(
+  annotation: ReviewMoveAnnotation | null | undefined,
+): "white" | "black" | null {
+  return annotation ? normalizedAnnotationColor(annotation) : null;
+}
+
+function reviewAnnotationForPly(
+  review: ReviewResponse | null,
+  ply: number | null,
+): ReviewMoveAnnotation | null {
+  if (!review || typeof ply !== "number") {
+    return null;
+  }
+  const candidates = [
+    ...(review.review_sections?.to_review ?? []),
+    ...(review.review_sections?.strong_moves ?? []),
+    ...(review.review_sections?.missed_opportunities ?? []),
+    ...(review.review_sections?.all ?? []),
+    ...(review.move_annotations ?? []),
+  ];
+  return candidates.find((annotation) => annotation.ply === ply) ?? null;
+}
+
+function reviewMomentDecisionColor(
+  moment: ReviewMoment | null,
+): "white" | "black" | null {
+  return (
+    normalizedColor(moment?.played_by) ??
+    activeColorFromFen(moment?.fen_before) ??
+    null
+  );
+}
+
+function normalizedColor(value: unknown): "white" | "black" | null {
+  const normalized = String(value ?? "").toLowerCase();
+  return normalized === "white" || normalized === "black" ? normalized : null;
+}
+
+function activeColorFromFen(fen: string | null | undefined): "white" | "black" | null {
+  const activeColor = String(fen ?? "").split(/\s+/)[1];
+  if (activeColor === "w") return "white";
+  if (activeColor === "b") return "black";
+  return null;
 }
 
 function normalizedReviewUserColor(
@@ -6847,11 +6946,11 @@ function reviewPvLineMessageForMode(
   lineMode: ReviewPvLineMode,
 ): string {
   if (lineMode === "played") {
-    return "Ligne après le coup joué indisponible.";
+    return fr.lines.unavailable;
   }
   return (
     annotation.pv_line_message ??
-    "Ligne complète de la solution indisponible."
+    fr.lines.unavailable
   );
 }
 

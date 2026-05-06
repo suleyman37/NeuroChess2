@@ -1,3 +1,4 @@
+import { fr } from "../../i18n";
 import type { ReviewPvLineMode, ReviewPvLineViewState } from "./reviewTypes";
 
 function ReviewPracticePvStepper({
@@ -23,58 +24,84 @@ function ReviewPracticePvStepper({
   const hasPrevious = state.currentIndex >= 0;
   const hasNext = state.currentIndex < total - 1;
   return (
-    <div className="review-practice-pv-stepper">
+    <div
+      className="review-practice-pv-stepper"
+      data-testid="review-line-player"
+      data-active-line={state.lineMode}
+      data-current-fen={state.currentFen}
+      data-current-index={state.currentIndex}
+    >
       <div className="review-block-title">
-        <span>
+        <span data-testid="review-line-player-context">
           {state.lineMode === "played"
-            ? "Ligne après le coup joué"
-            : "Ligne de la solution"}
+            ? fr.lines.playbackGameContext
+            : fr.lines.playbackSolutionContext}
         </span>
-        <strong>
+        <strong data-testid="review-line-player-step-label">
           {state.currentIndex < 0
-            ? `Départ / ${total}`
-            : `Coup ${state.currentIndex + 1} / ${total}`}
+            ? fr.lines.stepStart(total)
+            : fr.lines.stepLabel(state.currentIndex + 1, total)}
         </strong>
       </div>
-      <p>
+      <p data-testid="review-line-player-current-move">
         {currentMove
           ? currentMove.san ?? currentMove.uci
-          : "Position de départ de la ligne."}
+          : fr.lines.startPosition}
       </p>
       {state.message && <div className="warning">{state.message}</div>}
-      <div className="review-pv-line-mode" aria-label="Choix de ligne PV">
+      <div
+        className="review-pv-line-mode"
+        aria-label={fr.lines.choosePvLineAria}
+        data-testid="review-line-player-active-line"
+      >
         <button
           type="button"
           className={state.lineMode === "played" ? "active" : ""}
           onClick={() => onSelectLine("played")}
           disabled={!state.playedLineAvailable}
+          data-testid="review-line-player-played-line"
         >
-          Ligne du coup joué
+          {fr.lines.playedLineChoice}
         </button>
         <button
           type="button"
           className={state.lineMode === "solution" ? "active" : ""}
           onClick={() => onSelectLine("solution")}
           disabled={!state.solutionLineAvailable}
+          data-testid="review-line-player-solution-line"
         >
-          Ligne de la solution
+          {fr.lines.solutionLineChoice}
         </button>
       </div>
       <div className="review-action-row">
-        <button type="button" onClick={onPrevious} disabled={!hasPrevious}>
-          ← Coup précédent
+        <button
+          type="button"
+          onClick={onPrevious}
+          disabled={!hasPrevious}
+          data-testid="review-line-player-prev"
+        >
+          {fr.lines.previous}
         </button>
-        <button type="button" onClick={onNext} disabled={!hasNext}>
-          Coup suivant →
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!hasNext}
+          data-testid="review-line-player-next"
+        >
+          {fr.lines.next}
         </button>
-        <button type="button" onClick={onRestart}>
-          Rejouer depuis le début
+        <button
+          type="button"
+          onClick={onRestart}
+          data-testid="review-line-player-restart"
+        >
+          {fr.lines.restart}
         </button>
         <button type="button" onClick={onToggleAutoplay} disabled={!hasNext}>
-          {state.autoplay ? "Pause" : "Auto"}
+          {state.autoplay ? fr.lines.pause : fr.lines.autoplay}
         </button>
         <button type="button" onClick={onClose}>
-          Fermer
+          {fr.lines.close}
         </button>
       </div>
     </div>

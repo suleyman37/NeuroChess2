@@ -113,6 +113,15 @@ Date: 2026-05-05
   wrong try-move does not reuse stale historical reply text, and that
   `Voir la ligne` opens a visible line panel or stays hidden when no line is
   available.
+- [ ] Browser Review Training continuation smoke validates that success or
+  accepted feedback shows a local `Position suivante`/`Terminer la session`
+  action in the active panel, that next advances and resets the item without a
+  duplicate attempt, and that internal `Lire la ligne jouee` / `Lire la ligne
+  solution` buttons visibly open and step a line player.
+- [ ] Browser Review user-POV/focus layout smoke validates `Les deux` board
+  orientation per White/Black moment, honest `Moi` behavior when user color is
+  unknown, and board/feedback/primary action/line player visibility without
+  burying controls below the fold.
 - [x] French V1 strings catalog exists at `frontend/src/i18n/fr.ts`.
 - [x] Static i18n tests validate critical nav, Training, feedback, degraded,
   analysis, live-analysis, Profile/Privacy and forbidden-label contracts.

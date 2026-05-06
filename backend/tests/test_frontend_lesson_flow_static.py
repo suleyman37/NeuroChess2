@@ -27,6 +27,9 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.line_comparison = read(REVIEW_DIR / "ReviewLineComparison.tsx")
         self.app = read(PROJECT_ROOT / "frontend" / "src" / "App.tsx")
         self.i18n = read(PROJECT_ROOT / "frontend" / "src" / "i18n" / "fr.ts")
+        self.user_pov_smoke = read(
+            PROJECT_ROOT / "scripts" / "browser_review_user_pov_focus_layout_contract_smoke.mjs"
+        )
 
     def section(self, name: str) -> str:
         start = self.lesson.index(f'data-public-lesson-step="{name}"')
@@ -104,7 +107,7 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertIn("Le meilleur coup était", correction + self.i18n)
         self.assertIn("solutionMove", correction)
         self.assertIn("ReviewLineComparison", correction)
-        self.assertIn('<details className="review-line-comparison-disclosure" open>', correction)
+        self.assertIn("review-line-comparison-disclosure review-details-disclosure", correction)
 
     def test_current_attempt_wrong_feedback_does_not_reuse_historical_commentary(self) -> None:
         correction = self.section("correction")
@@ -148,6 +151,31 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertIn("{correctionFeedback.showMissedBest && (", self.lesson)
         self.assertIn("Review ", self.lesson + self.i18n)
         self.assertIn(" reconstruire", self.lesson + self.i18n)
+
+    def test_review_training_success_has_local_next_or_finish_action(self) -> None:
+        self.assertIn("PRACTICE_SUCCESS_RESULTS", self.practice)
+        self.assertIn("feedbackCanContinue", self.practice)
+        self.assertIn("review-training-position-label", self.practice)
+        self.assertIn("review-training-feedback", self.practice)
+        self.assertIn("review-training-user-move", self.practice)
+        self.assertIn("review-training-next-button", self.practice)
+        self.assertIn("review-training-finish-button", self.practice)
+        self.assertIn("fr.practice.acceptedCanContinue", self.practice)
+        self.assertIn("fr.practice.nextPosition", self.practice)
+        self.assertIn("fr.practice.finishSession", self.practice)
+        success_start = self.practice.index("{feedbackCanContinue && (")
+        wrong_or_reveal_start = self.practice.index("{showSolution && !feedbackCanContinue", success_start)
+        success_branch = self.practice[success_start:wrong_or_reveal_start]
+        self.assertIn("onNext", success_branch)
+        self.assertIn("review-training-next-button", success_branch)
+        self.assertIn("review-training-finish-button", success_branch)
+        self.assertNotIn("onTryAgain", success_branch)
+        self.assertNotIn("fr.actions.showCorrection", success_branch)
+
+        wrong_or_reveal_branch = self.practice[wrong_or_reveal_start:]
+        self.assertIn("onTryAgain", wrong_or_reveal_branch)
+        self.assertIn("canContinueAfterReveal", wrong_or_reveal_branch)
+        self.assertNotIn("review-training-next-button", wrong_or_reveal_branch)
 
     def test_correction_tab_has_no_best_move_contradiction_invariant(self) -> None:
         self.assertIn("buildReviewCorrectionFeedbackView", self.view_model)
@@ -217,10 +245,48 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertIn("canShowAnyPvLine && (", correction)
         self.assertNotIn("canShowAnyPvLine || hasContrastCoach", self.lesson)
         self.assertNotIn("hasContrastCoach", self.lesson)
-        self.assertIn('<details className="review-line-comparison-disclosure" open>', correction)
+        self.assertIn("review-line-comparison-disclosure review-details-disclosure", correction)
         self.assertIn("fr.feedback.lineHistoricalContext", self.line_comparison)
         self.assertIn("fr.feedback.historicalPlayedMove(view.playedMove)", self.line_comparison)
+        self.assertIn("fr.lines.playGameLine", self.line_comparison)
+        self.assertIn("fr.lines.playSolutionLine", self.line_comparison)
+        self.assertIn('data-testid="review-line-game-play-button"', self.line_comparison)
+        self.assertIn('data-testid="review-line-solution-play-button"', self.line_comparison)
+        self.assertIn("review-line-player-dock", self.app)
+        self.assertIn("ReviewPvStepper", self.app)
+        self.assertIn("reviewPvLineState?.active", self.app)
+        pv_stepper = read(REVIEW_DIR / "ReviewPvStepper.tsx")
+        self.assertIn('data-testid="review-line-player"', pv_stepper)
+        self.assertIn('data-testid="review-line-player-next"', pv_stepper)
+        self.assertNotIn(">Voir la ligne<", self.line_comparison)
         self.assertNotIn("Après ton coup", self.line_comparison)
+
+    def test_review_pov_orientation_and_focus_layout_contract(self) -> None:
+        score_details = read(REVIEW_DIR / "ReviewScoreDetails.tsx")
+        self.assertIn("resolveReviewBoardOrientation", self.app)
+        self.assertIn('selectedReviewPov === "both"', self.app)
+        self.assertIn("reviewAnnotationForPly(review, selectedReviewMovePly)", self.app)
+        self.assertIn("reviewMomentDecisionColor(selectedReviewMoment)", self.app)
+        self.assertIn('normalizedReviewUserColor(review) ? "user" : "both"', self.app)
+        self.assertIn('return userColor ? "user" : "both"', self.app)
+        self.assertIn('selectedPov === "user" && !userColor ? "both"', self.view_model)
+        self.assertIn("buildPovOptions(userColor)", self.view_model)
+        self.assertIn("fr.review.pov.me", self.labels)
+        self.assertIn("fr.review.pov.unknownColor", score_details)
+        self.assertIn("review-analyzed-player-me-disabled-reason", score_details)
+        self.assertIn("review-user-color-detected-label", score_details)
+        self.assertIn("optionTestIdSuffix(option.value)", score_details)
+        self.assertIn("review-focus-layout", self.app)
+        self.assertIn("review-board-sticky-column", self.app)
+        self.assertIn("review-primary-action-zone", self.practice)
+        self.assertIn("review-current-moment-side", self.lesson + self.practice)
+        self.assertIn("review-details-disclosure", self.lesson)
+        self.assertIn("review-analyzed-player-me-disabled-reason", self.user_pov_smoke)
+        self.assertIn("data-board-orientation", self.user_pov_smoke)
+        self.assertIn("review-line-player-dock", self.user_pov_smoke)
+        self.assertIn("review-training-next-button", self.user_pov_smoke)
+        self.assertIn("expectedIndex + 1", self.user_pov_smoke)
+        self.assertIn("Position ${expectedIndex + 1}", self.user_pov_smoke)
 
     def test_training_step_has_takeaway_and_training_action(self) -> None:
         training = self.section("training")

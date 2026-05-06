@@ -55,17 +55,32 @@ Each item should be consulted before related missions.
   if it describes the attempted move. If no attempt-specific reply/PV exists,
   use short safe feedback; any historical line comparison must be clearly
   labelled as `Dans la partie`.
-- Line-action anti-regression: `Voir la ligne` must either open a visible line
-  panel or be hidden when no playable line is available.
+- Review Training continuation anti-regression: after best/very_good/accepted
+  feedback, the active Review Training panel must show `Position suivante` or
+  `Terminer la session` locally; next must advance/reset the item without
+  creating a duplicate attempt.
+- Line-action anti-regression: `Voir la ligne` must either open contextual
+  line actions with visible playback (`Lire la ligne jouee` / `Lire la ligne
+  solution`, active line, step label, current move, controls, and board/FEN
+  change on `Suivant`) or be hidden/disabled when no playable line is
+  available.
+- Review POV/layout anti-regression: in `Les deux`, the board orientation must
+  follow the current moment/item side instead of stale user/global color; `Moi`
+  must be hidden/disabled/explained when `user_color` is unknown; Review
+  Training must keep the board, feedback, primary next action, and active line
+  player usable without burying controls below the fold.
 - Required tests/smokes:
   `scripts/browser_review_correction_no_contradiction_smoke.mjs`,
   `scripts/browser_review_correction_player_pov_impact_smoke.mjs`, and
   `scripts/browser_review_success_state_ux_smoke.mjs`,
-  `scripts/browser_review_attempt_specific_feedback_and_line_smoke.mjs`.
+  `scripts/browser_review_attempt_specific_feedback_and_line_smoke.mjs`,
+  `scripts/browser_review_training_continuation_and_line_playback_user_contract_smoke.mjs`,
+  `scripts/browser_review_user_pov_focus_layout_contract_smoke.mjs`.
 - Evidence required: Correction-tab DOM assertions and screenshots proving
   success/accepted feedback for the exact displayed best move, clean success
   CTAs, player-safe historical gain copy, no stale historical reply after a
-  current wrong attempt, and visible/non-dead line action behavior.
+  current wrong attempt, local next/finish Training continuation, and
+  visible/non-dead line playback behavior.
 - Owner/status: Codex / fixed, keep under regression watch.
 
 ## F003 - Live Analysis Spoiler Risk In Practice

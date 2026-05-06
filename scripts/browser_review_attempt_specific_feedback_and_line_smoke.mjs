@@ -319,7 +319,7 @@ async function openReviewWithInterceptedPayload(gameId, reviewPayload) {
     { gameId },
   );
   await harness.browserClient.send("Page.navigate", {
-    url: `${harness.frontendBaseUrl}/app`,
+    url: `${harness.frontendBaseUrl}/app?reviewAttemptSpecific=${Date.now()}`,
   });
   await harness.waitForPagePredicate("review board restored", () => {
     const text = document.body?.innerText ?? "";
@@ -336,7 +336,7 @@ async function openReviewWithInterceptedPayload(gameId, reviewPayload) {
 async function replaceReviewPayloadAndReload(gameId, reviewPayload) {
   await installReviewPayloadIntercept(gameId, reviewPayload);
   await harness.browserClient.send("Page.navigate", {
-    url: `${harness.frontendBaseUrl}/app`,
+    url: `${harness.frontendBaseUrl}/app?reviewAttemptSpecific=${Date.now()}`,
   });
   await harness.waitForPagePredicate("review board restored with replaced payload", () => {
     const text = document.body?.innerText ?? "";

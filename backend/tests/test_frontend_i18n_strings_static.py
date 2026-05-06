@@ -34,6 +34,12 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
         self.practice_panel = read(
             FRONTEND_SRC / "components" / "review" / "ReviewPracticePanel.tsx"
         )
+        self.pv_stepper = read(
+            FRONTEND_SRC / "components" / "review" / "ReviewPvStepper.tsx"
+        )
+        self.score_details = read(
+            FRONTEND_SRC / "components" / "review" / "ReviewScoreDetails.tsx"
+        )
 
     def test_french_catalog_exports_critical_v1_sections(self) -> None:
         self.assertIn("export const fr = {", self.catalog)
@@ -50,6 +56,7 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
             "profilePrivacy:",
             "confirmation:",
             "feedback:",
+            "lines:",
         ):
             self.assertIn(section, self.catalog)
 
@@ -74,6 +81,21 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
             "Impact :",
             "Qualité :",
             "Coup joué dans la partie",
+            "Position suivante",
+            "Terminer la session",
+            "Lire la ligne jouée",
+            "Lire la ligne solution",
+            "Lecture : dans la partie",
+            "Lecture : solution",
+            "Ligne indisponible pour cette position.",
+            "Joueur analysé",
+            "Moi",
+            "Blancs",
+            "Noirs",
+            "Les deux",
+            "Couleur détectée",
+            "Couleur inconnue pour cette partie.",
+            "Choisis Blancs, Noirs ou Les deux.",
             "Analyse interrompue temporairement",
             "Review incomplète",
             "S'entraîner",
@@ -122,6 +144,18 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
             "fr.feedback.currentAttemptIllegal",
             "fr.feedback.lineHistoricalContext",
             "fr.feedback.historicalPlayedMove",
+            "fr.practice.nextPosition",
+            "fr.practice.finishSession",
+            "fr.practice.acceptedCanContinue",
+            "fr.lines.playGameLine",
+            "fr.lines.playSolutionLine",
+            "fr.lines.playbackGameContext",
+            "fr.lines.playbackSolutionContext",
+            "fr.lines.stepLabel",
+            "fr.review.pov.analyzedPlayer",
+            "fr.review.pov.unknownColor",
+            "fr.review.pov.detectedColor",
+            "fr.review.pov.currentMomentSide",
         ):
             self.assertIn(
                 usage,
@@ -135,6 +169,8 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
                         self.lesson_panel,
                         self.line_comparison,
                         self.practice_panel,
+                        self.pv_stepper,
+                        self.score_details,
                     ]
                 ),
             )
@@ -160,6 +196,15 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
         self.assertIn("fr.feedback.currentAttemptIllegal", self.lesson_panel)
         self.assertIn("fr.feedback.lineHistoricalContext", self.line_comparison)
         self.assertIn("fr.feedback.historicalPlayedMove", self.line_comparison)
+        self.assertIn("fr.lines.playGameLine", self.line_comparison)
+        self.assertIn("fr.lines.playSolutionLine", self.line_comparison)
+        self.assertIn("fr.lines.playbackGameContext", self.pv_stepper)
+        self.assertIn("fr.lines.playbackSolutionContext", self.pv_stepper)
+        self.assertIn("fr.practice.nextPosition", self.practice_panel)
+        self.assertIn("fr.practice.finishSession", self.practice_panel)
+        self.assertIn("feedbackCanContinue", self.practice_panel)
+        self.assertIn("review-training-next-button", self.practice_panel)
+        self.assertIn("review-line-player", self.pv_stepper)
 
     def test_main_nav_and_training_catalog_contract(self) -> None:
         for usage in ("fr.nav.today", "fr.nav.games", "fr.nav.training"):

@@ -47,20 +47,9 @@ export function reviewPovContext(
   selectedPov: ReviewPov,
 ): ReviewPovContext {
   const userColor = normalizedReviewUserColor(review);
-  const options: Array<{ value: ReviewPov; label: string }> = userColor
-    ? [
-        { value: "user", label: "Moi" },
-        { value: "white", label: "Blancs" },
-        { value: "black", label: "Noirs" },
-        { value: "both", label: "Les deux" },
-      ]
-    : [
-        { value: "white", label: "Blancs" },
-        { value: "black", label: "Noirs" },
-        { value: "both", label: "Les deux" },
-      ];
+  const options = buildPovOptions(userColor);
   const normalizedPov =
-    selectedPov === "user" && !userColor ? "white" : selectedPov;
+    selectedPov === "user" && !userColor ? "both" : selectedPov;
   const targetColor =
     normalizedPov === "user"
       ? userColor ?? "both"

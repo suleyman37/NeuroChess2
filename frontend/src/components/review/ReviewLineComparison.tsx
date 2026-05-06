@@ -24,10 +24,10 @@ export function ReviewLineComparison({
 }) {
   const view = buildLineComparisonView(annotation, contrastCoach, explanation, povContext);
   return (
-    <div className="review-line-comparison" aria-label="Comparaison des lignes">
+    <div className="review-line-comparison" aria-label={fr.lines.compare}>
       <div className="review-line-comparison-head">
-        <span>Comparer les deux futurs</span>
-        <strong>{view.mainDifference ?? "La solution limite mieux les réponses adverses."}</strong>
+        <span>{fr.lines.compareTwoFutures}</span>
+        <strong>{view.mainDifference ?? fr.lines.defaultDifference}</strong>
       </div>
       <div className="review-line-comparison-grid">
         <article className="review-line-card review-line-card-played">
@@ -35,31 +35,33 @@ export function ReviewLineComparison({
           <strong>{fr.feedback.historicalPlayedMove(view.playedMove)}</strong>
           <p>{view.playedSummary}</p>
           <p>
-            Ligne du coup joué :{" "}
-            {view.playedLinePreview || "ligne indisponible."}
+            {fr.lines.playedLinePrefix} :{" "}
+            {view.playedLinePreview || fr.lines.unavailable}
           </p>
           <button
             type="button"
             onClick={() => onShowPvLineAnnotation(annotation, index, "played")}
             disabled={!view.playedLineAvailable}
+            data-testid="review-line-game-play-button"
           >
-            Voir la ligne
+            {fr.lines.playGameLine}
           </button>
         </article>
         <article className="review-line-card review-line-card-solution">
-          <span>Avec la solution</span>
-          <strong>Solution : {view.solutionMove}</strong>
-          <p>Idée principale : {view.solutionSummary}</p>
+          <span>{fr.lines.solutionContext}</span>
+          <strong>{fr.lines.solutionMove(view.solutionMove)}</strong>
+          <p>{fr.lines.mainIdea(view.solutionSummary)}</p>
           <p>
-            Ligne de la solution :{" "}
-            {view.solutionLinePreview || "ligne indisponible."}
+            {fr.lines.solutionLinePrefix} :{" "}
+            {view.solutionLinePreview || fr.lines.unavailable}
           </p>
           <button
             type="button"
             onClick={() => onShowPvLineAnnotation(annotation, index, "solution")}
             disabled={!view.solutionLineAvailable}
+            data-testid="review-line-solution-play-button"
           >
-            Voir la ligne
+            {fr.lines.playSolutionLine}
           </button>
         </article>
       </div>

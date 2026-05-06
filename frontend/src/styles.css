@@ -5508,6 +5508,52 @@ summary {
   }
 }
 
+.review-focus-layout {
+  align-items: flex-start;
+}
+
+@media (min-width: 921px) {
+  .review-board-sticky-column {
+    align-self: start;
+    max-height: calc(100vh - 84px);
+    overflow: auto;
+    position: sticky;
+    top: 72px;
+  }
+}
+
+.review-line-player-dock {
+  display: grid;
+  gap: 8px;
+  width: min(100%, 520px);
+}
+
+.review-line-player-dock .review-practice-pv-stepper {
+  border-color: rgba(67, 231, 255, 0.42);
+  box-shadow: 0 12px 32px rgba(0, 229, 255, 0.08);
+}
+
+.review-primary-action-zone {
+  align-items: center;
+  margin-top: 8px;
+}
+
+.review-details-disclosure {
+  margin-top: 8px;
+}
+
+@media (max-width: 920px) {
+  .review-board-sticky-column {
+    max-height: none;
+    overflow: visible;
+    position: static;
+  }
+
+  .review-line-player-dock {
+    width: 100%;
+  }
+}
+
 @media (max-width: 440px) {
   .review-practice-summary-grid {
     grid-template-columns: 1fr;

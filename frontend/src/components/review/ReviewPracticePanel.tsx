@@ -10,10 +10,11 @@ import {
   buildPracticeSaveFailedNotice,
 } from "../../degradedStates";
 import { errorTypeLabel, reviewColorLabel } from "./reviewLabels";
-import { ReviewPvStepper } from "./ReviewPvStepper";
 import { buildPracticeSummaryView, coachTextForPov, practiceHintForItem, practiceItemAnnotationLabel } from "./reviewViewModel";
 import { reviewAnnotationHasAnyPvLine, reviewAnnotationHasSolutionPvLine } from "./reviewUtils";
-import type { ReviewPovContext, ReviewPracticeViewState, ReviewPvLineMode, ReviewPvLineViewState } from "./reviewTypes";
+import type { ReviewPovContext, ReviewPracticeViewState, ReviewPvLineMode } from "./reviewTypes";
+
+const PRACTICE_SUCCESS_RESULTS = new Set(["best", "very_good", "acceptable"]);
 
 export function ReviewPracticeLaunch({
   eligibleCount,
@@ -58,7 +59,6 @@ export function ReviewPracticeLaunch({
 
 export function ReviewPracticeSessionPanel({
   state,
-  pvLineState,
   povContext,
   onHint,
   onRevealSolution,
@@ -66,18 +66,11 @@ export function ReviewPracticeSessionPanel({
   onTryAgain,
   onNext,
   onShowPvLine,
-  onPvPrevious,
-  onPvNext,
-  onPvRestart,
-  onPvToggleAutoplay,
-  onPvSelectLine,
-  onPvClose,
   onQuit,
   onRetryFailed,
   onRedoAll,
 }: {
   state: ReviewPracticeViewState;
-  pvLineState: ReviewPvLineViewState | null;
   povContext: ReviewPovContext;
   onHint: () => void;
   onRevealSolution: () => void;
@@ -85,12 +78,6 @@ export function ReviewPracticeSessionPanel({
   onTryAgain: () => void;
   onNext: () => void;
   onShowPvLine: (lineMode?: ReviewPvLineMode) => void;
-  onPvPrevious: () => void;
-  onPvNext: () => void;
-  onPvRestart: () => void;
-  onPvToggleAutoplay: () => void;
-  onPvSelectLine: (lineMode: ReviewPvLineMode) => void;
-  onPvClose: () => void;
   onQuit: () => void;
   onRetryFailed: () => void;
   onRedoAll: () => void;
@@ -125,6 +112,7 @@ export function ReviewPracticeSessionPanel({
       <section
         className="review-practice-panel review-practice-summary"
         aria-label="Résumé de session"
+        data-testid="review-training-complete-state"
       >
         <div className="review-block-title">
           <span>{fr.practice.completed}</span>
@@ -235,12 +223,16 @@ export function ReviewPracticeSessionPanel({
     : `À toi de jouer pour les ${colorLabel.toLowerCase()}.`;
   const canShowPv = reviewAnnotationHasAnyPvLine(itemAnnotation);
   const feedbackWantsCorrection = Boolean(state.feedback?.show_best_move);
+  const feedbackCanContinue = Boolean(
+    state.feedback?.result && PRACTICE_SUCCESS_RESULTS.has(state.feedback.result),
+  );
   const showSolution = Boolean(
     feedbackWantsCorrection ||
       state.solutionRevealed ||
       state.itemState === "solution_revealed" ||
       state.itemState === "pv_line",
   );
+  const canContinueAfterReveal = Boolean(showSolution && !state.feedback);
   const waitingForAttempt =
     state.itemState === "awaiting_attempt" || state.itemState === "hint_shown";
   const latestAttemptNumber = Number(state.summary?.latest_attempt?.attempt_number ?? 0);
@@ -256,18 +248,24 @@ export function ReviewPracticeSessionPanel({
       className="review-practice-panel"
       aria-label={fr.practice.modeAria}
       data-testid="practice-panel"
+      data-review-training-panel="true"
     >
       <div className="review-practice-head">
         <div>
           <span>{fr.practice.reviewTrainingAria}</span>
-          <h3>Position {state.currentIndex + 1} / {state.items.length}</h3>
+          <h3 data-testid="review-training-position-label">
+            Position {state.currentIndex + 1} / {state.items.length}
+          </h3>
+          <span data-testid="review-current-moment-side">
+            {fr.review.pov.currentMomentSide(colorLabel)}
+          </span>
         </div>
         <button type="button" onClick={onQuit}>
           Quitter
         </button>
       </div>
 
-      <div className="review-practice-card">
+      <div className="review-practice-card" data-testid="review-training-main-panel">
         <span className="review-coach-badge">
           {item.category_label ?? errorTypeLabel(explanation?.error_type, itemAnnotation)}
         </span>
@@ -281,20 +279,59 @@ export function ReviewPracticeSessionPanel({
           </div>
         )}
         {state.feedback && (
-          <div
-            className={`review-practice-feedback review-practice-feedback-${state.feedback.result}`}
-            data-testid="practice-feedback"
-          >
-            <strong>{coachTextForPov(state.feedback.message, povContext, itemAnnotation)}</strong>
-            {state.attemptedUci && (
-              <span>
-                {povContext.isUserPov ? fr.feedback.yourMove : fr.feedback.playedMove} :{" "}
-                {state.attemptedSan ?? state.attemptedUci}
-              </span>
-            )}
+          <div data-testid="review-training-feedback">
+            <div
+              className={`review-practice-feedback review-practice-feedback-${state.feedback.result}`}
+              data-testid="practice-feedback"
+            >
+              <strong>{coachTextForPov(state.feedback.message, povContext, itemAnnotation)}</strong>
+              {state.attemptedUci && (
+                <span data-testid="review-training-user-move">
+                  {povContext.isUserPov ? fr.feedback.yourMove : fr.feedback.playedMove} :{" "}
+                  {state.attemptedSan ?? state.attemptedUci}
+                </span>
+              )}
+              {feedbackCanContinue && <span>{fr.practice.acceptedCanContinue}</span>}
+            </div>
           </div>
         )}
-        {showSolution && (
+        {feedbackCanContinue && (
+          <div
+            className="review-action-row review-primary-action-zone"
+            data-testid="review-primary-action-zone"
+          >
+            {canShowPv && (
+              <button
+                type="button"
+                onClick={() =>
+                  onShowPvLine(
+                    reviewAnnotationHasSolutionPvLine(itemAnnotation) ? "solution" : "played",
+                  )
+                }
+                disabled={state.saving}
+                title={fr.lines.compare}
+              >
+                {fr.lines.compare}
+              </button>
+            )}
+            <button
+              className="primary"
+              type="button"
+              data-testid={
+                state.currentIndex + 1 >= state.items.length
+                  ? "review-training-finish-button"
+                  : "review-training-next-button"
+              }
+              onClick={onNext}
+              disabled={state.saving}
+            >
+              {state.currentIndex + 1 >= state.items.length
+                ? fr.practice.finishSession
+                : fr.practice.nextPosition}
+            </button>
+          </div>
+        )}
+        {showSolution && !feedbackCanContinue && (
           <div className="review-practice-solution" data-testid="practice-result">
             {fr.practice.solutionPrefix} : {item.best_move_san ?? item.best_move_uci}
           </div>
@@ -388,7 +425,7 @@ export function ReviewPracticeSessionPanel({
             </button>
           </>
         )}
-        {showSolution && (
+        {showSolution && !feedbackCanContinue && (
           <>
             <button type="button" onClick={onTryAgain} disabled={state.saving}>
               {fr.actions.tryAgain}
@@ -402,36 +439,27 @@ export function ReviewPracticeSessionPanel({
                   )
                 }
                 disabled={state.saving}
-                title="Voir la ligne proposée"
+                title={fr.lines.compare}
               >
-                {fr.actions.showLine}
+                {fr.lines.compare}
               </button>
             )}
-            <button
-              className="primary"
-              type="button"
-              data-testid="practice-next-button"
-              onClick={onNext}
-              disabled={state.saving}
-            >
-              {state.currentIndex + 1 >= state.items.length
-                ? fr.actions.finish
-                : fr.actions.nextPosition}
-            </button>
+            {canContinueAfterReveal && (
+              <button
+                className="primary"
+                type="button"
+                data-testid="practice-next-button"
+                onClick={onNext}
+                disabled={state.saving}
+              >
+                {state.currentIndex + 1 >= state.items.length
+                  ? fr.practice.finishSession
+                  : fr.practice.nextPosition}
+              </button>
+            )}
           </>
         )}
       </div>
-      {showSolution && pvLineState?.active && (
-        <ReviewPvStepper
-          state={pvLineState}
-          onPrevious={onPvPrevious}
-          onNext={onPvNext}
-          onRestart={onPvRestart}
-          onToggleAutoplay={onPvToggleAutoplay}
-          onSelectLine={onPvSelectLine}
-          onClose={onPvClose}
-        />
-      )}
     </section>
   );
 }

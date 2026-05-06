@@ -234,7 +234,7 @@ async function openReviewWithInterceptedPayload(gameId, reviewPayload) {
     { gameId },
   );
   await harness.browserClient.send("Page.navigate", {
-    url: `${harness.frontendBaseUrl}/app`,
+    url: `${harness.frontendBaseUrl}/app?reviewSuccessStateUx=${Date.now()}`,
   });
   await harness.waitForPagePredicate("review board restored", () => {
     const text = document.body?.innerText ?? "";

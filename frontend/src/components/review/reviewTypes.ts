@@ -63,7 +63,6 @@ export type ReviewPanelProps = {
   ) => void;
   onSolutionReset: (reason: string) => void;
   practiceState: ReviewPracticeViewState | null;
-  practicePvLineState: ReviewPvLineViewState | null;
   onStartPractice: () => void;
   onPracticeHint: () => void;
   onPracticeRevealSolution: () => void;
@@ -71,12 +70,6 @@ export type ReviewPanelProps = {
   onPracticeTryAgain: () => void;
   onPracticeNext: () => void;
   onPracticeShowPvLine: (lineMode?: ReviewPvLineMode) => void;
-  onPracticePvPrevious: () => void;
-  onPracticePvNext: () => void;
-  onPracticePvRestart: () => void;
-  onPracticePvToggleAutoplay: () => void;
-  onPracticePvSelectLine: (lineMode: ReviewPvLineMode) => void;
-  onPracticePvClose: () => void;
   onPracticeQuit: () => void;
   onPracticeRetryFailed: () => void;
   onPracticeRedoAll: () => void;

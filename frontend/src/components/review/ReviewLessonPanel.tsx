@@ -232,6 +232,9 @@ function ReviewCoachMomentCard({
         <div>
           <span>{publicStep === "challenge" ? "Défi en cours" : "Coach"}</span>
           <h3>{moveTitle}</h3>
+          <span data-testid="review-current-moment-side">
+            {fr.review.pov.currentMomentSide(reviewColorLabel(annotation.color))}
+          </span>
         </div>
         <strong className="review-coach-type">{lessonType}</strong>
       </div>
@@ -440,7 +443,11 @@ function ReviewCoachMomentCard({
             )}
           </div>
           {canShowLineComparison && (
-            <details className="review-line-comparison-disclosure" open>
+            <details
+              className="review-line-comparison-disclosure review-details-disclosure"
+              data-testid="review-details-disclosure"
+              open
+            >
               <summary>Comparer les lignes</summary>
               <ReviewLineComparison
                 annotation={annotation}

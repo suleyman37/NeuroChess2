@@ -83,7 +83,6 @@ export function ReviewPanel({
   onSolutionHintAnnotation,
   onSolutionReset,
   practiceState,
-  practicePvLineState,
   onStartPractice,
   onPracticeHint,
   onPracticeRevealSolution,
@@ -91,12 +90,6 @@ export function ReviewPanel({
   onPracticeTryAgain,
   onPracticeNext,
   onPracticeShowPvLine,
-  onPracticePvPrevious,
-  onPracticePvNext,
-  onPracticePvRestart,
-  onPracticePvToggleAutoplay,
-  onPracticePvSelectLine,
-  onPracticePvClose,
   onPracticeQuit,
   onPracticeRetryFailed,
   onPracticeRedoAll,
@@ -301,7 +294,6 @@ export function ReviewPanel({
           practiceState?.active ? (
             <ReviewPracticePanel
               state={practiceState}
-              pvLineState={practicePvLineState}
               povContext={povContext}
               onHint={onPracticeHint}
               onRevealSolution={onPracticeRevealSolution}
@@ -309,12 +301,6 @@ export function ReviewPanel({
               onTryAgain={onPracticeTryAgain}
               onNext={onPracticeNext}
               onShowPvLine={onPracticeShowPvLine}
-              onPvPrevious={onPracticePvPrevious}
-              onPvNext={onPracticePvNext}
-              onPvRestart={onPracticePvRestart}
-              onPvToggleAutoplay={onPracticePvToggleAutoplay}
-              onPvSelectLine={onPracticePvSelectLine}
-              onPvClose={onPracticePvClose}
               onQuit={onPracticeQuit}
               onRetryFailed={onPracticeRetryFailed}
               onRedoAll={onPracticeRedoAll}

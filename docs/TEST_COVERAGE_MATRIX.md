@@ -97,6 +97,19 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
   It proves a current wrong Review try-move uses attempt-safe feedback instead
   of stale historical reply text, exact-best retry remains success, and
   `Voir la ligne` opens a visible line panel only when a line exists.
+- Review Training continuation and line playback user-contract smoke: added via
+  `cmd /c node scripts\browser_review_training_continuation_and_line_playback_user_contract_smoke.mjs`.
+  It proves best/accepted Review Training feedback exposes local
+  `Position suivante`, clicking it advances the position and resets feedback
+  without duplicate attempts, the last item exposes `Terminer la session`, and
+  internal line actions visibly open/step/switch a line player with board/FEN
+  changes.
+- Review user-POV focus layout contract smoke: added via
+  `cmd /c node scripts\browser_review_user_pov_focus_layout_contract_smoke.mjs`.
+  It proves `Les deux` resolves board orientation per current White/Black
+  moment/item, unknown `Moi` is not presented as certain, and Review Training
+  keeps board, feedback, primary next CTA, and line player controls visible in
+  the same focused desktop flow.
 - French V1 strings catalog static suite: PASS via
   `.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_frontend_i18n_strings_static ...`.
   It proves `frontend/src/i18n/fr.ts`, critical V1 strings, Plan2 nav labels,
@@ -175,6 +188,8 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
 | `scripts/browser_review_correction_no_contradiction_smoke.mjs` | browser smoke | Review Correction feedback trust | Legacy Review/Lesson Correction payload with displayed move equal to best move shows success/accepted feedback and suppresses `Ton coup - Probleme`, `Opportunite manquee`, and missed-best reproach copy | Real user DB payload variety and future LLM commentary quality | PASS | high | Keep paired with F002/GF-005b anti-regression checks |
 | `scripts/browser_review_success_state_ux_smoke.mjs` | browser smoke | Review success-state CTA / historical context | Exact-best Review try move shows `Tentative reussie`, primary `Continuer`, `Voir pourquoi ca marche`, recovered gain copy, and no retry/correction success CTA, negative delta, `Qualite : Moyenne`, duplicate `important`, or problem labels | Real user DB payload variety and richer future explanation quality | added in P1 success UX mission | high if PASS | Pair with player-POV impact smoke |
 | `scripts/browser_review_attempt_specific_feedback_and_line_smoke.mjs` | browser smoke | Review try-move feedback / line action | Current wrong Review try-move shows the attempted move and safe generic feedback instead of stale historical reply text; exact-best retry stays success; `Voir la ligne` opens a visible line panel when a line exists | Rich attempt-specific engine PV for every wrong move; full manual animation perception | added in P1 attempt feedback mission | high if PASS | Keep paired with F002/GF-005b anti-regression checks |
+| `scripts/browser_review_training_continuation_and_line_playback_user_contract_smoke.mjs` | browser smoke | Review Training continuation / line playback contract | Success/accepted Review Training feedback shows local `Position suivante`; next advances item label and clears feedback/user move without duplicate attempts; last success shows `Terminer la session`; internal `Lire la ligne jouee`/`Lire la ligne solution` opens a visible line player, advances active move/FEN on `Suivant`, and switches context | Manual perceptual smoothness and broad real-user PGN variety | added in P1 Review Training continuation mission | high if PASS | Manual Nxe4/Na6/Bxc5 spot check before pilot |
+| `scripts/browser_review_user_pov_focus_layout_contract_smoke.mjs` | browser smoke | Review POV / identity / focused layout | `Les deux` orientation follows current White/Black moment or item; unknown `Moi` is hidden/explained; board, feedback, primary next action, and line player controls remain visible together on desktop | Real user identity persistence beyond `review.user_color`, broad responsive visual polish | added in P1 Review user POV/focus layout mission | high if PASS | Manual real-game White/Black/Moi spot check before pilot |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |

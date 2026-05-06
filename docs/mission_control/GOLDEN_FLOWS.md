@@ -46,9 +46,21 @@ requests. They define the minimum evidence future missions should preserve.
 - Purpose: close the Review -> Practice learning loop.
 - User-visible success criteria: user starts Practice from Review, attempts or
   reveal are saved, feedback is shown, and `due_at` follows existing schedule.
-- Forbidden regression: reveal-only Practice, unsaved attempts, or due_at loss.
+- Continuation rule: after best/very_good/accepted feedback in the active
+  Review Training panel, the user sees a local primary CTA: `Position suivante`
+  when another item exists, or `Terminer la session` on the last item. Clicking
+  next advances the position label, resets the board/feedback/user move/line
+  playback state, and does not create a duplicate attempt.
+- Focus/layout rule: during Review Training, the board, current feedback, and
+  primary next action must remain visible in the same desktop viewport; line
+  playback controls must stay visually connected to the board.
+- Forbidden regression: reveal-only Practice, unsaved attempts, due_at loss, or
+  a success/accepted state that leaves the user without an obvious local next
+  action.
 - Suggested automated smoke:
-  `scripts/browser_core_board_interaction_smoke.mjs`.
+  `scripts/browser_core_board_interaction_smoke.mjs` and
+  `scripts/browser_review_training_continuation_and_line_playback_user_contract_smoke.mjs`,
+  `scripts/browser_review_user_pov_focus_layout_contract_smoke.mjs`.
 - Suggested evidence: practice_attempt row, due_at, exported attempt.
 - Relevant docs/tests: `backend/tests/test_review_practice_sessions.py`.
 
@@ -84,12 +96,22 @@ requests. They define the minimum evidence future missions should preserve.
   feedback must describe that attempt. Concrete historical replies from the
   imported game must not appear as `ton coup` feedback unless computed for the
   current attempted move.
-- Line-action rule: `Voir la ligne` must not be a dead CTA; it opens a visible
-  line panel/playback state when a line exists, otherwise it is hidden.
+- Line-action rule: `Voir la ligne` must not be a dead CTA; it opens
+  contextual line actions and those actions must expose visible playback
+  (`Lire la ligne jouee`, `Lire la ligne solution`, active line, step label,
+  current move, previous/next/restart controls, and board/FEN change on next
+  step) when a line exists, otherwise the action is hidden or disabled with a
+  calm unavailable state.
+- POV/orientation rule: `Blancs` faces the board White, `Noirs` faces the board
+  Black, and `Les deux` recomputes orientation from the current moment/item side.
+  `Moi` is only available when the game has a reliable user color; otherwise the
+  UI must explain that the color is unknown.
 - Suggested automated smoke:
   `scripts/browser_review_correction_no_contradiction_smoke.mjs`,
   `scripts/browser_review_success_state_ux_smoke.mjs`, and
-  `scripts/browser_review_attempt_specific_feedback_and_line_smoke.mjs`.
+  `scripts/browser_review_attempt_specific_feedback_and_line_smoke.mjs`,
+  `scripts/browser_review_training_continuation_and_line_playback_user_contract_smoke.mjs`,
+  `scripts/browser_review_user_pov_focus_layout_contract_smoke.mjs`.
 - Suggested evidence: Correction-tab screenshot, DOM absence checks for the
   negative labels, and the intercepted/seeded Review payload used by the smoke.
 - Relevant docs/tests: `docs/API_CONTRACTS.md`,

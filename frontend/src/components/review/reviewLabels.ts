@@ -41,15 +41,15 @@ export const REVIEW_PUBLIC_LESSON_STEPS: Array<{
 export function buildPovOptions(userColor: "white" | "black" | null): Array<{ value: ReviewPov; label: string }> {
   return userColor
     ? [
-        { value: "user", label: "Moi" },
-        { value: "white", label: "Blancs" },
-        { value: "black", label: "Noirs" },
-        { value: "both", label: "Les deux" },
+        { value: "user", label: fr.review.pov.me },
+        { value: "white", label: fr.review.pov.white },
+        { value: "black", label: fr.review.pov.black },
+        { value: "both", label: fr.review.pov.both },
       ]
     : [
-        { value: "white", label: "Blancs" },
-        { value: "black", label: "Noirs" },
-        { value: "both", label: "Les deux" },
+        { value: "white", label: fr.review.pov.white },
+        { value: "black", label: fr.review.pov.black },
+        { value: "both", label: fr.review.pov.both },
       ];
 }
 

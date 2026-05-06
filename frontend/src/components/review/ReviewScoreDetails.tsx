@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ReviewResponse, ReviewSections } from "../../api/client";
+import { fr } from "../../i18n";
 import { buildReviewScoreViewModel, reviewScoreAvailabilityReason } from "./reviewViewModel";
 import { formatReviewScore, hasReviewScoreValue } from "./reviewUtils";
 import type { ReviewPov, ReviewPovContext } from "./reviewTypes";
@@ -125,25 +126,47 @@ export function ReviewPovSelector({
 }) {
   const [open, setOpen] = useState(false);
   const summaryLabel = povSummaryLabel(povContext);
+  const detectedColorLabel = povContext.userColor
+    ? povColorLabel(povContext.userColor)
+    : null;
 
   return (
-    <div className="review-pov-selector compact" aria-label="Joueur analysé">
-      <span>{summaryLabel}</span>
+    <div
+      className="review-pov-selector compact"
+      aria-label={fr.review.pov.analyzedPlayer}
+      data-testid="review-analyzed-player-panel"
+    >
+      <span data-testid="review-analyzed-player-current">{summaryLabel}</span>
+      {detectedColorLabel ? (
+        <small data-testid="review-user-color-detected-label">
+          {fr.review.pov.detectedColor(detectedColorLabel)}
+        </small>
+      ) : (
+        <small data-testid="review-analyzed-player-me-disabled-reason">
+          {fr.review.pov.unknownColor} {fr.review.pov.chooseSide}
+        </small>
+      )}
       <button
         type="button"
         className="review-pov-change"
+        data-testid="review-analyzed-player-change-button"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
-        Changer
+        {fr.review.pov.change}
       </button>
       {open && (
-        <div className="review-pov-options" role="group" aria-label="Choix du joueur analysé">
+        <div
+          className="review-pov-options"
+          role="group"
+          aria-label={fr.review.pov.choiceAria}
+        >
           {povContext.options.map((option) => (
             <button
               key={option.value}
               type="button"
               className={option.value === povContext.selectedPov ? "active" : ""}
+              data-testid={`review-analyzed-player-option-${optionTestIdSuffix(option.value)}`}
               aria-pressed={option.value === povContext.selectedPov}
               onClick={() => {
                 onChange(option.value);
@@ -161,12 +184,21 @@ export function ReviewPovSelector({
 
 function povSummaryLabel(povContext: ReviewPovContext): string {
   if (povContext.targetColor === "both") {
-    return "Comparaison : Blancs vs Noirs";
+    return fr.review.pov.bothSummary;
   }
   if (povContext.isUserPov) {
-    return "Joueur analysé : Toi";
+    return fr.review.pov.meSummary;
   }
-  return `Joueur analysé : ${povContext.targetColor === "black" ? "Noirs" : "Blancs"}`;
+  return fr.review.pov.colorSummary(povColorLabel(povContext.targetColor));
+}
+
+function povColorLabel(color: "white" | "black"): string {
+  return color === "black" ? fr.review.pov.black : fr.review.pov.white;
+}
+
+function optionTestIdSuffix(value: ReviewPov): string {
+  if (value === "user") return "me";
+  return value;
 }
 
 export function ReviewScoreMetric({
