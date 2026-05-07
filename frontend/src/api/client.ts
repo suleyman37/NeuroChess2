@@ -204,6 +204,15 @@ export type ReviewMoment = {
   top_moves: Array<Record<string, unknown>>;
 };
 
+export type ReviewMomentImportance =
+  | "priority_training"
+  | "secondary_training"
+  | "micro_gap"
+  | "good_decision"
+  | "informational"
+  | "no_major_moment"
+  | string;
+
 export type ReviewMoveAnnotation = {
   ply: number;
   move_number: number;
@@ -269,6 +278,15 @@ export type ReviewMoveAnnotation = {
   move_category_formula_version?: string | null;
   pv_contrast_evidence?: PvContrastEvidence | null;
   pv_contrast_evidence_version?: string | null;
+  moment_importance?: ReviewMomentImportance | null;
+  moment_group?: ReviewMomentImportance | null;
+  moment_label?: string | null;
+  moment_reason?: string | null;
+  moment_importance_version?: string | null;
+  is_training_recommended?: boolean | null;
+  is_micro_gap?: boolean | null;
+  is_good_decision?: boolean | null;
+  is_book?: boolean | null;
 };
 
 export type ReviewAcceptableMove = {
@@ -366,10 +384,27 @@ export type PedagogicalExplanation = {
 };
 
 export type ReviewSections = {
+  priority_training?: ReviewMoveAnnotation[];
+  secondary_training?: ReviewMoveAnnotation[];
+  micro_gaps?: ReviewMoveAnnotation[];
+  good_decisions?: ReviewMoveAnnotation[];
+  informational?: ReviewMoveAnnotation[];
   to_review: ReviewMoveAnnotation[];
   strong_moves: ReviewMoveAnnotation[];
   missed_opportunities: ReviewMoveAnnotation[];
   all: ReviewMoveAnnotation[];
+};
+
+export type ReviewMomentSelectionSummary = {
+  review_moment_importance_version?: string | null;
+  priority_training_count?: number;
+  secondary_training_count?: number;
+  micro_gap_count?: number;
+  good_decision_count?: number;
+  informational_count?: number;
+  no_major_moment?: boolean;
+  label?: string | null;
+  message?: string | null;
 };
 
 export type OpeningRealityMoment = {
@@ -483,6 +518,14 @@ export type ReviewPracticeItem = {
   coach_priority_rank?: number | null;
   compact_label?: string | null;
   coach_card_title?: string | null;
+  moment_importance?: ReviewMomentImportance | null;
+  moment_group?: ReviewMomentImportance | null;
+  moment_label?: string | null;
+  moment_reason?: string | null;
+  moment_importance_version?: string | null;
+  is_training_recommended?: boolean | null;
+  is_micro_gap?: boolean | null;
+  is_good_decision?: boolean | null;
 };
 
 export type ReviewPracticeSummary = {
@@ -723,6 +766,7 @@ export type ReviewResponse = {
   neuro_score_formula_version?: string | null;
   formula_versions?: Record<string, string>;
   move_category_formula_version?: string | null;
+  review_moment_importance_version?: string | null;
   review_sections_version?: string | null;
   pedagogical_explanation_version?: string | null;
   contrast_coach_explanation_version?: string | null;
@@ -793,6 +837,7 @@ export type ReviewResponse = {
   review_score_audit_rows?: ReviewScoreAuditRow[];
   move_annotations?: ReviewMoveAnnotation[];
   review_sections?: ReviewSections;
+  moment_selection_summary?: ReviewMomentSelectionSummary;
   opening_reality_evidence?: OpeningRealityEvidence | null;
   message: string | null;
   warnings: string[];

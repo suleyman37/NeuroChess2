@@ -6,6 +6,13 @@ from neurochess.metrics.review_metrics import (
     clamp,
     player_percent_from_eval,
 )
+from neurochess.metrics.review_moment_importance import (
+    GOOD_DECISION,
+    INFORMATIONAL,
+    MICRO_GAP,
+    PRIORITY_TRAINING,
+    SECONDARY_TRAINING,
+)
 
 
 MOVE_CATEGORY_FORMULA_VERSION = "neuro_move_categories_v1"
@@ -163,12 +170,42 @@ def build_review_sections(
         for annotation in annotations
         if annotation.get("primary_category") != "unknown"
     ]
-    to_review = [
+    priority_training = [
+        annotation
+        for annotation in analyzed
+        if annotation.get("moment_importance") == PRIORITY_TRAINING
+    ]
+    secondary_training = [
+        annotation
+        for annotation in analyzed
+        if annotation.get("moment_importance") == SECONDARY_TRAINING
+    ]
+    micro_gaps = [
+        annotation
+        for annotation in analyzed
+        if annotation.get("moment_importance") == MICRO_GAP
+    ]
+    good_decisions = [
+        annotation
+        for annotation in analyzed
+        if annotation.get("moment_importance") == GOOD_DECISION
+    ]
+    informational = [
+        annotation
+        for annotation in analyzed
+        if annotation.get("moment_importance") == INFORMATIONAL
+    ]
+    legacy_to_review = [
         annotation
         for annotation in analyzed
         if annotation.get("primary_category") in {"to_review", "critical", "decisive"}
         or TO_REVIEW_TAGS.intersection(annotation.get("tags") or [])
     ]
+    to_review = priority_training + [
+        annotation for annotation in secondary_training if annotation not in priority_training
+    ]
+    if not to_review:
+        to_review = legacy_to_review
     strong_moves = [
         annotation
         for annotation in analyzed
@@ -181,6 +218,39 @@ def build_review_sections(
         if MISSED_OPPORTUNITY_TAGS.intersection(annotation.get("tags") or [])
     ]
     return {
+        "priority_training": sorted(
+            priority_training,
+            key=lambda item: (
+                -float(item.get("section_priority") or 0.0),
+                int(item.get("ply") or 0),
+            ),
+        )[:limit],
+        "secondary_training": sorted(
+            secondary_training,
+            key=lambda item: (
+                -float(item.get("section_priority") or 0.0),
+                int(item.get("ply") or 0),
+            ),
+        )[:limit],
+        "micro_gaps": sorted(
+            micro_gaps,
+            key=lambda item: (
+                int(item.get("ply") or 0),
+                -float(item.get("move_accuracy") or 0.0),
+            ),
+        )[:limit],
+        "good_decisions": sorted(
+            good_decisions,
+            key=lambda item: (
+                0 if "strong_find" in (item.get("tags") or []) else 1,
+                -float(item.get("move_accuracy") or 0.0),
+                int(item.get("ply") or 0),
+            ),
+        )[:limit],
+        "informational": sorted(
+            informational,
+            key=lambda item: int(item.get("ply") or 0),
+        )[:limit],
         "to_review": sorted(
             to_review,
             key=lambda item: (

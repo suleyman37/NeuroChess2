@@ -47,6 +47,26 @@ state. Plan3 governs execution order, not a one-shot roadmap refactor.
 - Still pending: full validation and manual Review mini-check; human pilot
   remains NO-GO.
 
+## 2026-05-07 Review Moment Selection Intelligence Update
+
+- Aligned: Review move annotations now expose a backend-authoritative,
+  user-safe moment category for priority training, secondary training,
+  micro-gap, good decision, informational, and review-level no-major-moment
+  states.
+- Aligned: Summary, Decision Card, Practice, and Explorer can display
+  "Pourquoi ce moment ?" and the category label without exposing raw
+  `criticality_score`, WDL, diagnostic gap, ETV, or FSRS.
+- Aligned: new training item and Practice generation filters respect
+  `is_training_recommended`; micro-gaps and good decisions are not forced into
+  retry items by default.
+- Preserved: no NeuroScore formula change, no `due_at` semantic change, no
+  Daily Plan scoring rewrite, no LLM, no Candidate Trainer, and no
+  Plan1/Plan2/Plan3 change.
+- Limitation: good decisions are inferred from existing quality/category data;
+  explicit positive-gain persistence remains future backend work.
+- Still pending: full validation and manual Review mini-check; human pilot
+  remains NO-GO.
+
 | Element du plan | Attendu Plan1/Plan2 | Etat actuel dans le code | Fichiers concernes | Statut | Action recommandee | Priorite |
 |---|---|---|---|---|---|---|
 | Backend chess data | Durable games, moves, evaluations, review/practice state | Backend data layer and migrations exist | `backend/neurochess/data/*`, `backend/neurochess/models.py`, migrations | aligned | Preserve schema/version discipline | P0 |

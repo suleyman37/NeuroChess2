@@ -116,6 +116,8 @@ def _training_item_payload(
 ) -> dict[str, Any] | None:
     payload = _row_to_dict(row)
     annotation = annotation or {}
+    if annotation.get("is_training_recommended") is False:
+        return None
     best_move = str(
         annotation.get("best_move_uci")
         or payload.get("best_move_uci")

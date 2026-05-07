@@ -49,6 +49,11 @@ from neurochess.metrics.move_categories import (
     build_review_sections,
     categorize_review_move,
 )
+from neurochess.metrics.review_moment_importance import (
+    REVIEW_MOMENT_IMPORTANCE_VERSION,
+    classify_review_moment_importance,
+    no_major_moment_payload,
+)
 from neurochess.metrics.opening_reality import (
     OPENING_REALITY_EVIDENCE_VERSION,
     build_opening_reality_evidence,
@@ -236,6 +241,7 @@ def _empty_review_score_payload(
         "headline_score_formula_version": HEADLINE_SCORE_FORMULA_VERSION,
         "formula_versions": formula_versions,
         "move_category_formula_version": MOVE_CATEGORY_FORMULA_VERSION,
+        "review_moment_importance_version": REVIEW_MOMENT_IMPORTANCE_VERSION,
         "review_sections_version": REVIEW_SECTIONS_VERSION,
         "pedagogical_explanation_version": PEDAGOGICAL_EXPLANATION_VERSION,
         "contrast_coach_explanation_version": CONTRAST_COACH_EXPLANATION_VERSION,
@@ -286,11 +292,17 @@ def _empty_review_score_payload(
         "review_score_audit_rows": [],
         "move_annotations": [],
         "review_sections": {
+            "priority_training": [],
+            "secondary_training": [],
+            "micro_gaps": [],
+            "good_decisions": [],
+            "informational": [],
             "to_review": [],
             "strong_moves": [],
             "missed_opportunities": [],
             "all": [],
         },
+        "moment_selection_summary": _moment_selection_summary({}),
         "opening_reality_evidence": {
             "schema_version": OPENING_REALITY_EVIDENCE_VERSION,
             "opening_reality_evidence_version": OPENING_REALITY_EVIDENCE_VERSION,
@@ -315,6 +327,7 @@ def _review_score_formula_versions() -> dict[str, str]:
         "qualitative_game_label_formula_version": QUALITATIVE_GAME_LABEL_VERSION,
         "headline_score_formula_version": HEADLINE_SCORE_FORMULA_VERSION,
         "move_category_formula_version": MOVE_CATEGORY_FORMULA_VERSION,
+        "review_moment_importance_version": REVIEW_MOMENT_IMPORTANCE_VERSION,
         "review_sections_version": REVIEW_SECTIONS_VERSION,
         "pedagogical_explanation_version": PEDAGOGICAL_EXPLANATION_VERSION,
         "contrast_coach_explanation_version": CONTRAST_COACH_EXPLANATION_VERSION,
@@ -2661,6 +2674,7 @@ def _review_score_payload(
         "headline_score_formula_version": HEADLINE_SCORE_FORMULA_VERSION,
         "formula_versions": _review_score_formula_versions(),
         "move_category_formula_version": MOVE_CATEGORY_FORMULA_VERSION,
+        "review_moment_importance_version": REVIEW_MOMENT_IMPORTANCE_VERSION,
         "review_sections_version": REVIEW_SECTIONS_VERSION,
         "pedagogical_explanation_version": PEDAGOGICAL_EXPLANATION_VERSION,
         "contrast_coach_explanation_version": CONTRAST_COACH_EXPLANATION_VERSION,
@@ -2713,6 +2727,7 @@ def _review_score_payload(
         "review_score_audit_rows": audit_rows,
         "move_annotations": move_annotations,
         "review_sections": review_sections,
+        "moment_selection_summary": _moment_selection_summary(review_sections),
         "opening_reality_evidence": opening_reality_evidence,
     }
     _persist_review_score_cache_if_needed(connection, review_id, payload)
@@ -2801,6 +2816,8 @@ def _score_cache_needs_update(
         return True
     if cached.get("move_category_formula_version") != MOVE_CATEGORY_FORMULA_VERSION:
         return True
+    if cached.get("review_moment_importance_version") != REVIEW_MOMENT_IMPORTANCE_VERSION:
+        return True
     if cached.get("review_sections_version") != REVIEW_SECTIONS_VERSION:
         return True
     if cached.get("pedagogical_explanation_version") != PEDAGOGICAL_EXPLANATION_VERSION:
@@ -2844,6 +2861,7 @@ def _score_cache_needs_update(
         "score_availability",
         "move_annotations",
         "review_sections",
+        "moment_selection_summary",
         "opening_reality_evidence",
     ):
         if cached.get(key) != fresh_payload.get(key):
@@ -2902,6 +2920,7 @@ def _score_cache_from_payload(payload: dict[str, Any]) -> dict[str, Any]:
         "neuro_score_formula_version",
         "formula_versions",
         "move_category_formula_version",
+        "review_moment_importance_version",
         "review_sections_version",
         "pedagogical_explanation_version",
         "contrast_coach_explanation_version",
@@ -2924,6 +2943,7 @@ def _score_cache_from_payload(payload: dict[str, Any]) -> dict[str, Any]:
         "review_score_audit_rows",
         "move_annotations",
         "review_sections",
+        "moment_selection_summary",
         "opening_reality_evidence",
     )
     cache = {
@@ -2980,7 +3000,9 @@ def _review_move_annotations(audit_rows: list[dict[str, Any]]) -> list[dict[str,
             "exclusion_reason": row.get("exclusion_reason"),
             "section_priority": category.get("section_priority"),
             "move_category_formula_version": MOVE_CATEGORY_FORMULA_VERSION,
+            "is_book": row.get("is_book"),
         }
+        annotation.update(classify_review_moment_importance(annotation))
         review_evidence = (
             row.get("review_evidence")
             if isinstance(row.get("review_evidence"), dict)
@@ -3044,8 +3066,40 @@ def _apply_coach_priority_ranks(
 ) -> None:
     for annotation in annotations:
         annotation["coach_priority_rank"] = None
-    for index, annotation in enumerate(review_sections.get("to_review") or [], start=1):
+    rank_source = review_sections.get("priority_training") or review_sections.get("to_review") or []
+    for index, annotation in enumerate(rank_source, start=1):
         annotation["coach_priority_rank"] = index
+
+
+def _moment_selection_summary(
+    review_sections: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    priority_count = len(review_sections.get("priority_training") or [])
+    secondary_count = len(review_sections.get("secondary_training") or [])
+    micro_count = len(review_sections.get("micro_gaps") or [])
+    good_count = len(review_sections.get("good_decisions") or [])
+    informational_count = len(review_sections.get("informational") or [])
+    no_major_payload = no_major_moment_payload()
+    no_major = priority_count == 0
+    return {
+        "review_moment_importance_version": REVIEW_MOMENT_IMPORTANCE_VERSION,
+        "priority_training_count": priority_count,
+        "secondary_training_count": secondary_count,
+        "micro_gap_count": micro_count,
+        "good_decision_count": good_count,
+        "informational_count": informational_count,
+        "no_major_moment": no_major,
+        "label": (
+            no_major_payload["moment_label"]
+            if no_major
+            else "Moments prioritaires"
+        ),
+        "message": (
+            no_major_payload["moment_reason"]
+            if no_major
+            else "Les moments prioritaires peuvent devenir des exercices utiles."
+        ),
+    }
 
 
 def _book_plies_for_game(connection: Any, game_id: int) -> set[int]:

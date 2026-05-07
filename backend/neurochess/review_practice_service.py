@@ -775,10 +775,20 @@ def _practice_item_from_annotation(annotation: dict[str, Any]) -> dict[str, Any]
         "coach_priority_rank": annotation.get("coach_priority_rank"),
         "compact_label": annotation.get("compact_label"),
         "coach_card_title": annotation.get("coach_card_title"),
+        "moment_importance": annotation.get("moment_importance"),
+        "moment_group": annotation.get("moment_group"),
+        "moment_label": annotation.get("moment_label"),
+        "moment_reason": annotation.get("moment_reason"),
+        "moment_importance_version": annotation.get("moment_importance_version"),
+        "is_training_recommended": annotation.get("is_training_recommended"),
+        "is_micro_gap": annotation.get("is_micro_gap"),
+        "is_good_decision": annotation.get("is_good_decision"),
     }
 
 
 def _annotation_is_practice_eligible(annotation: dict[str, Any]) -> bool:
+    if annotation.get("is_training_recommended") is False:
+        return False
     if not annotation.get("try_move_supported"):
         return False
     if not annotation.get("fen_before") or not annotation.get("best_move_uci"):

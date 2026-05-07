@@ -751,7 +751,7 @@ class CalibrationLogicTests(unittest.TestCase):
 
         self.assertIn("ReviewCockpitSummary", review_panel_source)
         self.assertIn("reviewCockpitPriorities", review_panel_source)
-        self.assertIn("visibleMoments = priorities.slice(0, 3)", review_panel_source)
+        self.assertIn("visibleMoments = priorityMoments.slice(0, 3)", review_panel_source)
         self.assertIn("Moments clés", review_panel_source)
         self.assertIn("S'entraîner sur cette Review", review_panel_source)
         self.assertIn("Explorer les détails", review_panel_source)
@@ -894,7 +894,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("NeuroScore", cockpit_source)
         self.assertIn("S'entraîner sur cette Review", cockpit_source)
         self.assertIn("Moments clés", cockpit_source)
-        self.assertIn("visibleMoments = priorities.slice(0, 3)", cockpit_source)
+        self.assertIn("visibleMoments = priorityMoments.slice(0, 3)", cockpit_source)
         self.assertIn("Explorer les détails", cockpit_source)
         self.assertIn(".slice(0, 3)", (review_dir / "reviewViewModel.ts").read_text(encoding="utf-8"))
         self.assertNotIn("solutionBranch", cockpit_source)
@@ -974,7 +974,7 @@ class CalibrationLogicTests(unittest.TestCase):
 
         self.assertIn("NeuroScore", cockpit_source)
         self.assertIn("S'entraîner sur cette Review", cockpit_source)
-        self.assertIn("visibleMoments = priorities.slice(0, 3)", cockpit_source)
+        self.assertIn("visibleMoments = priorityMoments.slice(0, 3)", cockpit_source)
         self.assertIn("review-reference-details", cockpit_source)
         self.assertIn("review-training-card", cockpit_source)
         for forbidden in (

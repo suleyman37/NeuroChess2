@@ -263,7 +263,7 @@ async function main() {
   const { gameId, review } = await prepareReviewFixture(harness);
   evidence.api.game_id = gameId;
   evidence.api.review_status = review.status;
-  await openReviewFromPersistedState(harness, gameId);
+  await openReviewFromPersistedState(harness, gameId, { reviewPov: "both" });
   await harness.waitForPagePredicate("review board visible", () => {
     return { ok: Boolean(document.querySelector('[data-testid="review-board"]')) };
   }, 30_000);

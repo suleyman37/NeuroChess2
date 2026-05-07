@@ -26,8 +26,9 @@ def annotation(
     try_supported: bool = True,
     best_move: str | None = "e2e4",
     win_loss: float = 10.0,
+    training_recommended: bool | None = None,
 ) -> dict[str, object]:
-    return {
+    payload: dict[str, object] = {
         "ply": ply,
         "move_number": (ply + 1) // 2,
         "color": color,
@@ -72,6 +73,12 @@ def annotation(
             "contrast": {"main_difference_type": "forcing"},
         },
     }
+    if training_recommended is not None:
+        payload["is_training_recommended"] = training_recommended
+        payload["moment_importance"] = (
+            "priority_training" if training_recommended else "micro_gap"
+        )
+    return payload
 
 
 class ReviewPracticeItemsTests(unittest.TestCase):
@@ -137,6 +144,30 @@ class ReviewPracticeItemsTests(unittest.TestCase):
         items = build_review_practice_items_from_review(review, pov="both")
 
         self.assertEqual([item["ply"] for item in items], [3])
+
+    def test_excludes_non_training_moment_importance(self) -> None:
+        review = {
+            "status": "done",
+            "move_annotations": [
+                annotation(
+                    1,
+                    color="white",
+                    category="critical",
+                    training_recommended=False,
+                ),
+                annotation(
+                    3,
+                    color="white",
+                    category="critical",
+                    training_recommended=True,
+                ),
+            ],
+        }
+
+        items = build_review_practice_items_from_review(review, pov="both")
+
+        self.assertEqual([item["ply"] for item in items], [3])
+        self.assertEqual(items[0]["moment_importance"], "priority_training")
 
     def test_practice_items_keep_contrast_evidence_for_feedback(self) -> None:
         review = {

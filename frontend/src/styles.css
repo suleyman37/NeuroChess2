@@ -2031,6 +2031,17 @@ button:focus-visible {
   color: #991b1b;
 }
 
+.review-cockpit-empty p,
+.review-cockpit-empty small {
+  display: block;
+  margin: 0;
+}
+
+.review-cockpit-empty small {
+  color: #64748b;
+  margin-top: 4px;
+}
+
 .review-feedback-heading {
   align-items: center;
   display: flex;
@@ -2088,13 +2099,25 @@ button:focus-visible {
   text-transform: uppercase;
 }
 
-.review-decision-micro {
+.review-decision-micro,
+.review-decision-moment-pill,
+.review-moment-importance-pill {
   background: #eff6ff;
   border: 1px solid #9ac4ef;
   border-radius: 999px;
   color: #1d4f8f;
   font-size: 0.72rem;
   padding: 0.14rem 0.46rem;
+}
+
+.review-decision-moment-pill,
+.review-moment-importance-pill {
+  background: #edfdf6;
+  border-color: #8de0bd;
+  color: #146c4a;
+  font-style: normal;
+  font-weight: 850;
+  white-space: nowrap;
 }
 
 .review-decision-rows {
@@ -2939,7 +2962,7 @@ button:focus-visible {
   display: grid;
   font: inherit;
   gap: 8px;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
   padding: 0.5rem 0.58rem;
   text-align: left;
   width: 100%;
@@ -4930,6 +4953,8 @@ button:focus-visible {
 }
 
 .review-decision-micro,
+.review-decision-moment-pill,
+.review-moment-importance-pill,
 .review-quality-ribbon-head strong,
 .review-quality-ribbon-item.active {
   background: rgba(0, 229, 255, 0.1);
@@ -5451,6 +5476,12 @@ button:focus-visible {
   text-transform: none;
 }
 
+.review-key-moment-list .review-moment-importance-pill {
+  align-self: start;
+  justify-self: start;
+  text-transform: none;
+}
+
 .review-key-moment-list strong {
   color: #f5fbff;
 }
@@ -5468,6 +5499,52 @@ button:focus-visible {
   color: #aef6ff;
   font-weight: 820;
   padding: 0.22rem 0.5rem;
+}
+
+.review-moment-groups {
+  display: grid;
+  gap: 12px;
+}
+
+.review-moment-group {
+  display: grid;
+  gap: 8px;
+}
+
+.review-moment-group-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.review-moment-group-list button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(154, 172, 204, 0.14);
+  display: grid;
+  gap: 6px;
+  grid-template-columns: minmax(70px, auto) minmax(54px, auto) minmax(0, 1fr);
+  padding: 10px 12px;
+  text-align: left;
+  width: 100%;
+}
+
+.review-moment-group-list button > span {
+  color: #9ff4ff;
+  font-size: 0.76rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.review-moment-group-list strong {
+  color: #f5fbff;
+}
+
+.review-moment-group-list small {
+  color: var(--nc-muted);
+  min-width: 0;
 }
 
 .review-training-card {
@@ -5937,6 +6014,8 @@ button.danger:disabled {
   }
 
   .review-key-moment-list button,
+  .review-moment-group-list button,
+  .review-compact-row,
   .review-training-card {
     grid-template-columns: 1fr;
   }

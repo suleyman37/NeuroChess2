@@ -7,7 +7,13 @@ import { ReviewDecisionCard } from "./ReviewDecisionCard";
 import { ReviewQualityLegend } from "./ReviewQualityLegend";
 import { ReviewQualityRibbon } from "./ReviewQualityRibbon";
 import { getMoveQualityGlyphForHistoricalCategory } from "./moveQualityGlyphs";
-import { formatHeadlineScore, hasReviewScoreValue, isMicroReviewObservation } from "./reviewUtils";
+import {
+  formatHeadlineScore,
+  hasReviewScoreValue,
+  isMicroReviewObservation,
+  reviewMomentImportanceLabel,
+  reviewMomentReason,
+} from "./reviewUtils";
 import {
   coachNeuroScoreForReview,
   coachScoreLabelForPov,
@@ -50,9 +56,15 @@ export function ReviewCockpitSummary({
     return null;
   }
 
+  const priorityMoments = filteredSections.priority_training ?? [];
+  const secondaryMoments = filteredSections.secondary_training ?? [];
+  const microGaps = filteredSections.micro_gaps ?? [];
+  const goodDecisions = filteredSections.good_decisions ?? [];
   const priorities = reviewCockpitPriorities(filteredSections);
-  const visibleMoments = priorities.slice(0, 3);
-  const mainMoment = selectedCoachAnnotation ?? visibleMoments[0] ?? filteredSections.all[0] ?? null;
+  const visibleMoments = priorityMoments.slice(0, 3);
+  const fallbackMoment =
+    priorities[0] ?? secondaryMoments[0] ?? microGaps[0] ?? goodDecisions[0] ?? filteredSections.all[0] ?? null;
+  const mainMoment = selectedCoachAnnotation ?? visibleMoments[0] ?? fallbackMoment;
   const confidenceLabel = reviewScoreConfidenceLabel(review.review_score_confidence);
   const metricsNeedRebuild = reviewMetricsNeedRebuild(review);
   const coachScore = coachNeuroScoreForReview(review, povContext);
@@ -69,6 +81,8 @@ export function ReviewCockpitSummary({
   const summarySentence = reviewSummaryForPov(review, povContext, filteredSections);
   const practicePositionCount = Math.min(5, practiceEligibleCount);
   const estimatedPracticeMinutes = estimatePracticeMinutes(practicePositionCount);
+  const hasSecondaryReviewGroups =
+    secondaryMoments.length > 0 || microGaps.length > 0 || goodDecisions.length > 0;
 
   return (
     <section
@@ -116,7 +130,9 @@ export function ReviewCockpitSummary({
             detail: mainMoment.move_quality_label ?? mainMoment.category_label,
             showUnknownQuality: true,
           }}
-          why={humanReason(mainMoment)}
+          why={reviewMomentReason(mainMoment) ?? humanReason(mainMoment)}
+          whyLabel={fr.decisionCard.whyThisMoment}
+          momentLabel={reviewMomentImportanceLabel(mainMoment)}
           microObservation={isMicroReviewObservation(mainMoment)}
         />
       )}
@@ -132,11 +148,14 @@ export function ReviewCockpitSummary({
 
       <section className="review-cockpit-section review-key-moments" aria-label="Moments clés">
         <div className="review-block-title">
-          <span>Moments clés</span>
-          <strong>{visibleMoments.length}/3</strong>
+          <span>{fr.momentImportance.summaryGroups.priority_training}</span>
+          <strong>{priorityMoments.length}</strong>
         </div>
         {visibleMoments.length === 0 ? (
-          <p className="review-cockpit-empty">Aucun moment prioritaire détecté.</p>
+          <div className="review-cockpit-empty">
+            <p>{fr.momentImportance.noPriority}</p>
+            {hasSecondaryReviewGroups && <small>{fr.momentImportance.noPriorityDetail}</small>}
+          </div>
         ) : (
           <ol className="review-key-moment-list">
             {visibleMoments.map((annotation, index) => (
@@ -146,6 +165,11 @@ export function ReviewCockpitSummary({
               >
                 <button type="button" onClick={() => onOpenLesson(annotation)}>
                   <span>Coup {annotation.move_number}</span>
+                  {reviewMomentImportanceLabel(annotation) && (
+                    <em className="review-moment-importance-pill">
+                      {reviewMomentImportanceLabel(annotation)}
+                    </em>
+                  )}
                   {safeHistoricalQualityId(annotation.primary_category) && (
                     <span className="review-key-moment-quality">
                       <MoveQualityBadge
@@ -159,7 +183,7 @@ export function ReviewCockpitSummary({
                   <strong>
                     {errorTypeLabel(annotation.pedagogical_explanation?.error_type, annotation)}
                   </strong>
-                  <p>{humanReason(annotation)}</p>
+                  <p>{reviewMomentReason(annotation) ?? humanReason(annotation)}</p>
                   <small>Voir</small>
                 </button>
               </li>
@@ -167,6 +191,26 @@ export function ReviewCockpitSummary({
           </ol>
         )}
       </section>
+
+      {hasSecondaryReviewGroups && (
+        <section className="review-cockpit-section review-moment-groups" aria-label="Autres moments analysés">
+          <ReviewMomentGroup
+            title={fr.momentImportance.summaryGroups.secondary_training}
+            moments={secondaryMoments}
+            onOpenLesson={onOpenLesson}
+          />
+          <ReviewMomentGroup
+            title={fr.momentImportance.summaryGroups.micro_gap}
+            moments={microGaps}
+            onOpenLesson={onOpenLesson}
+          />
+          <ReviewMomentGroup
+            title={fr.momentImportance.summaryGroups.good_decision}
+            moments={goodDecisions}
+            onOpenLesson={onOpenLesson}
+          />
+        </section>
+      )}
 
       <section className="review-training-card" aria-label="Entraînement Review">
         <div>
@@ -215,4 +259,37 @@ function estimatePracticeMinutes(positionCount: number): number {
 function safeHistoricalQualityId(category: string | null | undefined) {
   const qualityId = getMoveQualityGlyphForHistoricalCategory(category);
   return qualityId === "unknown" ? null : qualityId;
+}
+
+function ReviewMomentGroup({
+  title,
+  moments,
+  onOpenLesson,
+}: {
+  title: string;
+  moments: ReviewMoveAnnotation[];
+  onOpenLesson: (annotation: ReviewMoveAnnotation | null) => void;
+}) {
+  if (!moments.length) {
+    return null;
+  }
+  return (
+    <div className="review-moment-group">
+      <div className="review-block-title">
+        <span>{title}</span>
+        <strong>{moments.length}</strong>
+      </div>
+      <ol className="review-moment-group-list">
+        {moments.slice(0, 4).map((annotation) => (
+          <li key={`${title}-${annotation.ply}-${annotation.uci}`}>
+            <button type="button" onClick={() => onOpenLesson(annotation)}>
+              <span>Coup {annotation.move_number}</span>
+              <strong>{annotation.san ?? annotation.uci}</strong>
+              <small>{reviewMomentReason(annotation) ?? annotation.category_label}</small>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
 }

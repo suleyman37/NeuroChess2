@@ -232,6 +232,7 @@ function reviewOverlayAnnotation(baseAnnotation = {}) {
     reason: "board_overlay_fixture",
     win_loss: 11,
     move_accuracy: 58,
+    criticality_score: 20,
     best_move_uci: "b8c6",
     best_move_san: "Nc6",
     top_moves: [
@@ -275,6 +276,15 @@ function reviewOverlayAnnotation(baseAnnotation = {}) {
     },
     impact_label: "important",
     move_quality_label: "Moyenne",
+    moment_importance: "priority_training",
+    moment_group: "priority_training",
+    moment_label: "Moment prioritaire",
+    moment_reason:
+      "Cette décision a fait perdre une ressource importante et se transforme en exercice utile.",
+    moment_importance_version: "review_moment_importance_v1",
+    is_training_recommended: true,
+    is_micro_gap: false,
+    is_good_decision: false,
     compact_label: "Nc6",
     coach_card_title: "Coup 8",
   };
@@ -294,10 +304,24 @@ function buildReviewOverlayPayload(review) {
     move_annotations: [annotation],
     review_sections: {
       to_review: [annotation],
+      priority_training: [annotation],
+      secondary_training: [],
+      micro_gaps: [],
+      good_decisions: [],
+      informational: [],
       strong_moves: [],
       missed_opportunities: [annotation],
       all: [annotation],
     },
+    moment_selection_summary: {
+      priority_training: 1,
+      secondary_training: 0,
+      micro_gap: 0,
+      good_decision: 0,
+      informational: 0,
+      no_major_moment: false,
+    },
+    review_moment_importance_version: "review_moment_importance_v1",
   };
   evidence.api.review_overlay_annotation = annotation;
   return payload;

@@ -349,6 +349,19 @@ async function exerciseExploration() {
 }
 
 async function startPracticeAndSaveAttempt(gameId) {
+  await harness.evalPage(({ nextGameId }) => {
+    window.localStorage.setItem(`neurochess.reviewPov.${nextGameId}`, "both");
+    return { ok: true };
+  }, { nextGameId: gameId });
+  await harness.browserClient.send("Page.navigate", {
+    url: `${harness.frontendBaseUrl}/app?reviewExplorationPractice=${Date.now()}`,
+  });
+  await harness.waitForPagePredicate("review ready for practice after exploration", () => ({
+    ok:
+      Boolean(document.querySelector('[data-testid="review-board"]')) &&
+      Boolean(document.querySelector('[data-testid="review-focus-practice"], [data-testid="review-practice-button"]')),
+    text: document.body?.innerText ?? "",
+  }), 30_000);
   try {
     await harness.clickByTestId("review-practice-button", { afterMs: 1200 });
   } catch {

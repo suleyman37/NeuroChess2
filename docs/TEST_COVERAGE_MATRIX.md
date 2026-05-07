@@ -1,6 +1,6 @@
 # Test Coverage Matrix
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` + `P1.I18N-STRINGS-CATALOG-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` + `P1.I18N-STRINGS-CATALOG-V1` + `P1.REVIEW-MOMENT-SELECTION-INTELLIGENCE-V1`
 Date: 2026-05-05
 
 This matrix lists available automated tests, scripts, and smoke checks. It does
@@ -121,6 +121,18 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
   before correction, best row only in correction, Explorer historical badge
   without attempt classification, Practice attempt badge only after a real board
   move, collapsed/open legend, mobile no-overflow, and forbidden-label absence.
+- Review moment selection intelligence backend tests: added via
+  `.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_review_moment_importance`.
+  They cover opening negligible moves, early tactical priority despite opening
+  ply, middlegame priority, secondary/small-loss routing, inferred good
+  decisions, no-major summaries, and Practice filtering of non-training
+  moments.
+- Review moment selection intelligence browser smoke: PASS via
+  `cmd /c node scripts\browser_review_moment_selection_intelligence_smoke.mjs`.
+  It proves API category fields/summary, priority/good-decision category
+  presentation, `Pourquoi ce moment ?`, Practice filtering of non-training
+  moments, no pre-attempt best/attempt spoiler, Explorer historical category
+  separation, mobile no-overflow, and no raw metric labels.
 
 ## Matrix
 
@@ -162,6 +174,7 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
 | `backend/tests/test_review_coach_summary.py` | unit | Review coach summary | Coach headline summary | Browser Summary | PASS in full suite | high | Browser ready Review |
 | `backend/tests/test_review_jobs.py` | integration | Review jobs | Job lifecycle, reconcile/cancel/stalled states | Browser progress UI | PASS in full suite | high | Browser job-state smoke |
 | `backend/tests/test_review_metrics.py` | unit | Review metrics | Accuracy/NeuroScore-related calculations | Browser presentation | PASS in full suite | high | Golden corpus later |
+| `backend/tests/test_review_moment_importance.py` | unit | Review moment selection intelligence | `priority_training`, `secondary_training`, `micro_gap`, `good_decision`, `no_major_moment`, Practice filtering of non-training moments | Full-game corpus calibration and browser layout | added in P1 moment intelligence mission | high if PASS | Add positive_gain persistence once backend stores it explicitly |
 | `backend/tests/test_review_practice_items.py` | unit | Practice items | Review-to-practice item generation | Browser start Practice | PASS in full suite | high | Browser Practice start |
 | `backend/tests/test_review_practice_learning_loop.py` | unit/integration | Learning Loop V1 | Attempt fields, delay rules, due session, no-due summary | Browser due UI | PASS in full suite | high | Global daily plan/due queue |
 | `backend/tests/test_review_practice_no_engine.py` | unit/integration | Practice no-engine | Practice remains available without Stockfish calls | Browser degraded state | PASS in full suite | high | Browser no-engine practice |
@@ -198,6 +211,7 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
 | `scripts/browser_review_user_pov_focus_layout_contract_smoke.mjs` | browser smoke | Review POV / identity / focused layout | `Les deux` orientation follows current White/Black moment or item; unknown `Moi` is hidden/explained; board, feedback, primary next action, and line player controls remain visible together on desktop | Real user identity persistence beyond `review.user_color`, broad responsive visual polish | added in P1 Review user POV/focus layout mission | high if PASS | Manual real-game White/Black/Moi spot check before pilot |
 | `scripts/browser_review_trust_pv5_stable_classification_smoke.mjs` | browser/API smoke | Review trust PV5 / stable try-move classification | No pre-attempt overlay on app load; HTTP try-move classification proves stable out-of-list `playable`, `imprecise`, and `wrong` bands; legal out-of-list attempts are not auto-wrong; PV5 candidate `playable`/`imprecise` mappings are exercised | Full real-board playable fixture and clean-opening UI screenshot remain manual/future | added in P1 Review trust mission | high if PASS | Pair with backend unit tests for gate, timeout, DB result bands, and scheduling safety |
 | `scripts/browser_review_decision_card_quality_ribbon_smoke.mjs` | browser smoke | Review decision presentation / move quality UX | Summary historical badge and quality ribbon; Learn Decision Card with no attempt/best spoiler before correction and best row after correction; Explorer historical badge without local attempt classification; Practice current-attempt badge only after real board attempt; legend collapsed/open; mobile no horizontal overflow | Broad real-user PGN variety, manual visual taste, and full-game quality for every unreviewed move | PASS | high | Manual Review mini-check remains required before pilot |
+| `scripts/browser_review_moment_selection_intelligence_smoke.mjs` | browser smoke | Review moment selection intelligence | API category fields/summary; priority label and `Pourquoi ce moment ?`; good-decision group when fixture supports it; Practice excludes micro/good/informational items; no current-attempt or best-row spoiler before attempt; Explorer uses historical category only; mobile no overflow; raw metrics absent | The current browser fixture does not expose a micro-gap or clean/no-major state; those are covered by backend unit tests | PASS | high | Add richer browser fixture when a stable clean/micro-gap PGN is available |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |

@@ -23,7 +23,12 @@ import {
   practiceHintForAnnotation,
   publicMainDifferenceText,
 } from "./reviewViewModel";
-import { formatImpact, isMicroReviewObservation } from "./reviewUtils";
+import {
+  formatImpact,
+  isMicroReviewObservation,
+  reviewMomentImportanceLabel,
+  reviewMomentReason,
+} from "./reviewUtils";
 import type {
   ReviewLessonStep,
   ReviewPovContext,
@@ -329,11 +334,13 @@ function ReviewCoachMomentCard({
         }
         why={
           publicStep === "challenge"
-            ? hiddenCoachObjective(annotation, explanation)
+            ? reviewMomentReason(annotation) ?? hiddenCoachObjective(annotation, explanation)
             : correctionMoveAccepted
               ? acceptedCorrectionText
-              : correctionWhy
+              : reviewMomentReason(annotation) ?? correctionWhy
         }
+        whyLabel={fr.decisionCard.whyThisMoment}
+        momentLabel={reviewMomentImportanceLabel(annotation)}
         microObservation={isMicroReviewObservation(annotation)}
       />
 

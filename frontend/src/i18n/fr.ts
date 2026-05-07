@@ -91,11 +91,45 @@ export const fr = {
     bestIdea: "Meilleure idée",
     currentAttempt: "Ta tentative",
     whyItMatters: "Pourquoi ça compte",
+    whyThisMoment: "Pourquoi ce moment ?",
     action: "Action",
     unavailableMove: "coup indisponible",
     unevaluated: "Non évalué",
     microGap: "Micro-écart",
     microGapDetail: "Observation, pas un exercice prioritaire.",
+  },
+  momentImportance: {
+    labels: {
+      priority_training: "Moment prioritaire",
+      secondary_training: "Moment secondaire",
+      micro_gap: "Micro-écart",
+      good_decision: "Bonne décision",
+      informational: "Observation",
+      no_major_moment: "Aucun moment majeur",
+    } as Record<string, string>,
+    reasons: {
+      priority_training:
+        "Cette décision a fait perdre une ressource importante et se transforme en exercice utile.",
+      secondary_training:
+        "Cette décision a coûté un peu de précision, mais l'impact reste limité.",
+      micro_gap:
+        "Le moteur préfère une autre option, mais l'impact pratique est faible.",
+      good_decision:
+        "Bon choix dans la partie : cette idée mérite d'être consolidée.",
+      informational: "Observation utile, sans exercice prioritaire à forcer.",
+      no_major_moment:
+        "La partie est restée trop propre ou équilibrée pour générer un exercice prioritaire.",
+    } as Record<string, string>,
+    summaryGroups: {
+      priority_training: "Moments prioritaires",
+      secondary_training: "Moments secondaires",
+      micro_gap: "Micro-écarts",
+      good_decision: "Bonnes décisions",
+    } as Record<string, string>,
+    noPriority: "Aucun moment prioritaire détecté.",
+    noPriorityDetail:
+      "Tu peux explorer les micro-écarts ou consolider les bonnes décisions.",
+    whyThisMoment: "Pourquoi ce moment ?",
   },
   qualityRibbon: {
     title: "Moments analysés",

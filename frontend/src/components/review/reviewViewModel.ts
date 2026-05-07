@@ -77,6 +77,11 @@ export function filteredReviewSections(
   targetColor: ReviewPovTargetColor,
 ): ReviewSections {
   const empty: ReviewSections = {
+    priority_training: [],
+    secondary_training: [],
+    micro_gaps: [],
+    good_decisions: [],
+    informational: [],
     to_review: [],
     strong_moves: [],
     missed_opportunities: [],
@@ -87,6 +92,11 @@ export function filteredReviewSections(
   }
   if (targetColor === "both") {
     return {
+      priority_training: review.review_sections.priority_training ?? [],
+      secondary_training: review.review_sections.secondary_training ?? [],
+      micro_gaps: review.review_sections.micro_gaps ?? [],
+      good_decisions: review.review_sections.good_decisions ?? [],
+      informational: review.review_sections.informational ?? [],
       to_review: review.review_sections.to_review ?? [],
       strong_moves: review.review_sections.strong_moves ?? [],
       missed_opportunities: review.review_sections.missed_opportunities ?? [],
@@ -94,6 +104,23 @@ export function filteredReviewSections(
     };
   }
   return {
+    priority_training: filterAnnotationsByColor(
+      review.review_sections.priority_training,
+      targetColor,
+    ),
+    secondary_training: filterAnnotationsByColor(
+      review.review_sections.secondary_training,
+      targetColor,
+    ),
+    micro_gaps: filterAnnotationsByColor(review.review_sections.micro_gaps, targetColor),
+    good_decisions: filterAnnotationsByColor(
+      review.review_sections.good_decisions,
+      targetColor,
+    ),
+    informational: filterAnnotationsByColor(
+      review.review_sections.informational,
+      targetColor,
+    ),
     to_review: filterAnnotationsByColor(review.review_sections.to_review, targetColor),
     strong_moves: filterAnnotationsByColor(review.review_sections.strong_moves, targetColor),
     missed_opportunities: filterAnnotationsByColor(
@@ -134,11 +161,17 @@ export function countPracticeEligibleItems(sections: ReviewSections): number {
 }
 
 export function reviewCockpitPriorities(sections: ReviewSections): ReviewMoveAnnotation[] {
-  const source = sections.to_review.length
-    ? sections.to_review
-    : sections.missed_opportunities.length
-      ? sections.missed_opportunities
-      : sections.all;
+  const priority = sections.priority_training ?? [];
+  const secondary = sections.secondary_training ?? [];
+  const source = priority.length
+    ? priority
+    : secondary.length
+      ? secondary
+      : sections.to_review.length
+        ? sections.to_review
+        : sections.missed_opportunities.length
+          ? sections.missed_opportunities
+          : sections.all;
   return source
     .slice()
     .sort((left, right) => {
@@ -478,6 +511,9 @@ export function shortCockpitText(value: string, maxLength: number): string {
 }
 
 export function isPracticeEligibleAnnotation(annotation: ReviewMoveAnnotation): boolean {
+  if (annotation.is_training_recommended === false) {
+    return false;
+  }
   const tags = new Set(annotation.tags ?? []);
   return (
     Boolean(annotation.try_move_supported) &&
@@ -1199,6 +1235,9 @@ export function coachTone(
 
 
 export function humanReason(annotation: ReviewMoveAnnotation): string {
+  if (annotation.moment_reason) {
+    return annotation.moment_reason;
+  }
   const tags = annotation.tags ?? [];
   if (tags.includes("missed_opportunity")) {
     return "une opportunité claire a été manquée dans cette position.";

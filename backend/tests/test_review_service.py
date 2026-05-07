@@ -655,6 +655,14 @@ class ReviewServiceTests(unittest.TestCase):
             "pv_contrast_evidence_version",
             "contrast_coach_explanation",
             "contrast_coach_explanation_version",
+            "moment_importance",
+            "moment_group",
+            "moment_label",
+            "moment_reason",
+            "moment_importance_version",
+            "is_training_recommended",
+            "is_micro_gap",
+            "is_good_decision",
         ):
             self.assertIn(key, first_annotation)
         self.assertEqual(
@@ -679,8 +687,14 @@ class ReviewServiceTests(unittest.TestCase):
             list(range(1, len(REVIEWABLE_MOVES) + 1)),
         )
         self.assertIn("to_review", payload["review_sections"])
+        self.assertIn("priority_training", payload["review_sections"])
+        self.assertIn("secondary_training", payload["review_sections"])
+        self.assertIn("micro_gaps", payload["review_sections"])
+        self.assertIn("good_decisions", payload["review_sections"])
         self.assertIn("strong_moves", payload["review_sections"])
         self.assertIn("missed_opportunities", payload["review_sections"])
+        self.assertIn("moment_selection_summary", payload)
+        self.assertIn("no_major_moment", payload["moment_selection_summary"])
 
     def test_review_payload_contains_opening_reality_evidence(self) -> None:
         game_id, positions = self._create_finished_game(REVIEWABLE_MOVES)
@@ -929,6 +943,10 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertTrue(cached["review_summary_sentence"])
         self.assertEqual(cached["move_category_formula_version"], "neuro_move_categories_v1")
         self.assertEqual(
+            cached["review_moment_importance_version"],
+            "review_moment_importance_v1",
+        )
+        self.assertEqual(
             cached["pedagogical_explanation_version"],
             "neuro_pedagogy_templates_v1",
         )
@@ -942,6 +960,7 @@ class ReviewServiceTests(unittest.TestCase):
         )
         self.assertTrue(cached["move_annotations"])
         self.assertTrue(cached["review_sections"]["all"])
+        self.assertIn("moment_selection_summary", cached)
 
     def test_metric_rebuild_persists_dual_score_cache(self) -> None:
         game_id, positions = self._create_finished_game(REVIEWABLE_MOVES)

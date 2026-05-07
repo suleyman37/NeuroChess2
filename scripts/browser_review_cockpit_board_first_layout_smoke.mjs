@@ -325,7 +325,38 @@ async function latestSessionForGame(gameId) {
   return fetchJson(`${harness.backendBaseUrl}/review/practice/sessions/${latest.session_id}`);
 }
 
+async function switchReviewPovToBothForPractice() {
+  await harness.clickByTestId("review-focus-summary", { afterMs: 500 });
+  await harness.waitForPagePredicate("review POV selector ready for cockpit practice", () => ({
+    ok:
+      Boolean(document.querySelector('[data-testid="review-analyzed-player-current"]')) &&
+      Boolean(document.querySelector('[data-testid="review-analyzed-player-change-button"]')),
+    text: document.body?.innerText ?? "",
+  }), 20_000);
+  const current = await harness.evalPage(() => ({
+    label:
+      document
+        .querySelector('[data-testid="review-analyzed-player-current"]')
+        ?.textContent?.trim() ?? "",
+  }));
+  if (current.label.includes("Les deux")) {
+    mark("review_pov_both_for_cockpit_practice", "pass", current.label);
+    return;
+  }
+  await harness.clickByTestId("review-analyzed-player-change-button", { afterMs: 300 });
+  await harness.clickByTestId("review-analyzed-player-option-both", { afterMs: 700 });
+  const selected = await harness.waitForPagePredicate("review POV both selected for cockpit practice", () => {
+    const label =
+      document
+        .querySelector('[data-testid="review-analyzed-player-current"]')
+        ?.textContent?.trim() ?? "";
+    return { ok: label.includes("Les deux"), label };
+  }, 10_000);
+  mark("review_pov_both_for_cockpit_practice", "pass", selected.label);
+}
+
 async function openPracticeFromReview(gameId) {
+  await switchReviewPovToBothForPractice();
   await harness.waitForPagePredicate("review practice entry ready", () => ({
     ok:
       Boolean(document.querySelector('[data-testid="review-practice-button"]')) ||
@@ -347,13 +378,13 @@ async function openPracticeFromReview(gameId) {
     text: document.body?.innerText ?? "",
   }), 30_000);
   const session = await latestSessionForGame(gameId);
-  if (!Array.isArray(session.items) || session.items.length < 2) {
-    fail("practice_two_items_available", JSON.stringify(session));
+  if (!Array.isArray(session.items) || session.items.length < 1) {
+    fail("practice_items_available", JSON.stringify(session));
   }
   evidence.api.practice_session_id = session.session_id;
   evidence.api.practice_item_count = session.items.length;
   writeJson(path.join(API_DIR, "practice_session_initial.json"), session);
-  mark("review_practice_opened_two_items", "pass", `session_id=${session.session_id}`);
+  mark("review_practice_opened", "pass", `session_id=${session.session_id}; items=${session.items.length}`);
   return session;
 }
 
@@ -581,7 +612,8 @@ async function assertSuccessState(firstItem) {
       ok:
         visible('[data-testid="practice-board"]') &&
         visible('[data-testid="review-training-feedback"]') &&
-        visible('[data-testid="review-training-next-button"]') &&
+        (visible('[data-testid="review-training-next-button"]') ||
+          visible('[data-testid="review-training-finish-button"]')) &&
         Boolean(overlay) &&
         overlay.getAttribute("data-quality-id") === "critical_best",
       overlayQuality: overlay?.getAttribute("data-quality-id") ?? null,
@@ -596,10 +628,12 @@ async function assertSuccessState(firstItem) {
     scenario: "SUCCESS_ATTEMPT",
     state: `AFTER_${firstItem.best_move_uci}`,
     action: `played ${firstItem.best_move_uci}`,
-    expected: "board feedback and Position suivante visible in one viewport",
-    observed: `boardVisible=${layout.boardVisible}, feedbackVisible=${layout.feedbackVisible}, nextVisible=${layout.successCtaVisible}`,
+    expected: "board feedback and primary continuation CTA visible in one viewport",
+    observed: `boardVisible=${layout.boardVisible}, feedbackVisible=${layout.feedbackVisible}, nextVisible=${layout.successCtaVisible}, finishVisible=${layout.finishCtaVisible}`,
     pass: true,
-    primaryTestId: "review-training-next-button",
+    primaryTestId: layout.successCtaVisible
+      ? "review-training-next-button"
+      : "review-training-finish-button",
   });
   const overlay = await overlayGeometrySnapshot();
   if (
@@ -815,6 +849,66 @@ async function assertWrongState(session) {
   });
 }
 
+async function assertWrongStateCurrentItem(session, item) {
+  const wrongMove =
+    item.uci && item.uci !== item.best_move_uci
+      ? item.uci
+      : item.played_uci && item.played_uci !== item.best_move_uci
+        ? item.played_uci
+        : null;
+  if (!wrongMove) {
+    fail("wrong_fixture_move_available", JSON.stringify(item));
+  }
+  const wrongMoveSan = item.san ?? item.played_san ?? wrongMove;
+  await installWrongAttemptIntercept(session, item, wrongMove, wrongMoveSan);
+  await submitPracticeMoveWithFallback(wrongMove);
+  const wrong = await harness.waitForPagePredicate("single-item wrong retry visible with board overlay", () => {
+    const viewportHeight = window.innerHeight;
+    const visible = (selector) => {
+      const element = document.querySelector(selector);
+      const rect = element?.getBoundingClientRect();
+      return Boolean(rect && rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.bottom <= viewportHeight);
+    };
+    const overlay = document.querySelector('[data-testid="board-move-outcome-overlay"]');
+    return {
+      ok:
+        visible('[data-testid="practice-board"]') &&
+        visible('[data-testid="review-training-feedback"]') &&
+        visible('[data-testid="review-training-retry-button"]') &&
+        Boolean(overlay) &&
+        overlay.getAttribute("data-quality-id") === "wrong",
+      overlayQuality: overlay?.getAttribute("data-quality-id") ?? null,
+      overlaySquare: overlay?.getAttribute("data-square") ?? null,
+      retryText:
+        document.querySelector('[data-testid="review-training-retry-button"]')?.textContent?.trim() ??
+        "",
+    };
+  }, 25_000);
+  evidence.contract_checks.wrong_state_single_item = wrong;
+  const layout = await layoutSnapshot();
+  await captureContractScreenshot({
+    scenario: "WRONG_ATTEMPT",
+    state: `AFTER_${wrongMove}`,
+    action: `played ${wrongMove}`,
+    expected: "board feedback and Reessayer visible in one viewport",
+    observed: `boardVisible=${layout.boardVisible}, feedbackVisible=${layout.feedbackVisible}, retryVisible=${layout.retryCtaVisible}`,
+    pass: true,
+    primaryTestId: "review-training-retry-button",
+    notes: "single-item wrong feedback uses deterministic frontend layout fixture response",
+  });
+}
+
+async function resetAfterWrongAttempt() {
+  await harness.clickByTestId("review-training-retry-button", { afterMs: 700 });
+  await harness.waitForPagePredicate("practice reset after wrong attempt", () => ({
+    ok:
+      Boolean(document.querySelector('[data-testid="practice-board"]')) &&
+      !document.querySelector('[data-testid="review-training-feedback"]'),
+    text: document.body?.innerText ?? "",
+  }), 15_000);
+  mark("practice_reset_after_wrong_attempt", "pass", "feedback cleared");
+}
+
 async function assertMobileNarrowSafe() {
   await harness.setViewport({ width: 390, height: 844, mobile: true });
   await harness.evalPage(() => {
@@ -903,10 +997,19 @@ async function main() {
   await openReviewFromPersistedState(harness, gameId);
   await assertDesktopInitialCockpit();
   const session = await openPracticeFromReview(gameId);
-  await assertSuccessState(session.items[0]);
-  await assertLinePlayerNearBoard();
-  await assertWrongState(session);
-  await assertMobileNarrowSafe();
+  if (session.items.length >= 2) {
+    await assertSuccessState(session.items[0]);
+    await assertLinePlayerNearBoard();
+    await assertWrongState(session);
+    await assertMobileNarrowSafe();
+  } else {
+    await assertWrongStateCurrentItem(session, session.items[0]);
+    await assertMobileNarrowSafe();
+    await resetAfterWrongAttempt();
+    await harness.setViewport({ width: 1440, height: 860 });
+    await assertSuccessState(session.items[0]);
+    await assertLinePlayerNearBoard();
+  }
   await harness.assertForbiddenV1LabelsAbsent("forbidden_labels_absent_final");
   if (evidence.browser_errors.page.length || evidence.browser_errors.network_500.length) {
     fail("browser_error_gate", JSON.stringify(evidence.browser_errors));

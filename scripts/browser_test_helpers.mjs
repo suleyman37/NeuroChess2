@@ -182,7 +182,7 @@ export async function openReviewFromPersistedState(harness, gameId, options = {}
   await harness.startBrowser("/app");
   await harness.loadApp();
   await harness.evalPage(
-    ({ gameId: nextGameId, jobId }) => {
+    ({ gameId: nextGameId, jobId, reviewPov }) => {
       window.localStorage.setItem(
         "neurochess.appState.v5_3a4d",
         JSON.stringify({
@@ -194,9 +194,12 @@ export async function openReviewFromPersistedState(harness, gameId, options = {}
           updatedAt: Date.now(),
         }),
       );
+      if (reviewPov) {
+        window.localStorage.setItem("neurochess.reviewPov." + nextGameId, reviewPov);
+      }
       return { ok: true };
     },
-    { gameId, jobId: options.jobId ?? null },
+    { gameId, jobId: options.jobId ?? null, reviewPov: options.reviewPov ?? null },
   );
   await harness.browserClient.send("Page.navigate", {
     url: `${harness.frontendBaseUrl}/app`,

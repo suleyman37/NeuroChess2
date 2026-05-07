@@ -482,7 +482,38 @@ async function latestSessionForGame(gameId) {
   return fetchJson(`${harness.backendBaseUrl}/review/practice/sessions/${latest.session_id}`);
 }
 
+async function switchReviewPovToBothForPractice() {
+  await harness.clickByTestId("review-focus-summary", { afterMs: 500 });
+  await harness.waitForPagePredicate("review POV selector ready for practice", () => ({
+    ok:
+      Boolean(document.querySelector('[data-testid="review-analyzed-player-current"]')) &&
+      Boolean(document.querySelector('[data-testid="review-analyzed-player-change-button"]')),
+    text: document.body?.innerText ?? "",
+  }), 20_000);
+  const current = await harness.evalPage(() => ({
+    label:
+      document
+        .querySelector('[data-testid="review-analyzed-player-current"]')
+        ?.textContent?.trim() ?? "",
+  }));
+  if (current.label.includes("Les deux")) {
+    mark("review_pov_both_for_practice", "pass", current.label);
+    return;
+  }
+  await harness.clickByTestId("review-analyzed-player-change-button", { afterMs: 300 });
+  await harness.clickByTestId("review-analyzed-player-option-both", { afterMs: 700 });
+  const selected = await harness.waitForPagePredicate("review POV both selected for practice", () => {
+    const label =
+      document
+        .querySelector('[data-testid="review-analyzed-player-current"]')
+        ?.textContent?.trim() ?? "";
+    return { ok: label.includes("Les deux"), label };
+  }, 10_000);
+  mark("review_pov_both_for_practice", "pass", selected.label);
+}
+
 async function openPracticeFromReview(gameId) {
+  await switchReviewPovToBothForPractice();
   await harness.clickByTestId("review-focus-practice", { afterMs: 700 });
   await harness.waitForPagePredicate("practice launch ready", () => ({
     ok: Boolean(document.querySelector('[data-testid="review-practice-button"]')),

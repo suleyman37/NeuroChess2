@@ -44,6 +44,23 @@ python tools/plan_guard.py
 - Required before any human pilot: full validation, browser evidence, manual
   Review mini-check, then explicit commit/push mission if requested.
 
+## Current Review Moment Selection Intelligence Follow-Up
+
+- `P1.REVIEW-MOMENT-SELECTION-INTELLIGENCE-V1` is a bounded backend/product
+  mission with light Review presentation changes.
+- Target state: Review moves receive a safe moment category when data exists:
+  `priority_training`, `secondary_training`, `micro_gap`, `good_decision`,
+  `informational`, or review-level `no_major_moment`.
+- Training safety: only training-recommended priority moments are forced into
+  new Practice/training item creation in V1; micro-gaps, informational notes,
+  and good decisions are shown as observations/consolidation, not forced retry
+  items.
+- Preserved boundaries: no NeuroScore/formula change, no `due_at` semantic
+  change, no Daily Plan scoring rewrite, no LLM, no Candidate Trainer, no raw
+  metrics exposed, and no Plan1/Plan2/Plan3 edits.
+- Required before any human pilot: automated validation, browser evidence,
+  manual Review mini-check, then explicit commit/push mission if requested.
+
 ## P0
 
 ### P0. FULL-APP-EVIDENCE-QA-AUDIT-V1

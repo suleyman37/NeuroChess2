@@ -537,6 +537,47 @@ final selected order = ply ascending
 - source_semantics: implemented in `review_service.criticality_score` and
   `_select_review_moments`.
 
+### 12a. review_moment_importance_v1
+
+- formula_id: `review_moment_importance_v1`
+- version: `review_moment_importance_v1`
+- implementation_status: `implemented_now`
+- purpose: action / Review product routing
+- inputs: move category, tags, `win_loss_v1`, move accuracy, internal
+  `criticality_score_v1`, missed gain, ply, book signal, player Win% before and
+  after, best move availability
+- output: one user-safe category:
+  `priority_training`, `secondary_training`, `micro_gap`, `good_decision`,
+  `informational`, or review-level `no_major_moment`
+- formula:
+
+```text
+priority_training when the loss is meaningful/trainable
+secondary_training when the loss is real but limited
+micro_gap when the engine preference is low-impact, book-ish, or balanced
+good_decision when the played move is best/excellent/good or a strong find
+informational otherwise
+no_major_moment when the Review has no priority training moments
+```
+
+- interpretation: decides what NeuroChess should ask the user to do with a
+  Review move.
+- used_by: Review sections, Decision Card copy, Practice candidate filtering,
+  durable training item generation.
+- calibration_status: `heuristic_v0 / needs_corpus`
+- limitations:
+  - This is a categorical routing heuristic, not a numeric user score.
+  - Raw criticality remains hidden.
+  - `good_decision` currently infers from move quality/category and
+    `strong_find`; explicit positive_gain is future work.
+  - `secondary_training` is shown but not forced into Practice by default in
+    V1.
+- example: a near-equal book move with tiny loss becomes `micro_gap`; a tactical
+  loss in the opening can still become `priority_training`.
+- registry_link: `review_moment_importance_v1`
+- source_semantics: implemented in
+  `metrics/review_moment_importance.py`.
+
 ### 13. player_review_score_v0
 
 - formula_id: `player_review_score_v0`

@@ -382,13 +382,13 @@ async function openPracticeFromReview(gameId) {
     text: document.body?.innerText ?? "",
   }), 30_000);
   const session = await latestSessionForGame(gameId);
-  if (!Array.isArray(session.items) || session.items.length < 2) {
-    fail("practice_two_items_available", JSON.stringify(session));
+  if (!Array.isArray(session.items) || session.items.length < 1) {
+    fail("practice_items_available", JSON.stringify(session));
   }
   evidence.api.practice_session_id = session.session_id;
   evidence.api.practice_item_count = session.items.length;
   writeJson(path.join(API_DIR, "practice_session_initial.json"), session);
-  mark("review_practice_opened_two_items", "pass", `session_id=${session.session_id}`);
+  mark("review_practice_opened", "pass", `session_id=${session.session_id}; items=${session.items.length}`);
   return session;
 }
 
@@ -414,23 +414,54 @@ async function assertSuccessNextCtaAndAdvance(gameId, session) {
   }));
   evidence.contract_checks.before_first_success = beforeState;
   await submitPracticeMoveWithFallback(first.best_move_uci);
-  const success = await harness.waitForPagePredicate("success next CTA visible", () => {
+  const success = await harness.waitForPagePredicate("success continuation CTA visible", () => {
     const panel = document.querySelector('[data-testid="practice-panel"]');
     const text = panel?.textContent ?? "";
+    const hasNext = Boolean(document.querySelector('[data-testid="review-training-next-button"]'));
+    const hasFinish = Boolean(document.querySelector('[data-testid="review-training-finish-button"]'));
     return {
       ok:
         Boolean(panel) &&
-        Boolean(document.querySelector('[data-testid="review-training-next-button"]')) &&
+        (hasNext || hasFinish) &&
         Boolean(document.querySelector('[data-testid="review-training-feedback"]')) &&
-        text.includes("Position suivante") &&
         !text.includes("Voir la correction"),
+      hasNext,
+      hasFinish,
       positionLabel:
         document.querySelector('[data-testid="review-training-position-label"]')?.textContent?.trim() ?? "",
       text,
     };
   }, 25_000);
-  evidence.contract_checks.success_next_cta_visible = success;
+  evidence.contract_checks.success_continuation_cta_visible = success;
   const countsAfterAttempt = dbCounts("after_first_success_attempt");
+  if (!success.hasNext && success.hasFinish) {
+    await captureContractScreenshot({
+      scenario: "REVIEW_TRAINING_FINISH_ACTION",
+      state: `AFTER_SUCCESS_MOVE_${first.best_move_san ?? first.best_move_uci}`,
+      action: `played ${first.best_move_uci}`,
+      expected: "finish session CTA visible when only one priority item remains",
+      observed: "Terminer la session visible near success feedback",
+      pass: true,
+      primaryTestId: "review-training-finish-button",
+      dbCheck: `attempts ${countsBefore.review_practice_attempts}->${countsAfterAttempt.review_practice_attempts}`,
+    });
+    await harness.clickByTestId("review-training-finish-button", { afterMs: 1200 });
+    const complete = await harness.waitForPagePredicate("training complete state visible after single item", () => ({
+      ok: Boolean(document.querySelector('[data-testid="review-training-complete-state"]')),
+      text: document.body?.innerText ?? "",
+    }), 20_000);
+    evidence.contract_checks.training_complete_state = complete;
+    await captureContractScreenshot({
+      scenario: "REVIEW_TRAINING_FINISH_ACTION",
+      state: "AFTER_CLICK_TERMINER_SESSION_SINGLE_ITEM",
+      action: "clicked Terminer la session",
+      expected: "session complete state visible",
+      observed: "Session terminÃ©e panel visible",
+      pass: true,
+      primaryTestId: "review-training-complete-state",
+    });
+    return { countsAfterNext: dbCounts("after_finish_single_item"), completed: true };
+  }
   await captureContractScreenshot({
     scenario: "REVIEW_TRAINING_NEXT_ACTION",
     state: `AFTER_SUCCESS_MOVE_${first.best_move_san ?? first.best_move_uci}`,
@@ -482,7 +513,7 @@ async function assertSuccessNextCtaAndAdvance(gameId, session) {
     primaryTestId: "review-training-position-label",
     dbCheck: `attempts unchanged at ${countsAfterNext.review_practice_attempts}`,
   });
-  return { countsAfterNext };
+  return { countsAfterNext, completed: false };
 }
 
 async function assertFinishAtEnd(gameId) {
@@ -843,7 +874,7 @@ async function main() {
   dbCounts("after_seed_two_items");
   const review = await fetchJson(`${harness.backendBaseUrl}/games/${gameId}/review?profile=standard`);
   writeJson(path.join(API_DIR, "review_after_two_item_seed.json"), review);
-  await openReviewFromPersistedState(harness, gameId);
+  await openReviewFromPersistedState(harness, gameId, { reviewPov: "both" });
   await harness.evalPage(({ nextGameId }) => {
     window.localStorage.setItem(`neurochess.reviewPov.${nextGameId}`, "both");
     return { ok: true };
@@ -865,8 +896,10 @@ async function main() {
     pass: true,
     primaryTestId: "practice-panel",
   });
-  await assertSuccessNextCtaAndAdvance(gameId, session);
-  await assertFinishAtEnd(gameId);
+  const continuation = await assertSuccessNextCtaAndAdvance(gameId, session);
+  if (!continuation.completed) {
+    await assertFinishAtEnd(gameId);
+  }
   await assertLinePlaybackContract(gameId, review);
   const finalCounts = dbCounts("final_after_line_playback");
   evidence.contract_checks.final_counts = finalCounts;

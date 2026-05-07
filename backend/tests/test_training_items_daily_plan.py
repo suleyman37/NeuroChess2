@@ -102,6 +102,38 @@ class TrainingItemsDailyPlanTests(unittest.TestCase):
         self.assertIsNotNone(table)
         self.assertEqual(count, 5)
 
+    def test_micro_gap_annotations_do_not_create_forced_training_items(self) -> None:
+        review_payload = practice_review(self.game_id)
+        base_annotation = dict(review_payload["move_annotations"][0])
+        annotations = []
+        for ply in range(1, 7):
+            annotation = dict(base_annotation)
+            annotation.update(
+                {
+                    "ply": ply,
+                    "move_number": (ply + 1) // 2,
+                    "moment_importance": (
+                        "priority_training" if ply == 1 else "micro_gap"
+                    ),
+                    "moment_label": (
+                        "Moment prioritaire" if ply == 1 else "Micro-écart"
+                    ),
+                    "moment_reason": "raison test",
+                    "is_training_recommended": ply == 1,
+                    "is_micro_gap": ply != 1,
+                    "is_good_decision": False,
+                }
+            )
+            annotations.append(annotation)
+        review_payload["move_annotations"] = annotations
+
+        items = TrainingItemService(self.db_path).ensure_training_items_for_game(
+            self.game_id,
+            review_payload=review_payload,
+        )
+
+        self.assertEqual([item["source_ply"] for item in items], [1])
+
     def test_daily_plan_is_deterministic_and_uses_expected_buckets(self) -> None:
         training_service = TrainingItemService(self.db_path)
         items = training_service.ensure_training_items_for_game(

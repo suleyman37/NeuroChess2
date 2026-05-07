@@ -3,7 +3,12 @@ import { REVIEW_SECTION_TABS, reviewColorLabel } from "./reviewLabels";
 import { MoveQualityBadge } from "./MoveQualityBadge";
 import { getMoveQualityGlyphForHistoricalCategory } from "./moveQualityGlyphs";
 import { reviewIsCompleted } from "./reviewViewModel";
-import { formatImpact, reviewAnnotationHasAnyPvLine } from "./reviewUtils";
+import {
+  formatImpact,
+  reviewAnnotationHasAnyPvLine,
+  reviewMomentImportanceLabel,
+  reviewMomentReason,
+} from "./reviewUtils";
 import type { ReviewPovContext, ReviewPvLineMode, ReviewSectionKey } from "./reviewTypes";
 
 function ReviewMomentNavigator({
@@ -139,6 +144,11 @@ function ReviewCompactMomentRow({
           {annotation.compact_label ??
             `Coup ${annotation.move_number} - ${annotation.category_label}`}
         </span>
+        {reviewMomentImportanceLabel(annotation) && (
+          <span className="review-moment-importance-pill">
+            {reviewMomentImportanceLabel(annotation)}
+          </span>
+        )}
         {qualityId && (
           <MoveQualityBadge
             qualityId={qualityId}
@@ -171,7 +181,7 @@ function ReviewExplorerDetail({
       <div>
         <span>Moment sélectionné</span>
         <strong>
-          Coup {annotation.move_number} · {annotation.category_label}
+          Coup {annotation.move_number} · {reviewMomentImportanceLabel(annotation) ?? annotation.category_label}
           {qualityId && (
             <MoveQualityBadge
               qualityId={qualityId}
@@ -182,7 +192,8 @@ function ReviewExplorerDetail({
           )}
         </strong>
         <p>
-          {annotation.reason ??
+          {reviewMomentReason(annotation) ??
+            annotation.reason ??
             annotation.compact_label ??
             "Ce moment mérite une inspection plus précise."}
         </p>

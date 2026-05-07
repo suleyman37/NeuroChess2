@@ -27,6 +27,8 @@ export function ReviewDecisionCard({
   bestIdea,
   attempt,
   why,
+  whyLabel = fr.decisionCard.whyItMatters,
+  momentLabel,
   microObservation = false,
   primaryAction,
   secondaryActions = [],
@@ -37,6 +39,8 @@ export function ReviewDecisionCard({
   bestIdea?: ReviewDecisionMoveRow | null;
   attempt?: ReviewDecisionMoveRow | null;
   why?: string | null;
+  whyLabel?: string;
+  momentLabel?: string | null;
   microObservation?: boolean;
   primaryAction?: ReviewDecisionAction | null;
   secondaryActions?: ReviewDecisionAction[];
@@ -52,6 +56,11 @@ export function ReviewDecisionCard({
     >
       <div className="review-decision-card-head">
         <span>{fr.decisionCard.title}</span>
+        {momentLabel && (
+          <strong className="review-decision-moment-pill">
+            {momentLabel}
+          </strong>
+        )}
         {microObservation && (
           <strong className="review-decision-micro">
             {fr.decisionCard.microGap}
@@ -65,7 +74,7 @@ export function ReviewDecisionCard({
       </div>
       {(why || microObservation) && (
         <div className="review-decision-why">
-          <span>{fr.decisionCard.whyItMatters}</span>
+          <span>{whyLabel}</span>
           <p>{why ?? fr.decisionCard.microGapDetail}</p>
         </div>
       )}

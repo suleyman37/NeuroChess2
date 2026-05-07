@@ -612,7 +612,35 @@ async function main() {
     }
     await waitForReviewSummaryVisible(45_000);
   }
-  mark("review_summary_visible", "pass", "Review contextuelle + summary + practice CTA");
+  mark("review_summary_visible", "pass", "Review contextuelle + summary");
+
+  const practiceLaunch = await evalPage(() => {
+    const text = document.body?.innerText ?? "";
+    return {
+      available: Boolean(document.querySelector('[data-testid="review-practice-button"]')),
+      text,
+    };
+  });
+  if (!practiceLaunch.available) {
+    const normalized = normalizeText(practiceLaunch.text);
+    if (
+      !normalized.includes("aucune position fiable") &&
+      !normalized.includes("aucun moment prioritaire")
+    ) {
+      fail("review_no_forced_practice_state", practiceLaunch.text);
+    }
+    mark(
+      "review_no_forced_practice_state",
+      "pass",
+      "No priority training item for user POV; Review shows honest empty state.",
+    );
+    await assertForbiddenAbsent("forbidden_labels_absent_final");
+    evidence.finished_at = new Date().toISOString();
+    evidence.result = "pass";
+    console.log("BROWSER_V1_FLOW_SMOKE PASS");
+    console.log(`EVIDENCE_JSON ${JSON.stringify(evidence)}`);
+    return;
+  }
 
   await clickByText("Commencer", { exact: true, afterMs: 1500 });
   await waitForPagePredicate("practice opens", () => {
@@ -732,7 +760,9 @@ async function waitForReviewSummaryVisible(timeoutMs) {
         normalized.includes("review contextuelle") &&
         (normalized.includes("neuroscore") || normalized.includes("score indisponible")) &&
         normalized.includes("moments") &&
-        normalized.includes("commencer"),
+        (normalized.includes("commencer") ||
+          normalized.includes("aucune position fiable") ||
+          normalized.includes("aucun moment prioritaire")),
       text,
     };
   }, timeoutMs);

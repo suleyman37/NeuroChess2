@@ -1,5 +1,6 @@
 import type { OpeningRealityEvidence, ReviewMoment, ReviewMoveAnnotation, ReviewPracticeItem, ReviewScoreAuditRow } from "../../api/client";
 import { makeEvaluationDisplayFromEngineScore } from "../../evaluationDisplay";
+import { fr } from "../../i18n";
 import { impactLabelFromLoss } from "./reviewLabels";
 
 export function pvContrastLinePreview(line: ReviewMoveAnnotation["pv_line"]): string {
@@ -82,6 +83,15 @@ export function isMicroReviewObservation(
   if (!source) {
     return false;
   }
+  const explicitImportance =
+    "moment_importance" in source ? String(source.moment_importance ?? "") : "";
+  if (explicitImportance) {
+    const explicitMicroFlag = "is_micro_gap" in source && source.is_micro_gap === true;
+    return explicitImportance === "micro_gap" || explicitMicroFlag;
+  }
+  if ("is_micro_gap" in source && source.is_micro_gap) {
+    return true;
+  }
   const normalizedImpact = String(source.impact_label ?? "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -97,6 +107,40 @@ export function isMicroReviewObservation(
     return true;
   }
   return hasReviewScoreValue(source.win_loss) && Math.abs(source.win_loss) < 2;
+}
+
+export function reviewMomentImportanceLabel(
+  source:
+    | Pick<ReviewMoveAnnotation, "moment_importance" | "moment_label">
+    | Pick<ReviewPracticeItem, "moment_importance" | "moment_label">
+    | null
+    | undefined,
+): string | null {
+  if (!source) {
+    return null;
+  }
+  if (source.moment_label) {
+    return source.moment_label;
+  }
+  const key = source.moment_importance;
+  return key ? fr.momentImportance.labels[key] ?? null : null;
+}
+
+export function reviewMomentReason(
+  source:
+    | Pick<ReviewMoveAnnotation, "moment_importance" | "moment_reason">
+    | Pick<ReviewPracticeItem, "moment_importance" | "moment_reason">
+    | null
+    | undefined,
+): string | null {
+  if (!source) {
+    return null;
+  }
+  if (source.moment_reason) {
+    return source.moment_reason;
+  }
+  const key = source.moment_importance;
+  return key ? fr.momentImportance.reasons[key] ?? null : null;
 }
 
 

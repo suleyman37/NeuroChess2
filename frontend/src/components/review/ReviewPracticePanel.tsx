@@ -11,7 +11,13 @@ import {
 } from "../../degradedStates";
 import { errorTypeLabel, reviewColorLabel } from "./reviewLabels";
 import { buildPracticeSummaryView, coachTextForPov, practiceHintForItem, practiceItemAnnotationLabel } from "./reviewViewModel";
-import { isMicroReviewObservation, reviewAnnotationHasAnyPvLine, reviewAnnotationHasSolutionPvLine } from "./reviewUtils";
+import {
+  isMicroReviewObservation,
+  reviewAnnotationHasAnyPvLine,
+  reviewAnnotationHasSolutionPvLine,
+  reviewMomentImportanceLabel,
+  reviewMomentReason,
+} from "./reviewUtils";
 import {
   getMoveQualityGlyphForAttemptResult,
   getMoveQualityGlyphForHistoricalCategory,
@@ -265,7 +271,7 @@ export function ReviewPracticeSessionPanel({
     ? feedbackCanContinue
       ? null
       : currentAttemptText
-    : subjectLabel;
+    : reviewMomentReason(item) ?? subjectLabel;
   const decisionCard = (
     <ReviewDecisionCard
       className="review-practice-decision-card"
@@ -308,6 +314,8 @@ export function ReviewPracticeSessionPanel({
           : null
       }
       why={decisionWhy}
+      whyLabel={fr.decisionCard.whyThisMoment}
+      momentLabel={reviewMomentImportanceLabel(item)}
       microObservation={isMicroReviewObservation(item)}
       actionRowTestId={state.feedback ? "review-primary-action-zone" : undefined}
       primaryAction={
@@ -375,7 +383,9 @@ export function ReviewPracticeSessionPanel({
 
       <div className="review-practice-card" data-testid="review-training-main-panel">
         <span className="review-coach-badge">
-          {item.category_label ?? errorTypeLabel(explanation?.error_type, itemAnnotation)}
+          {reviewMomentImportanceLabel(item) ??
+            item.category_label ??
+            errorTypeLabel(explanation?.error_type, itemAnnotation)}
         </span>
         <strong>
           Coup {item.move_number ?? Math.ceil(item.ply / 2)} - {colorLabel} jouent {item.san ?? item.uci ?? ""}
