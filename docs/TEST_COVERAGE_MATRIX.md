@@ -1,6 +1,6 @@
 # Test Coverage Matrix
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` + `P1.I18N-STRINGS-CATALOG-V1` + `P1.REVIEW-MOMENT-SELECTION-INTELLIGENCE-V1`
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` + `P1.I18N-STRINGS-CATALOG-V1` + `P1.REVIEW-MOMENT-SELECTION-INTELLIGENCE-V1` + `P1.METRICS-AND-ALGORITHMS-VALIDATION-HARNESS-V1`
 Date: 2026-05-05
 
 This matrix lists available automated tests, scripts, and smoke checks. It does
@@ -14,7 +14,7 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
 ## Latest Run Summary
 
 - `tools/plan_guard.py`: PASS.
-- Backend full suite: PASS, 495 tests.
+- Backend full suite: PASS, 573 tests.
 - `scripts/review_regression_smoke.py`: PASS.
 - `scripts/pgn_import_smoke.py`: PASS.
 - `scripts/pgn_sindarov_real_flow_smoke.py`: PASS.
@@ -133,6 +133,12 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
   presentation, `Pourquoi ce moment ?`, Practice filtering of non-training
   moments, no pre-attempt best/attempt spoiler, Explorer historical category
   separation, mobile no-overflow, and no raw metric labels.
+- Metrics and algorithms validation harness targeted backend suite: PASS via
+  `.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_metrics_algorithm_validation_harness backend.tests.test_metric_pov_and_win_loss_contract backend.tests.test_review_moment_algorithm_golden_cases`.
+  It uses deterministic synthetic fixtures only, not live Stockfish, to guard
+  POV conversion, Win%/win_loss units, try-move stable fallback bands, PV5
+  acceptance boundaries, moment importance categories, training item safety,
+  no-major state, mate edge cases, and simple V1 due-delay invariants.
 
 ## Matrix
 
@@ -175,6 +181,9 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
 | `backend/tests/test_review_jobs.py` | integration | Review jobs | Job lifecycle, reconcile/cancel/stalled states | Browser progress UI | PASS in full suite | high | Browser job-state smoke |
 | `backend/tests/test_review_metrics.py` | unit | Review metrics | Accuracy/NeuroScore-related calculations | Browser presentation | PASS in full suite | high | Golden corpus later |
 | `backend/tests/test_review_moment_importance.py` | unit | Review moment selection intelligence | `priority_training`, `secondary_training`, `micro_gap`, `good_decision`, `no_major_moment`, Practice filtering of non-training moments | Full-game corpus calibration and browser layout | added in P1 moment intelligence mission | high if PASS | Add positive_gain persistence once backend stores it explicitly |
+| `backend/tests/test_metric_pov_and_win_loss_contract.py` | unit/golden | Metric POV and Win% loss contract | White POV eval, Black POV inversion, player Win% percentage-point `win_loss`, bounded move accuracy, mate override edge case | External Lichess parity and real-engine corpus calibration | PASS targeted in P1 validation harness mission | high | Add external reference corpus only after calibration scope is approved |
+| `backend/tests/test_metrics_algorithm_validation_harness.py` | unit/golden | Try-move/PV5 validation matrix | Golden fixture schema, legal out-of-list stable `playable`/`imprecise`/`wrong`, stable unavailable `needs_rebuild`, close PV5 accepted, far PV5 not auto-accepted, no forbidden raw metric fixture tokens | Browser UX and live Stockfish | PASS targeted in P1 validation harness mission | high | Keep fixture matrix aligned when thresholds change by explicit mission |
+| `backend/tests/test_review_moment_algorithm_golden_cases.py` | unit/golden | Review moment routing and training safety | `micro_gap`, `priority_training`, `secondary_training`, `good_decision`, `informational`, no-major state, low-impact opening gate, Practice filtering of non-training categories, simple due-delay invariants | Annotated coach corpus, explicit forced/trivial detector, persisted `positive_gain` | PASS targeted in P1 validation harness mission | high | Add corpus-backed calibration and richer forced-move validation later |
 | `backend/tests/test_review_practice_items.py` | unit | Practice items | Review-to-practice item generation | Browser start Practice | PASS in full suite | high | Browser Practice start |
 | `backend/tests/test_review_practice_learning_loop.py` | unit/integration | Learning Loop V1 | Attempt fields, delay rules, due session, no-due summary | Browser due UI | PASS in full suite | high | Global daily plan/due queue |
 | `backend/tests/test_review_practice_no_engine.py` | unit/integration | Practice no-engine | Practice remains available without Stockfish calls | Browser degraded state | PASS in full suite | high | Browser no-engine practice |
