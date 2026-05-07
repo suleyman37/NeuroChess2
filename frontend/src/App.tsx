@@ -5090,7 +5090,15 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         />
 
         <section
-          className={`board-column${activeTab === "review" ? " review-board-sticky-column" : ""}`}
+          className={[
+            "board-column",
+            activeTab === "review" ? "review-board-sticky-column" : "",
+            activeTab === "review" && reviewPvLineState?.active
+              ? "review-board-line-player-active"
+              : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
           data-testid={activeTab === "review" ? "review-board-sticky-column" : undefined}
         >
           {boardBadge && <div className="position-badge">{boardBadge}</div>}
@@ -5100,19 +5108,6 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
               aria-live="polite"
             >
               {reviewReplayBadge}
-            </div>
-          )}
-          {activeTab === "review" && reviewPvLineState?.active && (
-            <div className="review-line-player-dock" data-testid="review-line-player-dock">
-              <ReviewPvStepper
-                state={reviewPvLineState}
-                onPrevious={showPreviousPvLineStep}
-                onNext={showNextPvLineStep}
-                onRestart={restartManualPvLine}
-                onToggleAutoplay={toggleManualPvLineAutoplay}
-                onSelectLine={selectManualPvLineMode}
-                onClose={closeManualPvLine}
-              />
             </div>
           )}
           <ChessBoardPanel
@@ -5129,6 +5124,19 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             }
             onMove={handleMove}
           />
+          {activeTab === "review" && reviewPvLineState?.active && (
+            <div className="review-line-player-dock" data-testid="review-line-player-dock">
+              <ReviewPvStepper
+                state={reviewPvLineState}
+                onPrevious={showPreviousPvLineStep}
+                onNext={showNextPvLineStep}
+                onRestart={restartManualPvLine}
+                onToggleAutoplay={toggleManualPvLineAutoplay}
+                onSelectLine={selectManualPvLineMode}
+                onClose={closeManualPvLine}
+              />
+            </div>
+          )}
           <div className="board-nav" aria-label="Navigation de partie">
             <button onClick={goInitialPosition} disabled={!canNavigate || displayedPositionPly === 0}>
               &lt;&lt;

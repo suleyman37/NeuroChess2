@@ -357,6 +357,32 @@ async function openLessonChallenge() {
     return { ok: Boolean(document.querySelector('[data-testid="review-board"]')) };
   }, 30_000);
   await harness.clickByTestId("review-focus-learn", { afterMs: 700 });
+  try {
+    await harness.waitForPagePredicate("lesson challenge visible after focus click", () => {
+      return {
+        ok: Boolean(document.querySelector('[data-public-lesson-step="challenge"]')),
+        text: document.body?.innerText ?? "",
+      };
+    }, 5_000);
+    return;
+  } catch {
+    await harness.evalPage(() => {
+      const firstMomentButton = document.querySelector('[data-testid="review-moment-card"] button');
+      if (firstMomentButton instanceof HTMLElement) {
+        firstMomentButton.click();
+        return { ok: true, source: "summary_moment_card" };
+      }
+      const visibleReviewButtons = [...document.querySelectorAll("button")].filter((button) =>
+        (button.textContent ?? "").trim() === "Voir",
+      );
+      const fallback = visibleReviewButtons[0];
+      if (fallback instanceof HTMLElement) {
+        fallback.click();
+        return { ok: true, source: "visible_voir_button" };
+      }
+      return { ok: false, source: "none" };
+    });
+  }
   await harness.waitForPagePredicate("lesson challenge visible", () => {
     return {
       ok: Boolean(document.querySelector('[data-public-lesson-step="challenge"]')),

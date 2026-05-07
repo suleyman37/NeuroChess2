@@ -4126,25 +4126,24 @@ button:focus-visible {
 
 .board-move-outcome-overlay {
   align-items: center;
-  background: rgba(5, 10, 20, 0.86);
-  border: 1px solid rgba(148, 163, 184, 0.34);
+  background: rgba(4, 9, 18, 0.82);
+  border: 1px solid rgba(203, 213, 225, 0.28);
   border-radius: 999px;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 0 18px rgba(0, 229, 255, 0.18),
-    0 10px 28px rgba(0, 0, 0, 0.34);
+    0 0 0 1px rgba(255, 255, 255, 0.035),
+    0 7px 18px rgba(0, 0, 0, 0.34);
   color: #f8fafc;
   display: inline-grid;
   font-weight: 900;
-  height: 30px;
+  height: 24px;
   justify-items: center;
   line-height: 1;
-  min-width: 30px;
-  padding: 0 6px;
+  min-width: 24px;
+  padding: 0 4px;
   pointer-events: none;
   position: absolute;
   text-align: center;
-  transform: translate(-50%, -35%);
+  transform: translate(-50%, -50%);
   z-index: 12;
   animation: boardMoveOutcomePop 260ms ease-out;
 }
@@ -4157,10 +4156,10 @@ button:focus-visible {
 
 .board-move-outcome-glyph {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 0.98rem;
+  font-size: 0.82rem;
   font-weight: 900;
   letter-spacing: 0;
-  text-shadow: 0 0 10px currentColor;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.32);
 }
 
 .board-move-outcome-label {
@@ -4186,45 +4185,45 @@ button:focus-visible {
 .board-move-outcome-overlay--success {
   border-color: rgba(245, 197, 95, 0.72);
   box-shadow:
-    0 0 0 1px rgba(245, 197, 95, 0.18),
-    0 0 18px rgba(245, 197, 95, 0.34),
-    0 10px 28px rgba(0, 0, 0, 0.34);
+    0 0 0 1px rgba(245, 197, 95, 0.14),
+    0 0 10px rgba(245, 197, 95, 0.2),
+    0 7px 18px rgba(0, 0, 0, 0.34);
   color: #ffe29a;
 }
 
 .board-move-outcome-overlay--good {
   border-color: rgba(48, 242, 164, 0.62);
   box-shadow:
-    0 0 0 1px rgba(48, 242, 164, 0.15),
-    0 0 18px rgba(48, 242, 164, 0.3),
-    0 10px 28px rgba(0, 0, 0, 0.34);
+    0 0 0 1px rgba(48, 242, 164, 0.12),
+    0 0 10px rgba(48, 242, 164, 0.18),
+    0 7px 18px rgba(0, 0, 0, 0.34);
   color: #91ffd1;
 }
 
 .board-move-outcome-overlay--neutral {
   border-color: rgba(0, 229, 255, 0.55);
   box-shadow:
-    0 0 0 1px rgba(0, 229, 255, 0.14),
-    0 0 18px rgba(0, 229, 255, 0.24),
-    0 10px 28px rgba(0, 0, 0, 0.34);
+    0 0 0 1px rgba(0, 229, 255, 0.11),
+    0 0 10px rgba(0, 229, 255, 0.16),
+    0 7px 18px rgba(0, 0, 0, 0.34);
   color: var(--nc-cyan);
 }
 
 .board-move-outcome-overlay--warning {
   border-color: rgba(249, 180, 76, 0.62);
   box-shadow:
-    0 0 0 1px rgba(249, 180, 76, 0.15),
-    0 0 18px rgba(249, 180, 76, 0.28),
-    0 10px 28px rgba(0, 0, 0, 0.34);
+    0 0 0 1px rgba(249, 180, 76, 0.12),
+    0 0 10px rgba(249, 180, 76, 0.16),
+    0 7px 18px rgba(0, 0, 0, 0.34);
   color: #ffd28b;
 }
 
 .board-move-outcome-overlay--danger {
   border-color: rgba(255, 76, 120, 0.64);
   box-shadow:
-    0 0 0 1px rgba(255, 76, 120, 0.15),
-    0 0 18px rgba(255, 76, 120, 0.28),
-    0 10px 28px rgba(0, 0, 0, 0.34);
+    0 0 0 1px rgba(255, 76, 120, 0.12),
+    0 0 10px rgba(255, 76, 120, 0.18),
+    0 7px 18px rgba(0, 0, 0, 0.34);
   color: #ff8aaa;
 }
 
@@ -4236,24 +4235,24 @@ button:focus-visible {
 .board-move-outcome-overlay--info {
   border-color: rgba(139, 92, 246, 0.58);
   box-shadow:
-    0 0 0 1px rgba(139, 92, 246, 0.14),
-    0 0 18px rgba(139, 92, 246, 0.26),
-    0 10px 28px rgba(0, 0, 0, 0.34);
+    0 0 0 1px rgba(139, 92, 246, 0.11),
+    0 0 10px rgba(139, 92, 246, 0.16),
+    0 7px 18px rgba(0, 0, 0, 0.34);
   color: #c4b5fd;
 }
 
 @keyframes boardMoveOutcomePop {
   0% {
     opacity: 0;
-    transform: translate(-50%, -35%) scale(0.78);
+    transform: translate(-50%, -50%) scale(0.82);
   }
   70% {
     opacity: 1;
-    transform: translate(-50%, -35%) scale(1.08);
+    transform: translate(-50%, -50%) scale(1.04);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -35%) scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -4265,13 +4264,13 @@ button:focus-visible {
 
 @media (max-width: 640px) {
   .board-move-outcome-overlay {
-    height: 26px;
-    min-width: 26px;
-    padding: 0 5px;
+    height: 22px;
+    min-width: 22px;
+    padding: 0 4px;
   }
 
   .board-move-outcome-glyph {
-    font-size: 0.92rem;
+    font-size: 0.78rem;
   }
 }
 
@@ -5833,29 +5832,154 @@ summary {
 }
 
 @media (min-width: 921px) {
-  .review-board-sticky-column {
+  .review-focus-layout {
+    grid-template-columns: 64px minmax(520px, 600px) minmax(500px, 760px);
+    max-width: 1460px;
+  }
+
+  .review-focus-layout .right-panel {
     align-self: start;
     max-height: calc(100vh - 84px);
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .review-board-sticky-column {
+    align-self: start;
+    max-height: calc(100vh - 76px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-right: 4px;
     position: sticky;
     top: 72px;
+  }
+
+  .review-focus-layout .board-panel,
+  .review-focus-layout .board-nav,
+  .review-focus-layout .position-badge,
+  .review-focus-layout .review-replay-badge,
+  .review-focus-layout .review-step-status-panel,
+  .review-focus-layout .review-line-player-dock {
+    width: min(100%, 580px);
+  }
+
+  .review-focus-layout .tab-panel {
+    padding: 14px;
+  }
+
+  .review-focus-layout .review-content,
+  .review-focus-layout .review-practice-panel {
+    gap: 10px;
+  }
+
+  .review-focus-layout .review-practice-card {
+    gap: 8px;
+    padding: 0.72rem;
+  }
+
+  .review-focus-layout .review-practice-explanation,
+  .review-focus-layout .review-practice-contrast,
+  .review-focus-layout .state-notice {
+    padding: 10px;
+  }
+
+  .review-board-line-player-active .board-panel,
+  .review-board-line-player-active .board-nav,
+  .review-board-line-player-active .position-badge,
+  .review-board-line-player-active .review-replay-badge,
+  .review-board-line-player-active .review-step-status-panel,
+  .review-board-line-player-active .review-line-player-dock {
+    width: min(100%, 480px);
+  }
+}
+
+@media (min-width: 921px) and (max-width: 1240px) {
+  .review-focus-layout {
+    grid-template-columns: 56px minmax(390px, 520px) minmax(340px, 1fr);
+    max-width: 100%;
+  }
+
+  .review-focus-layout .board-panel,
+  .review-focus-layout .board-nav,
+  .review-focus-layout .position-badge,
+  .review-focus-layout .review-replay-badge,
+  .review-focus-layout .review-step-status-panel,
+  .review-focus-layout .review-line-player-dock {
+    width: min(100%, 520px);
+  }
+
+  .review-board-line-player-active .board-panel,
+  .review-board-line-player-active .board-nav,
+  .review-board-line-player-active .position-badge,
+  .review-board-line-player-active .review-replay-badge,
+  .review-board-line-player-active .review-step-status-panel,
+  .review-board-line-player-active .review-line-player-dock {
+    width: min(100%, 460px);
   }
 }
 
 .review-line-player-dock {
   display: grid;
   gap: 8px;
-  width: min(100%, 520px);
+  width: min(100%, 580px);
 }
 
 .review-line-player-dock .review-practice-pv-stepper {
   border-color: rgba(67, 231, 255, 0.42);
-  box-shadow: 0 12px 32px rgba(0, 229, 255, 0.08);
+  box-shadow: 0 10px 26px rgba(0, 229, 255, 0.07);
+  gap: 6px 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 8px 10px;
+}
+
+.review-line-player-dock .review-block-title {
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.review-line-player-dock .review-block-title span,
+.review-line-player-dock .review-practice-pv-stepper > p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-line-player-dock .review-practice-pv-stepper > p {
+  grid-column: 1;
+  grid-row: 2;
+  margin: 0;
+}
+
+.review-line-player-dock .review-pv-line-mode {
+  display: flex;
+  gap: 6px;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-content: flex-end;
+}
+
+.review-line-player-dock .warning {
+  grid-column: 1 / -1;
+}
+
+.review-line-player-dock .review-pv-line-mode button,
+.review-line-player-dock .review-action-row button {
+  min-height: 32px;
+  padding: 0.42rem 0.58rem;
+}
+
+.review-line-player-dock .review-action-row {
+  grid-column: 1 / -1;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 
 .review-primary-action-zone {
   align-items: center;
-  margin-top: 8px;
+  justify-content: flex-start;
+  margin-top: 6px;
 }
 
 .review-details-disclosure {
@@ -5871,6 +5995,23 @@ summary {
 
   .review-line-player-dock {
     width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .review-line-player-dock .review-practice-pv-stepper {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .review-line-player-dock .review-pv-line-mode,
+  .review-line-player-dock .review-practice-pv-stepper > p {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .review-line-player-dock .review-pv-line-mode {
+    justify-content: flex-start;
+    overflow-x: auto;
   }
 }
 

@@ -18,6 +18,20 @@ state. Plan3 governs execution order, not a one-shot roadmap refactor.
   semantic change.
 - Still pending: manual Review mini-check and human pilot remain NO-GO.
 
+## 2026-05-07 Review Cockpit UX Update
+
+- Aligned: Review desktop layout moves toward a board-first cockpit, with a
+  larger sticky board and viewport-scoped Review panel.
+- Aligned: Practice feedback keeps the board, feedback, and primary CTA visible
+  together for success and wrong states.
+- Aligned: line playback stays docked near the board and remains frontend-only.
+- Aligned: board attempt glyphs stay small, non-blocking, and anchored to the
+  destination square without adding generated assets.
+- Preserved: no backend, PV5, formula, NeuroScore, Daily Plan, scheduling,
+  schema, or forbidden V1 UI change.
+- Still pending: automated validation and manual Review mini-check decide the
+  next GO/NO-GO; human pilot remains NO-GO.
+
 | Element du plan | Attendu Plan1/Plan2 | Etat actuel dans le code | Fichiers concernes | Statut | Action recommandee | Priorite |
 |---|---|---|---|---|---|---|
 | Backend chess data | Durable games, moves, evaluations, review/practice state | Backend data layer and migrations exist | `backend/neurochess/data/*`, `backend/neurochess/models.py`, migrations | aligned | Preserve schema/version discipline | P0 |

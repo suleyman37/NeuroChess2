@@ -51,7 +51,7 @@ export function ChessBoardPanel({
       const measuredWidth = boardElement.getBoundingClientRect().width;
       const nextWidth =
         measuredWidth > 0
-          ? Math.min(520, Math.max(260, Math.round(measuredWidth)))
+          ? Math.min(580, Math.max(260, Math.round(measuredWidth)))
           : getBoardWidth();
       setBoardWidth(nextWidth);
     }
@@ -235,9 +235,9 @@ function buildClickSquareStyles(
 
 function getBoardWidth(): number {
   if (typeof window === "undefined") {
-    return 520;
+    return 580;
   }
 
   const horizontalMargin = window.innerWidth < 640 ? 32 : 120;
-  return Math.min(520, Math.max(260, window.innerWidth - horizontalMargin));
+  return Math.min(580, Math.max(260, window.innerWidth - horizontalMargin));
 }

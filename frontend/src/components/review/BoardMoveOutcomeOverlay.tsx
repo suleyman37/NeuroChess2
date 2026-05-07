@@ -39,7 +39,7 @@ export function BoardMoveOutcomeOverlay({
   const style = knownSquare
     ? ({
         left: `${(squareCoordinates.column + 0.74) * 12.5}%`,
-        top: `${(squareCoordinates.row + 0.28) * 12.5}%`,
+        top: `${(squareCoordinates.row + 0.24) * 12.5}%`,
       } as CSSProperties)
     : undefined;
   const ariaText = `${definition.label}. ${definition.shortDescription}`;

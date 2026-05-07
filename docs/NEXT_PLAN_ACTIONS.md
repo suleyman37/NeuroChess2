@@ -17,6 +17,19 @@ python tools/plan_guard.py
   `qa_artifacts/` out of repo, then use an explicit commit/push mission only if
   all required tests are current PASS.
 
+## Current Review Cockpit UX Follow-Up
+
+- `P1.REVIEW-COCKPIT-UX-BOARD-FIRST-REDESIGN-V1` is a bounded frontend UX
+  mission for Review only.
+- Target state: board-first desktop cockpit, larger sticky board, line player
+  docked near the board, immediate success/wrong CTA visibility, polished
+  top-right board outcome chip, and narrow/mobile safety.
+- Preserved boundaries: no backend/PV5/try-move/review service/training service,
+  no formula/NeuroScore/Daily Plan/scheduling/schema changes, no LLM/Candidate
+  Trainer/V2-V3 feature, no fourth tab, and no forbidden metrics.
+- Required before any human pilot: full validation, browser evidence, manual
+  Review mini-check, then explicit commit/push mission if requested.
+
 ## P0
 
 ### P0. FULL-APP-EVIDENCE-QA-AUDIT-V1

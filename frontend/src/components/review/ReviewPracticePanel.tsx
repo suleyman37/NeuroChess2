@@ -235,6 +235,7 @@ export function ReviewPracticeSessionPanel({
       state.itemState === "pv_line",
   );
   const canContinueAfterReveal = Boolean(showSolution && !state.feedback);
+  const feedbackNeedsRetry = Boolean(state.feedback && !feedbackCanContinue);
   const waitingForAttempt =
     state.itemState === "awaiting_attempt" || state.itemState === "hint_shown";
   const latestAttemptNumber = Number(state.summary?.latest_attempt?.attempt_number ?? 0);
@@ -305,6 +306,36 @@ export function ReviewPracticeSessionPanel({
               )}
               {feedbackCanContinue && <span>{fr.practice.acceptedCanContinue}</span>}
             </div>
+          </div>
+        )}
+        {feedbackNeedsRetry && (
+          <div
+            className="review-action-row review-primary-action-zone"
+            data-testid="review-primary-action-zone"
+          >
+            <button
+              className="primary"
+              type="button"
+              data-testid="review-training-retry-button"
+              onClick={onTryAgain}
+              disabled={state.saving}
+            >
+              {fr.actions.tryAgain}
+            </button>
+            {canShowPv && (
+              <button
+                type="button"
+                onClick={() =>
+                  onShowPvLine(
+                    reviewAnnotationHasSolutionPvLine(itemAnnotation) ? "solution" : "played",
+                  )
+                }
+                disabled={state.saving}
+                title={fr.lines.compare}
+              >
+                {fr.lines.compare}
+              </button>
+            )}
           </div>
         )}
         {feedbackCanContinue && (
@@ -439,10 +470,17 @@ export function ReviewPracticeSessionPanel({
         )}
         {showSolution && !feedbackCanContinue && (
           <>
-            <button type="button" onClick={onTryAgain} disabled={state.saving}>
-              {fr.actions.tryAgain}
-            </button>
-            {canShowPv && (
+            {!feedbackNeedsRetry && (
+              <button
+                type="button"
+                data-testid="review-training-retry-button"
+                onClick={onTryAgain}
+                disabled={state.saving}
+              >
+                {fr.actions.tryAgain}
+              </button>
+            )}
+            {canShowPv && !feedbackNeedsRetry && (
               <button
                 type="button"
                 onClick={() =>
