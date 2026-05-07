@@ -30,6 +30,20 @@ python tools/plan_guard.py
 - Required before any human pilot: full validation, browser evidence, manual
   Review mini-check, then explicit commit/push mission if requested.
 
+## Current Review Decision Presentation Follow-Up
+
+- `P1.REVIEW-DECISION-CARD-QUALITY-RIBBON-AND-MOVE-TIMELINE-V1` is a bounded
+  frontend/product UX mission for Review presentation only.
+- Target state: one visible analyzed move can show one visible quality badge
+  when backend data exists; historical game quality and current attempt quality
+  stay visually separate; Decision Card, quality ribbon, and collapsed symbol
+  legend make the Review moment understandable without adding engine metrics.
+- Preserved boundaries: no backend/PV5/try-move/review service/training service,
+  no formula/NeuroScore/Daily Plan/scheduling/schema changes, no LLM/Candidate
+  Trainer/V2-V3 feature, no fourth tab, and no forbidden metrics.
+- Required before any human pilot: full validation, browser evidence, manual
+  Review mini-check, then explicit commit/push mission if requested.
+
 ## P0
 
 ### P0. FULL-APP-EVIDENCE-QA-AUDIT-V1

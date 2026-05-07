@@ -32,6 +32,21 @@ state. Plan3 governs execution order, not a one-shot roadmap refactor.
 - Still pending: automated validation and manual Review mini-check decide the
   next GO/NO-GO; human pilot remains NO-GO.
 
+## 2026-05-07 Review Decision Presentation Update
+
+- Aligned: Review now separates historical move quality from current attempt
+  quality in the frontend presentation layer.
+- Aligned: Summary/Learn/Practice/Explorer can show existing move quality
+  badges where backend Review data already provides reliable category data.
+- Aligned: the new Decision Card and compact quality ribbon use existing Review
+  fields only; missing quality is not invented.
+- Aligned: symbol legend is collapsed by default and avoids forbidden V1 or
+  overclaiming labels.
+- Preserved: no backend, PV5, try-move, formula, NeuroScore, Daily Plan,
+  scheduling, schema, LLM, Candidate Trainer, or Plan1/Plan2/Plan3 change.
+- Still pending: full validation and manual Review mini-check; human pilot
+  remains NO-GO.
+
 | Element du plan | Attendu Plan1/Plan2 | Etat actuel dans le code | Fichiers concernes | Statut | Action recommandee | Priorite |
 |---|---|---|---|---|---|---|
 | Backend chess data | Durable games, moves, evaluations, review/practice state | Backend data layer and migrations exist | `backend/neurochess/data/*`, `backend/neurochess/models.py`, migrations | aligned | Preserve schema/version discipline | P0 |

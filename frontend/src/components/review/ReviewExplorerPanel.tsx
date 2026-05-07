@@ -1,5 +1,7 @@
 import type { ReviewMoveAnnotation, ReviewResponse, ReviewSections } from "../../api/client";
 import { REVIEW_SECTION_TABS, reviewColorLabel } from "./reviewLabels";
+import { MoveQualityBadge } from "./MoveQualityBadge";
+import { getMoveQualityGlyphForHistoricalCategory } from "./moveQualityGlyphs";
 import { reviewIsCompleted } from "./reviewViewModel";
 import { formatImpact, reviewAnnotationHasAnyPvLine } from "./reviewUtils";
 import type { ReviewPovContext, ReviewPvLineMode, ReviewSectionKey } from "./reviewTypes";
@@ -121,6 +123,7 @@ function ReviewCompactMomentRow({
   showColor: boolean;
   onSelectAnnotation: (ply: number | null) => void;
 }) {
+  const qualityId = safeHistoricalQualityId(annotation.primary_category);
   return (
     <li>
       <button
@@ -136,6 +139,14 @@ function ReviewCompactMomentRow({
           {annotation.compact_label ??
             `Coup ${annotation.move_number} - ${annotation.category_label}`}
         </span>
+        {qualityId && (
+          <MoveQualityBadge
+            qualityId={qualityId}
+            context="historical"
+            size="sm"
+            testId="historical-move-quality-badge"
+          />
+        )}
         <span className="review-compact-meta">
           {formatImpact(annotation.win_loss)}
         </span>
@@ -154,11 +165,22 @@ function ReviewExplorerDetail({
   onReplayLineAnnotation: (annotation: ReviewMoveAnnotation, lineMode?: ReviewPvLineMode) => void;
 }) {
   const canReplayLine = reviewAnnotationHasAnyPvLine(annotation);
+  const qualityId = safeHistoricalQualityId(annotation.primary_category);
   return (
     <aside className="review-explorer-detail" aria-label="Détail du moment sélectionné">
       <div>
         <span>Moment sélectionné</span>
-        <strong>Coup {annotation.move_number} · {annotation.category_label}</strong>
+        <strong>
+          Coup {annotation.move_number} · {annotation.category_label}
+          {qualityId && (
+            <MoveQualityBadge
+              qualityId={qualityId}
+              context="historical"
+              size="sm"
+              testId="historical-move-quality-badge"
+            />
+          )}
+        </strong>
         <p>
           {annotation.reason ??
             annotation.compact_label ??
@@ -184,6 +206,11 @@ function ReviewExplorerDetail({
       </div>
     </aside>
   );
+}
+
+function safeHistoricalQualityId(category: string | null | undefined) {
+  const qualityId = getMoveQualityGlyphForHistoricalCategory(category);
+  return qualityId === "unknown" ? null : qualityId;
 }
 
 

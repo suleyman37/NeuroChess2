@@ -115,6 +115,12 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
   It proves `frontend/src/i18n/fr.ts`, critical V1 strings, Plan2 nav labels,
   Training labels, Practice feedback catalog usage, forbidden-label absence and
   no raw metric labels in normal critical UI paths.
+- Review Decision Card / quality ribbon browser smoke: PASS via
+  `cmd /c node scripts\browser_review_decision_card_quality_ribbon_smoke.mjs`.
+  It proves Summary historical badge/ribbon, Learn Decision Card no-spoiler
+  before correction, best row only in correction, Explorer historical badge
+  without attempt classification, Practice attempt badge only after a real board
+  move, collapsed/open legend, mobile no-overflow, and forbidden-label absence.
 
 ## Matrix
 
@@ -191,6 +197,7 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
 | `scripts/browser_review_training_continuation_and_line_playback_user_contract_smoke.mjs` | browser smoke | Review Training continuation / line playback contract | Success/accepted Review Training feedback shows local `Position suivante`; next advances item label and clears feedback/user move without duplicate attempts; last success shows `Terminer la session`; internal `Lire la ligne jouee`/`Lire la ligne solution` opens a visible line player, advances active move/FEN on `Suivant`, and switches context | Manual perceptual smoothness and broad real-user PGN variety | added in P1 Review Training continuation mission | high if PASS | Manual Nxe4/Na6/Bxc5 spot check before pilot |
 | `scripts/browser_review_user_pov_focus_layout_contract_smoke.mjs` | browser smoke | Review POV / identity / focused layout | `Les deux` orientation follows current White/Black moment or item; unknown `Moi` is hidden/explained; board, feedback, primary next action, and line player controls remain visible together on desktop | Real user identity persistence beyond `review.user_color`, broad responsive visual polish | added in P1 Review user POV/focus layout mission | high if PASS | Manual real-game White/Black/Moi spot check before pilot |
 | `scripts/browser_review_trust_pv5_stable_classification_smoke.mjs` | browser/API smoke | Review trust PV5 / stable try-move classification | No pre-attempt overlay on app load; HTTP try-move classification proves stable out-of-list `playable`, `imprecise`, and `wrong` bands; legal out-of-list attempts are not auto-wrong; PV5 candidate `playable`/`imprecise` mappings are exercised | Full real-board playable fixture and clean-opening UI screenshot remain manual/future | added in P1 Review trust mission | high if PASS | Pair with backend unit tests for gate, timeout, DB result bands, and scheduling safety |
+| `scripts/browser_review_decision_card_quality_ribbon_smoke.mjs` | browser smoke | Review decision presentation / move quality UX | Summary historical badge and quality ribbon; Learn Decision Card with no attempt/best spoiler before correction and best row after correction; Explorer historical badge without local attempt classification; Practice current-attempt badge only after real board attempt; legend collapsed/open; mobile no horizontal overflow | Broad real-user PGN variety, manual visual taste, and full-game quality for every unreviewed move | PASS | high | Manual Review mini-check remains required before pilot |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |

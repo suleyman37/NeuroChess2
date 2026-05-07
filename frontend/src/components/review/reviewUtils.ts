@@ -1,4 +1,4 @@
-import type { OpeningRealityEvidence, ReviewMoment, ReviewMoveAnnotation, ReviewScoreAuditRow } from "../../api/client";
+import type { OpeningRealityEvidence, ReviewMoment, ReviewMoveAnnotation, ReviewPracticeItem, ReviewScoreAuditRow } from "../../api/client";
 import { makeEvaluationDisplayFromEngineScore } from "../../evaluationDisplay";
 import { impactLabelFromLoss } from "./reviewLabels";
 
@@ -70,6 +70,33 @@ export function formatImpact(value: number | null | undefined): string {
             ? "très important"
             : "critique";
   return `-${rounded} % (${label})`;
+}
+
+export function isMicroReviewObservation(
+  source:
+    | Pick<ReviewMoveAnnotation, "impact_label" | "tags" | "win_loss">
+    | Pick<ReviewPracticeItem, "impact_label" | "tags" | "win_loss">
+    | null
+    | undefined,
+): boolean {
+  if (!source) {
+    return false;
+  }
+  const normalizedImpact = String(source.impact_label ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  if (
+    normalizedImpact.includes("negligeable") ||
+    normalizedImpact.includes("micro") ||
+    normalizedImpact.includes("low-impact")
+  ) {
+    return true;
+  }
+  if (source.tags?.some((tag) => tag === "low_impact" || tag === "micro_gap")) {
+    return true;
+  }
+  return hasReviewScoreValue(source.win_loss) && Math.abs(source.win_loss) < 2;
 }
 
 

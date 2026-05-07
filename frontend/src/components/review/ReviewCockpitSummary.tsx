@@ -1,7 +1,13 @@
 import type { ReviewMoveAnnotation, ReviewResponse, ReviewSections } from "../../api/client";
+import { fr } from "../../i18n";
 import { errorTypeLabel, reviewScoreConfidenceLabel } from "./reviewLabels";
 import { ReviewPovSelector } from "./ReviewScoreDetails";
-import { formatHeadlineScore, hasReviewScoreValue } from "./reviewUtils";
+import { MoveQualityBadge } from "./MoveQualityBadge";
+import { ReviewDecisionCard } from "./ReviewDecisionCard";
+import { ReviewQualityLegend } from "./ReviewQualityLegend";
+import { ReviewQualityRibbon } from "./ReviewQualityRibbon";
+import { getMoveQualityGlyphForHistoricalCategory } from "./moveQualityGlyphs";
+import { formatHeadlineScore, hasReviewScoreValue, isMicroReviewObservation } from "./reviewUtils";
 import {
   coachNeuroScoreForReview,
   coachScoreLabelForPov,
@@ -90,6 +96,33 @@ export function ReviewCockpitSummary({
         <small>{reviewCompactAnalysisLabel(review)} - confiance {confidenceLabel}</small>
       </details>
 
+      <ReviewQualityRibbon
+        annotations={filteredSections.all.length ? filteredSections.all : priorities}
+        selectedPly={mainMoment?.ply ?? null}
+        showColor={povContext.targetColor === "both"}
+        onSelectAnnotation={onOpenLesson}
+      />
+
+      {mainMoment && (
+        <ReviewDecisionCard
+          className="review-summary-decision-card"
+          historical={{
+            label: fr.decisionCard.historicalMove,
+            move: mainMoment.san ?? mainMoment.uci,
+            qualityId: safeHistoricalQualityId(mainMoment.primary_category),
+            qualityContext: "historical",
+            rowTestId: "review-decision-card-historical-row",
+            badgeTestId: "historical-move-quality-badge",
+            detail: mainMoment.move_quality_label ?? mainMoment.category_label,
+            showUnknownQuality: true,
+          }}
+          why={humanReason(mainMoment)}
+          microObservation={isMicroReviewObservation(mainMoment)}
+        />
+      )}
+
+      <ReviewQualityLegend />
+
       {metricsNeedRebuild && (
         <div className="review-score-rebuild">
           <span>Cette analyse complète peut être mise à jour depuis Explorer.</span>
@@ -113,6 +146,16 @@ export function ReviewCockpitSummary({
               >
                 <button type="button" onClick={() => onOpenLesson(annotation)}>
                   <span>Coup {annotation.move_number}</span>
+                  {safeHistoricalQualityId(annotation.primary_category) && (
+                    <span className="review-key-moment-quality">
+                      <MoveQualityBadge
+                        qualityId={safeHistoricalQualityId(annotation.primary_category)}
+                        context="historical"
+                        size="sm"
+                        testId="historical-move-quality-badge"
+                      />
+                    </span>
+                  )}
                   <strong>
                     {errorTypeLabel(annotation.pedagogical_explanation?.error_type, annotation)}
                   </strong>
@@ -167,4 +210,9 @@ function estimatePracticeMinutes(positionCount: number): number {
     return 0;
   }
   return Math.max(3, Math.min(10, positionCount * 2));
+}
+
+function safeHistoricalQualityId(category: string | null | undefined) {
+  const qualityId = getMoveQualityGlyphForHistoricalCategory(category);
+  return qualityId === "unknown" ? null : qualityId;
 }

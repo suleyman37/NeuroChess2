@@ -13,6 +13,7 @@ import {
   getMoveQualityGlyphForAttemptResult,
   getMoveQualityGlyphForHistoricalCategory,
 } from "./moveQualityGlyphs";
+import { ReviewDecisionCard } from "./ReviewDecisionCard";
 import {
   buildReviewCorrectionFeedbackView,
   buildLessonStepState,
@@ -22,7 +23,7 @@ import {
   practiceHintForAnnotation,
   publicMainDifferenceText,
 } from "./reviewViewModel";
-import { formatImpact } from "./reviewUtils";
+import { formatImpact, isMicroReviewObservation } from "./reviewUtils";
 import type {
   ReviewLessonStep,
   ReviewPovContext,
@@ -173,6 +174,14 @@ function ReviewCoachMomentCard({
   const historicalQualityId = getMoveQualityGlyphForHistoricalCategory(
     annotation.primary_category,
   );
+  const currentAttemptMove =
+    tryActiveForAnnotation && tryMoveState?.feedback
+      ? tryMoveState.attemptedSan ?? tryMoveState.attemptedUci
+      : null;
+  const canShowBestIdeaInDecision =
+    canShowSolutionData &&
+    !tryMoveNeedsRebuild &&
+    Boolean(annotation.best_move_uci ?? annotation.best_move_san);
   const acceptedCorrectionText =
     coachTextForPov(
       activeTryFeedbackMessage,
@@ -277,6 +286,56 @@ function ReviewCoachMomentCard({
           </span>
         ))}
       </div>
+
+      <ReviewDecisionCard
+        className="review-lesson-decision-card"
+        historical={{
+          label: fr.decisionCard.historicalMove,
+          move: playedMove,
+          qualityId: historicalQualityId === "unknown" ? null : historicalQualityId,
+          qualityContext: "historical",
+          rowTestId: "review-decision-card-historical-row",
+          badgeTestId: "historical-move-quality-badge",
+          legacyBadgeTestId: "review-historical-quality-badge",
+          detail: annotation.move_quality_label ?? qualityLabel,
+          showUnknownQuality: true,
+        }}
+        bestIdea={
+          canShowBestIdeaInDecision
+            ? {
+                label: fr.decisionCard.bestIdea,
+                move: solutionMove,
+                qualityId: "critical_best",
+                qualityContext: "solution",
+                rowTestId: "review-decision-card-best-row",
+                badgeTestId: "best-idea-quality-badge",
+                detail: correctionWhy,
+              }
+            : null
+        }
+        attempt={
+          currentAttemptMove && tryFeedbackQualityId
+            ? {
+                label: fr.decisionCard.currentAttempt,
+                move: currentAttemptMove,
+                qualityId: tryFeedbackQualityId,
+                qualityContext: "attempt",
+                rowTestId: "review-decision-card-attempt-row",
+                badgeTestId: "current-attempt-quality-badge",
+                legacyBadgeTestId: "review-attempt-quality-badge",
+                detail: activeTryFeedbackMessage,
+              }
+            : null
+        }
+        why={
+          publicStep === "challenge"
+            ? hiddenCoachObjective(annotation, explanation)
+            : correctionMoveAccepted
+              ? acceptedCorrectionText
+              : correctionWhy
+        }
+        microObservation={isMicroReviewObservation(annotation)}
+      />
 
       {publicStep === "challenge" && (
         <div className="review-lesson-card" data-public-lesson-step="challenge">

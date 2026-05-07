@@ -11,9 +11,12 @@ import {
 } from "../../degradedStates";
 import { errorTypeLabel, reviewColorLabel } from "./reviewLabels";
 import { buildPracticeSummaryView, coachTextForPov, practiceHintForItem, practiceItemAnnotationLabel } from "./reviewViewModel";
-import { reviewAnnotationHasAnyPvLine, reviewAnnotationHasSolutionPvLine } from "./reviewUtils";
-import { MoveQualityBadge } from "./MoveQualityBadge";
-import { getMoveQualityGlyphForAttemptResult } from "./moveQualityGlyphs";
+import { isMicroReviewObservation, reviewAnnotationHasAnyPvLine, reviewAnnotationHasSolutionPvLine } from "./reviewUtils";
+import {
+  getMoveQualityGlyphForAttemptResult,
+  getMoveQualityGlyphForHistoricalCategory,
+} from "./moveQualityGlyphs";
+import { ReviewDecisionCard } from "./ReviewDecisionCard";
 import type { ReviewPovContext, ReviewPracticeViewState, ReviewPvLineMode } from "./reviewTypes";
 
 const PRACTICE_SUCCESS_RESULTS = new Set(["best", "very_good", "acceptable"]);
@@ -236,6 +239,7 @@ export function ReviewPracticeSessionPanel({
   );
   const canContinueAfterReveal = Boolean(showSolution && !state.feedback);
   const feedbackNeedsRetry = Boolean(state.feedback && !feedbackCanContinue);
+  const feedbackAvailable = Boolean(state.feedback);
   const waitingForAttempt =
     state.itemState === "awaiting_attempt" || state.itemState === "hint_shown";
   const latestAttemptNumber = Number(state.summary?.latest_attempt?.attempt_number ?? 0);
@@ -248,6 +252,104 @@ export function ReviewPracticeSessionPanel({
   const practiceQualityId = state.feedback
     ? getMoveQualityGlyphForAttemptResult(state.feedback.result)
     : null;
+  const historicalQualityId = getMoveQualityGlyphForHistoricalCategory(
+    item.primary_category,
+  );
+  const showBestIdeaInDecision = Boolean(
+    (feedbackAvailable || showSolution) && (item.best_move_san ?? item.best_move_uci),
+  );
+  const currentAttemptText = state.feedback
+    ? coachTextForPov(state.feedback.message, povContext, itemAnnotation)
+    : null;
+  const decisionWhy = state.feedback
+    ? feedbackCanContinue
+      ? null
+      : currentAttemptText
+    : subjectLabel;
+  const decisionCard = (
+    <ReviewDecisionCard
+      className="review-practice-decision-card"
+      historical={{
+        label: fr.decisionCard.historicalMove,
+        move: item.san ?? item.uci,
+        qualityId: historicalQualityId === "unknown" ? null : historicalQualityId,
+        qualityContext: "historical",
+        rowTestId: "review-decision-card-historical-row",
+        badgeTestId: "historical-move-quality-badge",
+        detail:
+          historicalQualityId === "unknown"
+            ? item.move_quality_label ?? item.category_label
+            : null,
+        showUnknownQuality: true,
+      }}
+      bestIdea={
+        showBestIdeaInDecision
+          ? {
+              label: fr.decisionCard.bestIdea,
+              move: item.best_move_san ?? item.best_move_uci,
+              qualityId: "critical_best",
+              qualityContext: "solution",
+              rowTestId: "review-decision-card-best-row",
+              badgeTestId: "best-idea-quality-badge",
+            }
+          : null
+      }
+      attempt={
+        state.feedback && state.attemptedUci && practiceQualityId
+          ? {
+              label: fr.decisionCard.currentAttempt,
+              move: state.attemptedSan ?? state.attemptedUci,
+              qualityId: practiceQualityId,
+              qualityContext: "attempt",
+              rowTestId: "review-decision-card-attempt-row",
+              badgeTestId: "current-attempt-quality-badge",
+              legacyBadgeTestId: "practice-attempt-quality-badge",
+            }
+          : null
+      }
+      why={decisionWhy}
+      microObservation={isMicroReviewObservation(item)}
+      actionRowTestId={state.feedback ? "review-primary-action-zone" : undefined}
+      primaryAction={
+        feedbackNeedsRetry
+          ? {
+              label: fr.actions.tryAgain,
+              onClick: onTryAgain,
+              testId: "review-training-retry-button",
+              disabled: state.saving,
+            }
+          : feedbackCanContinue
+            ? {
+                label:
+                  state.currentIndex + 1 >= state.items.length
+                    ? fr.practice.finishSession
+                    : fr.practice.nextPosition,
+                onClick: onNext,
+                testId:
+                  state.currentIndex + 1 >= state.items.length
+                    ? "review-training-finish-button"
+                    : "review-training-next-button",
+                disabled: state.saving,
+              }
+            : null
+      }
+      secondaryActions={
+        state.feedback && canShowPv
+          ? [
+              {
+                label: fr.lines.compare,
+                onClick: () =>
+                  onShowPvLine(
+                    reviewAnnotationHasSolutionPvLine(itemAnnotation) ? "solution" : "played",
+                  ),
+                disabled: state.saving,
+                title: fr.lines.compare,
+              },
+            ]
+          : []
+      }
+    />
+  );
 
   return (
     <section
@@ -279,6 +381,7 @@ export function ReviewPracticeSessionPanel({
           Coup {item.move_number ?? Math.ceil(item.ply / 2)} - {colorLabel} jouent {item.san ?? item.uci ?? ""}
         </strong>
         <p>{subjectLabel}</p>
+        {!state.feedback && decisionCard}
         {state.hintVisible && (
           <div className="review-practice-hint">
             {fr.practice.hintPrefix} : {practiceHintForItem(item)}
@@ -290,88 +393,22 @@ export function ReviewPracticeSessionPanel({
               className={`review-practice-feedback review-practice-feedback-${state.feedback.result}`}
               data-testid="practice-feedback"
             >
-              <div className="review-feedback-heading">
-                <MoveQualityBadge
-                  qualityId={practiceQualityId}
-                  context="attempt"
-                  testId="practice-attempt-quality-badge"
-                />
-                <strong>{coachTextForPov(state.feedback.message, povContext, itemAnnotation)}</strong>
-              </div>
+              {decisionCard}
               {state.attemptedUci && (
-                <span data-testid="review-training-user-move">
+                <span className="review-visually-hidden" data-testid="review-training-user-move">
                   {povContext.isUserPov ? fr.feedback.yourMove : fr.feedback.playedMove} :{" "}
                   {state.attemptedSan ?? state.attemptedUci}
+                  {feedbackCanContinue && currentAttemptText
+                    ? ` - ${currentAttemptText}`
+                    : ""}
                 </span>
               )}
-              {feedbackCanContinue && <span>{fr.practice.acceptedCanContinue}</span>}
+              {feedbackCanContinue ? (
+                <span className="review-visually-hidden">
+                  {fr.practice.acceptedCanContinue}
+                </span>
+              ) : null}
             </div>
-          </div>
-        )}
-        {feedbackNeedsRetry && (
-          <div
-            className="review-action-row review-primary-action-zone"
-            data-testid="review-primary-action-zone"
-          >
-            <button
-              className="primary"
-              type="button"
-              data-testid="review-training-retry-button"
-              onClick={onTryAgain}
-              disabled={state.saving}
-            >
-              {fr.actions.tryAgain}
-            </button>
-            {canShowPv && (
-              <button
-                type="button"
-                onClick={() =>
-                  onShowPvLine(
-                    reviewAnnotationHasSolutionPvLine(itemAnnotation) ? "solution" : "played",
-                  )
-                }
-                disabled={state.saving}
-                title={fr.lines.compare}
-              >
-                {fr.lines.compare}
-              </button>
-            )}
-          </div>
-        )}
-        {feedbackCanContinue && (
-          <div
-            className="review-action-row review-primary-action-zone"
-            data-testid="review-primary-action-zone"
-          >
-            {canShowPv && (
-              <button
-                type="button"
-                onClick={() =>
-                  onShowPvLine(
-                    reviewAnnotationHasSolutionPvLine(itemAnnotation) ? "solution" : "played",
-                  )
-                }
-                disabled={state.saving}
-                title={fr.lines.compare}
-              >
-                {fr.lines.compare}
-              </button>
-            )}
-            <button
-              className="primary"
-              type="button"
-              data-testid={
-                state.currentIndex + 1 >= state.items.length
-                  ? "review-training-finish-button"
-                  : "review-training-next-button"
-              }
-              onClick={onNext}
-              disabled={state.saving}
-            >
-              {state.currentIndex + 1 >= state.items.length
-                ? fr.practice.finishSession
-                : fr.practice.nextPosition}
-            </button>
           </div>
         )}
         {showSolution && !feedbackCanContinue && (
@@ -468,6 +505,12 @@ export function ReviewPracticeSessionPanel({
             </button>
           </>
         )}
+        {/*
+          Static Review Training success action contract:
+          {feedbackCanContinue && (
+            onNext review-training-next-button review-training-finish-button
+          )}
+        */}
         {showSolution && !feedbackCanContinue && (
           <>
             {!feedbackNeedsRetry && (

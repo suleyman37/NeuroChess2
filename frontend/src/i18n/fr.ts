@@ -84,6 +84,30 @@ export const fr = {
       currentMomentSide: (color: string) => `${color} au trait`,
     },
   },
+  decisionCard: {
+    title: "Décision du moment",
+    historicalMove: "Coup joué dans la partie",
+    historicalQuality: "Qualité du coup joué",
+    bestIdea: "Meilleure idée",
+    currentAttempt: "Ta tentative",
+    whyItMatters: "Pourquoi ça compte",
+    action: "Action",
+    unavailableMove: "coup indisponible",
+    unevaluated: "Non évalué",
+    microGap: "Micro-écart",
+    microGapDetail: "Observation, pas un exercice prioritaire.",
+  },
+  qualityRibbon: {
+    title: "Moments analysés",
+    empty: "Aucun moment analysé disponible.",
+    selected: "Moment sélectionné",
+    moveLabel: (moveNumber: number | null | undefined, move: string) =>
+      `Coup ${moveNumber ?? "?"} · ${move}`,
+  },
+  qualityLegend: {
+    toggle: "Comprendre les symboles",
+    ariaLabel: "Légende des symboles de qualité",
+  },
   liveAnalysis: {
     pausedDuringReview: "Analyse live en pause pendant la Review",
     pausedDuringPractice: "Analyse live en pause pendant l'exercice",
