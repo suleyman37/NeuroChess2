@@ -74,11 +74,11 @@ from neurochess.metrics.try_move import (
 
 
 REVIEW_SCHEMA_VERSION = "post_game_review_v1"
-SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v4"
+SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v5_trust_gate"
 REVIEW_SCORE_FORMULA_VERSION = DUAL_REVIEW_SCORE_FORMULA_VERSION
 REVIEW_SCORE_CACHE_SCHEMA_VERSION = "review_dual_score_cache_v1"
 REVIEW_EVIDENCE_SCHEMA_VERSION = "review_evidence_v1"
-REVIEW_PIPELINE_VERSION = "v5_3_a4c_complete_only_review_v1"
+REVIEW_PIPELINE_VERSION = "v5_3_a4c_pv5_trust_gate_review_v1"
 PUBLIC_NEURO_SCORE_FORMULA_VERSION = "public_neuro_score_lichess_like_v1"
 COACH_NEURO_SCORE_FORMULA_VERSION = "coach_neuro_score_v1"
 QUALITATIVE_GAME_LABEL_VERSION = "qualitative_game_label_v1"
@@ -94,7 +94,7 @@ REVIEW_ANALYSIS_PROFILE_RANK = {
     "standard": 2,
     "deep": 3,
 }
-REVIEW_ANALYSIS_MULTIPV = 3
+REVIEW_ANALYSIS_MULTIPV = 5
 REVIEW_ANALYSIS_TIME_ONLY_DEPTH_SENTINELS = {
     "quick": 801,
     "standard": 802,
@@ -114,11 +114,16 @@ IMPORTANCE_CP_LOSS_CAP = 1000
 MAX_REVIEW_MOMENTS = 5
 MIN_HALF_MOVES_FOR_REVIEW = 10
 
-TOP_MOVES_SNAPSHOT_LIMIT = 3
+TOP_MOVES_SNAPSHOT_LIMIT = 5
 PV_SNAPSHOT_LIMIT = 5
 PERSISTENCE_WINDOW_PLIES = 10
 NMS_WINDOW_PLIES = 2
 NMS_OVERRIDE_RATIO = 1.5
+LOW_IMPACT_OPENING_MAX_PLY = 8
+LOW_IMPACT_OPENING_WIN_LOSS_MAX = 8.0
+LOW_IMPACT_OPENING_CRITICALITY_MAX = 14.0
+LOW_IMPACT_OPENING_BALANCED_MIN = 38.0
+LOW_IMPACT_OPENING_BALANCED_MAX = 62.0
 
 NO_MAJOR_MOMENTS_MESSAGE = (
     "Aucun moment majeur détecté : la partie est restée trop équilibrée "
@@ -1358,6 +1363,15 @@ def _select_review_moments(
         )
         if mate_event:
             base_criticality_score = max(base_criticality_score, CRITICALITY_THRESHOLD)
+        if _is_low_impact_opening_drift(
+            ply=context.ply,
+            mate_event=mate_event,
+            mover_win_loss=mover_win_loss,
+            criticality=base_criticality_score,
+            player_percent_before=player_percent_before,
+            player_percent_after=player_percent_after,
+        ):
+            continue
         if not mate_event and base_criticality_score < CRITICALITY_THRESHOLD:
             continue
 
@@ -1414,6 +1428,33 @@ def _select_review_moments(
 
     selected = temporal_non_max_suppression(candidates)
     return selected, warnings
+
+
+def _is_low_impact_opening_drift(
+    *,
+    ply: int,
+    mate_event: bool,
+    mover_win_loss: float,
+    criticality: float,
+    player_percent_before: float,
+    player_percent_after: float,
+) -> bool:
+    if mate_event:
+        return False
+    if int(ply) > LOW_IMPACT_OPENING_MAX_PLY:
+        return False
+    if float(mover_win_loss) > LOW_IMPACT_OPENING_WIN_LOSS_MAX:
+        return False
+    if float(criticality) > LOW_IMPACT_OPENING_CRITICALITY_MAX:
+        return False
+    return (
+        LOW_IMPACT_OPENING_BALANCED_MIN
+        <= float(player_percent_before)
+        <= LOW_IMPACT_OPENING_BALANCED_MAX
+        and LOW_IMPACT_OPENING_BALANCED_MIN
+        <= float(player_percent_after)
+        <= LOW_IMPACT_OPENING_BALANCED_MAX
+    )
 
 
 def _future_player_percents(

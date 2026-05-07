@@ -1106,6 +1106,131 @@ def _apply_v5_6_training_items_daily_plan(connection: sqlite3.Connection) -> Non
     )
 
 
+def _apply_v5_7_review_practice_result_bands(connection: sqlite3.Connection) -> None:
+    if "review_practice_attempts" not in {
+        row["name"]
+        for row in connection.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table'"
+        ).fetchall()
+    }:
+        return
+
+    before_count = connection.execute(
+        "SELECT COUNT(*) FROM review_practice_attempts"
+    ).fetchone()[0]
+
+    connection.execute("DROP INDEX IF EXISTS idx_review_practice_attempts_session")
+    connection.execute("DROP INDEX IF EXISTS idx_review_practice_attempts_game_due")
+    connection.execute(
+        "ALTER TABLE review_practice_attempts RENAME TO review_practice_attempts_old_v5_7"
+    )
+    connection.execute(
+        """
+        CREATE TABLE review_practice_attempts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            game_id INTEGER NOT NULL,
+            ply INTEGER NOT NULL,
+            color TEXT NOT NULL,
+            attempted_uci TEXT NULL,
+            attempted_san TEXT NULL,
+            expected_best_uci TEXT NULL,
+            result TEXT NOT NULL
+                CHECK(result IN (
+                    'best',
+                    'very_good',
+                    'acceptable',
+                    'playable',
+                    'imprecise',
+                    'wrong',
+                    'illegal',
+                    'needs_rebuild',
+                    'skipped',
+                    'revealed'
+                )),
+            attempt_number INTEGER NOT NULL,
+            evidence_snapshot_json TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            item_id TEXT NULL,
+            time_spent_ms INTEGER NULL,
+            hint_used INTEGER NOT NULL DEFAULT 0,
+            reveal_used INTEGER NOT NULL DEFAULT 0,
+            source_context TEXT NOT NULL DEFAULT 'review_practice',
+            due_at TEXT NULL,
+            FOREIGN KEY(session_id) REFERENCES review_practice_sessions(id)
+                ON DELETE CASCADE,
+            FOREIGN KEY(game_id) REFERENCES games(id) ON DELETE CASCADE
+        )
+        """
+    )
+    connection.execute(
+        """
+        INSERT INTO review_practice_attempts (
+            id,
+            session_id,
+            game_id,
+            ply,
+            color,
+            attempted_uci,
+            attempted_san,
+            expected_best_uci,
+            result,
+            attempt_number,
+            evidence_snapshot_json,
+            created_at,
+            item_id,
+            time_spent_ms,
+            hint_used,
+            reveal_used,
+            source_context,
+            due_at
+        )
+        SELECT
+            id,
+            session_id,
+            game_id,
+            ply,
+            color,
+            attempted_uci,
+            attempted_san,
+            expected_best_uci,
+            result,
+            attempt_number,
+            evidence_snapshot_json,
+            created_at,
+            item_id,
+            time_spent_ms,
+            hint_used,
+            reveal_used,
+            source_context,
+            due_at
+        FROM review_practice_attempts_old_v5_7
+        ORDER BY id
+        """
+    )
+    after_count = connection.execute(
+        "SELECT COUNT(*) FROM review_practice_attempts"
+    ).fetchone()[0]
+    if after_count != before_count:
+        raise RuntimeError(
+            "review_practice_attempts migration row count mismatch: "
+            f"before={before_count}, after={after_count}"
+        )
+    connection.execute("DROP TABLE review_practice_attempts_old_v5_7")
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_review_practice_attempts_session
+        ON review_practice_attempts(session_id, ply, attempt_number)
+        """
+    )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_review_practice_attempts_game_due
+        ON review_practice_attempts(game_id, due_at)
+        """
+    )
+
+
 MIGRATIONS: tuple[tuple[str, MigrationBody], ...] = (
     (
         "0001_v0_schema",
@@ -1229,6 +1354,10 @@ MIGRATIONS: tuple[tuple[str, MigrationBody], ...] = (
     (
         "0019_v5_6_training_items_daily_plan",
         _apply_v5_6_training_items_daily_plan,
+    ),
+    (
+        "0020_v5_7_review_practice_result_bands",
+        _apply_v5_7_review_practice_result_bands,
     ),
 )
 

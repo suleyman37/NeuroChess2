@@ -23,7 +23,11 @@ from neurochess.analysis_service import AnalysisService
 from neurochess.data.database import init_db
 from neurochess.data.repositories import Repository
 from neurochess.review_job_service import ReviewJobService
-from neurochess.review_service import REVIEW_PIPELINE_VERSION, ReviewService
+from neurochess.review_service import (
+    REVIEW_ANALYSIS_MULTIPV,
+    REVIEW_PIPELINE_VERSION,
+    ReviewService,
+)
 
 
 REVIEWABLE_MOVES = [
@@ -598,7 +602,7 @@ class ReviewJobServiceTests(unittest.TestCase):
                     "review_pipeline_version": REVIEW_PIPELINE_VERSION,
                     "requested_time_ms": 10000,
                     "analysis_limit_mode": "time",
-                    "requested_multipv": 3,
+                    "requested_multipv": REVIEW_ANALYSIS_MULTIPV,
                 }
                 payload = {
                     "fen": fen,
@@ -606,12 +610,12 @@ class ReviewJobServiceTests(unittest.TestCase):
                     "engine_version": "FastJobFake 1",
                     "depth": 18,
                     "achieved_depth": 18,
-                    "multipv": 3,
+                    "multipv": REVIEW_ANALYSIS_MULTIPV,
                     "analysis_kind": "deep",
                     "analysis_profile": "standard",
                     "requested_time_ms": 10000,
                     "analysis_limit_mode": "time",
-                    "requested_multipv": 3,
+                    "requested_multipv": REVIEW_ANALYSIS_MULTIPV,
                     "settings_json": settings,
                     "eval_cp": 0,
                     "mate_in": None,
@@ -642,12 +646,18 @@ class ReviewJobServiceTests(unittest.TestCase):
                         analysis_limit_mode,
                         settings_json
                     )
-                    VALUES (?, ?, 'stockfish', 'FastJobFake 1', 802, 3, 'deep',
+                    VALUES (?, ?, 'stockfish', 'FastJobFake 1', 802, ?, 'deep',
                             'engine_analysis_v2', 'done', datetime('now'),
                             datetime('now'), 0.95, 'high', 1, 'standard',
-                            10000, NULL, 3, 'time', ?)
+                            10000, NULL, ?, 'time', ?)
                     """,
-                    (fen, json.dumps(payload), json.dumps(settings)),
+                    (
+                        fen,
+                        json.dumps(payload),
+                        REVIEW_ANALYSIS_MULTIPV,
+                        REVIEW_ANALYSIS_MULTIPV,
+                        json.dumps(settings),
+                    ),
                 )
             connection.commit()
 

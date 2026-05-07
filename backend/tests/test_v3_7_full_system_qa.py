@@ -321,6 +321,7 @@ class V37FullSystemQaTests(unittest.TestCase):
                 "0017_v5_3_d2_review_practice_session_items",
                 "0018_v5_5_learning_loop_practice_event_fields",
                 "0019_v5_6_training_items_daily_plan",
+                "0020_v5_7_review_practice_result_bands",
             ],
         )
         self.assertIn("annotations", move_columns)

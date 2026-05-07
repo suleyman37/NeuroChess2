@@ -51,6 +51,7 @@ from neurochess.review_service import (
     SELECTION_ALGORITHM_VERSION,
     ReviewService,
     _analysis_satisfies_profile,
+    _is_low_impact_opening_drift,
     calculate_cp_loss,
     compute_review_per_position_time_ms,
     compute_review_total_budget_seconds,
@@ -242,7 +243,7 @@ class ReviewServiceTests(unittest.TestCase):
         settings = json.loads(row[5])
         self.assertEqual(settings["threads"], 6)
         self.assertEqual(settings["hash_mb"], 1024)
-        self.assertEqual(settings["requested_multipv"], 3)
+        self.assertEqual(settings["requested_multipv"], REVIEW_ANALYSIS_MULTIPV)
 
     def test_standard_and_deep_cache_satisfy_standard_profile(self) -> None:
         standard_game, standard_positions = self._create_finished_game(REVIEWABLE_MOVES)
@@ -1129,6 +1130,48 @@ class ReviewServiceTests(unittest.TestCase):
         )
         self.assertTrue(payload["moments"])
 
+    def test_low_impact_opening_drift_is_not_forced_review_moment(self) -> None:
+        self.assertTrue(
+            _is_low_impact_opening_drift(
+                ply=1,
+                mate_event=False,
+                mover_win_loss=0.3,
+                criticality=12.0,
+                player_percent_before=50.28,
+                player_percent_after=50.20,
+            )
+        )
+        self.assertFalse(
+            _is_low_impact_opening_drift(
+                ply=12,
+                mate_event=False,
+                mover_win_loss=0.3,
+                criticality=12.0,
+                player_percent_before=50.28,
+                player_percent_after=50.20,
+            )
+        )
+        self.assertFalse(
+            _is_low_impact_opening_drift(
+                ply=1,
+                mate_event=False,
+                mover_win_loss=15.0,
+                criticality=16.0,
+                player_percent_before=72.0,
+                player_percent_after=55.0,
+            )
+        )
+        self.assertFalse(
+            _is_low_impact_opening_drift(
+                ply=1,
+                mate_event=True,
+                mover_win_loss=0.3,
+                criticality=12.0,
+                player_percent_before=50.28,
+                player_percent_after=50.20,
+            )
+        )
+
     def test_best_move_and_top_moves_are_from_fen_before_never_fen_after(self) -> None:
         game_id, positions = self._create_finished_game(REVIEWABLE_MOVES)
         values = [0] * len(positions)
@@ -1154,7 +1197,8 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertEqual(moment["best_move_uci"], before_best)
         self.assertNotEqual(moment["best_move_uci"], after_best)
         self.assertEqual(moment["top_moves"][0]["uci"], before_best)
-        self.assertLessEqual(len(moment["top_moves"]), 3)
+        self.assertLessEqual(len(moment["top_moves"]), REVIEW_ANALYSIS_MULTIPV)
+        self.assertEqual(len(moment["top_moves"]), REVIEW_ANALYSIS_MULTIPV)
         self.assertLessEqual(len(moment["top_moves"][0]["pv"]), 5)
         self.assertEqual(moment["eval_source_kind"], "deep")
         self.assertEqual(moment["eval_depth_before"], 12)
@@ -1878,12 +1922,12 @@ class ReviewServiceTests(unittest.TestCase):
                     "engine": "stockfish",
                     "engine_version": "ReviewFake 1",
                     "depth": 12,
-                    "multipv": 3,
+                    "multipv": REVIEW_ANALYSIS_MULTIPV,
                     "analysis_kind": analysis_kind,
                     "analysis_profile": analysis_profile,
                     "requested_time_ms": 10000,
                     "analysis_limit_mode": "time",
-                    "requested_multipv": 3,
+                    "requested_multipv": REVIEW_ANALYSIS_MULTIPV,
                     "eval_cp": eval_cp,
                     "mate_in": None,
                     "top_moves": top_moves,
@@ -1935,7 +1979,7 @@ class ReviewServiceTests(unittest.TestCase):
                         analysis_limit_mode,
                         settings_json
                     )
-                    VALUES (?, ?, 'stockfish', ?, 12, 3, ?, 'engine_analysis_v2',
+                    VALUES (?, ?, 'stockfish', ?, 12, ?, ?, 'engine_analysis_v2',
                             'done', datetime('now'), datetime('now'), ?, ?, 10,
                             ?, ?, NULL, ?, ?, ?)
                     """,
@@ -1943,6 +1987,7 @@ class ReviewServiceTests(unittest.TestCase):
                         fen,
                         json.dumps(payload),
                         f"ReviewFake {analysis_kind} {analysis_profile or 'legacy'}",
+                        REVIEW_ANALYSIS_MULTIPV,
                         analysis_kind,
                         reliability,
                         "high" if reliability is not None and reliability >= 0.75 else None,
@@ -1986,21 +2031,23 @@ class ReviewServiceTests(unittest.TestCase):
                         analysis_limit_mode,
                         settings_json
                     )
-                    VALUES (?, '{}', 'stockfish', 'unknown', 12, 3, 'deep',
+                    VALUES (?, '{}', 'stockfish', 'unknown', 12, ?, 'deep',
                             'engine_analysis_v2', ?, datetime('now'), ?,
-                            'standard', 10000, 3, 'time', ?)
+                            'standard', 10000, ?, 'time', ?)
                     """,
                     (
                         fen,
+                        REVIEW_ANALYSIS_MULTIPV,
                         status,
                         "forced_test_status" if status == "failed" else None,
+                        REVIEW_ANALYSIS_MULTIPV,
                         json.dumps(
                             {
                                 "analysis_profile": "standard",
                                 "review_pipeline_version": REVIEW_PIPELINE_VERSION,
                                 "requested_time_ms": 10000,
                                 "analysis_limit_mode": "time",
-                                "requested_multipv": 3,
+                                "requested_multipv": REVIEW_ANALYSIS_MULTIPV,
                             },
                         ),
                     ),

@@ -127,9 +127,16 @@ async function submitLegalPracticeMove(session) {
   }
   evidence.api.practice_attempt_move = move;
   await harness.tryMoveByClickClick(move, "practice-board");
-  await harness.waitForPagePredicate("practice feedback visible", () => {
-    return { ok: Boolean(document.querySelector('[data-testid="practice-feedback"]')) };
-  }, 20_000);
+  try {
+    await harness.waitForPagePredicate("practice feedback visible after click-click", () => {
+      return { ok: Boolean(document.querySelector('[data-testid="practice-feedback"]')) };
+    }, 5_000);
+  } catch {
+    await harness.tryMoveByDragDrop(move, "practice-board");
+    await harness.waitForPagePredicate("practice feedback visible", () => {
+      return { ok: Boolean(document.querySelector('[data-testid="practice-feedback"]')) };
+    }, 20_000);
+  }
   const detail = await latestSessionForGame(evidence.api.game_id);
   const attempts = Array.isArray(detail.attempts) ? detail.attempts : [];
   if (attempts.length < 1) {

@@ -192,4 +192,22 @@ Date: 2026-05-05
 - [ ] Live analysis is hidden/paused before an active Practice attempt/reveal.
 - [ ] Live analysis does not create Practice attempts, training items, due dates,
   or learning summary changes.
+
+## P1 Review Trust PV5 / Stable Classification Checklist
+
+- [x] Review candidate generation requests MultiPV5 for standard/deep Review.
+- [x] `accepted_moves_json` remains conservative; PV5 does not auto-accept every
+  candidate.
+- [x] Legal out-of-list try moves no longer become `wrong` without a stabilized
+  resulting-position evaluation.
+- [x] Current-attempt bands support `playable` and `imprecise` before `wrong`.
+- [x] Stable-eval failure falls back to `needs_rebuild` / unknown-safe, not
+  false wrong.
+- [x] Early near-equal opening drift has a low-impact gate and should not be
+  forced into Review retry.
+- [x] Daily Plan / `due_at` semantics remain unchanged for existing success and
+  failure classes; `playable`, `imprecise`, and `needs_rebuild` do not schedule
+  revisions yet.
+- [x] Browser/API smoke exists for PV5/stable classification contract.
+- [ ] Manual Review mini-check remains pending; human pilot remains NO-GO.
 - [ ] New browser smokes PASS and write evidence JSON.

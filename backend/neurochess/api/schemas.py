@@ -121,7 +121,10 @@ class ReviewTryMoveEvaluationRequest(BaseModel):
     best_move_san: str | None = None
     best_move: str | None = None
     acceptable_moves: list[dict[str, Any] | str] = Field(default_factory=list)
+    candidate_moves: list[dict[str, Any] | str] = Field(default_factory=list)
+    top_moves: list[dict[str, Any]] = Field(default_factory=list)
     accepted_moves_json: str | list[Any] | None = None
+    stable_attempt_evaluation: dict[str, Any] | None = None
     source_context: str | None = None
     review_moment_id: int | str | None = None
     training_item_id: int | str | None = None

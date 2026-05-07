@@ -353,7 +353,7 @@ function reviewGlyphAnnotation(baseAnnotation = {}) {
     best_move_san: "Nc6",
     top_moves: [
       { uci: "b8c6", san: "Nc6", rank: 1, eval_cp: -80, pv: bestLine },
-      { uci: "b8a6", san: "Na6", rank: 2, eval_cp: -76, pv: [{ uci: "b8a6", san: "Na6" }] },
+      { uci: "b8a6", san: "Na6", rank: 2, eval_cp: -30, pv: [{ uci: "b8a6", san: "Na6" }] },
       { uci: "b8d7", san: "Nd7", rank: 3, eval_cp: 50, pv: playedLine },
     ],
     try_move_supported: true,
@@ -361,6 +361,12 @@ function reviewGlyphAnnotation(baseAnnotation = {}) {
     accepted_moves: [{ uci: "b8a6", san: "Na6", quality: "acceptable" }],
     acceptable_moves: [{ uci: "b8a6", san: "Na6", quality: "acceptable" }],
     accepted_moves_uci: ["b8a6"],
+    stable_attempt_evaluation: {
+      uci: "g8f6",
+      eval_cp: 120,
+      mate_in: null,
+      source_kind: "fixture_stable_eval",
+    },
     pv_line: bestLine,
     pv_line_available: true,
     pv_contrast_evidence: {

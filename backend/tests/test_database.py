@@ -122,7 +122,61 @@ class DatabaseTests(unittest.TestCase):
                 "SELECT COUNT(*) FROM schema_migrations"
             ).fetchone()[0]
 
-        self.assertEqual(migration_count, 19)
+        self.assertEqual(migration_count, 20)
+
+    def test_review_practice_attempt_result_bands_schema_exists(self) -> None:
+        game_id = self.repository.create_game("classic")
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            session_id = connection.execute(
+                """
+                INSERT INTO review_practice_sessions (
+                    game_id,
+                    pov,
+                    status,
+                    item_count,
+                    created_at,
+                    schema_version
+                )
+                VALUES (?, 'white', 'running', 1, datetime('now'), 'learning_loop_v1')
+                """,
+                (game_id,),
+            ).lastrowid
+            for index, result in enumerate(
+                ("playable", "imprecise", "needs_rebuild"),
+                start=1,
+            ):
+                connection.execute(
+                    """
+                    INSERT INTO review_practice_attempts (
+                        session_id,
+                        game_id,
+                        ply,
+                        color,
+                        attempted_uci,
+                        expected_best_uci,
+                        result,
+                        attempt_number,
+                        evidence_snapshot_json,
+                        created_at
+                    )
+                    VALUES (?, ?, ?, 'white', 'a2a3', 'e2e4', ?, 1, '{}', datetime('now'))
+                    """,
+                    (session_id, game_id, index, result),
+                )
+            connection.commit()
+            results = {
+                row[0]
+                for row in connection.execute(
+                    """
+                    SELECT result
+                    FROM review_practice_attempts
+                    WHERE session_id = ?
+                    """,
+                    (session_id,),
+                )
+            }
+
+        self.assertEqual(results, {"playable", "imprecise", "needs_rebuild"})
 
     def test_v5_2_2_history_category_schema_exists(self) -> None:
         with closing(sqlite3.connect(self.db_path)) as connection:

@@ -256,11 +256,12 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
         self.assertEqual(best_summary["correct_count"], 1)
         self.assertEqual(best_summary["attempt_feedback"]["result"], "best")
         self.assertEqual(best_summary["attempt_feedback"]["attempted_san"], "e4")
-        self.assertEqual(wrong_summary["wrong_count"], 1)
-        self.assertEqual(wrong_summary["attempt_feedback"]["result"], "wrong")
+        self.assertEqual(wrong_summary["needs_rebuild_count"], 1)
+        self.assertEqual(wrong_summary["attempt_feedback"]["result"], "needs_rebuild")
         self.assertEqual(revealed_summary["revealed_count"], 1)
         self.assertEqual(revealed_summary["attempt_feedback"]["result"], "revealed")
-        self.assertEqual(skipped_summary["wrong_count"], 1)
+        self.assertEqual(skipped_summary["wrong_count"], 0)
+        self.assertEqual(skipped_summary["needs_rebuild_count"], 1)
         self.assertEqual(skipped_summary["skipped_count"], 1)
         self.assertEqual(skipped_summary["attempt_feedback"]["result"], "skipped")
         self.assertEqual(completed["status"], "completed")
@@ -471,7 +472,7 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
 
         client.post(
             f"/review/practice/sessions/{session_id}/attempts",
-            json={"ply": 1, "attempted_uci": "d2d4", "result": "best"},
+            json={"ply": 1, "attempted_uci": "e2e5", "result": "illegal"},
         )
 
         list_response = client.get(
@@ -488,7 +489,7 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
         self.assertEqual(list_response.status_code, 200)
         self.assertEqual(len(list_response.json()["sessions"]), 1)
         self.assertEqual(detail_response.status_code, 200)
-        self.assertEqual(detail_response.json()["summary"]["wrong_count"], 1)
+        self.assertEqual(detail_response.json()["summary"]["illegal_count"], 1)
         self.assertEqual(retry_response.status_code, 200)
         self.assertEqual([item["ply"] for item in retry_response.json()["items"]], [1])
         self.assertEqual(abandon_response.status_code, 200)

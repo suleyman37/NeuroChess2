@@ -198,3 +198,20 @@ requests. They define the minimum evidence future missions should preserve.
 - Suggested evidence: viewport, overflow assertions, board bounding box,
   screenshots on failure.
 - Relevant docs/tests: `docs/SCREEN_CONTRACTS.md`.
+
+## GF-013 Review Trust Classification
+
+- Purpose: Review must prefer honest uncertainty over fabricated mistakes.
+- User-visible success criteria: legal non-best attempts can become `playable`
+  or `imprecise` when stable evaluation supports that; meaningful losses still
+  become `wrong`; clean opening drift does not become a forced retry.
+- Forbidden regression: a legal move outside `accepted_moves_json` is marked
+  `wrong` only because it is absent from the cached list; move 1-4 near-equal
+  micro-losses become mandatory Review challenges.
+- Suggested automated smoke:
+  `scripts/browser_review_trust_pv5_stable_classification_smoke.mjs`.
+- Suggested evidence: stable classification payload, candidate PV5 payload,
+  low-impact opening gate test, and Daily Plan scheduling safety test.
+- Relevant docs/tests: `backend/tests/test_try_move_model.py`,
+  `backend/tests/test_review_service.py`, and
+  `backend/tests/test_training_items_daily_plan.py`.

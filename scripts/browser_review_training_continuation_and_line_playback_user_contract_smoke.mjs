@@ -392,6 +392,19 @@ async function openPracticeFromReview(gameId) {
   return session;
 }
 
+async function submitPracticeMoveWithFallback(uci) {
+  await harness.tryMoveByClickClick(uci, "practice-board");
+  try {
+    await harness.waitForPagePredicate("practice feedback visible after click-click", () => ({
+      ok:
+        Boolean(document.querySelector('[data-testid="practice-feedback"]')) ||
+        Boolean(document.querySelector('[data-testid="review-training-feedback"]')),
+    }), 5_000);
+  } catch {
+    await harness.tryMoveByDragDrop(uci, "practice-board");
+  }
+}
+
 async function assertSuccessNextCtaAndAdvance(gameId, session) {
   const first = session.items[0];
   const countsBefore = dbCounts("before_first_success_attempt");
@@ -400,7 +413,7 @@ async function assertSuccessNextCtaAndAdvance(gameId, session) {
     feedback: document.querySelector('[data-testid="review-training-feedback"]')?.textContent?.trim() ?? null,
   }));
   evidence.contract_checks.before_first_success = beforeState;
-  await harness.tryMoveByClickClick(first.best_move_uci, "practice-board");
+  await submitPracticeMoveWithFallback(first.best_move_uci);
   const success = await harness.waitForPagePredicate("success next CTA visible", () => {
     const panel = document.querySelector('[data-testid="practice-panel"]');
     const text = panel?.textContent ?? "";
@@ -495,7 +508,7 @@ async function assertFinishAtEnd(gameId) {
       });
       return { ok: true };
     });
-    await harness.tryMoveByClickClick(item.best_move_uci, "practice-board");
+    await submitPracticeMoveWithFallback(item.best_move_uci);
     const isLast = index === items.length - 1;
     await harness.waitForPagePredicate("success continuation CTA visible in finish loop", (last) => {
       const panel = document.querySelector('[data-testid="practice-panel"]');

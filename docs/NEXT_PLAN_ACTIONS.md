@@ -6,6 +6,17 @@ Command recommended before and after UI/product missions:
 python tools/plan_guard.py
 ```
 
+## Current Review Trust Follow-Up
+
+- `P1.REVIEW-TRUST-PV5-STABLE-CLASSIFICATION-AND-OPENING-GATE-V1` implements
+  backend trust repairs as a bounded WIP: Review PV5 candidates, conservative
+  accepted/playable/imprecise bands, stable resulting-position fallback for
+  legal out-of-list attempts, and a low-impact opening gate.
+- Human pilot remains NO-GO until the manual Review mini-check is completed.
+- Next likely action after this WIP is validated: review the diff, move
+  `qa_artifacts/` out of repo, then use an explicit commit/push mission only if
+  all required tests are current PASS.
+
 ## P0
 
 ### P0. FULL-APP-EVIDENCE-QA-AUDIT-V1

@@ -44,6 +44,9 @@ from neurochess.review_practice_service import (
     ReviewPracticeServiceError,
 )
 from neurochess.review_service import ReviewService, ReviewServiceError
+from neurochess.review_try_move_stabilization import (
+    enrich_annotation_with_stable_attempt_evaluation,
+)
 from neurochess.training_item_service import TrainingItemService
 
 
@@ -102,10 +105,12 @@ def get_review_job_service(
 def get_review_practice_service(
     repository: Repository = Depends(get_repository),
     review_service: ReviewService = Depends(get_review_service),
+    analysis_service: AnalysisService = Depends(get_analysis_service),
 ) -> ReviewPracticeService:
     return ReviewPracticeService(
         repository.db_path,
         review_service=review_service,
+        analysis_service=analysis_service,
     )
 
 
@@ -704,10 +709,20 @@ def record_review_practice_attempt(
 @router.post("/review/try-move/evaluate")
 def evaluate_review_try_move(
     request: ReviewTryMoveEvaluationRequest,
+    analysis_service: AnalysisService = Depends(get_analysis_service),
 ) -> Any:
     payload = request.model_dump() if hasattr(request, "model_dump") else request.dict()
     move_played = str(payload.pop("move_played") or "")
-    return evaluate_try_move_attempt(move_played, payload)
+    feedback = evaluate_try_move_attempt(move_played, payload)
+    if feedback.get("reason_code") == "stable_evaluation_required_for_legal_out_of_list":
+        enriched = enrich_annotation_with_stable_attempt_evaluation(
+            payload,
+            move_played,
+            analysis_service,
+        )
+        if enriched is not payload:
+            feedback = evaluate_try_move_attempt(move_played, enriched)
+    return feedback
 
 
 @router.post("/review/practice/sessions/{session_id}/abandon")

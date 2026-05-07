@@ -216,6 +216,8 @@ def training_item_to_practice_item(row: sqlite3.Row | dict[str, Any]) -> dict[st
         "best_move_uci": item.get("best_move"),
         "best_move_san": None,
         "acceptable_moves": accepted_moves,
+        "candidate_moves": accepted_moves,
+        "top_moves": [],
         "pedagogical_explanation": {
             "main_message": item.get("explanation_short"),
             "why_best_move_good": item.get("takeaway"),

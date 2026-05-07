@@ -469,7 +469,7 @@ missing analysis: not candidate
 ### 12. criticality_score_v1
 
 - formula_id: `criticality_score_v1`
-- version: `moment_selection_criticality_v4`
+- version: `moment_selection_criticality_v5_trust_gate`
 - implementation_status: `implemented_now`
 - purpose: action
 - inputs: win loss, leverage, transition, persistence, reliability, novelty,
@@ -496,6 +496,22 @@ candidate if mate_event
 candidate if criticality_score >= 10.0
 mate_event candidates are floored at threshold 10.0
 ```
+
+Trust gate:
+
+```text
+very early/opening-ish move is not a forced Review retry when
+ply <= 8
+and no mate event
+and mover_win_loss <= 8.0 percentage points
+and criticality_score <= 14.0
+and player win% before/after both remain in [38.0, 62.0]
+```
+
+This gate does not change the `criticality_score` formula. It only prevents
+low-impact near-equal opening drift from becoming a mandatory training moment.
+Review candidate generation now requests MultiPV5 for richer alternatives; the
+top five candidates are not automatically accepted.
 
 Temporal non-maximum suppression:
 
@@ -874,10 +890,29 @@ Allowed results:
 - `best`
 - `very_good`
 - `acceptable`
+- `playable`
+- `imprecise`
+- `needs_rebuild`
 - `wrong`
 - `illegal`
 - `revealed`
 - `skipped`
+
+Attempt classification bands for current try-move feedback use player POV win
+percentage loss against the best available stable reference:
+
+```text
+<= 2.0 pp: very_good
+<= 5.0 pp: acceptable
+<= 8.0 pp: playable
+<= 14.0 pp: imprecise
+> 14.0 pp: wrong
+```
+
+Legal moves outside `accepted_moves_json` are not automatically `wrong`.
+They require a cached or bounded stabilized resulting-position evaluation.
+If that cannot be produced, the result is `needs_rebuild` / unknown-safe rather
+than a false problem label.
 
 - interpretation: foundational event for future BKT, IRT, FSRS, and Learning Engine.
 - used_by: Review Practice summaries and future skill model.

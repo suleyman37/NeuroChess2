@@ -243,8 +243,10 @@ export type ReviewMoveAnnotation = {
   best_move_uci?: string | null;
   best_move_san?: string | null;
   top_moves?: Array<Record<string, unknown>>;
+  stable_attempt_evaluation?: Record<string, unknown> | null;
   try_move_supported?: boolean;
   acceptable_moves?: ReviewAcceptableMove[];
+  candidate_moves?: ReviewAcceptableMove[];
   pv_line?: ReviewPvLineMove[];
   pv_line_available?: boolean;
   pv_line_message?: string | null;
@@ -272,8 +274,16 @@ export type ReviewMoveAnnotation = {
 export type ReviewAcceptableMove = {
   uci: string;
   san?: string | null;
-  quality: "best" | "very_good" | "acceptable" | string;
+  quality:
+    | "best"
+    | "very_good"
+    | "acceptable"
+    | "playable"
+    | "imprecise"
+    | string;
   delta_from_best_win_percent: number | null;
+  eval_cp?: number | null;
+  mate_in?: number | null;
 };
 
 export type ReviewPvLineMove = {
@@ -428,8 +438,11 @@ export type ReviewPracticeResult =
   | "best"
   | "very_good"
   | "acceptable"
+  | "playable"
+  | "imprecise"
   | "wrong"
   | "illegal"
+  | "needs_rebuild"
   | "attempted"
   | "skipped"
   | "revealed"
@@ -449,7 +462,9 @@ export type ReviewPracticeItem = {
   fen_after?: string | null;
   best_move_uci: string;
   best_move_san?: string | null;
+  top_moves?: Array<Record<string, unknown>>;
   acceptable_moves: ReviewAcceptableMove[];
+  candidate_moves?: ReviewAcceptableMove[];
   pedagogical_explanation?: PedagogicalExplanation | null;
   contrast_coach_explanation?: ContrastCoachExplanation | null;
   impact_label?: string | null;
@@ -480,6 +495,9 @@ export type ReviewPracticeSummary = {
   acceptable_count?: number;
   correct_count: number;
   partial_count: number;
+  playable_count?: number;
+  imprecise_count?: number;
+  needs_rebuild_count?: number;
   wrong_count: number;
   illegal_count?: number;
   revealed_count: number;
@@ -1501,6 +1519,9 @@ export function evaluateReviewTryMoveAttempt(payload: {
   bestMoveUci?: string | null;
   bestMoveSan?: string | null;
   acceptableMoves?: ReviewAcceptableMove[];
+  candidateMoves?: ReviewAcceptableMove[];
+  topMoves?: Array<Record<string, unknown>>;
+  stableAttemptEvaluation?: Record<string, unknown> | null;
   sourceContext?: string | null;
   reviewMomentId?: number | string | null;
   ply?: number | null;
@@ -1515,6 +1536,9 @@ export function evaluateReviewTryMoveAttempt(payload: {
       best_move_uci: payload.bestMoveUci ?? null,
       best_move_san: payload.bestMoveSan ?? null,
       acceptable_moves: payload.acceptableMoves ?? [],
+      candidate_moves: payload.candidateMoves ?? [],
+      top_moves: payload.topMoves ?? [],
+      stable_attempt_evaluation: payload.stableAttemptEvaluation ?? null,
       source_context: payload.sourceContext ?? "review_try_move",
       review_moment_id: payload.reviewMomentId ?? null,
       ply: payload.ply ?? null,

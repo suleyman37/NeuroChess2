@@ -13,7 +13,11 @@ from neurochess.data.database import (
     execute_sqlite_write_with_retry,
     get_connection,
 )
+from neurochess.analysis_service import AnalysisService
 from neurochess.metrics.try_move import TRY_MOVE_MODEL_VERSION, evaluate_try_move_attempt
+from neurochess.review_try_move_stabilization import (
+    enrich_annotation_with_stable_attempt_evaluation,
+)
 from neurochess.review_service import (
     REVIEW_SCHEMA_VERSION,
     SELECTION_ALGORITHM_VERSION,
@@ -38,13 +42,17 @@ PRACTICE_ALLOWED_RESULTS = {
     "best",
     "very_good",
     "acceptable",
+    "playable",
+    "imprecise",
     "wrong",
     "illegal",
+    "needs_rebuild",
     "skipped",
     "revealed",
 }
 PRACTICE_FAILED_RETRY_RESULTS = {"wrong", "illegal", "revealed", "skipped"}
 PRACTICE_SUCCESS_RESULTS = {"best", "very_good", "acceptable"}
+PRACTICE_SOFT_RESULTS = {"playable", "imprecise", "needs_rebuild"}
 PRACTICE_DUE_REVIEW_SCOPE = "due_review"
 LEARNING_LOOP_SUMMARY_SCHEMA_VERSION = "learning_loop_v1"
 
@@ -89,9 +97,11 @@ class ReviewPracticeService:
         db_path: str | Path | None = None,
         *,
         review_service: ReviewService | None = None,
+        analysis_service: AnalysisService | None = None,
     ) -> None:
         self.db_path = db_path
         self.review_service = review_service or ReviewService(db_path)
+        self.analysis_service = analysis_service or AnalysisService(db_path)
 
     def build_review_practice_items(
         self,
@@ -314,6 +324,7 @@ class ReviewPracticeService:
             item,
             attempted_uci=attempted_uci,
             requested_result=result,
+            analysis_service=self.analysis_service,
         )
         normalized_result = _normalize_result(feedback["result"])
         attempted_uci = feedback.get("attempted_uci")
@@ -741,7 +752,9 @@ def _practice_item_from_annotation(annotation: dict[str, Any]) -> dict[str, Any]
         "fen_after": annotation.get("fen_after"),
         "best_move_uci": annotation.get("best_move_uci"),
         "best_move_san": annotation.get("best_move_san"),
+        "top_moves": annotation.get("top_moves") or [],
         "acceptable_moves": annotation.get("acceptable_moves") or [],
+        "candidate_moves": annotation.get("candidate_moves") or [],
         "accepted_moves_json": annotation.get("accepted_moves_json"),
         "pedagogical_explanation": annotation.get("pedagogical_explanation") or {},
         "contrast_coach_explanation": annotation.get("contrast_coach_explanation") or {},
@@ -837,7 +850,7 @@ def _increment_session_counts(
 ) -> None:
     if result == "best":
         column = "correct_count"
-    elif result in {"very_good", "acceptable"}:
+    elif result in {"very_good", "acceptable"} | PRACTICE_SOFT_RESULTS:
         column = "partial_count"
     elif result == "revealed":
         column = "revealed_count"
@@ -860,14 +873,36 @@ def _practice_attempt_feedback(
     *,
     attempted_uci: str | None,
     requested_result: str | None,
+    analysis_service: AnalysisService | None = None,
 ) -> dict[str, Any]:
     normalized_attempt_uci = str(attempted_uci).strip() if attempted_uci else None
     attempted_san = _attempted_san(item.get("fen_before"), normalized_attempt_uci)
     if normalized_attempt_uci:
         feedback = dict(evaluate_try_move_attempt(normalized_attempt_uci, item))
+        if feedback.get("reason_code") == "stable_evaluation_required_for_legal_out_of_list":
+            enriched_item = enrich_annotation_with_stable_attempt_evaluation(
+                item,
+                normalized_attempt_uci,
+                analysis_service,
+            )
+            if enriched_item is not item:
+                item = enriched_item
+                feedback = dict(evaluate_try_move_attempt(normalized_attempt_uci, item))
+            if (
+                feedback.get("reason_code")
+                == "stable_evaluation_required_for_legal_out_of_list"
+                and requested_result
+                and _normalize_result(requested_result)
+                in {"playable", "imprecise", "wrong", "needs_rebuild"}
+            ):
+                feedback = _explicit_attempt_result_feedback(requested_result)
     else:
         feedback = _explicit_practice_action_feedback(requested_result)
-    if str(feedback.get("result") or "") == "needs_rebuild":
+    if (
+        str(feedback.get("result") or "") == "needs_rebuild"
+        and feedback.get("reason_code")
+        != "stable_evaluation_required_for_legal_out_of_list"
+    ):
         evidence = feedback.get("evidence") if isinstance(feedback.get("evidence"), dict) else {}
         raise ReviewPracticeServiceError(
             "review_legacy_rebuild_required",
@@ -932,6 +967,39 @@ def _explicit_practice_action_feedback(result: str | None) -> dict[str, Any]:
     )
 
 
+def _explicit_attempt_result_feedback(result: str) -> dict[str, Any]:
+    normalized_result = _normalize_result(result)
+    if normalized_result in {"skipped", "revealed"}:
+        return _explicit_practice_action_feedback(normalized_result)
+    return {
+        "result": normalized_result,
+        "message": _message_for_explicit_attempt_result(normalized_result),
+        "show_best_move": normalized_result in {"imprecise", "wrong"},
+        "reason_code": "explicit_attempt_result_after_unavailable_stable_eval",
+        "evidence": {
+            "result": normalized_result,
+            "reason_code": "explicit_attempt_result_after_unavailable_stable_eval",
+            "stable_evaluation_available": False,
+        },
+    }
+
+
+def _message_for_explicit_attempt_result(result: str) -> str:
+    if result == "best":
+        return "Meilleure idee trouvee."
+    if result in {"very_good", "acceptable"}:
+        return "Bonne idee."
+    if result == "playable":
+        return "Coup jouable."
+    if result == "imprecise":
+        return "Jouable, mais a ameliorer."
+    if result == "wrong":
+        return "A revoir."
+    if result == "illegal":
+        return "Coup illegal."
+    return "Evaluation a reconstruire."
+
+
 def _summary_payload(
     session: sqlite3.Row | dict[str, Any],
     attempts: list[sqlite3.Row],
@@ -950,6 +1018,9 @@ def _summary_payload(
     theme = _practice_theme(list(latest_attempts.values()), failed_plies=set(failed_plies))
     very_good_count = counts.get("very_good", 0)
     acceptable_count = counts.get("acceptable", 0)
+    playable_count = counts.get("playable", 0)
+    imprecise_count = counts.get("imprecise", 0)
+    needs_rebuild_count = counts.get("needs_rebuild", 0)
     wrong_count = counts.get("wrong", 0)
     illegal_count = counts.get("illegal", 0)
     summary_sentence = _summary_message(
@@ -971,12 +1042,21 @@ def _summary_payload(
         "best_count": counts.get("best", 0),
         "very_good_count": very_good_count,
         "acceptable_count": acceptable_count,
+        "playable_count": playable_count,
+        "imprecise_count": imprecise_count,
+        "needs_rebuild_count": needs_rebuild_count,
         "wrong_count": wrong_count,
         "illegal_count": illegal_count,
         "revealed_count": counts.get("revealed", 0),
         "skipped_count": counts.get("skipped", 0),
         "correct_count": counts.get("best", 0),
-        "partial_count": very_good_count + acceptable_count,
+        "partial_count": (
+            very_good_count
+            + acceptable_count
+            + playable_count
+            + imprecise_count
+            + needs_rebuild_count
+        ),
         "attempt_count": len(attempts),
         "completed_at": _row_get(session, "completed_at"),
         "schema_version": _row_get(session, "schema_version"),
@@ -1007,6 +1087,9 @@ def _empty_summary() -> dict[str, Any]:
         "best_count": 0,
         "very_good_count": 0,
         "acceptable_count": 0,
+        "playable_count": 0,
+        "imprecise_count": 0,
+        "needs_rebuild_count": 0,
         "correct_count": 0,
         "partial_count": 0,
         "wrong_count": 0,
@@ -1349,7 +1432,9 @@ def _evidence_snapshot(item: dict[str, Any]) -> dict[str, Any]:
         "fen_before": item.get("fen_before"),
         "best_move_uci": item.get("best_move_uci"),
         "best_move_san": item.get("best_move_san"),
+        "top_moves": item.get("top_moves") or [],
         "acceptable_moves": item.get("acceptable_moves") or [],
+        "candidate_moves": item.get("candidate_moves") or [],
         "accepted_moves_json": item.get("accepted_moves_json"),
         "pedagogical_explanation": item.get("pedagogical_explanation") or {},
         "contrast_coach_explanation": item.get("contrast_coach_explanation") or {},

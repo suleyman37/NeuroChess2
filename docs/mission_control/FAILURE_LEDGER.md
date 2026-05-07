@@ -125,3 +125,24 @@ Each item should be consulted before related missions.
 - Required tests/smokes: targeted NeuroScore/calibration tests and plan guard.
 - Evidence required: before/after calibration table and formula-version note.
 - Owner/status: Codex / fixed, formula locked until next explicit mission.
+
+## F006 - Absurd Review Retry / Out-Of-List Move Auto-Wrong
+
+- Symptom: a clean or near-equal opening game could still produce a forced
+  Review retry, and a legal try-move outside `accepted_moves_json` could be
+  marked `wrong` without stabilized evidence.
+- Risk: user loses trust in Review because harmless or playable alternatives
+  look like chess mistakes.
+- Fixed by: P1 Review trust PV5/stable classification mission.
+- Anti-regression rule: legal out-of-list moves require cached or bounded
+  stabilized resulting-position evaluation before final classification; if that
+  evaluation is unavailable, use `needs_rebuild` / unknown-safe, not `wrong`.
+  Early near-equal opening drift must be filtered before forced retry selection.
+- Required tests/smokes:
+  `backend/tests/test_try_move_model.py`, `backend/tests/test_review_service.py`,
+  `backend/tests/test_training_items_daily_plan.py`,
+  `backend/tests/test_database.py`, and
+  `scripts/browser_review_trust_pv5_stable_classification_smoke.mjs`.
+- Evidence required: candidate payload, classification band evidence,
+  low-impact opening gate assertions, and no scheduling regression proof.
+- Owner/status: Codex / fixed in WIP, keep under regression watch after commit.

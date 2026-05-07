@@ -182,14 +182,15 @@ class ReviewPracticeSummaryTests(unittest.TestCase):
         self.assertEqual(summary["best_count"], 1)
         self.assertEqual(summary["very_good_count"], 1)
         self.assertEqual(summary["acceptable_count"], 1)
-        self.assertEqual(summary["wrong_count"], 1)
+        self.assertEqual(summary["needs_rebuild_count"], 1)
+        self.assertEqual(summary["wrong_count"], 0)
         self.assertEqual(summary["revealed_count"], 1)
         self.assertEqual(summary["skipped_count"], 1)
-        self.assertEqual(summary["dominant_theme"], "tactical")
-        self.assertEqual(summary["dominant_theme_label"], "Tactique")
+        self.assertEqual(summary["dominant_theme"], "cluster")
+        self.assertEqual(summary["dominant_theme_label"], "Enchainement d'erreurs")
         self.assertTrue(summary["summary_sentence"])
         self.assertTrue(summary["retry_failed_available"])
-        self.assertEqual(summary["failed_plies"], [4, 5, 6])
+        self.assertEqual(summary["failed_plies"], [5, 6])
 
     def test_retry_failed_creates_session_with_only_failed_items(self) -> None:
         session = self.service.create_session(self.game_id, pov="both", max_items=6)
@@ -212,10 +213,11 @@ class ReviewPracticeSummaryTests(unittest.TestCase):
         retry = self.service.retry_failed_session(session_id)
 
         self.assertEqual(retry["scope"], "retry_failed")
-        self.assertEqual([item["ply"] for item in retry["items"]], [4, 5, 6])
+        self.assertEqual([item["ply"] for item in retry["items"]], [5, 6])
         self.assertNotIn(1, [item["ply"] for item in retry["items"]])
         self.assertNotIn(2, [item["ply"] for item in retry["items"]])
         self.assertNotIn(3, [item["ply"] for item in retry["items"]])
+        self.assertNotIn(4, [item["ply"] for item in retry["items"]])
 
     def test_history_detail_and_abandon_preserve_attempts(self) -> None:
         session = self.service.create_session(self.game_id, pov="both", max_items=6)

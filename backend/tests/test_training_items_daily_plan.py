@@ -25,7 +25,10 @@ from neurochess.api.game_routes import ACTIVE_SESSIONS, get_repository  # noqa: 
 from neurochess.daily_plan_service import DailyPlanService  # noqa: E402
 from neurochess.data.database import init_db  # noqa: E402
 from neurochess.data.repositories import Repository  # noqa: E402
-from neurochess.review_practice_service import ReviewPracticeService  # noqa: E402
+from neurochess.review_practice_service import (  # noqa: E402
+    ReviewPracticeService,
+    practice_revision_delay_days,
+)
 from neurochess.review_service import (  # noqa: E402
     REVIEW_SCHEMA_VERSION,
     SELECTION_ALGORITHM_VERSION,
@@ -169,6 +172,13 @@ class TrainingItemsDailyPlanTests(unittest.TestCase):
             self.assertIn("Profil en construction", payload["message"])
         finally:
             shutil.rmtree(empty_temp)
+
+    def test_playable_and_imprecise_do_not_change_due_at_semantics_yet(self) -> None:
+        self.assertIsNone(practice_revision_delay_days("playable"))
+        self.assertIsNone(practice_revision_delay_days("imprecise"))
+        self.assertIsNone(practice_revision_delay_days("needs_rebuild"))
+        self.assertEqual(practice_revision_delay_days("wrong"), 1)
+        self.assertEqual(practice_revision_delay_days("best"), 7)
 
     def test_daily_plan_limits_repeated_tags_when_alternatives_exist(self) -> None:
         diverse_temp = Path(tempfile.mkdtemp(prefix="neurochess2-daily-diverse-"))

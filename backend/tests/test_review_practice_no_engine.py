@@ -171,8 +171,8 @@ class ReviewPracticeNoEngineTests(unittest.TestCase):
         service.record_attempt(
             int(session["session_id"]),
             ply=1,
-            attempted_uci="d2d4",
-            result="best",
+            attempted_uci=None,
+            result="skipped",
         )
         retry = service.retry_failed_session(int(session["session_id"]))
         listed = service.list_sessions_for_game(self.game_id)

@@ -5,6 +5,19 @@ Snapshot date: 2026-05-05.
 Plan1/Plan2/Plan3 are the source of truth. Current code is implementation
 state. Plan3 governs execution order, not a one-shot roadmap refactor.
 
+## 2026-05-07 Review Trust Update
+
+- Aligned: Review candidate generation now uses PV5 while preserving
+  conservative accepted-move criteria.
+- Aligned: legal try-moves outside cached candidates require stabilized
+  resulting-position evidence before being called `wrong`; missing evidence is
+  unknown-safe.
+- Aligned: low-impact near-equal opening drift is gated out of forced Review
+  retry selection.
+- Preserved: no NeuroScore, visible formula, Daily Plan selection, or `due_at`
+  semantic change.
+- Still pending: manual Review mini-check and human pilot remain NO-GO.
+
 | Element du plan | Attendu Plan1/Plan2 | Etat actuel dans le code | Fichiers concernes | Statut | Action recommandee | Priorite |
 |---|---|---|---|---|---|---|
 | Backend chess data | Durable games, moves, evaluations, review/practice state | Backend data layer and migrations exist | `backend/neurochess/data/*`, `backend/neurochess/models.py`, migrations | aligned | Preserve schema/version discipline | P0 |

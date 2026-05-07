@@ -203,10 +203,10 @@ class CoreBoardPracticeContractTests(unittest.TestCase):
         self.assertFalse(correct["latest_attempt"]["reveal_used"])
         self.assertIsNotNone(correct["latest_attempt"]["due_at"])
 
-        self.assertEqual(wrong["attempt_feedback"]["result"], "wrong")
-        self.assertEqual(wrong["latest_attempt"]["result"], "wrong")
+        self.assertEqual(wrong["attempt_feedback"]["result"], "needs_rebuild")
+        self.assertEqual(wrong["latest_attempt"]["result"], "needs_rebuild")
         self.assertTrue(wrong["latest_attempt"]["hint_used"])
-        self.assertIsNotNone(wrong["latest_attempt"]["due_at"])
+        self.assertIsNone(wrong["latest_attempt"]["due_at"])
 
         self.assertEqual(illegal["attempt_feedback"]["result"], "illegal")
         self.assertEqual(illegal["latest_attempt"]["result"], "illegal")
@@ -230,9 +230,11 @@ class CoreBoardPracticeContractTests(unittest.TestCase):
                 ORDER BY id
                 """
             ).fetchall()
-        self.assertEqual([row[1] for row in rows], ["best", "wrong", "illegal"])
+        self.assertEqual([row[1] for row in rows], ["best", "needs_rebuild", "illegal"])
         self.assertEqual([row[0] for row in rows], ["e2e4", "d2d4", "e2e5"])
-        self.assertTrue(all(row[6] for row in rows))
+        self.assertTrue(rows[0][6])
+        self.assertFalse(rows[1][6])
+        self.assertTrue(rows[2][6])
 
 
 if __name__ == "__main__":

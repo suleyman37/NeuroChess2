@@ -265,14 +265,14 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("Preuves PV", review_panel_source)
         self.assertIn("main_difference_type", review_panel_source)
         self.assertIn("missing_data", review_panel_source)
-        self.assertIn("Comparaison des lignes", review_panel_source)
-        self.assertIn("Après ton coup", review_panel_source)
-        self.assertIn("Avec la solution", review_panel_source)
-        self.assertIn("Réponse adverse", review_panel_source)
-        self.assertIn("Idée principale", review_panel_source)
+        self.assertIn("fr.lines.compare", review_panel_source)
+        self.assertIn("fr.lines.compareTwoFutures", review_panel_source)
+        self.assertIn("fr.feedback.lineHistoricalContext", review_panel_source)
+        self.assertIn("fr.lines.solutionContext", review_panel_source)
+        self.assertIn("fr.lines.mainIdea", review_panel_source)
         self.assertIn("Différence principale", review_panel_source)
-        self.assertIn("Ligne du coup joué", review_panel_source)
-        self.assertIn("Ligne de la solution", review_panel_source)
+        self.assertIn("fr.lines.playedLinePrefix", review_panel_source)
+        self.assertIn("fr.lines.solutionLinePrefix", review_panel_source)
         self.assertIn("ReviewPracticeContrastFeedback", review_panel_source)
         self.assertIn("ReviewCoachMomentCard", review_panel_source)
         self.assertIn("ReviewMomentNavigator", review_panel_source)
@@ -387,8 +387,8 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("ReviewPovSelector", review_panel_source)
         self.assertIn("Joueur analysé", review_panel_source)
         self.assertIn("Changer", review_panel_source)
-        self.assertIn('{ value: "user", label: "Moi" }', review_panel_source)
-        self.assertIn('selectedPov === "user" && !userColor ? "white"', review_panel_source)
+        self.assertIn('{ value: "user", label: fr.review.pov.me }', review_panel_source)
+        self.assertIn('selectedPov === "user" && !userColor ? "both"', review_panel_source)
         self.assertIn("filteredReviewSections", review_panel_source)
         self.assertIn("filterAnnotationsByColor", review_panel_source)
         self.assertIn("Aucun coup dans cette section pour ce joueur.", review_panel_source)
@@ -442,9 +442,9 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("S'entraîner sur cette Review", review_panel_source)
         self.assertIn("Indice", review_panel_source)
         self.assertIn("Voir la correction", review_panel_source)
-        self.assertIn("Coup suivant →", review_panel_source)
-        self.assertIn("Coup précédent", review_panel_source)
-        self.assertIn("Rejouer depuis le début", review_panel_source)
+        self.assertIn("fr.lines.next", review_panel_source)
+        self.assertIn("fr.lines.previous", review_panel_source)
+        self.assertIn("fr.lines.restart", review_panel_source)
         self.assertIn("Position suivante", review_panel_source)
         self.assertIn("Résumé de session", review_panel_source)
         self.assertIn("Dernières sessions d'entraînement", review_panel_source)
@@ -488,7 +488,8 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn('revealMode === "played_move_shown"', normalized_panel)
         self.assertIn("const hintVisible =", normalized_panel)
         self.assertIn('revealMode === "hint_shown"', normalized_panel)
-        self.assertIn("const hasContrastCoach = Boolean", normalized_panel)
+        self.assertIn("buildLessonStepState", normalized_panel)
+        self.assertIn("canShowLineComparison", normalized_panel)
         self.assertIn("hiddenCoachObjective", review_panel_source)
         self.assertIn("practiceHintForAnnotation", review_panel_source)
         self.assertIn("const moveTitle", review_panel_source)
@@ -499,9 +500,9 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn('data-public-lesson-step="correction"', normalized_panel)
         self.assertIn('data-public-lesson-step="training"', normalized_panel)
         self.assertIn("ReviewLineComparison", review_panel_source)
-        self.assertIn("Comparaison des lignes", review_panel_source)
-        self.assertIn("Après ton coup", review_panel_source)
-        self.assertIn("Avec la solution", review_panel_source)
+        self.assertIn("fr.lines.compare", review_panel_source)
+        self.assertIn("fr.feedback.lineHistoricalContext", review_panel_source)
+        self.assertIn("fr.lines.solutionContext", review_panel_source)
         self.assertIn("Détails techniques PV", review_panel_source)
         self.assertIn("Preuves PV", review_panel_source)
         self.assertNotIn('className="review-best-line"', normalized_panel)
@@ -683,9 +684,9 @@ class CalibrationLogicTests(unittest.TestCase):
 
         self.assertIn("Voici ce que ton coup a permis.", correction_body + read_frontend_i18n_source())
         self.assertIn("Le meilleur coup était", correction_body + read_frontend_i18n_source())
-        self.assertIn("Voir la ligne", correction_body)
+        self.assertIn("fr.actions.showLine", correction_body)
         self.assertIn("Réessayer", correction_body + read_frontend_i18n_source())
-        self.assertIn("Continuer", correction_body)
+        self.assertIn("fr.actions.continue", correction_body)
 
         self.assertIn("Transforme ce moment en entraînement.", training_body)
         self.assertIn("À retenir", training_body)
@@ -886,7 +887,7 @@ class CalibrationLogicTests(unittest.TestCase):
             self.assertNotIn(old_key, labels_source)
 
         self.assertIn("review-pov-selector compact", pov_source)
-        self.assertIn("Changer", pov_source)
+        self.assertIn("fr.review.pov.change", pov_source)
         self.assertIn("{open && (", pov_source)
         self.assertNotIn("<span>Analyser :</span>", pov_source)
 
@@ -1894,7 +1895,7 @@ class CalibrationLogicTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         self.assertIn(
-            'SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v4"',
+            'SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v5_trust_gate"',
             review_service_source,
         )
         self.assertIn("CRITICALITY_THRESHOLD = 10.0", review_service_source)
@@ -1913,6 +1914,8 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("def temporal_non_max_suppression", review_service_source)
         self.assertIn("NMS_WINDOW_PLIES = 2", review_service_source)
         self.assertIn("NMS_OVERRIDE_RATIO = 1.5", review_service_source)
+        self.assertIn("LOW_IMPACT_OPENING_MAX_PLY = 8", review_service_source)
+        self.assertIn("def _is_low_impact_opening_drift", review_service_source)
         self.assertIn("STALLED_REVIEW_MESSAGE", review_service_source)
         self.assertIn("FAILED_DEEP_REVIEW_MESSAGE", review_service_source)
         self.assertIn("review_work_active", review_service_source)
@@ -1975,7 +1978,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("reliability_score=reliability", review_source)
         self.assertIn("def _stable_eval_from_analysis_json", review_source)
         self.assertIn("REVIEW_STABILIZED_EVAL_SOURCE_KIND", review_source)
-        self.assertIn("moment_selection_criticality_v4", review_source)
+        self.assertIn("moment_selection_criticality_v5_trust_gate", review_source)
         self.assertIn("stabilized_eval?:", client_source)
         self.assertIn("REVIEW_STABILIZED_DEEP_SOURCE_KIND", app_source)
         self.assertIn("REVIEW_DEEP_SNAPSHOT_SOURCE_KIND", app_source)
@@ -2415,7 +2418,7 @@ class CalibrationLogicTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         normalized = app_source.replace("\r\n", "\n")
 
-        self.assertIn('SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v4"', review_service_source)
+        self.assertIn('SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v5_trust_gate"', review_service_source)
         self.assertIn("CRITICALITY_THRESHOLD = 10.0", review_service_source)
         self.assertIn('const EVAL_VISIBILITY_STORAGE_KEY = "neurochess.hideEvaluation"', normalized)
         self.assertIn("readHideEvaluationPreference", normalized)
@@ -2561,7 +2564,7 @@ class CalibrationLogicTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         normalized = app_source.replace("\r\n", "\n")
 
-        self.assertIn('SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v4"', review_service_source)
+        self.assertIn('SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v5_trust_gate"', review_service_source)
         self.assertIn("CRITICALITY_THRESHOLD = 10.0", review_service_source)
         self.assertIn('type ReviewReplayMoveMode = "played" | "best"', normalized)
         self.assertIn("REVIEW_REPLAY_INITIAL_DELAY_MS = 1200", normalized)
@@ -2958,5 +2961,3 @@ class CalibrationLogicTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-
