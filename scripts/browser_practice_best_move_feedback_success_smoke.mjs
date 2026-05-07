@@ -179,12 +179,24 @@ async function assertSuccessFeedback(expectedMove) {
       const hasProblem = compact.includes("ton coup probleme");
       const hasMissedBest = compact.includes("le meilleur coup etait");
       const hasAttempt = compact.includes(String(expectedMove ?? "").toLowerCase());
+      const overlay = document.querySelector('[data-testid="board-move-outcome-overlay"]');
+      const overlayGlyph = overlay?.querySelector('[data-testid="board-move-outcome-glyph"]')?.textContent?.trim() ?? "";
       return {
-        ok: hasSuccess && hasAttempt && !hasProblem && !hasMissedBest,
+        ok:
+          hasSuccess &&
+          hasAttempt &&
+          !hasProblem &&
+          !hasMissedBest &&
+          Boolean(overlay) &&
+          overlay?.getAttribute("data-quality-id") === "critical_best" &&
+          overlayGlyph === "!",
         hasSuccess,
         hasAttempt,
         hasProblem,
         hasMissedBest,
+        overlayQualityId: overlay?.getAttribute("data-quality-id") ?? null,
+        overlayGlyph,
+        overlaySquare: overlay?.getAttribute("data-square") ?? null,
         text,
       };
     },

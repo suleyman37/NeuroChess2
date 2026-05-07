@@ -96,13 +96,17 @@ async function assertNoLiveSpoilerBeforeAttempt(item) {
     const bestMoveVisible =
       Boolean(expectedBestMove) && normalizedBody.includes(String(expectedBestMove).toLowerCase());
     const liveVisible = normalizedCombined.includes("live") && !normalizedCombined.includes("masquee");
+    const boardOverlayVisible = Boolean(document.querySelector('[data-testid="board-move-outcome-overlay"]'));
+    const practiceBadgeVisible = Boolean(document.querySelector('[data-testid="practice-attempt-quality-badge"]'));
     return {
-      ok: !liveVisible && !bestMoveVisible,
+      ok: !liveVisible && !bestMoveVisible && !boardOverlayVisible && !practiceBadgeVisible,
       evalText,
       source,
       sourceDetails,
       bestMoveVisible,
       liveVisible,
+      boardOverlayVisible,
+      practiceBadgeVisible,
     };
   }, item?.best_move_uci ?? null);
   if (!result.ok) {

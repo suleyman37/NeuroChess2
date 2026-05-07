@@ -25,6 +25,11 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.types = read(REVIEW_DIR / "reviewTypes.ts")
         self.step_status = read(REVIEW_DIR / "ReviewStepStatus.tsx")
         self.line_comparison = read(REVIEW_DIR / "ReviewLineComparison.tsx")
+        self.move_quality_badge = read(REVIEW_DIR / "MoveQualityBadge.tsx")
+        self.move_quality_glyphs = read(REVIEW_DIR / "moveQualityGlyphs.ts")
+        self.board_outcome_overlay = read(REVIEW_DIR / "BoardMoveOutcomeOverlay.tsx")
+        self.chess_board_panel = read(PROJECT_ROOT / "frontend" / "src" / "components" / "ChessBoardPanel.tsx")
+        self.styles = read(PROJECT_ROOT / "frontend" / "src" / "styles.css")
         self.app = read(PROJECT_ROOT / "frontend" / "src" / "App.tsx")
         self.i18n = read(PROJECT_ROOT / "frontend" / "src" / "i18n" / "fr.ts")
         self.user_pov_smoke = read(
@@ -152,6 +157,66 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertIn("Review ", self.lesson + self.i18n)
         self.assertIn(" reconstruire", self.lesson + self.i18n)
 
+    def test_move_quality_badges_are_attempt_scoped_and_visual_only(self) -> None:
+        self.assertIn("MoveQualityBadge", self.move_quality_badge)
+        self.assertIn("MOVE_QUALITY_GLYPH_REGISTRY", self.move_quality_glyphs)
+        self.assertIn("getMoveQualityGlyphForAttemptResult", self.move_quality_glyphs)
+        self.assertIn("getMoveQualityGlyphForHistoricalCategory", self.move_quality_glyphs)
+        self.assertIn('case "best":', self.move_quality_glyphs)
+        self.assertIn('return "critical_best";', self.move_quality_glyphs)
+        self.assertIn('case "very_good":', self.move_quality_glyphs)
+        self.assertIn('return "excellent";', self.move_quality_glyphs)
+        self.assertIn('case "acceptable":', self.move_quality_glyphs)
+        self.assertIn('return "good";', self.move_quality_glyphs)
+        self.assertIn('case "wrong":', self.move_quality_glyphs)
+        self.assertIn('case "illegal":', self.move_quality_glyphs)
+        self.assertIn('case "needs_rebuild":', self.move_quality_glyphs)
+        self.assertIn("userVisible: false", self.move_quality_glyphs)
+        for unsafe_source in ("win_loss", "move_accuracy", "criticality_score", "diagnostic_gap"):
+            self.assertNotIn(unsafe_source, self.move_quality_glyphs)
+        self.assertIn("review-attempt-quality-badge", self.lesson)
+        self.assertIn("practice-attempt-quality-badge", self.practice)
+        self.assertIn("review-historical-quality-badge", self.lesson)
+        self.assertIn("review-line-game-quality-badge", self.line_comparison)
+        self.assertIn("review-line-solution-quality-badge", self.line_comparison)
+        self.assertIn("data-quality-id", self.move_quality_badge)
+        self.assertIn("aria-label", self.move_quality_badge)
+        self.assertIn("state.feedback &&", self.practice)
+        self.assertIn("tryActiveForAnnotation && tryMoveState?.feedback", self.lesson)
+        challenge = self.section("challenge")
+        self.assertNotIn("Meilleure idée", challenge)
+        self.assertIn("moveQuality:", self.i18n)
+
+    def test_board_move_outcome_overlay_is_attempt_scoped_and_css_based(self) -> None:
+        self.assertIn("BoardMoveOutcomeOverlay", self.board_outcome_overlay)
+        self.assertIn("squareToBoardCoordinates", self.board_outcome_overlay)
+        self.assertIn("data-testid={testId}", self.board_outcome_overlay)
+        self.assertIn("data-quality-id={definition.id}", self.board_outcome_overlay)
+        self.assertIn("data-square={displayedSquare}", self.board_outcome_overlay)
+        self.assertIn("data-board-orientation={orientation}", self.board_outcome_overlay)
+        self.assertIn('aria-live="polite"', self.board_outcome_overlay)
+        self.assertIn("pointer-events: none", self.styles)
+        self.assertIn("board-move-outcome-overlay", self.styles)
+        self.assertIn("BoardMoveOutcomeOverlay", self.chess_board_panel)
+        self.assertIn("moveOutcome?: BoardMoveOutcomeOverlayState | null", self.chess_board_panel)
+        self.assertIn("moveOutcome={boardMoveOutcome}", self.app)
+        self.assertIn("buildBoardMoveOutcome", self.app)
+        self.assertIn("reviewPracticeState.feedback", self.app)
+        self.assertIn("reviewTryMoveState.feedback", self.app)
+        self.assertIn("reviewPvLineState?.active", self.app)
+        self.assertIn("destinationSquareFromUci", self.app)
+        self.assertIn("getMoveQualityGlyphForAttemptResult(result)", self.app)
+        self.assertIn('glyph: "!"', self.move_quality_glyphs)
+        self.assertIn('glyph: "✓"', self.move_quality_glyphs)
+        self.assertIn('glyph: "="', self.move_quality_glyphs)
+        self.assertIn('glyph: "?"', self.move_quality_glyphs)
+        self.assertIn('left: `${(squareCoordinates.column + 0.74) * 12.5}%`', self.board_outcome_overlay)
+        self.assertIn('[data-piece^="b"] > svg', self.styles)
+        self.assertIn('glyph: "×"', self.move_quality_glyphs)
+        self.assertIn('glyph: "↻"', self.move_quality_glyphs)
+        for generated_asset in (".svg", ".png", ".webp"):
+            self.assertNotIn(generated_asset, self.board_outcome_overlay)
+
     def test_review_training_success_has_local_next_or_finish_action(self) -> None:
         self.assertIn("PRACTICE_SUCCESS_RESULTS", self.practice)
         self.assertIn("feedbackCanContinue", self.practice)
@@ -182,11 +247,25 @@ class FrontendLessonFlowStaticTests(unittest.TestCase):
         self.assertIn("correctionAcceptedSource", self.view_model)
         self.assertIn("moveCandidateSetsIntersect", self.view_model)
         self.assertIn("const attemptMoveCandidates", self.view_model)
-        self.assertIn("attemptMoveCandidates ?? [displayedPlayedMove, annotation.uci, annotation.san]", self.view_model)
+        self.assertIn("tryMoveState?.attemptedUci || tryMoveState?.attemptedSan", self.view_model)
+        self.assertIn(
+            "const userMoveCandidates =\n"
+            "    attemptMoveCandidates ?? [displayedPlayedMove, annotation.uci, annotation.san];",
+            self.view_model,
+        )
         self.assertIn("annotation.best_move_uci", self.view_model)
         self.assertIn("annotation.best_move_san", self.view_model)
         self.assertIn("annotation.acceptable_moves", self.view_model)
         self.assertIn("normalizeReviewMoveForComparison", self.view_model)
+        self.assertIn(
+            "const hasCurrentAttempt = Boolean(tryActiveForAnnotation && tryMoveState?.feedback);",
+            self.view_model,
+        )
+        self.assertIn(
+            "const showAttemptSpecificFeedback = hasCurrentAttempt && !accepted && !needsRebuild;",
+            self.view_model,
+        )
+        self.assertIn("tryActiveForAnnotation && tryMoveState?.feedback", self.lesson)
         self.assertIn("isNegativeCorrectionLabel", self.view_model)
         self.assertIn("correctionMoveAccepted", self.lesson)
         self.assertIn("visibleTags", self.lesson)

@@ -1,5 +1,7 @@
 import type { ReviewMoveAnnotation } from "../../api/client";
 import { fr } from "../../i18n";
+import { MoveQualityBadge } from "./MoveQualityBadge";
+import { getMoveQualityGlyphForHistoricalCategory } from "./moveQualityGlyphs";
 import { buildLineComparisonView } from "./reviewViewModel";
 import type { ReviewPovContext, ReviewPvLineMode } from "./reviewTypes";
 
@@ -23,6 +25,9 @@ export function ReviewLineComparison({
   ) => void;
 }) {
   const view = buildLineComparisonView(annotation, contrastCoach, explanation, povContext);
+  const historicalQualityId = getMoveQualityGlyphForHistoricalCategory(
+    annotation.primary_category,
+  );
   return (
     <div className="review-line-comparison" aria-label={fr.lines.compare}>
       <div className="review-line-comparison-head">
@@ -32,6 +37,12 @@ export function ReviewLineComparison({
       <div className="review-line-comparison-grid">
         <article className="review-line-card review-line-card-played">
           <span>{fr.feedback.lineHistoricalContext}</span>
+          <MoveQualityBadge
+            qualityId={historicalQualityId}
+            context="historical"
+            size="sm"
+            testId="review-line-game-quality-badge"
+          />
           <strong>{fr.feedback.historicalPlayedMove(view.playedMove)}</strong>
           <p>{view.playedSummary}</p>
           <p>
@@ -49,6 +60,12 @@ export function ReviewLineComparison({
         </article>
         <article className="review-line-card review-line-card-solution">
           <span>{fr.lines.solutionContext}</span>
+          <MoveQualityBadge
+            qualityId="critical_best"
+            context="solution"
+            size="sm"
+            testId="review-line-solution-quality-badge"
+          />
           <strong>{fr.lines.solutionMove(view.solutionMove)}</strong>
           <p>{fr.lines.mainIdea(view.solutionSummary)}</p>
           <p>

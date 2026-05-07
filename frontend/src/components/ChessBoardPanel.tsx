@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { Chess } from "chess.js";
 import type { Square } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import type { Arrow } from "react-chessboard/dist/chessboard/types";
+import {
+  BoardMoveOutcomeOverlay,
+  type BoardMoveOutcomeOverlayState,
+} from "./review/BoardMoveOutcomeOverlay";
 
 export type BoardArrow = [string, string, string?];
 
@@ -16,6 +20,7 @@ type ChessBoardPanelProps = {
   squareStyles?: Record<string, CSSProperties>;
   customArrows?: BoardArrow[];
   animationDuration?: number;
+  moveOutcome?: BoardMoveOutcomeOverlayState | null;
   onMove: (uci: string, optimisticFen: string | null) => Promise<void>;
 };
 
@@ -28,18 +33,40 @@ export function ChessBoardPanel({
   squareStyles,
   customArrows,
   animationDuration = 300,
+  moveOutcome,
   onMove,
 }: ChessBoardPanelProps) {
+  const boardPanelRef = useRef<HTMLDivElement | null>(null);
   const [boardWidth, setBoardWidth] = useState(() => getBoardWidth());
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
 
   useEffect(() => {
-    function handleResize() {
-      setBoardWidth(getBoardWidth());
+    const element = boardPanelRef.current;
+    if (!element) {
+      return;
+    }
+    const boardElement = element;
+
+    function updateBoardWidth() {
+      const measuredWidth = boardElement.getBoundingClientRect().width;
+      const nextWidth =
+        measuredWidth > 0
+          ? Math.min(520, Math.max(260, Math.round(measuredWidth)))
+          : getBoardWidth();
+      setBoardWidth(nextWidth);
     }
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    updateBoardWidth();
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateBoardWidth)
+        : null;
+    resizeObserver?.observe(boardElement);
+    window.addEventListener("resize", updateBoardWidth);
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", updateBoardWidth);
+    };
   }, []);
 
   useEffect(() => {
@@ -130,6 +157,7 @@ export function ChessBoardPanel({
 
   return (
     <div
+      ref={boardPanelRef}
       className="board-panel"
       role="img"
       aria-label={ariaLabel}
@@ -165,6 +193,12 @@ export function ChessBoardPanel({
             "0 0 0 1px rgba(34, 211, 238, 0.16), 0 24px 70px rgba(0, 0, 0, 0.55)",
         }}
       />
+      {moveOutcome && (
+        <BoardMoveOutcomeOverlay
+          {...moveOutcome}
+          orientation={orientation}
+        />
+      )}
     </div>
   );
 }
@@ -201,9 +235,9 @@ function buildClickSquareStyles(
 
 function getBoardWidth(): number {
   if (typeof window === "undefined") {
-    return 480;
+    return 520;
   }
 
-  const horizontalMargin = window.innerWidth < 640 ? 32 : 140;
-  return Math.min(480, Math.max(260, window.innerWidth - horizontalMargin));
+  const horizontalMargin = window.innerWidth < 640 ? 32 : 120;
+  return Math.min(520, Math.max(260, window.innerWidth - horizontalMargin));
 }

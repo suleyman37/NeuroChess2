@@ -82,6 +82,8 @@ import {
 } from "./components/ReviewPanel";
 import { ReviewPvStepper } from "./components/review/ReviewPvStepper";
 import { ReviewStepStatus } from "./components/review/ReviewStepStatus";
+import type { BoardMoveOutcomeOverlayState } from "./components/review/BoardMoveOutcomeOverlay";
+import { getMoveQualityGlyphForAttemptResult } from "./components/review/moveQualityGlyphs";
 import {
   annotationIndex,
   normalizedAnnotationColor,
@@ -4318,6 +4320,14 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     selectedReviewMoment,
     selectedReviewMovePly,
   });
+  const boardMoveOutcome = buildBoardMoveOutcome({
+    activeTab,
+    positionMode,
+    boardFen,
+    reviewPracticeState,
+    reviewTryMoveState,
+    reviewPvLineState,
+  });
   const boardTestId = reviewPracticeState?.active
     ? "practice-board"
     : activeTab === "review"
@@ -5110,6 +5120,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             testId={boardTestId}
             squareStyles={reviewSquareStyles}
             customArrows={reviewExplorationActive ? [] : reviewBoardArrows}
+            moveOutcome={boardMoveOutcome}
             animationDuration={
               positionMode === "REVIEW" ? REVIEW_REPLAY_MOVE_ANIMATION_MS : 300
             }
@@ -6903,6 +6914,93 @@ function tryMoveFenAfter(
   } catch (_err) {
     return { fenAfter: null, san: null, legal: false };
   }
+}
+
+function buildBoardMoveOutcome({
+  activeTab,
+  positionMode,
+  boardFen,
+  reviewPracticeState,
+  reviewTryMoveState,
+  reviewPvLineState,
+}: {
+  activeTab: ActiveTab;
+  positionMode: PositionMode;
+  boardFen: string | null;
+  reviewPracticeState: ReviewPracticeState | null;
+  reviewTryMoveState: ReviewTryMoveState | null;
+  reviewPvLineState: ReviewPvLineState | null;
+}): BoardMoveOutcomeOverlayState | null {
+  if (activeTab !== "review" || positionMode !== "REVIEW" || reviewPvLineState?.active) {
+    return null;
+  }
+
+  if (
+    reviewPracticeState?.active &&
+    reviewPracticeState.status === "running" &&
+    reviewPracticeState.itemState === "attempted" &&
+    !reviewPracticeState.solutionRevealed &&
+    reviewPracticeState.feedback
+  ) {
+    const item = currentPracticeItem(reviewPracticeState);
+    if (item) {
+      return boardMoveOutcomeForAttempt({
+        boardFen,
+        fenBefore: item.fen_before,
+        attemptedUci: reviewPracticeState.attemptedUci,
+        result: reviewPracticeState.feedback.result,
+      });
+    }
+  }
+
+  if (
+    reviewTryMoveState?.active &&
+    reviewTryMoveState.feedback &&
+    !reviewTryMoveState.solutionRevealed &&
+    reviewTryMoveState.fenBefore
+  ) {
+    return boardMoveOutcomeForAttempt({
+      boardFen,
+      fenBefore: reviewTryMoveState.fenBefore,
+      attemptedUci: reviewTryMoveState.attemptedUci,
+      result: reviewTryMoveState.feedback.result,
+    });
+  }
+
+  return null;
+}
+
+function boardMoveOutcomeForAttempt({
+  boardFen,
+  fenBefore,
+  attemptedUci,
+  result,
+}: {
+  boardFen: string | null;
+  fenBefore: string;
+  attemptedUci: string | null;
+  result: string | null | undefined;
+}): BoardMoveOutcomeOverlayState | null {
+  if (!boardFen) {
+    return null;
+  }
+  const attempt = attemptedUci ? tryMoveFenAfter(fenBefore, attemptedUci) : null;
+  const expectedFen = attempt?.fenAfter ?? fenBefore;
+  if (boardFen !== expectedFen) {
+    return null;
+  }
+  return {
+    visible: true,
+    qualityId: getMoveQualityGlyphForAttemptResult(result),
+    result: result ?? null,
+    square: destinationSquareFromUci(attemptedUci),
+    moveUci: attemptedUci,
+  };
+}
+
+function destinationSquareFromUci(uci: string | null | undefined): string | null {
+  const square = String(uci ?? "").slice(2, 4).toLowerCase();
+  return /^[a-h][1-8]$/.test(square) ? square : null;
 }
 
 function currentPracticeItem(

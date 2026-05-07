@@ -12,6 +12,8 @@ import {
 import { errorTypeLabel, reviewColorLabel } from "./reviewLabels";
 import { buildPracticeSummaryView, coachTextForPov, practiceHintForItem, practiceItemAnnotationLabel } from "./reviewViewModel";
 import { reviewAnnotationHasAnyPvLine, reviewAnnotationHasSolutionPvLine } from "./reviewUtils";
+import { MoveQualityBadge } from "./MoveQualityBadge";
+import { getMoveQualityGlyphForAttemptResult } from "./moveQualityGlyphs";
 import type { ReviewPovContext, ReviewPracticeViewState, ReviewPvLineMode } from "./reviewTypes";
 
 const PRACTICE_SUCCESS_RESULTS = new Set(["best", "very_good", "acceptable"]);
@@ -242,6 +244,9 @@ export function ReviewPracticeSessionPanel({
   const illegalNoticeVisible = feedbackResult === "illegal";
   const revealNoticeVisible = state.solutionRevealed && !state.feedback;
   const saveFailedNotice = state.error ? buildPracticeSaveFailedNotice(state.error) : null;
+  const practiceQualityId = state.feedback
+    ? getMoveQualityGlyphForAttemptResult(state.feedback.result)
+    : null;
 
   return (
     <section
@@ -284,7 +289,14 @@ export function ReviewPracticeSessionPanel({
               className={`review-practice-feedback review-practice-feedback-${state.feedback.result}`}
               data-testid="practice-feedback"
             >
-              <strong>{coachTextForPov(state.feedback.message, povContext, itemAnnotation)}</strong>
+              <div className="review-feedback-heading">
+                <MoveQualityBadge
+                  qualityId={practiceQualityId}
+                  context="attempt"
+                  testId="practice-attempt-quality-badge"
+                />
+                <strong>{coachTextForPov(state.feedback.message, povContext, itemAnnotation)}</strong>
+              </div>
               {state.attemptedUci && (
                 <span data-testid="review-training-user-move">
                   {povContext.isUserPov ? fr.feedback.yourMove : fr.feedback.playedMove} :{" "}

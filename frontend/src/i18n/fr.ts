@@ -253,6 +253,7 @@ export const fr = {
     historicalImpact: (impact: string) => `Impact : ${impact}.`,
     qualityLabel: (quality: string) => `Qualité : ${quality}`,
     lineHistoricalContext: "Dans la partie",
+    historicalQualityScope: "Coup joué dans la partie",
     historicalPlayedMove: (move: string) =>
       `Coup joué dans la partie : ${move}`,
     bestMoveMissed: (move: string) => `Le meilleur coup était : ${move}`,
@@ -262,6 +263,59 @@ export const fr = {
       "Bonne idée. Ce coup répond au problème principal de la position.",
     wrongMove: (bestMove: string) => `Pas encore. Le coup clé était ${bestMove}.`,
     illegalMove: "Ce coup n’est pas légal dans cette position.",
+  },
+  moveQuality: {
+    contexts: {
+      attempt: "Qualité de ta tentative",
+      historical: "Qualité du coup joué dans la partie",
+      solution: "Qualité de la solution",
+      line: "Qualité de la ligne",
+      summary: "Qualité du moment",
+    },
+    brilliant: {
+      label: "Idée brillante",
+      description: "Un coup exceptionnel dans cette position.",
+    },
+    criticalBest: {
+      label: "Meilleure idée",
+      description: "Le coup qui répond le mieux au problème de la position.",
+    },
+    excellent: {
+      label: "Excellent",
+      description: "Très bon coup.",
+    },
+    good: {
+      label: "Bonne idée",
+      description: "Ce coup répond au problème principal.",
+    },
+    playable: {
+      label: "Jouable",
+      description: "Ce coup reste praticable, mais il existe mieux.",
+    },
+    imprecise: {
+      label: "À améliorer",
+      description: "L’idée peut être affinée.",
+    },
+    wrong: {
+      label: "À revoir",
+      description: "Ce coup ne répond pas à l’idée clé.",
+    },
+    severe: {
+      label: "Erreur importante",
+      description: "Ce coup laisse passer une ressource importante.",
+    },
+    illegal: {
+      label: "Coup illégal",
+      description: "Ce coup n’est pas légal dans cette position.",
+    },
+    unknown: {
+      label: "Non évalué",
+      description: "La qualité du coup n’est pas disponible.",
+    },
+    rebuildNeeded: {
+      label: "À recalculer",
+      description: "Cette position doit être reconstruite ou réanalysée.",
+    },
   },
   profilePrivacy: {
     title: "Profil / Paramètres",

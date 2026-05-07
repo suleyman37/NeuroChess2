@@ -1447,8 +1447,8 @@ function correctionAcceptedSource(
   tryMoveState: ReviewTryMoveViewState | null,
   tryFeedbackResult: string | null,
 ): ReviewCorrectionFeedbackView["acceptedSource"] {
-  if (tryFeedbackResult && ACCEPTED_TRY_MOVE_RESULTS.has(tryFeedbackResult)) {
-    return "backend";
+  if (tryFeedbackResult) {
+    return ACCEPTED_TRY_MOVE_RESULTS.has(tryFeedbackResult) ? "backend" : null;
   }
 
   const attemptMoveCandidates =

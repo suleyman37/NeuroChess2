@@ -37,6 +37,19 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
         self.pv_stepper = read(
             FRONTEND_SRC / "components" / "review" / "ReviewPvStepper.tsx"
         )
+        self.move_quality_badge = read(
+            FRONTEND_SRC / "components" / "review" / "MoveQualityBadge.tsx"
+        )
+        self.move_quality_glyphs = read(
+            FRONTEND_SRC / "components" / "review" / "moveQualityGlyphs.ts"
+        )
+        self.board_outcome_overlay = read(
+            FRONTEND_SRC / "components" / "review" / "BoardMoveOutcomeOverlay.tsx"
+        )
+        self.chess_board_panel = read(
+            FRONTEND_SRC / "components" / "ChessBoardPanel.tsx"
+        )
+        self.styles = read(FRONTEND_SRC / "styles.css")
         self.score_details = read(
             FRONTEND_SRC / "components" / "review" / "ReviewScoreDetails.tsx"
         )
@@ -57,6 +70,7 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
             "confirmation:",
             "feedback:",
             "lines:",
+            "moveQuality:",
         ):
             self.assertIn(section, self.catalog)
 
@@ -81,6 +95,7 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
             "Impact :",
             "Qualité :",
             "Coup joué dans la partie",
+            "Qualité du coup joué dans la partie",
             "Position suivante",
             "Terminer la session",
             "Lire la ligne jouée",
@@ -96,6 +111,12 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
             "Couleur détectée",
             "Couleur inconnue pour cette partie.",
             "Choisis Blancs, Noirs ou Les deux.",
+            "Qualité de ta tentative",
+            "Excellent",
+            "Jouable",
+            "À revoir",
+            "Coup illégal",
+            "À recalculer",
             "Analyse interrompue temporairement",
             "Review incomplète",
             "S'entraîner",
@@ -119,6 +140,8 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
             self.review_labels,
             self.lesson_panel,
             self.practice_panel,
+            self.move_quality_badge,
+            self.move_quality_glyphs,
         ):
             self.assertIn("fr.", source)
         for usage in (
@@ -143,6 +166,7 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
             "fr.feedback.currentAttemptPlayable",
             "fr.feedback.currentAttemptIllegal",
             "fr.feedback.lineHistoricalContext",
+            "fr.feedback.historicalQualityScope",
             "fr.feedback.historicalPlayedMove",
             "fr.practice.nextPosition",
             "fr.practice.finishSession",
@@ -156,6 +180,10 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
             "fr.review.pov.unknownColor",
             "fr.review.pov.detectedColor",
             "fr.review.pov.currentMomentSide",
+            "fr.moveQuality.criticalBest.label",
+            "fr.moveQuality.good.label",
+            "fr.moveQuality.wrong.label",
+            "fr.moveQuality.contexts[context]",
         ):
             self.assertIn(
                 usage,
@@ -171,9 +199,45 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
                         self.practice_panel,
                         self.pv_stepper,
                         self.score_details,
+                        self.move_quality_badge,
+                        self.move_quality_glyphs,
+                        self.board_outcome_overlay,
                     ]
                 ),
             )
+
+    def test_move_quality_glyph_copy_is_catalogued_and_calm(self) -> None:
+        self.assertIn("MOVE_QUALITY_GLYPH_REGISTRY", self.move_quality_glyphs)
+        self.assertIn("MoveQualityBadge", self.move_quality_badge)
+        self.assertIn("getMoveQualityGlyphForAttemptResult", self.move_quality_glyphs)
+        self.assertIn("getMoveQualityGlyphForHistoricalCategory", self.move_quality_glyphs)
+        for usage in (
+            "fr.moveQuality.brilliant.label",
+            "fr.moveQuality.criticalBest.label",
+            "fr.moveQuality.excellent.label",
+            "fr.moveQuality.good.label",
+            "fr.moveQuality.playable.label",
+            "fr.moveQuality.wrong.label",
+            "fr.moveQuality.illegal.label",
+            "fr.moveQuality.rebuildNeeded.label",
+        ):
+            self.assertIn(usage, self.move_quality_glyphs)
+        for forbidden in ("génie", "catastrophe", "skull", "pirate", "💀"):
+            self.assertNotIn(forbidden, self.catalog + self.move_quality_glyphs)
+
+    def test_board_move_outcome_overlay_reuses_quality_copy_without_assets(self) -> None:
+        self.assertIn("BoardMoveOutcomeOverlay", self.board_outcome_overlay)
+        self.assertIn("getMoveQualityGlyphDefinition", self.board_outcome_overlay)
+        self.assertIn("definition.label", self.board_outcome_overlay)
+        self.assertIn("definition.shortDescription", self.board_outcome_overlay)
+        self.assertIn("board-move-outcome-live", self.board_outcome_overlay)
+        self.assertIn("board-move-outcome-overlay", self.styles)
+        self.assertIn("board-move-outcome-glyph", self.styles)
+        self.assertIn("pointer-events: none", self.styles)
+        self.assertIn("prefers-reduced-motion", self.styles)
+        self.assertIn("BoardMoveOutcomeOverlay", self.chess_board_panel)
+        for generated_asset in (".svg", ".png", ".webp"):
+            self.assertNotIn(generated_asset, self.board_outcome_overlay + self.chess_board_panel)
 
     def test_practice_feedback_contradiction_guards_remain(self) -> None:
         self.assertIn("const feedbackWantsCorrection", self.practice_panel)
@@ -187,6 +251,7 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
         self.assertIn("fr.feedback.historicalIdeaMissed", self.lesson_panel)
         self.assertIn("fr.feedback.recoveredGain", self.lesson_panel)
         self.assertIn("fr.feedback.historicalImpact(impactLabel)", self.lesson_panel)
+        self.assertIn("fr.feedback.historicalQualityScope", self.lesson_panel)
         self.assertIn("fr.feedback.qualityLabel(qualityLabel)", self.lesson_panel)
         self.assertIn("fr.feedback.successAttemptTitle", self.lesson_panel)
         self.assertIn("fr.feedback.viewWhyItWorks", self.lesson_panel)
@@ -196,6 +261,7 @@ class FrontendI18nStringsStaticTests(unittest.TestCase):
         self.assertIn("fr.feedback.currentAttemptIllegal", self.lesson_panel)
         self.assertIn("fr.feedback.lineHistoricalContext", self.line_comparison)
         self.assertIn("fr.feedback.historicalPlayedMove", self.line_comparison)
+        self.assertIn("review-line-game-quality-badge", self.line_comparison)
         self.assertIn("fr.lines.playGameLine", self.line_comparison)
         self.assertIn("fr.lines.playSolutionLine", self.line_comparison)
         self.assertIn("fr.lines.playbackGameContext", self.pv_stepper)

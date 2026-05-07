@@ -8,6 +8,11 @@ import {
   REVIEW_PUBLIC_LESSON_STEPS,
 } from "./reviewLabels";
 import { CoachExplanationBlock, ReviewLineComparison } from "./ReviewLineComparison";
+import { MoveQualityBadge } from "./MoveQualityBadge";
+import {
+  getMoveQualityGlyphForAttemptResult,
+  getMoveQualityGlyphForHistoricalCategory,
+} from "./moveQualityGlyphs";
 import {
   buildReviewCorrectionFeedbackView,
   buildLessonStepState,
@@ -161,6 +166,13 @@ function ReviewCoachMomentCard({
     correctionFeedback.shouldShowLine &&
     !canShowLineComparison &&
     canShowAnyPvLine;
+  const tryFeedbackQualityId =
+    tryActiveForAnnotation && tryMoveState?.feedback
+      ? getMoveQualityGlyphForAttemptResult(tryMoveState.feedback.result)
+      : null;
+  const historicalQualityId = getMoveQualityGlyphForHistoricalCategory(
+    annotation.primary_category,
+  );
   const acceptedCorrectionText =
     coachTextForPov(
       activeTryFeedbackMessage,
@@ -315,7 +327,14 @@ function ReviewCoachMomentCard({
           </div>
           {tryActiveForAnnotation && tryMoveState?.feedback && (
             <div className="review-try-move-panel">
-              <strong>{tryFeedbackTitle}</strong>
+              <div className="review-feedback-heading">
+                <MoveQualityBadge
+                  qualityId={tryFeedbackQualityId}
+                  context="attempt"
+                  testId="review-attempt-quality-badge"
+                />
+                <strong>{tryFeedbackTitle}</strong>
+              </div>
               <span>
                 {coachTextForPov(
                   tryMoveState.feedback.message,
@@ -382,7 +401,17 @@ function ReviewCoachMomentCard({
           <p className="review-coach-main">{correctionMain}</p>
           <div className="review-correction-narrative premium">
             <article>
-              <span>{correctionPlayedLabel}</span>
+              <div className="review-feedback-heading">
+                {tryActiveForAnnotation && tryMoveState?.feedback && (
+                  <MoveQualityBadge
+                    qualityId={tryFeedbackQualityId}
+                    context="attempt"
+                    size="sm"
+                    testId="review-attempt-quality-badge"
+                  />
+                )}
+                <span>{correctionPlayedLabel}</span>
+              </div>
               <strong>{displayedPlayedMove}</strong>
               <p>{correctionPlayedText}</p>
             </article>
@@ -418,6 +447,15 @@ function ReviewCoachMomentCard({
                 <p>{currentAttemptFeedbackText}</p>
               ) : correctionFeedback.showHistoricalMoveDiagnostics ? (
                 <>
+                  <div className="review-historical-quality-row">
+                    <MoveQualityBadge
+                      qualityId={historicalQualityId}
+                      context="historical"
+                      size="sm"
+                      testId="review-historical-quality-badge"
+                    />
+                    <span>{fr.feedback.historicalQualityScope}</span>
+                  </div>
                   <p>{formatImpact(annotation.win_loss)} · {impactLabel}</p>
                   <p>{fr.feedback.qualityLabel(qualityLabel)}</p>
                 </>

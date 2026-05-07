@@ -36,6 +36,9 @@ evidence.strategy =
   "temp backend DB + intercepted Review payload with stale historical exd5 commentary + real Review try-move clicks for Na6/Nc6";
 evidence.screenshots = [];
 
+const ATTEMPT_SPECIFIC_FEN_BEFORE =
+  "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2";
+
 const manifest = {
   mission: MISSION,
   generated_at: new Date().toISOString(),
@@ -115,8 +118,7 @@ print(json.dumps(counts, sort_keys=True))
 }
 
 function attemptSpecificAnnotation(baseAnnotation = {}) {
-  const fenBefore =
-    "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2";
+  const fenBefore = ATTEMPT_SPECIFIC_FEN_BEFORE;
   const historicalFenAfter =
     "r1bqkbnr/pppnpppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 1 3";
   const playedLine = [
@@ -411,9 +413,26 @@ async function playWrongAttemptAndAssertNoStaleComment() {
 
 async function simulateBestAttemptAndAssertClean() {
   await openLessonChallenge();
-  await harness.clickByText("Voir la correction", { exact: true, afterMs: 800 });
+  await harness.clickByText("Essayer", { exact: true, afterMs: 300 });
+  await harness.waitForPagePredicate("best attempt board ready", (expectedFen) => {
+    const board = document.querySelector('[data-testid="review-board"]');
+    const fen = board?.getAttribute("data-board-fen") ?? "";
+    const disabled = board?.getAttribute("aria-disabled");
+    const challengeText = document.querySelector('[data-public-lesson-step="challenge"]')?.textContent ?? "";
+    return {
+      ok: Boolean(board) && disabled !== "true" && fen === expectedFen,
+      fen,
+      disabled,
+      orientation: board?.getAttribute("data-board-orientation"),
+      challengeText,
+    };
+  }, 10_000, ATTEMPT_SPECIFIC_FEN_BEFORE);
+  await harness.tryMoveByClickClick("b8c6", "review-board");
   const result = await harness.waitForPagePredicate("best attempt success clean", () => {
-    const root = document.querySelector('[data-public-lesson-step="correction"]');
+    const root =
+      document.querySelector('[data-public-lesson-step="challenge"]') ??
+      document.querySelector('[data-public-lesson-step="correction"]');
+    const qualityBadge = root?.querySelector('[data-testid="review-attempt-quality-badge"]');
     const text = root?.textContent ?? "";
     const compact = String(text ?? "")
       .normalize("NFD")
@@ -422,14 +441,16 @@ async function simulateBestAttemptAndAssertClean() {
       .replace(/[^\p{L}\p{N}]+/gu, " ");
     return {
       ok:
+        qualityBadge?.getAttribute("data-quality-id") === "critical_best" &&
         compact.includes("bien joue") &&
         compact.includes("nc6") &&
-        (compact.includes("ton coup bonne idee") || compact.includes("coup joue bonne idee")) &&
-        compact.includes("gain recupere 11 pts par rapport au coup joue") &&
-        !compact.includes("ton coup probleme") &&
+        (compact.includes("ton coup nc6") || compact.includes("coup joue nc6")) &&
+        compact.includes("tentative reussie") &&
+        !compact.includes("coup joue probleme") &&
         !compact.includes("le meilleur coup etait") &&
         !compact.includes("exd5") &&
         !compact.includes("qualite moyenne"),
+      qualityId: qualityBadge?.getAttribute("data-quality-id"),
       compact,
       rawText: text,
     };
@@ -438,20 +459,21 @@ async function simulateBestAttemptAndAssertClean() {
   mark("best_attempt_success_clean", "pass", JSON.stringify({
     hasSuccess: result.compact.includes("bien joue"),
     hasNc6: result.compact.includes("nc6"),
-    hasProblem: result.compact.includes("ton coup probleme"),
+    qualityId: result.qualityId,
+    hasProblem: result.compact.includes("coup joue probleme"),
     hasStaleExd5: result.compact.includes("exd5"),
   }));
   await captureQaScreenshot(
     "02_best_attempt_success_clean",
-    "Review best/accepted simulation Nc6",
-    "Success correction state shows the best/accepted move without stale wrong commentary",
-    ["Bien joue", "Nc6", "no Ton coup Probleme", "no exd5"],
+    "Review real try-move Nc6",
+    "Success correction state shows the current attempt without stale historical commentary",
+    ["critical_best badge", "Bien joue", "Nc6", "no Coup joue Probleme", "no exd5"],
   );
   await captureQaScreenshot(
-    "04_success_gain_recovered_if_applicable",
-    "Review success recovered gain",
-    "Historical win_loss is shown as recovered gain after the user finds the best move",
-    ["Gain recupere +11 pts", "no Qualite Moyenne"],
+    "04_success_current_attempt_not_historical",
+    "Review success current attempt scope",
+    "Current-attempt success is separate from historical move diagnostics",
+    ["Tentative reussie", "review-attempt-quality-badge", "no Qualite Moyenne"],
   );
 }
 

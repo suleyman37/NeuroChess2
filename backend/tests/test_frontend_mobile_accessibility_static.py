@@ -50,8 +50,9 @@ class FrontendMobileAccessibilityStaticTests(unittest.TestCase):
             "aria-label={ariaLabel}",
             "aria-disabled={disabled}",
             "tabIndex={fen && !disabled ? 0 : -1}",
-            "const horizontalMargin = window.innerWidth < 640 ? 32 : 140;",
+            "const horizontalMargin = window.innerWidth < 640 ? 32 : 120;",
             "Math.max(260, window.innerWidth - horizontalMargin)",
+            "new ResizeObserver(updateBoardWidth)",
             "onSquareClick={handleSquareClick}",
         ):
             self.assertIn(token, self.board)
