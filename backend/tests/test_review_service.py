@@ -51,6 +51,7 @@ from neurochess.review_service import (
     SELECTION_ALGORITHM_VERSION,
     ReviewService,
     _analysis_satisfies_profile,
+    _is_low_impact_opening_drift,
     calculate_cp_loss,
     compute_review_per_position_time_ms,
     compute_review_total_budget_seconds,
@@ -242,7 +243,7 @@ class ReviewServiceTests(unittest.TestCase):
         settings = json.loads(row[5])
         self.assertEqual(settings["threads"], 6)
         self.assertEqual(settings["hash_mb"], 1024)
-        self.assertEqual(settings["requested_multipv"], 3)
+        self.assertEqual(settings["requested_multipv"], REVIEW_ANALYSIS_MULTIPV)
 
     def test_standard_and_deep_cache_satisfy_standard_profile(self) -> None:
         standard_game, standard_positions = self._create_finished_game(REVIEWABLE_MOVES)
@@ -514,6 +515,12 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertEqual(payload["user_color"], "white")
         self.assertEqual(payload["white_lichess_like_accuracy"], 100.0)
         self.assertEqual(payload["black_lichess_like_accuracy"], 100.0)
+        self.assertEqual(payload["white_public_neuro_score"], payload["white_lichess_like_accuracy"])
+        self.assertEqual(payload["black_public_neuro_score"], payload["black_lichess_like_accuracy"])
+        self.assertEqual(payload["user_public_neuro_score"], payload["user_lichess_like_accuracy"])
+        self.assertEqual(payload["public_neuro_score"], payload["user_lichess_like_accuracy"])
+        self.assertEqual(payload["public_score_formula_version"], "public_neuro_score_lichess_like_v1")
+        self.assertEqual(payload["qualitative_game_label_formula_version"], "qualitative_game_label_v1")
         self.assertEqual(payload["white_neuro_score"], 100.0)
         self.assertEqual(payload["black_neuro_score"], 100.0)
         self.assertEqual(payload["white_diagnostic_gap"], 0.0)
@@ -534,13 +541,19 @@ class ReviewServiceTests(unittest.TestCase):
             payload["headline_neurochess_score"],
             payload["user_headline_neurochess_score"],
         )
+        self.assertEqual(payload["user_coach_neuro_score"], payload["user_headline_neurochess_score"])
+        self.assertEqual(payload["white_coach_neuro_score"], payload["white_headline_neurochess_score"])
+        self.assertEqual(payload["black_coach_neuro_score"], payload["black_headline_neurochess_score"])
+        self.assertEqual(payload["coach_neuro_score"], payload["headline_neurochess_score"])
+        self.assertEqual(payload["coach_score_formula_version"], "coach_neuro_score_v1")
         self.assertEqual(payload["headline_score_subject"], "user")
         self.assertEqual(
             payload["headline_score_formula_version"],
-            "headline_neurochess_score_v1",
+            "headline_neurochess_score_v2",
         )
         self.assertIsInstance(payload["review_summary_sentence"], str)
         self.assertTrue(payload["review_summary_sentence"])
+        self.assertNotIn("diagnostique", payload["review_summary_sentence"].lower())
         self.assertEqual(payload["score_analyzed_moves_white"], 6)
         self.assertEqual(payload["score_analyzed_moves_black"], 5)
         self.assertEqual(payload["score_missing_moves_white"], 0)
@@ -642,6 +655,14 @@ class ReviewServiceTests(unittest.TestCase):
             "pv_contrast_evidence_version",
             "contrast_coach_explanation",
             "contrast_coach_explanation_version",
+            "moment_importance",
+            "moment_group",
+            "moment_label",
+            "moment_reason",
+            "moment_importance_version",
+            "is_training_recommended",
+            "is_micro_gap",
+            "is_good_decision",
         ):
             self.assertIn(key, first_annotation)
         self.assertEqual(
@@ -666,8 +687,14 @@ class ReviewServiceTests(unittest.TestCase):
             list(range(1, len(REVIEWABLE_MOVES) + 1)),
         )
         self.assertIn("to_review", payload["review_sections"])
+        self.assertIn("priority_training", payload["review_sections"])
+        self.assertIn("secondary_training", payload["review_sections"])
+        self.assertIn("micro_gaps", payload["review_sections"])
+        self.assertIn("good_decisions", payload["review_sections"])
         self.assertIn("strong_moves", payload["review_sections"])
         self.assertIn("missed_opportunities", payload["review_sections"])
+        self.assertIn("moment_selection_summary", payload)
+        self.assertIn("no_major_moment", payload["moment_selection_summary"])
 
     def test_review_payload_contains_opening_reality_evidence(self) -> None:
         game_id, positions = self._create_finished_game(REVIEWABLE_MOVES)
@@ -841,9 +868,11 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertEqual(payload["review_score_alias_of"], "lichess_like_accuracy")
         self.assertTrue(payload["review_score_deprecated"])
         self.assertIsNotNone(payload["headline_neurochess_score"])
+        self.assertEqual(payload["coach_neuro_score"], payload["headline_neurochess_score"])
+        self.assertEqual(payload["coach_score_formula_version"], "coach_neuro_score_v1")
         self.assertEqual(
             payload["headline_score_formula_version"],
-            "headline_neurochess_score_v1",
+            "headline_neurochess_score_v2",
         )
         self.assertIsInstance(payload["review_summary_sentence"], str)
         self.assertEqual(
@@ -860,7 +889,11 @@ class ReviewServiceTests(unittest.TestCase):
         )
         self.assertEqual(
             payload["formula_versions"]["headline_score_formula_version"],
-            "headline_neurochess_score_v1",
+            "headline_neurochess_score_v2",
+        )
+        self.assertEqual(
+            payload["formula_versions"]["coach_score_formula_version"],
+            "coach_neuro_score_v1",
         )
         self.assertEqual(
             payload["formula_versions"]["pv_contrast_evidence_version"],
@@ -891,13 +924,28 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertIsNotNone(cached["white_neuro_score"])
         self.assertIsNotNone(cached["white_diagnostic_gap"])
         self.assertEqual(cached["review_score_alias_of"], "lichess_like_accuracy")
+        self.assertEqual(cached["public_neuro_score"], cached["white_lichess_like_accuracy"])
+        self.assertEqual(
+            cached["public_score_formula_version"],
+            "public_neuro_score_lichess_like_v1",
+        )
+        self.assertEqual(
+            cached["qualitative_game_label_formula_version"],
+            "qualitative_game_label_v1",
+        )
         self.assertIsNotNone(cached["headline_neurochess_score"])
+        self.assertEqual(cached["coach_neuro_score"], cached["headline_neurochess_score"])
+        self.assertEqual(cached["coach_score_formula_version"], "coach_neuro_score_v1")
         self.assertEqual(
             cached["headline_score_formula_version"],
-            "headline_neurochess_score_v1",
+            "headline_neurochess_score_v2",
         )
         self.assertTrue(cached["review_summary_sentence"])
         self.assertEqual(cached["move_category_formula_version"], "neuro_move_categories_v1")
+        self.assertEqual(
+            cached["review_moment_importance_version"],
+            "review_moment_importance_v1",
+        )
         self.assertEqual(
             cached["pedagogical_explanation_version"],
             "neuro_pedagogy_templates_v1",
@@ -912,6 +960,7 @@ class ReviewServiceTests(unittest.TestCase):
         )
         self.assertTrue(cached["move_annotations"])
         self.assertTrue(cached["review_sections"]["all"])
+        self.assertIn("moment_selection_summary", cached)
 
     def test_metric_rebuild_persists_dual_score_cache(self) -> None:
         game_id, positions = self._create_finished_game(REVIEWABLE_MOVES)
@@ -1100,6 +1149,48 @@ class ReviewServiceTests(unittest.TestCase):
         )
         self.assertTrue(payload["moments"])
 
+    def test_low_impact_opening_drift_is_not_forced_review_moment(self) -> None:
+        self.assertTrue(
+            _is_low_impact_opening_drift(
+                ply=1,
+                mate_event=False,
+                mover_win_loss=0.3,
+                criticality=12.0,
+                player_percent_before=50.28,
+                player_percent_after=50.20,
+            )
+        )
+        self.assertFalse(
+            _is_low_impact_opening_drift(
+                ply=12,
+                mate_event=False,
+                mover_win_loss=0.3,
+                criticality=12.0,
+                player_percent_before=50.28,
+                player_percent_after=50.20,
+            )
+        )
+        self.assertFalse(
+            _is_low_impact_opening_drift(
+                ply=1,
+                mate_event=False,
+                mover_win_loss=15.0,
+                criticality=16.0,
+                player_percent_before=72.0,
+                player_percent_after=55.0,
+            )
+        )
+        self.assertFalse(
+            _is_low_impact_opening_drift(
+                ply=1,
+                mate_event=True,
+                mover_win_loss=0.3,
+                criticality=12.0,
+                player_percent_before=50.28,
+                player_percent_after=50.20,
+            )
+        )
+
     def test_best_move_and_top_moves_are_from_fen_before_never_fen_after(self) -> None:
         game_id, positions = self._create_finished_game(REVIEWABLE_MOVES)
         values = [0] * len(positions)
@@ -1125,7 +1216,8 @@ class ReviewServiceTests(unittest.TestCase):
         self.assertEqual(moment["best_move_uci"], before_best)
         self.assertNotEqual(moment["best_move_uci"], after_best)
         self.assertEqual(moment["top_moves"][0]["uci"], before_best)
-        self.assertLessEqual(len(moment["top_moves"]), 3)
+        self.assertLessEqual(len(moment["top_moves"]), REVIEW_ANALYSIS_MULTIPV)
+        self.assertEqual(len(moment["top_moves"]), REVIEW_ANALYSIS_MULTIPV)
         self.assertLessEqual(len(moment["top_moves"][0]["pv"]), 5)
         self.assertEqual(moment["eval_source_kind"], "deep")
         self.assertEqual(moment["eval_depth_before"], 12)
@@ -1849,12 +1941,12 @@ class ReviewServiceTests(unittest.TestCase):
                     "engine": "stockfish",
                     "engine_version": "ReviewFake 1",
                     "depth": 12,
-                    "multipv": 3,
+                    "multipv": REVIEW_ANALYSIS_MULTIPV,
                     "analysis_kind": analysis_kind,
                     "analysis_profile": analysis_profile,
                     "requested_time_ms": 10000,
                     "analysis_limit_mode": "time",
-                    "requested_multipv": 3,
+                    "requested_multipv": REVIEW_ANALYSIS_MULTIPV,
                     "eval_cp": eval_cp,
                     "mate_in": None,
                     "top_moves": top_moves,
@@ -1906,7 +1998,7 @@ class ReviewServiceTests(unittest.TestCase):
                         analysis_limit_mode,
                         settings_json
                     )
-                    VALUES (?, ?, 'stockfish', ?, 12, 3, ?, 'engine_analysis_v2',
+                    VALUES (?, ?, 'stockfish', ?, 12, ?, ?, 'engine_analysis_v2',
                             'done', datetime('now'), datetime('now'), ?, ?, 10,
                             ?, ?, NULL, ?, ?, ?)
                     """,
@@ -1914,6 +2006,7 @@ class ReviewServiceTests(unittest.TestCase):
                         fen,
                         json.dumps(payload),
                         f"ReviewFake {analysis_kind} {analysis_profile or 'legacy'}",
+                        REVIEW_ANALYSIS_MULTIPV,
                         analysis_kind,
                         reliability,
                         "high" if reliability is not None and reliability >= 0.75 else None,
@@ -1957,21 +2050,23 @@ class ReviewServiceTests(unittest.TestCase):
                         analysis_limit_mode,
                         settings_json
                     )
-                    VALUES (?, '{}', 'stockfish', 'unknown', 12, 3, 'deep',
+                    VALUES (?, '{}', 'stockfish', 'unknown', 12, ?, 'deep',
                             'engine_analysis_v2', ?, datetime('now'), ?,
-                            'standard', 10000, 3, 'time', ?)
+                            'standard', 10000, ?, 'time', ?)
                     """,
                     (
                         fen,
+                        REVIEW_ANALYSIS_MULTIPV,
                         status,
                         "forced_test_status" if status == "failed" else None,
+                        REVIEW_ANALYSIS_MULTIPV,
                         json.dumps(
                             {
                                 "analysis_profile": "standard",
                                 "review_pipeline_version": REVIEW_PIPELINE_VERSION,
                                 "requested_time_ms": 10000,
                                 "analysis_limit_mode": "time",
-                                "requested_multipv": 3,
+                                "requested_multipv": REVIEW_ANALYSIS_MULTIPV,
                             },
                         ),
                     ),

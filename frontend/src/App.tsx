@@ -3,16 +3,23 @@ import type { CSSProperties, ChangeEvent } from "react";
 import { Chess } from "chess.js";
 import {
   createGame,
+  createDailyPlan,
   classifyGameOpening,
   finishGame,
   getAnalysisByFen,
   getGame,
   getGameHistory,
   cancelReviewJob,
+  deleteUserData,
+  evaluateReviewExplorerLine,
+  evaluateReviewExplorerMove,
+  evaluateReviewTryMoveAttempt,
+  exportUserData,
   getReviewJob,
   getGameMoves,
   getGameOpening,
   getReview,
+  getDailyPlanToday,
   getReviewPracticeSession,
   getReviewPracticeSessions,
   importPgnGames,
@@ -26,11 +33,14 @@ import {
   retryFailedReviewPracticeSession,
   reconcileReviewJob,
   startReviewJob,
+  startDueReviewPracticeSession,
+  startDailyPlanPracticeSession,
   startReviewPracticeSession,
   startLiveAnalysis,
   stopLiveAnalysis,
   type AnalysisByFen,
   type BoardEvaluationContext,
+  type DailyPlanResponse,
   type Evaluation,
   type EvaluationSource,
   type GameHistoryItem,
@@ -45,12 +55,16 @@ import {
   type RecordedMove,
   type ReviewMoment,
   type ReviewMoveAnnotation,
+  type ReviewExplorerAnalysisPreset,
+  type ReviewExplorerLineEvaluationResponse,
   type ReviewJobResponse,
   type ReviewPracticeItem,
+  type ReviewPracticeLearningSummary,
   type ReviewPracticeSessionListItem,
   type ReviewPracticeSummary,
   type ReviewPvLineMove,
   type ReviewResponse,
+  type UserDataDeleteSummary,
 } from "./api/client";
 import { ChessBoardPanel, type BoardArrow } from "./components/ChessBoardPanel";
 import {
@@ -58,15 +72,33 @@ import {
   type EvaluationBarPlaceholder,
 } from "./components/EvaluationBar";
 import { MoveHistory } from "./components/MoveHistory";
+import { LandingPage } from "./components/LandingPage";
+import { NeuroChessLogo } from "./components/NeuroChessLogo";
+import { StateNotice } from "./components/StateNotice";
 import {
   ReviewPanel,
   momentKey,
+  type ReviewFocusKey,
   type ReviewPov,
   type ReviewPvLineMode,
   type ReviewSolutionRevealViewState,
   type ReviewTryMoveViewState,
 } from "./components/ReviewPanel";
+import { ReviewPvStepper } from "./components/review/ReviewPvStepper";
+import { ReviewStepStatus } from "./components/review/ReviewStepStatus";
+import type { BoardMoveOutcomeOverlayState } from "./components/review/BoardMoveOutcomeOverlay";
+import { MoveQualityBadge } from "./components/review/MoveQualityBadge";
+import { getMoveQualityGlyphForAttemptResult } from "./components/review/moveQualityGlyphs";
+import {
+  annotationIndex,
+  normalizedAnnotationColor,
+} from "./components/review/reviewViewModel";
+import {
+  buildDailyPlanNotice,
+  buildPgnImportNotice,
+} from "./degradedStates";
 import { makeEvaluationDisplayFromEngineScore } from "./evaluationDisplay";
+import { fr } from "./i18n";
 import {
   INITIAL_REVIEW_STATE,
   MIN_REVIEW_HALF_MOVES,
@@ -84,8 +116,40 @@ import {
 
 type BusyState = "idle" | "new-game" | "move" | "finish" | "load-game";
 type PositionMode = "LIVE" | "HISTORICAL" | "REVIEW";
+type AppShellPage = "today" | "games" | "training";
+type TodayHeroAction =
+  | "daily_plan"
+  | "review"
+  | "practice"
+  | "revision"
+  | "import"
+  | "wait";
 type ActiveTab = "moves" | "review" | "import" | "history" | "info";
 type HistoryScope = "mine" | "imported" | "local" | "ai" | "observed" | "all";
+
+const EXAMPLE_IMPORT_PGN = `[Event "Exemple NeuroChess"]
+[Site "?"]
+[Date "2026.05.05"]
+[White "Joueur"]
+[Black "Adversaire"]
+[Result "*"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 *
+`;
+
+function normalizeReviewFocusKey(value: string): ReviewFocusKey {
+  if (value === "learn" || value === "practice" || value === "lab") {
+    return value;
+  }
+  if (value === "lesson") {
+    return "learn";
+  }
+  if (value === "opening" || value === "explorer") {
+    return "lab";
+  }
+  return "summary";
+}
+
 type EvaluationBarState = {
   evaluation: Evaluation | null;
   source: EvaluationSource | null;
@@ -126,6 +190,34 @@ type ReviewTryMoveState = ReviewTryMoveViewState & {
   annotationIndex: number | null;
   fenBefore: string | null;
 };
+type ReviewExplorationMoveStatus = "unevaluated" | "analyzing" | "evaluated";
+type ReviewExplorationMove = {
+  uci: string;
+  san: string;
+  fenBefore: string;
+  fen: string;
+  status: ReviewExplorationMoveStatus;
+  result: string | null;
+  label: string | null;
+  stableEvaluationStatus: string | null;
+  noSideEffects: boolean;
+  error: string | null;
+};
+type ReviewExplorationLineStatus = "idle" | "analyzing" | "evaluated";
+type ReviewExplorationLineState = {
+  status: ReviewExplorationLineStatus;
+  result: ReviewExplorerLineEvaluationResponse | null;
+  error: string | null;
+};
+type ReviewExplorationState = {
+  active: true;
+  baseFen: string;
+  currentFen: string;
+  moves: ReviewExplorationMove[];
+  message: string | null;
+  analysisPreset: ReviewExplorerAnalysisPreset;
+  line: ReviewExplorationLineState;
+};
 type ReviewPracticeState = {
   active: boolean;
   sessionId: number | string | null;
@@ -144,6 +236,7 @@ type ReviewPracticeState = {
   feedback: NonNullable<TryMoveFeedback> | null;
   solutionRevealed: boolean;
   hintVisible: boolean;
+  itemStartedAt: number | null;
   summary: ReviewPracticeSummary | null;
   error: string | null;
   saving: boolean;
@@ -196,6 +289,7 @@ type OpeningLoadStatus = "idle" | "loading" | "ready" | "not_found" | "error";
 
 const ENGINE_WARMUP_GRACE_MS = 3500;
 const BOARD_EVALUATION_RETRY_DELAYS_MS = [500, 1500, 3000, 5000];
+const REVIEW_JOB_NO_PROGRESS_WATCHDOG_MS = 45_000;
 const EVAL_VISIBILITY_STORAGE_KEY = "neurochess.hideEvaluation";
 const APP_STATE_STORAGE_KEY = "neurochess.appState.v5_3a4d";
 const REVIEW_POV_STORAGE_KEY_PREFIX = "neurochess.reviewPov";
@@ -210,8 +304,19 @@ const REPLAY_IMPACT_PAUSE_MS = 1500;
 const REPLAY_BEST_MOVE_PAUSE_MS = 1200;
 const REPLAY_PV_LINE_PAUSE_MS = 1200;
 const REVIEW_REPLAY_MOVE_ANIMATION_MS = REPLAY_MOVE_ANIMATION_MS;
-const REVIEW_PLAYED_ARROW_COLOR = "rgba(220, 91, 35, 0.88)";
-const REVIEW_BEST_ARROW_COLOR = "rgba(34, 139, 78, 0.88)";
+const DEFAULT_REVIEW_EXPLORER_ANALYSIS_PRESET: ReviewExplorerAnalysisPreset =
+  "standard";
+const REVIEW_PLAYED_ARROW_COLOR = "rgba(0, 229, 255, 0.88)";
+const REVIEW_BEST_ARROW_COLOR = "rgba(105, 92, 255, 0.9)";
+type NeuroChessRoute = "/" | "/app";
+
+function emptyReviewExplorationLineState(): ReviewExplorationLineState {
+  return {
+    status: "idle",
+    result: null,
+    error: null,
+  };
+}
 
 const ANALYSIS_UNAVAILABLE_WARNINGS = new Set([
   "analysis_engine_unavailable",
@@ -238,15 +343,57 @@ const EVALUATION_SOURCE_KINDS = new Set([
 ]);
 
 const HISTORY_SCOPE_FILTERS: Array<{ scope: HistoryScope; label: string }> = [
-  { scope: "mine", label: "Mes parties" },
-  { scope: "imported", label: "Importées" },
-  { scope: "local", label: "Locales" },
+  { scope: "mine", label: fr.nav.games },
+  { scope: "imported", label: fr.games.imported },
+  { scope: "local", label: fr.games.local },
   { scope: "ai", label: "IA" },
   { scope: "observed", label: "Observées" },
   { scope: "all", label: "Toutes" },
 ];
 
 export default function App() {
+  const [currentRoute, setCurrentRoute] = useState<NeuroChessRoute>(() =>
+    normalizeRoute(readCurrentPath()),
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+    const handlePopState = () => {
+      setCurrentRoute(normalizeRoute(window.location.pathname));
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const navigateTo = (route: NeuroChessRoute) => {
+    if (typeof window !== "undefined") {
+      if (window.location.pathname !== route) {
+        window.history.pushState({ neurochessRoute: route }, "", route);
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    setCurrentRoute(route);
+  };
+
+  if (currentRoute === "/app") {
+    return <NeuroChessApp onNavigateHome={() => navigateTo("/")} />;
+  }
+
+  return (
+    <LandingPage
+      onNavigateApp={() => navigateTo("/app")}
+      onNavigateHome={() => navigateTo("/")}
+    />
+  );
+}
+
+type NeuroChessAppProps = {
+  onNavigateHome: () => void;
+};
+
+function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   const [gameId, setGameId] = useState<number | null>(null);
   const [currentFen, setCurrentFen] = useState<string | null>(null);
   const [viewedFen, setViewedFen] = useState<string | null>(null);
@@ -278,15 +425,24 @@ export default function App() {
     useState<ReviewReplayMoveMode>("played");
   const [reviewTryMoveState, setReviewTryMoveState] =
     useState<ReviewTryMoveState | null>(null);
+  const [reviewExplorationState, setReviewExplorationState] =
+    useState<ReviewExplorationState | null>(null);
+  const [reviewExplorationBoardOrientation, setReviewExplorationBoardOrientation] =
+    useState<"white" | "black" | null>(null);
   const [reviewPracticeState, setReviewPracticeState] =
     useState<ReviewPracticeState | null>(null);
   const [reviewPracticeHistory, setReviewPracticeHistory] = useState<
     ReviewPracticeSessionListItem[]
   >([]);
+  const [reviewPracticeLearningSummary, setReviewPracticeLearningSummary] =
+    useState<ReviewPracticeLearningSummary | null>(null);
   const [reviewPracticeHistoryLoading, setReviewPracticeHistoryLoading] =
     useState(false);
   const [reviewPracticeHistoryError, setReviewPracticeHistoryError] =
     useState<string | null>(null);
+  const [dailyPlan, setDailyPlan] = useState<DailyPlanResponse | null>(null);
+  const [dailyPlanLoading, setDailyPlanLoading] = useState(false);
+  const [dailyPlanError, setDailyPlanError] = useState<string | null>(null);
   const [guidedPvIndex, setGuidedPvIndex] = useState<number | null>(null);
   const [reviewPvLineState, setReviewPvLineState] =
     useState<ReviewPvLineState | null>(null);
@@ -314,6 +470,8 @@ export default function App() {
   >({});
   const [liveAnalysisSessionId, setLiveAnalysisSessionId] =
     useState<string | null>(null);
+  const [liveAnalysisTargetFen, setLiveAnalysisTargetFen] =
+    useState<string | null>(null);
   const [liveStatus, setLiveStatus] = useState<string | null>(null);
   const [liveInfoStatus, setLiveInfoStatus] = useState<string | null>(null);
   const [engineWarningGraceActive, setEngineWarningGraceActive] =
@@ -334,6 +492,7 @@ export default function App() {
   const [reviewAnalysisProfile, setReviewAnalysisProfile] =
     useState<ReviewAnalysisProfile>("standard");
   const [selectedReviewPov, setSelectedReviewPov] = useState<ReviewPov>("both");
+  const [reviewFocusKey, setReviewFocusKey] = useState<ReviewFocusKey>("summary");
   const [reviewPollingActiveDebug, setReviewPollingActiveDebug] =
     useState(false);
   const [reviewPendingStartedAtDebug, setReviewPendingStartedAtDebug] =
@@ -346,6 +505,8 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<BusyState>("idle");
   const [activeTab, setActiveTab] = useState<ActiveTab>("moves");
+  const [activeShellPage, setActiveShellPage] =
+    useState<AppShellPage>("today");
   const [openingClassification, setOpeningClassification] =
     useState<OpeningClassification | null>(null);
   const [openingStatus, setOpeningStatus] =
@@ -361,6 +522,7 @@ export default function App() {
     useState<PgnImportResult | null>(null);
   const [pgnImportLoading, setPgnImportLoading] = useState(false);
   const [pgnImportError, setPgnImportError] = useState<string | null>(null);
+  const pgnTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [historyItems, setHistoryItems] = useState<GameHistoryItem[]>([]);
   const [historyScope, setHistoryScope] = useState<HistoryScope>("mine");
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -370,6 +532,19 @@ export default function App() {
   );
   const [selectedHistoryGame, setSelectedHistoryGame] =
     useState<GameHistoryItem | null>(null);
+  const [profilePanelOpen, setProfilePanelOpen] = useState(false);
+  const [profileExportStatus, setProfileExportStatus] = useState<string | null>(
+    null,
+  );
+  const [profileDeleteConfirmOpen, setProfileDeleteConfirmOpen] =
+    useState(false);
+  const [profileDeleteInput, setProfileDeleteInput] = useState("");
+  const [profileDeleteStatus, setProfileDeleteStatus] = useState<string | null>(
+    null,
+  );
+  const [profilePrivacyBusy, setProfilePrivacyBusy] = useState<
+    "idle" | "exporting" | "deleting"
+  >("idle");
   const boardFenRef = useRef<string | null>(null);
   const currentBoardContextRef = useRef<BoardEvaluationContext>("live");
   const currentLiveSessionRef = useRef<string | null>(null);
@@ -383,6 +558,8 @@ export default function App() {
   const reviewJobPollIntervalRef = useRef<number | null>(null);
   const reviewJobPollInFlightRef = useRef(false);
   const reviewJobRunIdRef = useRef(0);
+  const reviewJobLastProgressAtRef = useRef<number | null>(null);
+  const reviewJobLastProgressSignatureRef = useRef<string | null>(null);
   const reviewReconcileInFlightRef = useRef(false);
   const reviewVisibleSpinnerTimerRef = useRef<number | null>(null);
   const reviewVisibleSpinnerTimedOutRef = useRef(false);
@@ -424,17 +601,23 @@ export default function App() {
     reviewJob?.status === "queued" ||
     reviewJob?.status === "running" ||
     reviewJob?.status === "finalizing";
-  const liveSuspendedForReview = activeTab === "review" || reviewJobRunning;
+  const liveSuspendedForReview = reviewJobRunning;
+  const liveSuspendedForPractice = reviewPracticeState?.active === true;
   const reviewUiError = reviewUiState.error ?? reviewError;
   const reviewTabVisible =
     canRequestReview || review !== null || reviewUiBusy || reviewUiError !== null;
+  const reviewPanelVisible = reviewTabVisible || reviewPracticeState?.active === true;
   const infoTabVisible = import.meta.env.DEV;
   const reviewHalfMovesCount = moveHistory?.moves.length ?? moves.length;
   const currentGameIsShortForReview =
     isShortGameForReview(reviewHalfMovesCount);
   const canNavigate = Boolean(moveHistory) && !moveHistoryLoading && !moveHistoryError;
   const finalDisplayedPly = moveHistory?.moves.length ?? 0;
-  const boardFen = viewedFen ?? currentFen;
+  const rawBoardFen = viewedFen ?? currentFen;
+  const reviewExplorationActive = reviewExplorationState?.active === true;
+  const boardFen = reviewExplorationActive
+    ? reviewExplorationState.currentFen
+    : rawBoardFen;
   const currentReviewOverlayPositionKey = makeReviewOverlayPositionKey(
     gameId,
     boardFen,
@@ -483,6 +666,7 @@ export default function App() {
     positionEvaluationCache,
     boardEvaluationContext,
     liveAnalysisSessionId,
+    liveAnalysisTargetFen,
     reviewBarPhase,
     reviewReplayMoveMode,
     selectedReviewAnnotation,
@@ -496,6 +680,25 @@ export default function App() {
   useEffect(() => {
     boardFenRef.current = boardFen;
   }, [boardFen]);
+
+  useEffect(() => {
+    if (!reviewExplorationState?.active) {
+      return;
+    }
+    if (
+      activeTab !== "review" ||
+      reviewPracticeState?.active ||
+      rawBoardFen !== reviewExplorationState.baseFen
+    ) {
+      setReviewExplorationState(null);
+      setReviewExplorationBoardOrientation(null);
+    }
+  }, [
+    activeTab,
+    rawBoardFen,
+    reviewExplorationState,
+    reviewPracticeState?.active,
+  ]);
 
   useEffect(() => {
     if (
@@ -528,16 +731,45 @@ export default function App() {
   }, [gameId, review?.user_color]);
 
   useEffect(() => {
+    setReviewFocusKey("summary");
+  }, [gameId, review?.game_id, review?.status]);
+
+  useEffect(() => {
     setOpeningIntentionNote(readOpeningIntentionNote(gameId));
   }, [gameId]);
 
   useEffect(() => {
-    if (!gameId || activeTab !== "review" || !reviewIsCompletedForPractice(review)) {
+    const canUsePracticeHistorySignal =
+      activeTab === "review" ||
+      activeShellPage === "today" ||
+      activeShellPage === "training";
+    if (!gameId || !canUsePracticeHistorySignal || !reviewIsCompletedForPractice(review)) {
       setReviewPracticeHistory([]);
+      setReviewPracticeLearningSummary(null);
       return;
     }
     void loadReviewPracticeHistory(gameId);
-  }, [activeTab, gameId, review?.status, review?.completed_position_count]);
+  }, [
+    activeShellPage,
+    activeTab,
+    gameId,
+    review?.status,
+    review?.completed_position_count,
+  ]);
+
+  useEffect(() => {
+    if (activeShellPage === "today" || activeShellPage === "training") {
+      const canCreatePlan =
+        reviewIsCompletedForPractice(review) ||
+        review?.status === "done" ||
+        review?.status === "completed";
+      if (canCreatePlan) {
+        void createOrRefreshDailyPlan();
+        return;
+      }
+      void loadDailyPlan();
+    }
+  }, [activeShellPage, review?.status, review?.completed_position_count]);
 
   useEffect(() => {
     resetSolutionReveal("game_changed");
@@ -669,13 +901,13 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    if (activeTab === "review" && !reviewTabVisible) {
+    if (activeTab === "review" && !reviewPanelVisible) {
       setActiveTab("moves");
     }
     if (activeTab === "info" && !infoTabVisible) {
       setActiveTab("moves");
     }
-  }, [activeTab, infoTabVisible, reviewTabVisible]);
+  }, [activeTab, infoTabVisible, reviewPanelVisible]);
 
   useEffect(() => {
     if (positionMode === "HISTORICAL" && viewedFen && viewedFen !== currentFen) {
@@ -685,17 +917,24 @@ export default function App() {
   }, [currentFen, positionMode, review, selectedReviewIndex, viewedFen]);
 
   useEffect(() => {
-    if (!boardFen || !gameId) {
+    if (!boardFen) {
       stopCurrentBoardEvaluationSession();
       resetBoardEvaluationRetry(null);
       return;
     }
 
-    if (liveSuspendedForReview || positionMode === "REVIEW") {
+    if (liveSuspendedForReview || liveSuspendedForPractice) {
       stopCurrentBoardEvaluationSession();
       resetBoardEvaluationRetry(null);
+      if (evaluationSource?.kind?.includes("live")) {
+        setEvaluation(null);
+        setEvaluationSource(null);
+        setEvaluationFen(null);
+      }
       if (liveSuspendedForReview) {
-        setLiveInfoStatus("Live suspendu pendant la Review");
+        setLiveInfoStatus(fr.liveAnalysis.pausedDuringReview);
+      } else if (liveSuspendedForPractice) {
+        setLiveInfoStatus(fr.liveAnalysis.pausedDuringPractice);
       }
       return;
     }
@@ -703,7 +942,7 @@ export default function App() {
     const targetKey = boardEvaluationTargetKey(
       boardFen,
       boardEvaluationContext,
-      gameId,
+      gameId ?? 0,
       selectedReviewMomentId,
     );
     if (boardEvaluationRetryTargetRef.current !== targetKey) {
@@ -724,6 +963,7 @@ export default function App() {
     lastLiveUpdateAtRef.current = 0;
     setLiveStatus(null);
     setLiveInfoStatus(null);
+    setLiveAnalysisTargetFen(boardFen);
 
     let cancelled = false;
     const timeoutId = window.setTimeout(() => {
@@ -746,6 +986,22 @@ export default function App() {
             response.context,
           );
           setLiveAnalysisSessionId(response.session_id);
+          setLiveAnalysisTargetFen(response.fen);
+          const initialUpdate = response.latest_payload;
+          if (initialUpdate?.evaluation_display) {
+            setEvaluation(initialUpdate.evaluation_display);
+            setEvaluationFen(initialUpdate.fen ?? boardFen);
+            if (initialUpdate.evaluation_source) {
+              setEvaluationSource({
+                ...initialUpdate.evaluation_source,
+                kind: liveSourceKindForContext(boardEvaluationContext),
+              });
+            }
+            hasValidLiveUpdateRef.current = true;
+            debugLog("engine_warmup_cleared_by_live");
+            clearTransientEngineStartupState();
+            setLiveStatus(null);
+          }
         })
         .catch(() => {
           if (!cancelled) {
@@ -762,8 +1018,10 @@ export default function App() {
     boardEvaluationContext,
     boardFen,
     displayedPositionPly,
+    evaluationSource,
     gameId,
     liveSuspendedForReview,
+    liveSuspendedForPractice,
     boardEvaluationRetryNonce,
     positionMode,
     selectedReviewMomentId,
@@ -949,6 +1207,268 @@ export default function App() {
     }
   }
 
+  function startReviewExploration() {
+    if (!rawBoardFen || activeTab !== "review" || reviewPracticeState?.active) {
+      return;
+    }
+    clearReviewOverlays("review_exploration_start");
+    resetSolutionReveal("review_exploration_start");
+    setReviewTryMoveState(null);
+    setReviewPvLineState(null);
+    setGuidedPvIndex(null);
+    setPositionMode("REVIEW");
+    setViewedFen(rawBoardFen);
+    setReviewExplorationBoardOrientation(boardOrientation);
+    setReviewExplorationState({
+      active: true,
+      baseFen: rawBoardFen,
+      currentFen: rawBoardFen,
+      moves: [],
+      message: fr.reviewExplorer.activeMessage,
+      analysisPreset: DEFAULT_REVIEW_EXPLORER_ANALYSIS_PRESET,
+      line: emptyReviewExplorationLineState(),
+    });
+  }
+
+  function exitReviewExploration() {
+    setReviewExplorationState(null);
+    setReviewExplorationBoardOrientation(null);
+  }
+
+  function resetReviewExploration() {
+    setReviewExplorationState((state) => {
+      if (!state?.active) {
+        return state;
+      }
+      return {
+        ...state,
+        currentFen: state.baseFen,
+        moves: [],
+        message: fr.reviewExplorer.resetMessage,
+        line: emptyReviewExplorationLineState(),
+      };
+    });
+  }
+
+  function undoReviewExplorationMove() {
+    setReviewExplorationState((state) => {
+      if (!state?.active || state.moves.length === 0) {
+        return state
+          ? {
+              ...state,
+              message: fr.reviewExplorer.noMoveToUndo,
+            }
+          : state;
+      }
+      const nextMoves = state.moves.slice(0, -1);
+      const previousMove = nextMoves[nextMoves.length - 1];
+      return {
+        ...state,
+        currentFen: previousMove?.fen ?? state.baseFen,
+        moves: nextMoves,
+        message: fr.reviewExplorer.undoMessage,
+        line: emptyReviewExplorationLineState(),
+      };
+    });
+  }
+
+  function handleReviewExplorationMove(uci: string) {
+    setReviewExplorationState((state) => {
+      if (!state?.active) {
+        return state;
+      }
+      try {
+        const board = new Chess(state.currentFen);
+        const fenBefore = board.fen();
+        const move = board.move({
+          from: uci.slice(0, 2),
+          to: uci.slice(2, 4),
+          promotion: uci.length > 4 ? uci.slice(4, 5) : "q",
+        });
+        if (!move) {
+          return {
+            ...state,
+            message: fr.reviewExplorer.illegalMove,
+          };
+        }
+        const nextMove: ReviewExplorationMove = {
+          uci,
+          san: move.san,
+          fenBefore,
+          fen: board.fen(),
+          status: "unevaluated",
+          result: null,
+          label: null,
+          stableEvaluationStatus: null,
+          noSideEffects: true,
+          error: null,
+        };
+        return {
+          ...state,
+          currentFen: board.fen(),
+          moves: [...state.moves, nextMove],
+          message: fr.reviewExplorer.movePlayed(move.san),
+          line: emptyReviewExplorationLineState(),
+        };
+      } catch {
+        return {
+          ...state,
+          message: fr.reviewExplorer.illegalMove,
+        };
+      }
+    });
+  }
+
+  async function analyzeLatestReviewExplorationMove() {
+    const state = reviewExplorationState;
+    const latest = state?.moves[state.moves.length - 1];
+    if (!state?.active || !latest || latest.status === "analyzing") {
+      return;
+    }
+
+    setReviewExplorationState((current) =>
+      markReviewExplorationMove(
+        current,
+        latest.uci,
+        { status: "analyzing", error: null },
+        fr.reviewExplorer.analyzingMove,
+      ),
+    );
+    await new Promise((resolve) => window.setTimeout(resolve, 80));
+
+    try {
+      const response = await evaluateReviewExplorerMove({
+        fenBefore: latest.fenBefore,
+        moveUci: latest.uci,
+        analysisPreset: state.analysisPreset,
+        gameId,
+        reviewMomentId: selectedReviewAnnotation?.ply ?? selectedReviewMovePly,
+      });
+      setReviewExplorationState((current) =>
+        markReviewExplorationMove(
+          current,
+          latest.uci,
+          {
+            status: "evaluated",
+            result: response.result,
+            label: response.label,
+            stableEvaluationStatus: response.stable_evaluation_status,
+            noSideEffects: response.no_side_effects === true,
+            error: null,
+          },
+          `${latest.san || latest.uci} : ${response.label}. ${fr.reviewExplorer.localOnly}`,
+        ),
+      );
+    } catch (err) {
+      setReviewExplorationState((current) =>
+        markReviewExplorationMove(
+          current,
+          latest.uci,
+          { status: "unevaluated", error: messageFromError(err) },
+          fr.reviewExplorer.analysisFailed,
+        ),
+      );
+    }
+  }
+
+  async function analyzeReviewExplorationLine() {
+    const state = reviewExplorationState;
+    if (!state?.active || state.moves.length === 0 || state.line.status === "analyzing") {
+      return;
+    }
+
+    const branchMoves = state.moves.map((move) => move.uci);
+    setReviewExplorationState((current) =>
+      current?.active
+        ? {
+            ...current,
+            message: fr.reviewExplorer.analyzingLine,
+            line: { status: "analyzing", result: null, error: null },
+          }
+        : current,
+    );
+    await new Promise((resolve) => window.setTimeout(resolve, 80));
+
+    try {
+      const response = await evaluateReviewExplorerLine({
+        fenStart: state.baseFen,
+        movesUci: branchMoves,
+        analysisPreset: state.analysisPreset,
+        gameId,
+        reviewMomentId: selectedReviewAnnotation?.ply ?? selectedReviewMovePly,
+      });
+      setReviewExplorationState((current) => {
+        if (!current?.active) {
+          return current;
+        }
+        const resultByIndex = new Map(
+          response.per_move_results.map((result) => [
+            Math.max(0, Number(result.move_index) - 1),
+            result,
+          ]),
+        );
+        const moves = current.moves.map((move, index) => {
+          const result = resultByIndex.get(index);
+          if (!result) {
+            return move;
+          }
+          return {
+            ...move,
+            status: "evaluated" as ReviewExplorationMoveStatus,
+            result: result.result,
+            label: result.label,
+            stableEvaluationStatus: result.stable_evaluation_status,
+            noSideEffects: result.no_side_effects === true,
+            error: null,
+          };
+        });
+        return {
+          ...current,
+          moves,
+          currentFen: response.final_fen ?? current.currentFen,
+          message: `${response.message} ${fr.reviewExplorer.localOnly}`,
+          line: { status: "evaluated", result: response, error: null },
+        };
+      });
+    } catch (err) {
+      setReviewExplorationState((current) =>
+        current?.active
+          ? {
+              ...current,
+              message: fr.reviewExplorer.analysisFailed,
+              line: {
+                status: "idle",
+                result: null,
+                error: messageFromError(err),
+              },
+            }
+          : current,
+      );
+    }
+  }
+
+  function setReviewExplorationAnalysisPreset(
+    preset: ReviewExplorerAnalysisPreset,
+  ) {
+    setReviewExplorationState((state) =>
+      state?.active
+        ? {
+            ...state,
+            analysisPreset: preset,
+          }
+        : state,
+    );
+  }
+
+  function toggleReviewExplorationBoardOrientation() {
+    if (!reviewExplorationActive) {
+      return;
+    }
+    setReviewExplorationBoardOrientation((current) =>
+      (current ?? boardOrientation) === "white" ? "black" : "white",
+    );
+  }
+
   async function handleMove(uci: string, optimisticFen: string | null) {
     if (
       reviewPracticeState?.active &&
@@ -959,7 +1479,11 @@ export default function App() {
       return;
     }
     if (reviewTryMoveState?.active && positionMode === "REVIEW") {
-      handleTryMoveAttempt(uci);
+      await handleTryMoveAttempt(uci);
+      return;
+    }
+    if (reviewExplorationState?.active && positionMode === "REVIEW") {
+      handleReviewExplorationMove(uci);
       return;
     }
     if (!gameId || busy !== "idle" || positionMode !== "LIVE") {
@@ -1052,6 +1576,8 @@ export default function App() {
       reviewJobPollIntervalRef.current = null;
     }
     reviewJobPollInFlightRef.current = false;
+    reviewJobLastProgressAtRef.current = null;
+    reviewJobLastProgressSignatureRef.current = null;
     debugLog("review_job_poll_cleared", { reason });
   }
 
@@ -1365,6 +1891,8 @@ export default function App() {
     clearReviewJobPolling("replace_review_job_poll");
     const runId = reviewJobRunIdRef.current;
     const intervalMs = job.status === "finalizing" ? 1_800 : 1_200;
+    reviewJobLastProgressAtRef.current = Date.now();
+    reviewJobLastProgressSignatureRef.current = reviewJobProgressSignature(job);
     reviewJobPollIntervalRef.current = window.setInterval(() => {
       void pollReviewJobOnce(job.job_id, runId);
     }, intervalMs);
@@ -1385,6 +1913,27 @@ export default function App() {
         return;
       }
       setReviewJob(nextJob);
+      if (reviewJobIsActive(nextJob)) {
+        const nextSignature = reviewJobProgressSignature(nextJob);
+        if (reviewJobLastProgressSignatureRef.current !== nextSignature) {
+          reviewJobLastProgressSignatureRef.current = nextSignature;
+          reviewJobLastProgressAtRef.current = Date.now();
+        } else if (
+          reviewJobLastProgressAtRef.current !== null &&
+          Date.now() - reviewJobLastProgressAtRef.current >=
+            reviewJobFrontendWatchdogMs(nextJob)
+        ) {
+          const stalledJob = makeFrontendStalledReviewJob(nextJob);
+          setReviewJob(stalledJob);
+          clearReviewJobPolling("review_job_frontend_watchdog");
+          dispatchReviewEvent({
+            type: "request_failed",
+            message: reviewJobUserMessage(stalledJob),
+          });
+          setReviewError(reviewJobUserMessage(stalledJob));
+          return;
+        }
+      }
       if (reviewJobNeedsExplicitReconcile(nextJob)) {
         clearReviewJobPolling("review_job_needs_reconcile");
         dispatchReviewEvent({
@@ -1410,6 +1959,7 @@ export default function App() {
           type: "request_failed",
           message: reviewJobUserMessage(nextJob),
         });
+        setReviewError(reviewJobUserMessage(nextJob));
       }
     } catch (_err) {
       if (runId !== reviewJobRunIdRef.current) {
@@ -1429,11 +1979,42 @@ export default function App() {
       const nextReview = await getReview(job.game_id, {
         profile: job.profile,
       });
+      const nextStatus = reviewStatusFromResponse(nextReview);
+      if (
+        nextStatus === "pending" ||
+        nextStatus === "generating" ||
+        nextStatus === "idle"
+      ) {
+        const incompleteJob = makeFrontendIncompleteReviewJob(
+          job,
+          "completed_without_review",
+        );
+        setReview(nextReview);
+        setReviewJob(incompleteJob);
+        dispatchReviewEvent({
+          type: "request_failed",
+          message: reviewJobUserMessage(incompleteJob),
+        });
+        setReviewError(reviewJobUserMessage(incompleteJob));
+        setReviewLoading(false);
+        return;
+      }
       applyReviewResponse(nextReview, Date.now());
+      setReviewJob(null);
       setReviewError(null);
       setReviewLoading(false);
     } catch (_err) {
-      setReviewError("Analyse terminee, mais la review finale est indisponible.");
+      const incompleteJob = makeFrontendIncompleteReviewJob(
+        job,
+        "completed_review_fetch_failed",
+      );
+      setReviewJob(incompleteJob);
+      dispatchReviewEvent({
+        type: "request_failed",
+        message: reviewJobUserMessage(incompleteJob),
+      });
+      setReviewError(reviewJobUserMessage(incompleteJob));
+      setReviewLoading(false);
     }
   }
 
@@ -1533,6 +2114,39 @@ export default function App() {
       restoringAppStateRef.current = false;
       setBusy("idle");
     }
+  }
+
+  function openShellPage(page: AppShellPage) {
+    setActiveShellPage(page);
+    if (page === "today") {
+      if (activeTab === "review") {
+        setActiveTab("moves");
+      }
+      return;
+    }
+    if (page === "games") {
+      if (activeTab === "review" || activeTab === "moves" || activeTab === "info") {
+        setActiveTab("history");
+        void loadHistory();
+      }
+      return;
+    }
+    if (activeTab === "review") {
+      setActiveTab("moves");
+    }
+  }
+
+  function openGamesPanel(nextTab: Exclude<ActiveTab, "review">) {
+    setActiveShellPage("games");
+    setActiveTab(nextTab);
+    if (nextTab === "history") {
+      void loadHistory();
+    }
+  }
+
+  function openReviewContext(source: AppShellPage = activeShellPage) {
+    setActiveShellPage(source);
+    setActiveTab("review");
   }
 
   async function handleReview(
@@ -1808,7 +2422,7 @@ export default function App() {
 
   async function handlePgnPreview() {
     if (!pgnFile && !pgnText.trim()) {
-      setPgnImportError("Ajoute un fichier PGN ou colle un PGN.");
+      setPgnImportError("IMPORT_EMPTY_PGN");
       return;
     }
 
@@ -1830,7 +2444,7 @@ export default function App() {
 
   async function handlePgnImport() {
     if (!pgnFile && !pgnText.trim()) {
-      setPgnImportError("Ajoute un fichier PGN ou colle un PGN.");
+      setPgnImportError("IMPORT_EMPTY_PGN");
       return;
     }
 
@@ -1845,6 +2459,19 @@ export default function App() {
       });
       setPgnImportResult(result);
       await loadHistory();
+      setActiveShellPage("games");
+      if (result.imported_count === 0 && result.invalid_count > 0) {
+        setActiveTab("import");
+        return;
+      }
+      if (
+        result.imported_count === 0 &&
+        result.duplicate_count > 0 &&
+        result.invalid_count === 0
+      ) {
+        setActiveTab("import");
+        return;
+      }
       setActiveTab("history");
     } catch (err) {
       setPgnImportError(messageFromError(err));
@@ -1866,6 +2493,96 @@ export default function App() {
     }
   }
 
+  function resetLocalUserDataViewState() {
+    clearPersistedAppState();
+    setGameId(null);
+    setCurrentFen(null);
+    setViewedFen(null);
+    setLegalMoves([]);
+    setMoves([]);
+    setMoveHistory(null);
+    setMoveHistoryError(null);
+    setDisplayedPositionPly(0);
+    setPositionMode("LIVE");
+    setEvaluation(null);
+    setEvaluationSource(null);
+    setEvaluationFen(null);
+    setPositionEvaluationCache({});
+    setReview(null);
+    setReviewJob(null);
+    setReviewPracticeState(null);
+    setReviewPracticeHistory([]);
+    setReviewPracticeLearningSummary(null);
+    setDailyPlan(null);
+    setDailyPlanError(null);
+    setSelectedHistoryGame(null);
+    setHistoryItems([]);
+    setPgnPreview(null);
+    setPgnImportResult(null);
+    setPgnText("");
+    setPgnFile(null);
+    setWarnings([]);
+    setError(null);
+    setActiveShellPage("today");
+    setActiveTab("moves");
+    dispatchReviewEvent({ type: "reset" });
+  }
+
+  async function handleExportUserData() {
+    setProfilePrivacyBusy("exporting");
+    setProfileExportStatus(null);
+    setProfileDeleteStatus(null);
+    try {
+      const payload = await exportUserData();
+      const serialized = JSON.stringify(payload, null, 2);
+      const blob = new Blob([serialized], {
+        type: "application/json;charset=utf-8",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "neurochess-export.json";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setProfileExportStatus(fr.profilePrivacy.exportGenerated);
+    } catch (err) {
+      setProfileExportStatus(
+        `${fr.profilePrivacy.exportFailedPrefix} : ${messageFromError(err)}`,
+      );
+    } finally {
+      setProfilePrivacyBusy("idle");
+    }
+  }
+
+  async function handleDeleteUserDataConfirmed() {
+    if (profileDeleteInput !== fr.confirmation.deleteKeyword) {
+      setProfileDeleteStatus(fr.confirmation.typeDeleteToConfirm);
+      return;
+    }
+
+    setProfilePrivacyBusy("deleting");
+    setProfileDeleteStatus(null);
+    setProfileExportStatus(null);
+    try {
+      const summary: UserDataDeleteSummary = await deleteUserData(profileDeleteInput);
+      resetLocalUserDataViewState();
+      setProfilePanelOpen(true);
+      setProfileDeleteConfirmOpen(false);
+      setProfileDeleteInput("");
+      setProfileDeleteStatus(
+        `Suppression terminée : ${summary.total_deleted} éléments locaux supprimés.`,
+      );
+    } catch (err) {
+      setProfileDeleteStatus(
+        `${fr.profilePrivacy.deleteFailedPrefix} : ${messageFromError(err)}`,
+      );
+    } finally {
+      setProfilePrivacyBusy("idle");
+    }
+  }
+
   function handleHistoryScopeChange(nextScope: HistoryScope) {
     setHistoryScope(nextScope);
     void loadHistory(nextScope);
@@ -1883,6 +2600,7 @@ export default function App() {
     setHistoryOpeningGameId(item.game_id);
     setHistoryError(null);
     setSelectedHistoryGame(item);
+    setActiveShellPage("games");
     setReview(null);
     setReviewJob(null);
     setReviewError(null);
@@ -2149,7 +2867,7 @@ export default function App() {
     setLiveInfoStatus(null);
     if (!hasValidEvaluationRef.current) {
       debugLog("engine_warning_confirmed_after_retries");
-      setLiveStatus("analyse live indisponible");
+      setLiveStatus(fr.liveAnalysis.unavailable);
     }
   }
 
@@ -2162,6 +2880,7 @@ export default function App() {
     currentLiveSessionFenRef.current = null;
     currentLiveSessionContextRef.current = null;
     setLiveAnalysisSessionId(null);
+    setLiveAnalysisTargetFen(null);
   }
 
   function applyState(state: GameState, resetPosition: boolean) {
@@ -2200,6 +2919,7 @@ export default function App() {
     currentLiveSessionFenRef.current = nextLiveSessionId ? state.fen : null;
     currentLiveSessionContextRef.current = nextLiveSessionId ? "live" : null;
     setLiveAnalysisSessionId(nextLiveSessionId);
+    setLiveAnalysisTargetFen(nextLiveSessionId ? state.fen : null);
     setWarnings(
       nextHasEvaluation
         ? removeAnalysisUnavailableWarnings(nextWarnings)
@@ -2484,6 +3204,7 @@ export default function App() {
     setSolutionRevealForAnnotation(annotation, "hidden");
     setGuidedReplayPhase(null);
     setGuidedPvIndex(null);
+    setReviewPvLineState(null);
     setReviewReplayMoveMode("played");
     setReviewBarPhase("before");
     setReviewReplayState("idle");
@@ -2503,7 +3224,7 @@ export default function App() {
     });
   }
 
-  function handleTryMoveAttempt(uci: string) {
+  async function handleTryMoveAttempt(uci: string) {
     if (!reviewTryMoveState?.active || !reviewTryMoveState.annotation) {
       return;
     }
@@ -2511,14 +3232,39 @@ export default function App() {
     clearReviewOverlays("try_move_attempt", false);
     setReviewPvLineState(null);
     setGuidedPvIndex(null);
-    const evaluation = evaluateTryMoveAttempt(uci, annotation);
     const attempt = tryMoveFenAfter(annotation.fen_before, uci);
-    setSolutionRevealForAnnotation(annotation, "attempted");
+    let feedback: NonNullable<TryMoveFeedback>;
+    try {
+      feedback = await evaluateReviewTryMoveAttempt({
+        fenBefore: annotation.fen_before,
+        movePlayed: uci,
+        bestMoveUci: annotation.best_move_uci,
+        bestMoveSan: annotation.best_move_san,
+        acceptableMoves: annotation.acceptable_moves ?? [],
+        candidateMoves: annotation.candidate_moves ?? [],
+        topMoves: annotation.top_moves ?? [],
+        stableAttemptEvaluation: annotation.stable_attempt_evaluation ?? null,
+        sourceContext: "review_try_move",
+        reviewMomentId: annotation.ply,
+        ply: annotation.ply,
+        winLoss: annotation.win_loss ?? null,
+        primaryCategory: annotation.primary_category ?? null,
+      });
+    } catch {
+      feedback = {
+        result: "needs_rebuild",
+        message: "Review a reconstruire avant de corriger cette position.",
+        show_best_move: false,
+      };
+    }
+    if (feedback.show_best_move) {
+      setSolutionRevealForAnnotation(annotation, "attempted");
+    }
     setReviewTryMoveState({
       ...reviewTryMoveState,
       attemptedUci: uci,
       attemptedSan: attempt.san,
-      feedback: evaluation,
+      feedback,
       solutionRevealed: false,
     });
     if (attempt.fenAfter) {
@@ -2698,11 +3444,11 @@ export default function App() {
         : state.moves[nextIndex - 1]?.fen_after ?? annotation.fen_before;
     const applied = tryMoveFenAfter(previousFen, move.uci);
     if (!applied.legal) {
-      setReviewPvLineState({
-        ...state,
-        autoplay: false,
-        message: "La ligne complète n'est pas disponible jusqu'au bout.",
-      });
+    setReviewPvLineState({
+      ...state,
+      autoplay: false,
+      message: fr.lines.incomplete,
+    });
       return;
     }
     const nextFen = move.fen_after || applied.fenAfter || previousFen;
@@ -2764,10 +3510,39 @@ export default function App() {
     try {
       const payload = await getReviewPracticeSessions(targetGameId);
       setReviewPracticeHistory(payload.sessions ?? []);
+      setReviewPracticeLearningSummary(payload.learning_summary ?? null);
     } catch (err) {
       setReviewPracticeHistoryError(messageFromError(err));
     } finally {
       setReviewPracticeHistoryLoading(false);
+    }
+  }
+
+  async function loadDailyPlan() {
+    setDailyPlanLoading(true);
+    setDailyPlanError(null);
+    try {
+      const payload = await getDailyPlanToday();
+      setDailyPlan(payload);
+    } catch (err) {
+      setDailyPlanError(messageFromError(err));
+    } finally {
+      setDailyPlanLoading(false);
+    }
+  }
+
+  async function createOrRefreshDailyPlan() {
+    setDailyPlanLoading(true);
+    setDailyPlanError(null);
+    try {
+      const payload = await createDailyPlan({ maxItems: 6 });
+      setDailyPlan(payload);
+      return payload;
+    } catch (err) {
+      setDailyPlanError(messageFromError(err));
+      throw err;
+    } finally {
+      setDailyPlanLoading(false);
     }
   }
 
@@ -2798,6 +3573,7 @@ export default function App() {
       feedback: null,
       solutionRevealed: false,
       hintVisible: false,
+      itemStartedAt: null,
       summary: session.summary,
       error: null,
       saving: false,
@@ -2841,6 +3617,7 @@ export default function App() {
       feedback: null,
       solutionRevealed: false,
       hintVisible: false,
+      itemStartedAt: null,
       summary: null,
       error: null,
       saving: false,
@@ -2863,6 +3640,7 @@ export default function App() {
         feedback: null,
         solutionRevealed: false,
         hintVisible: false,
+        itemStartedAt: null,
         summary: session.summary,
         error: null,
         saving: false,
@@ -2887,7 +3665,6 @@ export default function App() {
     }
     const annotation = practiceItemToAnnotation(item);
     clearReviewOverlays("practice_attempt", false);
-    const evaluation = evaluateTryMoveAttempt(uci, annotation);
     const attempt = tryMoveFenAfter(annotation.fen_before, uci);
     setSolutionRevealForAnnotation(annotation, "attempted");
     setReviewPvLineState(null);
@@ -2900,7 +3677,7 @@ export default function App() {
             saving: true,
             attemptedUci: uci,
             attemptedSan: attempt.san,
-            feedback: evaluation,
+            feedback: null,
             solutionRevealed: false,
             itemState: "attempted",
             error: null,
@@ -2924,17 +3701,26 @@ export default function App() {
       const summary = await recordReviewPracticeAttempt(state.sessionId ?? "", {
         ply: item.ply,
         attemptedUci: uci,
-        result: evaluation.result,
+        timeSpentMs: practiceTimeSpentMs(state),
+        hintUsed: state.hintVisible,
+        revealUsed: state.solutionRevealed,
+        sourceContext: item.source_context ?? "review_practice",
       });
+      const feedback = summary.attempt_feedback ?? null;
       setReviewPracticeState((current) =>
         current
           ? {
               ...current,
               summary,
               saving: false,
+              attemptedSan: feedback?.attempted_san ?? attempt.san,
+              feedback,
             }
           : current,
       );
+      if (item.source_context === "daily_plan") {
+        void loadDailyPlan();
+      }
     } catch (err) {
       setReviewPracticeState((current) =>
         current
@@ -3016,10 +3802,17 @@ export default function App() {
         ply: item.ply,
         attemptedUci: null,
         result: "revealed",
+        timeSpentMs: practiceTimeSpentMs(state),
+        hintUsed: state.hintVisible,
+        revealUsed: true,
+        sourceContext: item.source_context ?? "review_practice",
       });
       setReviewPracticeState((current) =>
         current ? { ...current, summary, saving: false } : current,
       );
+      if (item.source_context === "daily_plan") {
+        void loadDailyPlan();
+      }
     } catch (err) {
       setReviewPracticeState((current) =>
         current
@@ -3044,6 +3837,10 @@ export default function App() {
         ply: item.ply,
         attemptedUci: null,
         result: "skipped",
+        timeSpentMs: practiceTimeSpentMs(state),
+        hintUsed: state.hintVisible,
+        revealUsed: false,
+        sourceContext: "review_practice",
       });
       setReviewPracticeState((current) =>
         current ? { ...current, summary, saving: false } : current,
@@ -3130,6 +3927,48 @@ export default function App() {
     }
   }
 
+  async function startDueReviewPractice() {
+    if (!gameId) {
+      return;
+    }
+    try {
+      const dueSession = await startDueReviewPracticeSession(gameId, {
+        pov: selectedReviewPov,
+        maxItems: 5,
+      });
+      await startPracticeFromSession(dueSession, "running");
+      void loadReviewPracticeHistory(gameId);
+    } catch (err) {
+      setReviewError(messageFromError(err));
+    }
+  }
+
+  async function startDailyPlanPractice() {
+    setDailyPlanLoading(true);
+    setDailyPlanError(null);
+    try {
+      const plan = dailyPlan?.item_count ? dailyPlan : await createOrRefreshDailyPlan();
+      if (!plan.item_count) {
+        setDailyPlan(plan);
+        return;
+      }
+      const planSession = await startDailyPlanPracticeSession({ maxItems: 6 });
+      if (planSession.daily_plan) {
+        setDailyPlan(planSession.daily_plan);
+      }
+      await startPracticeFromSession(planSession, "running");
+      if (gameId) {
+        void loadReviewPracticeHistory(gameId);
+      }
+    } catch (err) {
+      const message = messageFromError(err);
+      setDailyPlanError(message);
+      setReviewError(message);
+    } finally {
+      setDailyPlanLoading(false);
+    }
+  }
+
   async function redoPracticeSession() {
     if (!gameId) {
       return;
@@ -3210,6 +4049,7 @@ export default function App() {
             feedback: null,
             solutionRevealed: false,
             hintVisible: false,
+            itemStartedAt: Date.now(),
             itemState: "awaiting_attempt",
             error: null,
             saving: false,
@@ -3228,7 +4068,7 @@ export default function App() {
     );
   }
 
-  function showNextGuidedAnnotation() {
+  function showGuidedAnnotationByOffset(offset: number) {
     const priorities = review?.review_sections?.to_review ?? [];
     if (priorities.length === 0) {
       return;
@@ -3237,10 +4077,18 @@ export default function App() {
       (annotation) => annotation.ply === selectedReviewAnnotation?.ply,
     );
     const nextIndex =
-      currentIndex >= 0 && currentIndex + 1 < priorities.length
-        ? currentIndex + 1
+      currentIndex >= 0
+        ? (currentIndex + offset + priorities.length) % priorities.length
         : 0;
     handleGuidedReplayAnnotation(priorities[nextIndex], nextIndex);
+  }
+
+  function showNextGuidedAnnotation() {
+    showGuidedAnnotationByOffset(1);
+  }
+
+  function showPreviousGuidedAnnotation() {
+    showGuidedAnnotationByOffset(-1);
   }
 
   function closeGuidedReplay() {
@@ -3262,8 +4110,10 @@ export default function App() {
   }
 
   function handleReviewFocusChange(focus: string) {
-    clearReviewOverlays(`review_focus_${focus}`);
-    resetSolutionReveal(`review_focus_${focus}`);
+    const nextFocus = normalizeReviewFocusKey(focus);
+    setReviewFocusKey(nextFocus);
+    clearReviewOverlays(`review_focus_${nextFocus}`);
+    resetSolutionReveal(`review_focus_${nextFocus}`);
   }
 
   function handleShowOpeningExit(evidence: OpeningRealityEvidence) {
@@ -3570,6 +4420,67 @@ export default function App() {
     handleShowReviewMoment(review.moments[nextIndex], nextIndex);
   }
 
+  function handleReviewStepStatusPrevious() {
+    if (reviewPvLineState?.active) {
+      showManualPvLineStep(reviewPvLineState.currentIndex - 1);
+      return;
+    }
+    if (selectedReviewAnnotation) {
+      showPreviousGuidedAnnotation();
+      return;
+    }
+    showReviewByOffset(-1);
+  }
+
+  function handleReviewStepStatusNext() {
+    if (reviewPvLineState?.active) {
+      showManualPvLineStep(reviewPvLineState.currentIndex + 1);
+      return;
+    }
+    if (selectedReviewAnnotation) {
+      showNextGuidedAnnotation();
+      return;
+    }
+    showReviewByOffset(1);
+  }
+
+  function handleReviewStepStatusReplay() {
+    if (reviewPvLineState?.active) {
+      restartManualPvLine();
+      return;
+    }
+    if (selectedReviewAnnotation && selectedReviewAnnotationIndex !== null) {
+      handleShowReviewAnnotation(selectedReviewAnnotation, selectedReviewAnnotationIndex, "before");
+      return;
+    }
+    if (selectedReviewIndex !== null && review?.moments[selectedReviewIndex]) {
+      handleShowReviewMoment(review.moments[selectedReviewIndex], selectedReviewIndex);
+    }
+  }
+
+  const reviewStepStatusCanPrevious =
+    positionMode === "REVIEW" &&
+    (reviewPvLineState?.active
+      ? reviewPvLineState.currentIndex >= 0
+      : selectedReviewAnnotation
+        ? (review?.review_sections?.to_review?.length ?? 0) > 1
+        : selectedReviewIndex !== null && selectedReviewIndex > 0);
+  const reviewStepStatusCanNext =
+    positionMode === "REVIEW" &&
+    (reviewPvLineState?.active
+      ? reviewPvLineState.currentIndex < reviewPvLineState.moves.length - 1
+      : selectedReviewAnnotation
+        ? (review?.review_sections?.to_review?.length ?? 0) > 1
+        : selectedReviewIndex !== null &&
+          Boolean(review?.moments.length) &&
+          selectedReviewIndex < (review?.moments.length ?? 0) - 1);
+  const reviewStepStatusCanReplay =
+    positionMode === "REVIEW" &&
+    Boolean(reviewPvLineState?.active || selectedReviewAnnotation || selectedReviewMoment);
+  const activeReviewDisplayFocus: ReviewFocusKey = reviewPracticeState?.active
+    ? "practice"
+    : reviewFocusKey;
+  const activePracticeItem = currentPracticeItem(reviewPracticeState);
   const boardBadge = positionBadge(
     positionMode,
     displayedPositionPly,
@@ -3600,7 +4511,48 @@ export default function App() {
     !gameId ||
     (!tryMoveActive &&
       !practiceMoveActive &&
+      !reviewExplorationActive &&
       (isGameCompleted || positionMode !== "LIVE"));
+  const resolvedBoardOrientation = resolveReviewBoardOrientation({
+    activeTab,
+    selectedReviewPov,
+    review,
+    activePracticeItem,
+    selectedReviewAnnotation,
+    selectedReviewMoment,
+    selectedReviewMovePly,
+  });
+  const boardOrientation =
+    reviewExplorationActive && reviewExplorationBoardOrientation
+      ? reviewExplorationBoardOrientation
+      : resolvedBoardOrientation;
+  const boardMoveOutcome = buildBoardMoveOutcome({
+    activeTab,
+    positionMode,
+    boardFen,
+    reviewPracticeState,
+    reviewTryMoveState,
+    reviewExplorationState,
+    reviewPvLineState,
+  });
+  const boardTestId = reviewPracticeState?.active
+    ? "practice-board"
+    : activeTab === "review"
+      ? "review-board"
+      : "game-board";
+  const latestReviewExplorationMove =
+    reviewExplorationState?.active && reviewExplorationState.moves.length > 0
+      ? reviewExplorationState.moves[reviewExplorationState.moves.length - 1]
+      : null;
+  const latestReviewExplorationCanAnalyze =
+    latestReviewExplorationMove !== null &&
+    latestReviewExplorationMove.status !== "evaluated" &&
+    latestReviewExplorationMove.status !== "analyzing" &&
+    reviewExplorationState?.line.status !== "analyzing";
+  const reviewExplorationLineCanAnalyze =
+    reviewExplorationState?.active === true &&
+    reviewExplorationState.moves.length > 0 &&
+    reviewExplorationState.line.status !== "analyzing";
   const reviewSquareStyles = buildReviewSquareStyles(
     positionMode,
     review,
@@ -3635,33 +4587,396 @@ export default function App() {
             ? "Analyse disponible"
             : "Prêt";
 
+  const reviewContextAvailable = reviewPanelVisible;
+  const practiceAvailable = reviewIsCompletedForPractice(review);
+  const reviewReady =
+    review?.status === "done" || review?.status === "completed";
+  const reviewAnalysisInProgress =
+    reviewLoading ||
+    reviewUiBusy ||
+    reviewJobRunning ||
+    review?.status === "pending";
+  const practiceHistorySessionCount = reviewPracticeHistory.length;
+  const practiceHistoryPositionCount = reviewPracticeHistory.reduce(
+    (total, session) =>
+      total +
+      (session.summary?.positions_worked_count ??
+        session.summary?.item_count ??
+        session.item_count ??
+        0),
+    0,
+  );
+  const practiceHistoryFailedCount = reviewPracticeHistory.reduce(
+    (total, session) => total + (session.summary?.failed_count ?? 0),
+    0,
+  );
+  const learningDueCount = reviewPracticeLearningSummary?.due_count ?? 0;
+  const learningScheduledCount = reviewPracticeLearningSummary?.scheduled_count ?? 0;
+  const learningWeekPositionCount =
+    reviewPracticeLearningSummary?.week_positions_worked_count ??
+    reviewPracticeLearningSummary?.positions_worked_count ??
+    practiceHistoryPositionCount;
+  const learningWeekSuccessWithoutHelpCount =
+    reviewPracticeLearningSummary?.week_success_without_help_count ??
+    reviewPracticeLearningSummary?.success_without_help_count ??
+    0;
+  const learningWeekSuccessWithHintCount =
+    reviewPracticeLearningSummary?.week_success_with_hint_count ??
+    reviewPracticeLearningSummary?.success_with_hint_count ??
+    0;
+  const failedPracticeSession = reviewPracticeHistory.find(
+    (session) => (session.summary?.failed_count ?? 0) > 0,
+  );
+  const latestPracticeSession = reviewPracticeHistory[0] ?? null;
+  const failedPracticeSessionId =
+    failedPracticeSession?.session_id ?? failedPracticeSession?.summary?.session_id ?? null;
+  const latestPracticeSessionId =
+    latestPracticeSession?.session_id ?? latestPracticeSession?.summary?.session_id ?? null;
+  const availablePracticePositionCount =
+    reviewPracticeState?.active && reviewPracticeState.items.length > 0
+      ? reviewPracticeState.items.length
+      : practiceAvailable
+        ? review?.moments.length ?? 0
+        : 0;
+  const dailyPlanItemCount = dailyPlan?.item_count ?? 0;
+  const dailyPlanAvailable = dailyPlanItemCount > 0;
+  const dailyPlanEstimatedMinutes = dailyPlan?.estimated_minutes ?? dailyPlanItemCount * 2;
+  const pgnImportNotice = buildPgnImportNotice({
+    errorMessage: pgnImportError,
+    preview: pgnPreview,
+    result: pgnImportResult,
+  });
+  const dailyPlanNotice = buildDailyPlanNotice({
+    dailyPlan,
+    errorMessage: dailyPlanError,
+  });
+  const trainingPrimaryLabel = reviewPracticeState?.active
+    ? "Reprendre"
+    : dailyPlanLoading
+      ? "Chargement"
+    : dailyPlanAvailable
+      ? "Commencer"
+    : practiceAvailable || reviewReady
+      ? "Créer le plan du jour"
+    : learningDueCount > 0
+      ? "Réviser"
+      : reviewAnalysisInProgress
+        ? "Analyse en cours"
+        : reviewContextAvailable
+          ? "Voir la Review"
+          : "Importer une partie";
+  const trainingPrimaryDisabled =
+    dailyPlanLoading || (reviewAnalysisInProgress && !reviewContextAvailable);
+  const trainingPlanStatus = reviewPracticeState?.active
+    ? "Session Practice en cours"
+    : dailyPlanLoading
+      ? "chargement..."
+    : dailyPlanAvailable
+      ? `${dailyPlanItemCount} position${dailyPlanItemCount > 1 ? "s" : ""} · ${dailyPlanEstimatedMinutes} minutes`
+    : dailyPlanError
+      ? "plan indisponible"
+    : dailyPlan?.status === "empty"
+      ? "profil en construction"
+    : practiceAvailable || reviewReady
+      ? "plan prêt à créer"
+    : learningDueCount > 0
+      ? `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} à consolider`
+      : reviewAnalysisInProgress
+        ? "Analyse en cours"
+        : reviewContextAvailable
+          ? "Review à ouvrir"
+          : "profil en construction";
+  const trainingPlanDetail = reviewPracticeState?.active
+    ? "Reprends la session en cours avant de changer de tâche."
+    : dailyPlanLoading
+      ? "Le backend vérifie les positions durables disponibles."
+    : dailyPlanAvailable
+      ? "Plan déterministe construit depuis tes positions dues, ratées et critiques."
+    : dailyPlanError
+      ? dailyPlanError
+    : dailyPlan?.status === "empty"
+      ? dailyPlan.message
+    : practiceAvailable || reviewReady
+      ? "Crée une session courte depuis les positions durables de la Review."
+    : learningDueCount > 0
+      ? "Commence par les positions qui reviennent aujourd'hui."
+      : reviewAnalysisInProgress
+        ? "Le plan du jour apparaîtra quand la Review sera stabilisée."
+        : reviewContextAvailable
+          ? "Ouvre la Review pour transformer les moments clés en Practice."
+          : "Le plan sera disponible après une Review analysée.";
+  const failedPositionsLabel = practiceHistoryFailedCount > 0
+    ? `${practiceHistoryFailedCount} position${practiceHistoryFailedCount > 1 ? "s" : ""}`
+    : practiceHistorySessionCount > 0
+      ? "aucune ratée récente"
+      : "profil en construction";
+  const failedPositionsDetail = practiceHistoryFailedCount > 0
+    ? "Revois uniquement les positions ratées dans les sessions Practice existantes."
+    : practiceHistorySessionCount > 0
+      ? "Les dernières sessions ne contiennent pas de ratée à retravailler."
+      : "Les positions ratées apparaîtront après une session Practice.";
+  const failedPositionsActionLabel = practiceHistoryFailedCount > 0 ? "Revoir" : "Voir";
+  const canOpenFailedPositions = Boolean(
+    reviewPracticeState?.active || failedPracticeSessionId || latestPracticeSessionId,
+  );
+  const revisionsStatus = learningDueCount > 0
+    ? `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} prête${learningDueCount > 1 ? "s" : ""}`
+    : learningScheduledCount > 0
+      ? `${learningScheduledCount} position${learningScheduledCount > 1 ? "s" : ""} planifiée${learningScheduledCount > 1 ? "s" : ""}`
+      : practiceHistorySessionCount > 0
+        ? "pas encore de révision due"
+        : "profil en construction";
+  const revisionsDetail = learningDueCount > 0
+    ? "Revois les positions revenues au bon moment."
+    : learningScheduledCount > 0
+      ? "Les positions travaillées reviendront au bon moment."
+      : practiceHistorySessionCount > 0
+        ? "Continue Practice : les révisions apparaîtront après les prochains exercices."
+        : "Disponible après quelques exercices.";
+  const canOpenDueRevisions = Boolean(gameId && learningDueCount > 0);
+  const todayHero: {
+    kicker: string;
+    title: string;
+    detail: string;
+    label: string;
+    action: TodayHeroAction;
+    disabled?: boolean;
+  } = reviewPracticeState?.active
+    ? {
+        kicker: "Session en cours",
+        title: "Reprendre ton entraînement",
+        detail:
+          "Une session Practice est active. Reprends-la avant d'ajouter une nouvelle décision.",
+        label: "Reprendre Practice",
+        action: "practice",
+      }
+    : dailyPlanAvailable
+      ? {
+          kicker: "Plan du jour",
+          title: `Aujourd'hui - ${dailyPlanEstimatedMinutes} minutes`,
+          detail: `${dailyPlanItemCount} position${dailyPlanItemCount > 1 ? "s" : ""} issue${dailyPlanItemCount > 1 ? "s" : ""} des moments durables. Commence par ce qui compte maintenant.`,
+          label: "Commencer",
+          action: "daily_plan",
+        }
+    : reviewReady
+      ? {
+          kicker: "Review prête",
+          title: "Ta Review est prête",
+          detail:
+            "Commence par comprendre les moments clés, puis passe à l'entraînement.",
+          label: "Voir la Review",
+          action: "review",
+        }
+      : reviewAnalysisInProgress
+        ? {
+            kicker: "Analyse en cours",
+            title: "Analyse en cours",
+            detail:
+              "La Review se prépare. Garde le cap, le résumé apparaîtra dès que les données seront stabilisées.",
+            label: "Analyse en cours",
+            action: "wait",
+            disabled: true,
+          }
+        : learningDueCount > 0
+          ? {
+              kicker: "Révisions prêtes",
+              title: `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} à consolider`,
+              detail:
+                "Commence par les positions qui reviennent aujourd'hui, puis poursuis la Review si besoin.",
+              label: "Réviser",
+              action: "revision",
+            }
+        : gameId && canRequestReview
+          ? {
+              kicker: "Partie prête",
+              title: "Construisons ta Review",
+              detail:
+                "Cette partie peut entrer dans la boucle Review puis Practice.",
+              label: "Voir la Review",
+              action: "review",
+            }
+          : {
+              kicker: "Profil en construction",
+              title: "Construisons ton profil",
+              detail:
+                "Importe une partie réelle pour lancer la boucle Review puis Practice.",
+              label: "Importer une partie",
+              action: "import",
+            };
+  const latestReviewText = review
+    ? review.status === "done" || review.status === "completed"
+      ? "Review prête"
+      : review.status === "partial"
+        ? "Review partielle"
+        : "Review en construction"
+    : gameId
+      ? "Partie sélectionnée, Review à construire"
+      : "profil en construction";
+  const weeklyProgressText = reviewPracticeHistoryLoading
+    ? "chargement..."
+    : learningWeekPositionCount > 0
+      ? `${learningWeekPositionCount} position${learningWeekPositionCount > 1 ? "s" : ""} travaillée${learningWeekPositionCount > 1 ? "s" : ""} · ${learningWeekSuccessWithoutHelpCount} sans aide · ${learningWeekSuccessWithHintCount} avec indice`
+      : "profil en construction";
+  const reviewQueueText = reviewPracticeState?.active
+    ? "Session Practice en cours"
+    : dailyPlanAvailable
+      ? `${dailyPlanItemCount} position${dailyPlanItemCount > 1 ? "s" : ""} dans le plan du jour`
+      : learningDueCount > 0
+        ? `${learningDueCount} position${learningDueCount > 1 ? "s" : ""} prête${learningDueCount > 1 ? "s" : ""} à consolider`
+        : learningScheduledCount > 0
+          ? `${learningScheduledCount} position${learningScheduledCount > 1 ? "s" : ""} ${learningScheduledCount > 1 ? "reviendront" : "reviendra"} au bon moment`
+      : availablePracticePositionCount > 0
+        ? `${availablePracticePositionCount} position${availablePracticePositionCount > 1 ? "s" : ""} issue${availablePracticePositionCount > 1 ? "s" : ""} de la Review`
+        : "profil en construction";
+
+  function handleTodayPrimaryAction() {
+    if (todayHero.action === "wait") {
+      return;
+    }
+    if (todayHero.action === "daily_plan") {
+      setReviewFocusKey("practice");
+      void startDailyPlanPractice();
+      return;
+    }
+    if (todayHero.action === "practice") {
+      openReviewContext("today");
+      setReviewFocusKey("practice");
+      return;
+    }
+    if (todayHero.action === "revision") {
+      openReviewContext("today");
+      setReviewFocusKey("practice");
+      void startDueReviewPractice();
+      return;
+    }
+    if (todayHero.action === "review") {
+      openReviewContext("today");
+      return;
+    }
+    openGamesPanel("import");
+  }
+
+  function handleTrainingPrimaryAction() {
+    if (trainingPrimaryDisabled) {
+      return;
+    }
+    if (reviewPracticeState?.active) {
+      openReviewContext("training");
+      setReviewFocusKey("practice");
+      return;
+    }
+    if (dailyPlanAvailable || practiceAvailable || reviewReady || dailyPlan?.status === "empty") {
+      setReviewFocusKey("practice");
+      void startDailyPlanPractice();
+      return;
+    }
+    if (learningDueCount > 0) {
+      openReviewContext("training");
+      setReviewFocusKey("practice");
+      void startDueReviewPractice();
+      return;
+    }
+    if (reviewContextAvailable) {
+      openReviewContext("training");
+      return;
+    }
+    openGamesPanel("import");
+  }
+
+  function handleTrainingFailedPositionsAction() {
+    if (reviewPracticeState?.active) {
+      openReviewContext("training");
+      setReviewFocusKey("practice");
+      return;
+    }
+    const targetSessionId = failedPracticeSessionId ?? latestPracticeSessionId;
+    if (!targetSessionId) {
+      return;
+    }
+    if (failedPracticeSessionId) {
+      openReviewContext("training");
+      setReviewFocusKey("practice");
+      void retryFailedPracticeSession(failedPracticeSessionId);
+      return;
+    }
+    openReviewContext("training");
+    setReviewFocusKey("practice");
+    void viewPracticeSessionSummary(targetSessionId);
+  }
+
+  function handleTrainingRevisionsAction() {
+    if (!canOpenDueRevisions) {
+      return;
+    }
+    openReviewContext("training");
+    setReviewFocusKey("practice");
+    void startDueReviewPractice();
+  }
+
   return (
-    <main className="app">
-      <header className="topbar">
-        <div>
-          <h1>NeuroChess 2</h1>
-          <p>{statusText}</p>
-        </div>
-        <div className="actions">
-          <button onClick={handleNewGame} disabled={busy !== "idle"}>
-            Nouvelle partie
-          </button>
-          <button
-            onClick={handleFinishGame}
-            disabled={!gameId || busy !== "idle" || isGameCompleted}
-          >
-            Terminer partie
-          </button>
-          <button onClick={() => setActiveTab("import")}>
-            Importer PGN
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("history");
-              void loadHistory();
+    <main
+      className={`app app-shell-page-${activeShellPage}${activeTab === "review" ? " app-shell-review-open" : ""}`}
+      data-testid="app-root"
+    >
+      <header className="topbar app-header">
+        <div className="app-logo-stack app-brand">
+          <NeuroChessLogo
+            href="/"
+            onClick={(event) => {
+              event.preventDefault();
+              onNavigateHome();
             }}
+            variant="header"
+            className="app-brand-logo"
+          />
+          <div className="app-brand-title">
+            <span>Chess · Decision Science</span>
+            <p>{statusText}</p>
+          </div>
+        </div>
+        <nav
+          className="app-shell-nav"
+          aria-label="Navigation principale"
+          data-testid="main-nav"
+        >
+          <button
+            type="button"
+            className={activeShellPage === "today" && activeTab !== "review" ? "active" : ""}
+            aria-current={activeShellPage === "today" && activeTab !== "review" ? "page" : undefined}
+            data-testid="nav-today"
+            onClick={() => openShellPage("today")}
           >
-            Voir l'historique
+            {fr.nav.today}
+          </button>
+          <button
+            type="button"
+            className={activeShellPage === "games" && activeTab !== "review" ? "active" : ""}
+            aria-current={activeShellPage === "games" && activeTab !== "review" ? "page" : undefined}
+            data-testid="nav-games"
+            onClick={() => openShellPage("games")}
+          >
+            {fr.nav.games}
+          </button>
+          <button
+            type="button"
+            className={activeShellPage === "training" && activeTab !== "review" ? "active" : ""}
+            aria-current={activeShellPage === "training" && activeTab !== "review" ? "page" : undefined}
+            data-testid="nav-training"
+            onClick={() => openShellPage("training")}
+          >
+            {fr.nav.training}
+          </button>
+        </nav>
+        <div className="app-header-tools">
+          <button
+            type="button"
+            className="profile-status profile-settings-button"
+            aria-expanded={profilePanelOpen}
+            aria-controls="profile-privacy-panel"
+            data-testid="profile-settings-button"
+            onClick={() => setProfilePanelOpen(open => !open)}
+          >
+            {fr.nav.profileSettings}
           </button>
           <label className="evaluation-toggle">
             <input
@@ -3671,13 +4986,148 @@ export default function App() {
             />
             Masquer l'évaluation
           </label>
-          {canRequestReview && (
-            <button onClick={() => handleReview()} disabled={reviewLoading || reviewUiBusy}>
-              Voir la review
-            </button>
-          )}
         </div>
       </header>
+
+      {profilePanelOpen && (
+        <section
+          id="profile-privacy-panel"
+          className="profile-privacy-panel"
+          aria-labelledby="profile-privacy-title"
+          data-testid="profile-privacy-panel"
+        >
+          <div className="profile-privacy-header">
+            <div>
+              <span>Paramètres V1</span>
+              <h1 id="profile-privacy-title">{fr.profilePrivacy.title}</h1>
+              <p>NeuroChess fonctionne en local pour cette V1.</p>
+            </div>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => setProfilePanelOpen(false)}
+            >
+              Fermer
+            </button>
+          </div>
+
+          <div className="profile-privacy-grid">
+            <section className="profile-privacy-section" aria-labelledby="local-profile-title">
+              <span>Profil local</span>
+              <h2 id="local-profile-title">Profil local</h2>
+              <p>Profil en construction.</p>
+            </section>
+
+            <section className="profile-privacy-section" aria-labelledby="preferences-title">
+              <span>Préférences</span>
+              <h2 id="preferences-title">Préférences</h2>
+              <p>
+                Le masquage de l'évaluation est disponible dans l'en-tête.
+                Préférences avancées à venir.
+              </p>
+            </section>
+
+            <section className="profile-privacy-section" aria-labelledby="engine-title">
+              <span>Moteur</span>
+              <h2 id="engine-title">Moteur</h2>
+              <p>
+                Le moteur est utilisé pendant les analyses. Test moteur dédié à
+                venir, sans changer Stockfish.
+              </p>
+            </section>
+
+            <section
+              className="profile-privacy-section profile-privacy-section-wide"
+              aria-labelledby="privacy-title"
+            >
+              <span>Confidentialité</span>
+              <h2 id="privacy-title">Confidentialité</h2>
+              <p>
+                Exporte un fichier JSON local ou supprime les parties, reviews,
+                entraînements, tentatives et données locales.
+              </p>
+              <div className="profile-privacy-actions">
+                <button
+                  type="button"
+                  onClick={handleExportUserData}
+                  disabled={profilePrivacyBusy !== "idle"}
+                >
+                  {profilePrivacyBusy === "exporting"
+                    ? fr.profilePrivacy.exportInProgress
+                    : fr.profilePrivacy.exportData}
+                </button>
+                <button
+                  type="button"
+                  className="danger"
+                  onClick={() => {
+                    setProfileDeleteConfirmOpen(true);
+                    setProfileDeleteStatus(null);
+                  }}
+                  disabled={profilePrivacyBusy !== "idle"}
+                >
+                  {fr.profilePrivacy.deleteData}
+                </button>
+              </div>
+              {profileExportStatus && (
+                <p className="profile-privacy-status">{profileExportStatus}</p>
+              )}
+              {profileDeleteConfirmOpen && (
+                <div
+                  className="profile-delete-confirmation"
+                  aria-label="Confirmation suppression données locales"
+                >
+                  <strong>{fr.profilePrivacy.confirmRequired}</strong>
+                  <p>
+                    Cette action supprimera les parties, reviews, entraînements,
+                    tentatives et données locales. Elle ne touche pas au repo Git,
+                    à Stockfish, aux migrations ou aux fichiers système.
+                  </p>
+                  <label>
+                    {fr.confirmation.typeDeleteLabel}
+                    <input
+                      type="text"
+                      value={profileDeleteInput}
+                      onChange={event => setProfileDeleteInput(event.currentTarget.value)}
+                      placeholder={fr.confirmation.deleteKeyword}
+                      autoComplete="off"
+                    />
+                  </label>
+                  <div className="profile-delete-actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => {
+                        setProfileDeleteConfirmOpen(false);
+                        setProfileDeleteInput("");
+                        setProfileDeleteStatus(null);
+                      }}
+                      disabled={profilePrivacyBusy !== "idle"}
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="button"
+                      className="danger"
+                      onClick={handleDeleteUserDataConfirmed}
+                      disabled={
+                        profilePrivacyBusy !== "idle" ||
+                        profileDeleteInput !== fr.confirmation.deleteKeyword
+                      }
+                    >
+                      {profilePrivacyBusy === "deleting"
+                        ? "Suppression..."
+                        : "Confirmer la suppression"}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {profileDeleteStatus && (
+                <p className="profile-privacy-status">{profileDeleteStatus}</p>
+              )}
+            </section>
+          </div>
+        </section>
+      )}
 
       {error && <div className="alert">{error}</div>}
       {visibleWarnings.length > 0 && (
@@ -3703,7 +5153,150 @@ export default function App() {
         </div>
       )}
 
-      <section className="analysis-layout">
+      {activeTab !== "review" && activeShellPage === "today" && (
+        <section className="plan2-page today-page" aria-labelledby="today-title">
+          <div className="plan2-hero">
+            <span className="plan2-kicker">{todayHero.kicker}</span>
+            <h1 id="today-title">{fr.nav.today}</h1>
+            <strong className="plan2-hero-title">{todayHero.title}</strong>
+            <p>{todayHero.detail}</p>
+            <button
+              type="button"
+              className="plan2-primary-action"
+              onClick={handleTodayPrimaryAction}
+              disabled={todayHero.disabled === true}
+            >
+              {todayHero.label}
+            </button>
+          </div>
+          <div className="plan2-card-grid">
+            <article className="plan2-card">
+              <span>Dernière Review</span>
+              <strong>{latestReviewText}</strong>
+              <p>
+                {reviewContextAvailable
+                  ? "Ouvre la Review pour comprendre les moments clés ou poursuivre Practice."
+                  : "Importe une partie pour créer ta première Review."}
+              </p>
+            </article>
+            <article className="plan2-card">
+              <span>Progression cette semaine</span>
+              <strong>{weeklyProgressText}</strong>
+              <p>
+                {learningWeekPositionCount > 0
+                  ? "Compteurs issus des tentatives Practice réelles."
+                  : "Commence avec une Review pour construire ta progression."}
+              </p>
+            </article>
+            <article className="plan2-card">
+              <span>À revoir</span>
+              <strong>{reviewQueueText}</strong>
+              <p>
+                {learningDueCount > 0
+                  ? "Ces positions sont prêtes à être consolidées."
+                  : learningScheduledCount > 0
+                    ? "Les positions ratées reviendront au bon moment."
+                    : practiceHistoryFailedCount > 0
+                      ? `${practiceHistoryFailedCount} position${practiceHistoryFailedCount > 1 ? "s" : ""} ratée${practiceHistoryFailedCount > 1 ? "s" : ""} à retravailler.`
+                      : "Disponible après quelques exercices."}
+              </p>
+            </article>
+          </div>
+        </section>
+      )}
+
+      {activeTab !== "review" && activeShellPage === "training" && (
+        <section className="plan2-page training-page" aria-labelledby="training-title">
+          <div className="plan2-hero compact">
+            <span className="plan2-kicker">Session recommandée</span>
+            <h1 id="training-title">{fr.nav.training}</h1>
+            <p>
+              V1 reste volontairement simple : un plan du jour, les positions
+              ratées et les révisions, sans mode supplémentaire.
+            </p>
+            <button
+              type="button"
+              className="plan2-primary-action"
+              data-testid="daily-plan-start-button"
+              onClick={handleTrainingPrimaryAction}
+              disabled={trainingPrimaryDisabled}
+            >
+              {trainingPrimaryLabel}
+            </button>
+          </div>
+          {dailyPlanNotice && (
+            <StateNotice
+              variant={dailyPlanNotice.variant}
+              title={dailyPlanNotice.title}
+              message={dailyPlanNotice.message}
+              primaryActionLabel={dailyPlanNotice.primaryActionLabel}
+              secondaryActionLabel={dailyPlanNotice.secondaryActionLabel}
+              details={dailyPlanNotice.details}
+              testId="degraded-daily-plan-notice"
+              onPrimaryAction={() => {
+                if (dailyPlanNotice.stateId === "DAILY_PLAN_EMPTY") {
+                  openGamesPanel("import");
+                  return;
+                }
+                if (dailyPlanNotice.stateId === "DAILY_PLAN_PARTIAL") {
+                  void startDailyPlanPractice();
+                  return;
+                }
+                void createOrRefreshDailyPlan();
+              }}
+              onSecondaryAction={() => openGamesPanel("import")}
+            />
+          )}
+          <div className="plan2-card-grid training-grid">
+            <article className="plan2-card" data-testid="training-daily-plan-card">
+              <span>{fr.training.dailyPlan}</span>
+              <strong>{trainingPlanStatus}</strong>
+              <p>{trainingPlanDetail}</p>
+              <span className="training-card-cta">{trainingPrimaryLabel}</span>
+            </article>
+            <article className="plan2-card" data-testid="training-failed-card">
+              <span>{fr.training.failedPositions}</span>
+              <strong>{failedPositionsLabel}</strong>
+              <p>{failedPositionsDetail}</p>
+              {canOpenFailedPositions ? (
+                <button
+                  type="button"
+                  className="plan2-secondary-action"
+                  onClick={handleTrainingFailedPositionsAction}
+                >
+                  {failedPositionsActionLabel}
+                </button>
+              ) : (
+                <span className="training-card-cta muted">
+                  {learningScheduledCount > 0 ? "À venir" : "Profil en construction"}
+                </span>
+              )}
+            </article>
+            <article className="plan2-card" data-testid="training-due-card">
+              <span>{fr.training.revisions}</span>
+              <strong>{revisionsStatus}</strong>
+              <p>{revisionsDetail}</p>
+              {canOpenDueRevisions ? (
+                <button
+                  type="button"
+                  className="plan2-secondary-action"
+                  onClick={handleTrainingRevisionsAction}
+                >
+                  Réviser
+                </button>
+              ) : (
+                <span className="training-card-cta muted">Profil en construction</span>
+              )}
+            </article>
+          </div>
+        </section>
+      )}
+
+      {(activeTab === "review" || activeShellPage === "games") && (
+      <section
+        className={`analysis-layout${activeTab === "review" ? " review-focus-layout" : ""}`}
+        data-testid={activeTab === "review" ? "review-focus-layout" : undefined}
+      >
         <EvaluationBar
           evaluation={evaluationBarState.evaluation}
           source={evaluationBarState.source}
@@ -3713,7 +5306,18 @@ export default function App() {
           hidden={hideEvaluation}
         />
 
-        <section className="board-column">
+        <section
+          className={[
+            "board-column",
+            activeTab === "review" ? "review-board-sticky-column" : "",
+            activeTab === "review" && reviewPvLineState?.active
+              ? "review-board-line-player-active"
+              : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          data-testid={activeTab === "review" ? "review-board-sticky-column" : undefined}
+        >
           {boardBadge && <div className="position-badge">{boardBadge}</div>}
           {reviewReplayBadge && (
             <div
@@ -3727,13 +5331,151 @@ export default function App() {
             fen={boardFen}
             disabled={boardDisabled}
             ariaLabel={boardAriaLabel}
+            orientation={boardOrientation}
+            testId={boardTestId}
             squareStyles={reviewSquareStyles}
-            customArrows={reviewBoardArrows}
+            customArrows={reviewExplorationActive ? [] : reviewBoardArrows}
+            moveOutcome={boardMoveOutcome}
             animationDuration={
               positionMode === "REVIEW" ? REVIEW_REPLAY_MOVE_ANIMATION_MS : 300
             }
             onMove={handleMove}
           />
+          {activeTab === "review" &&
+            reviewExplorationActive &&
+            latestReviewExplorationMove && (
+              <div
+                className="review-explorer-cockpit-actions"
+                data-testid="review-explorer-cockpit-actions"
+                aria-live="polite"
+              >
+                <div className="review-explorer-cockpit-main">
+                  <div>
+                    <span>{fr.reviewExplorer.exploredMove}</span>
+                    <strong>
+                      {latestReviewExplorationMove.san || latestReviewExplorationMove.uci}
+                    </strong>
+                  </div>
+                  {latestReviewExplorationMove.status === "evaluated" ? (
+                    <div className="review-exploration-result">
+                      <MoveQualityBadge
+                        qualityId={getMoveQualityGlyphForAttemptResult(
+                          latestReviewExplorationMove.result,
+                        )}
+                        context="exploration"
+                        size="sm"
+                        testId="review-explorer-quality-badge"
+                      />
+                      <span data-testid="review-explorer-local-only">
+                        {latestReviewExplorationMove.label
+                          ? `${latestReviewExplorationMove.label}. `
+                          : ""}
+                        {fr.reviewExplorer.localOnly}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="review-exploration-result">
+                      <MoveQualityBadge
+                        qualityId="unknown"
+                        context="exploration"
+                        size="sm"
+                        testId="review-explorer-unevaluated-badge"
+                      />
+                      <span data-testid="review-explorer-analysis-state">
+                        {latestReviewExplorationMove.status === "analyzing"
+                          ? fr.reviewExplorer.analyzingMove
+                          : reviewExplorationState?.line.status === "analyzing"
+                            ? fr.reviewExplorer.analyzingLine
+                            : fr.reviewExplorer.notAnalyzed}
+                      </span>
+                    </div>
+                  )}
+                  {reviewExplorationState?.line.result && (
+                    <div
+                      className="review-explorer-line-result"
+                      data-testid="review-explorer-line-result"
+                    >
+                      <MoveQualityBadge
+                        qualityId={getMoveQualityGlyphForAttemptResult(
+                          reviewExplorationState.line.result.final_quality,
+                        )}
+                        context="exploration"
+                        size="sm"
+                        testId="review-explorer-line-quality-badge"
+                      />
+                      <span>
+                        {fr.reviewExplorer.lineResult(
+                          reviewExplorationState.line.result.line_length,
+                          reviewExplorationState.line.result.message,
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  {(latestReviewExplorationMove.error ||
+                    reviewExplorationState?.line.error) && (
+                    <p className="review-exploration-error">
+                      {latestReviewExplorationMove.error ??
+                        reviewExplorationState?.line.error}
+                    </p>
+                  )}
+                </div>
+                <div
+                  className="review-explorer-analysis-preset"
+                  data-testid="review-explorer-analysis-preset"
+                  aria-label={fr.reviewExplorer.analysisPresetAria}
+                >
+                  <span>{fr.reviewExplorer.analysisPresetLabel}</span>
+                  {(["fast", "standard", "deep"] as ReviewExplorerAnalysisPreset[]).map(
+                    (preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        className={
+                          reviewExplorationState?.analysisPreset === preset ? "active" : ""
+                        }
+                        aria-pressed={reviewExplorationState?.analysisPreset === preset}
+                        onClick={() => setReviewExplorationAnalysisPreset(preset)}
+                      >
+                        {fr.reviewExplorer.analysisPresets[preset]}
+                      </button>
+                    ),
+                  )}
+                </div>
+                <div className="review-explorer-cockpit-buttons">
+                  <button
+                    type="button"
+                    className="primary"
+                    data-testid="review-explorer-analyze-move"
+                    disabled={!latestReviewExplorationCanAnalyze}
+                    onClick={() => void analyzeLatestReviewExplorationMove()}
+                  >
+                    {fr.reviewExplorer.analyzeMove}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    data-testid="review-explorer-analyze-line"
+                    disabled={!reviewExplorationLineCanAnalyze}
+                    onClick={() => void analyzeReviewExplorationLine()}
+                  >
+                    {fr.reviewExplorer.analyzeLine}
+                  </button>
+                </div>
+              </div>
+            )}
+          {activeTab === "review" && reviewPvLineState?.active && (
+            <div className="review-line-player-dock" data-testid="review-line-player-dock">
+              <ReviewPvStepper
+                state={reviewPvLineState}
+                onPrevious={showPreviousPvLineStep}
+                onNext={showNextPvLineStep}
+                onRestart={restartManualPvLine}
+                onToggleAutoplay={toggleManualPvLineAutoplay}
+                onSelectLine={selectManualPvLineMode}
+                onClose={closeManualPvLine}
+              />
+            </div>
+          )}
           <div className="board-nav" aria-label="Navigation de partie">
             <button onClick={goInitialPosition} disabled={!canNavigate || displayedPositionPly === 0}>
               &lt;&lt;
@@ -3753,205 +5495,267 @@ export default function App() {
               </button>
             )}
           </div>
-          {positionMode === "REVIEW" && review && review.moments.length > 0 && selectedReviewIndex !== null && (
-            <div className="review-context-nav">
-              <button onClick={() => showReviewByOffset(-1)} disabled={selectedReviewIndex === 0}>
-                ← Moment précédent
-              </button>
-              <span>
-                Moment {selectedReviewIndex + 1} / {review.moments.length}
-              </span>
-              <button
-                onClick={() => showReviewByOffset(1)}
-                disabled={selectedReviewIndex >= review.moments.length - 1}
-              >
-                Moment suivant →
-              </button>
-            </div>
-          )}
-          {positionMode === "REVIEW" && selectedReviewIndex !== null && review?.moments[selectedReviewIndex] && (
-            <div className="review-board-hint">
-              Coup joué : {review.moments[selectedReviewIndex].played_san ?? review.moments[selectedReviewIndex].played_uci}
-              {" · "}
-              Coup moteur : {review.moments[selectedReviewIndex].best_move_san ?? review.moments[selectedReviewIndex].best_move_uci ?? "non disponible"}
-            </div>
-          )}
-          {positionMode === "REVIEW" &&
-            selectedReviewAnnotation &&
-            guidedReplayPhase &&
-            !reviewPracticeState?.active && (
-            <div className="guided-replay-controls">
-              <strong>{guidedReplayPhaseLabel(guidedReplayPhase)}</strong>
-              <span>
-                {guidedReplayExplanation(
-                  selectedReviewAnnotation,
-                  guidedReplayPhase,
-                  selectedReviewPov,
-                  review,
-                )}
-              </span>
-              {guidedReplayPhase === "pv_line" && guidedPvIndex !== null && (
-                <span>
-                  {reviewPvLineState?.moves?.[guidedPvIndex]?.san ??
-                    reviewPvLineState?.moves?.[guidedPvIndex]?.uci ??
-                    selectedReviewAnnotation.pv_line_message ??
-                    "Ligne complète indisponible"}
-                </span>
-              )}
-              {guidedReplayPhase === "pv_line" && reviewPvLineState?.active && (
-                <div className="review-pv-stepper-inline">
-                  <span>
-                    {reviewPvLineState.lineMode === "played"
-                      ? "Ligne après le coup joué"
-                      : "Ligne de la solution"}
-                  </span>
-                  <span>
-                    {reviewPvLineState.currentIndex < 0
-                      ? `Départ / ${reviewPvLineState.moves.length}`
-                      : `Coup ${reviewPvLineState.currentIndex + 1} / ${reviewPvLineState.moves.length}`}
-                  </span>
-                  {reviewPvLineState.message && <span>{reviewPvLineState.message}</span>}
-                  <div className="review-pv-line-mode" aria-label="Choix de ligne PV">
-                    <button
-                      onClick={() => selectManualPvLineMode("played")}
-                      disabled={!reviewPvLineState.playedLineAvailable}
-                      className={reviewPvLineState.lineMode === "played" ? "active" : ""}
-                    >
-                      Ligne du coup joué
-                    </button>
-                    <button
-                      onClick={() => selectManualPvLineMode("solution")}
-                      disabled={!reviewPvLineState.solutionLineAvailable}
-                      className={reviewPvLineState.lineMode === "solution" ? "active" : ""}
-                    >
-                      Ligne de la solution
-                    </button>
+          {activeTab === "review" && !reviewPracticeState?.active && (
+            <div
+              className={`review-exploration-panel${
+                reviewExplorationActive ? " active" : ""
+              }`}
+              data-testid="review-exploration-panel"
+            >
+              {!reviewExplorationActive ? (
+                <>
+                  <div>
+                    <span>{fr.reviewExplorer.title}</span>
+                    <strong>{fr.reviewExplorer.inactiveTitle}</strong>
+                    <p>{fr.reviewExplorer.inactiveCopy}</p>
                   </div>
-                  <div className="review-action-row">
-                    <button
-                      onClick={showPreviousPvLineStep}
-                      disabled={reviewPvLineState.currentIndex < 0}
-                    >
-                      ← Coup précédent
-                    </button>
-                    <button
-                      onClick={showNextPvLineStep}
-                      disabled={
-                        reviewPvLineState.currentIndex >=
-                        reviewPvLineState.moves.length - 1
-                      }
-                    >
-                      Coup suivant →
-                    </button>
-                    <button onClick={restartManualPvLine}>
-                      Rejouer depuis le début
-                    </button>
-                    <button
-                      onClick={toggleManualPvLineAutoplay}
-                      disabled={
-                        reviewPvLineState.currentIndex >=
-                        reviewPvLineState.moves.length - 1
-                      }
-                    >
-                      {reviewPvLineState.autoplay ? "Pause" : "Auto"}
-                    </button>
-                    <button onClick={closeManualPvLine}>Fermer la ligne</button>
-                  </div>
-                </div>
-              )}
-              <div className="review-action-row">
-                {selectedReviewAnnotation.try_move_supported && (
                   <button
-                    onClick={() =>
-                      handleTryMoveAnnotation(
-                        selectedReviewAnnotation,
-                        selectedReviewAnnotationIndex ?? 0,
-                      )
-                    }
+                    type="button"
+                    className="secondary"
+                    data-testid="review-exploration-start"
+                    disabled={!rawBoardFen || busy !== "idle"}
+                    onClick={startReviewExploration}
                   >
-                    Réessayer
+                    Explorer la position
                   </button>
-                )}
-                <button onClick={replaySelectedGuidedMoment}>Revoir l'explication</button>
-                <button
-                  onClick={() =>
-                    handleShowPvLineAnnotation(
-                      selectedReviewAnnotation,
-                      selectedReviewAnnotationIndex ?? 0,
-                      reviewPvLineMovesForMode(selectedReviewAnnotation, "solution").length
-                        ? "solution"
-                        : "played",
-                    )
-                  }
-                  disabled={
-                    !reviewPvLineMovesForMode(selectedReviewAnnotation, "solution").length &&
-                    !reviewPvLineMovesForMode(selectedReviewAnnotation, "played").length
-                  }
-                >
-                  Voir la ligne
-                </button>
-                <button onClick={showNextGuidedAnnotation}>Moment suivant</button>
-                <button onClick={closeGuidedReplay}>Fermer</button>
-              </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <span>{fr.reviewExplorer.title}</span>
+                    <strong>{fr.reviewExplorer.activeTitle}</strong>
+                    <p>{fr.reviewExplorer.activeCopy}</p>
+                    <p
+                      className="review-exploration-feedback"
+                      data-testid="review-exploration-feedback"
+                      aria-live="polite"
+                    >
+                      {reviewExplorationState?.message}
+                    </p>
+                    {latestReviewExplorationMove && (
+                      <div
+                        className="review-exploration-evaluation"
+                        data-testid="review-explorer-move-feedback"
+                      >
+                        <div>
+                          <span>{fr.reviewExplorer.exploredMove}</span>
+                          <strong>
+                            {latestReviewExplorationMove.san || latestReviewExplorationMove.uci}
+                          </strong>
+                        </div>
+                        {latestReviewExplorationMove.status === "evaluated" ? (
+                          <div className="review-exploration-result">
+                            <MoveQualityBadge
+                              qualityId={getMoveQualityGlyphForAttemptResult(
+                                latestReviewExplorationMove.result,
+                              )}
+                              context="exploration"
+                              size="sm"
+                              testId="review-explorer-detail-quality-badge"
+                            />
+                            <span data-testid="review-explorer-local-only">
+                              {fr.reviewExplorer.localOnly}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="review-exploration-result">
+                            <MoveQualityBadge
+                              qualityId="unknown"
+                              context="exploration"
+                              size="sm"
+                              testId="review-explorer-detail-unevaluated-badge"
+                            />
+                            <span data-testid="review-explorer-analysis-state">
+                              {latestReviewExplorationMove.status === "analyzing"
+                                ? fr.reviewExplorer.analyzingMove
+                                : fr.reviewExplorer.notAnalyzed}
+                            </span>
+                          </div>
+                        )}
+                        {latestReviewExplorationMove.error && (
+                          <p className="review-exploration-error">
+                            {latestReviewExplorationMove.error}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {(reviewExplorationState?.moves.length ?? 0) > 0 && (
+                      <ol
+                        className="review-exploration-moves"
+                        data-testid="review-exploration-moves"
+                      >
+                        {reviewExplorationState?.moves.map((move, index) => (
+                          <li key={`${move.uci}-${index}`}>
+                            {move.san || move.uci}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                  <div className="review-exploration-actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="review-exploration-undo"
+                      onClick={undoReviewExplorationMove}
+                    >
+                      {fr.reviewExplorer.undoMove}
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="review-exploration-reset"
+                      onClick={resetReviewExploration}
+                    >
+                      {fr.reviewExplorer.reset}
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="review-exploration-flip-board"
+                      onClick={toggleReviewExplorationBoardOrientation}
+                    >
+                      {fr.reviewExplorer.turnBoard}
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost"
+                      data-testid="review-exploration-exit"
+                      onClick={exitReviewExploration}
+                    >
+                      {fr.reviewExplorer.exit}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
+          )}
+          {activeTab === "review" && (
+            <ReviewStepStatus
+              focusKey={activeReviewDisplayFocus}
+              annotation={selectedReviewAnnotation}
+              moment={selectedReviewMoment}
+              guidedPhase={guidedReplayPhase}
+              pvLineState={reviewPvLineState}
+              practiceState={reviewPracticeState}
+              openingFocusMessage={reviewOpeningFocusMessage}
+              canPrevious={reviewStepStatusCanPrevious}
+              canNext={reviewStepStatusCanNext}
+              canReplay={reviewStepStatusCanReplay}
+              onPrevious={handleReviewStepStatusPrevious}
+              onNext={handleReviewStepStatusNext}
+              onReplay={handleReviewStepStatusReplay}
+            />
           )}
         </section>
 
         <aside className="right-panel">
-          <div className="tabs" role="tablist" aria-label="Panneau de partie">
-            <button
-              id="tab-moves"
-              role="tab"
-              aria-selected={activeTab === "moves"}
-              aria-controls="panel-moves"
-              onClick={() => setActiveTab("moves")}
-            >
-              Coups
-            </button>
-            {reviewTabVisible && (
+          {activeTab === "review" ? (
+            <div className="review-context-header">
+              <div>
+                <span>Review contextuelle</span>
+                <strong>Review</strong>
+              </div>
               <button
-                id="tab-review"
-                role="tab"
-                aria-selected={activeTab === "review"}
-                aria-controls="panel-review"
-                onClick={() => setActiveTab("review")}
+                type="button"
+                className="secondary"
+                onClick={() => {
+                  if (activeShellPage === "training") {
+                    openShellPage("training");
+                    return;
+                  }
+                  if (activeShellPage === "today") {
+                    openShellPage("today");
+                    return;
+                  }
+                  openGamesPanel("history");
+                }}
               >
-                Review
+                {activeShellPage === "training"
+                  ? fr.training.returnTraining
+                  : activeShellPage === "today"
+                    ? fr.training.returnToday
+                    : fr.training.returnGames}
               </button>
-            )}
-            <button
-              id="tab-import"
-              role="tab"
-              aria-selected={activeTab === "import"}
-              aria-controls="panel-import"
-              onClick={() => setActiveTab("import")}
-            >
-              Import PGN
-            </button>
-            <button
-              id="tab-history"
-              role="tab"
-              aria-selected={activeTab === "history"}
-              aria-controls="panel-history"
-              onClick={() => {
-                setActiveTab("history");
-                void loadHistory();
-              }}
-            >
-              Historique
-            </button>
-            {import.meta.env.DEV && (
+            </div>
+          ) : (
+            <>
+              <div className="games-page-actions" aria-label={fr.games.actionsAria}>
+                <div>
+                  <span>{fr.nav.games}</span>
+                  <strong>Importer, analyser ou revoir</strong>
+                </div>
+                <button
+                  type="button"
+                  data-testid="import-pgn-button"
+                  onClick={() => openGamesPanel("import")}
+                >
+                  Importer PGN
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => openGamesPanel("history")}
+                >
+                  Voir historique
+                </button>
+              </div>
+              <div className="tabs" role="tablist" aria-label={fr.games.panelAria}>
+                <button
+                  id="tab-moves"
+                  role="tab"
+                  aria-selected={activeTab === "moves"}
+                  aria-controls="panel-moves"
+                  onClick={() => setActiveTab("moves")}
+                >
+                  Coups
+                </button>
+                <button
+                  id="tab-import"
+                  role="tab"
+                  aria-selected={activeTab === "import"}
+                  aria-controls="panel-import"
+                  onClick={() => setActiveTab("import")}
+                >
+                  Import PGN
+                </button>
+                <button
+                  id="tab-history"
+                  role="tab"
+                  aria-selected={activeTab === "history"}
+                  aria-controls="panel-history"
+                  onClick={() => {
+                    setActiveTab("history");
+                    void loadHistory();
+                  }}
+                >
+                  Historique
+                </button>
+                {import.meta.env.DEV && (
+                  <button
+                    id="tab-info"
+                    role="tab"
+                    aria-selected={activeTab === "info"}
+                    aria-controls="panel-info"
+                    onClick={() => setActiveTab("info")}
+                  >
+                    Infos
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {import.meta.env.DEV && activeTab === "review" && (
               <button
                 id="tab-info"
-                role="tab"
-                aria-selected={activeTab === "info"}
-                aria-controls="panel-info"
+                type="button"
+                className="debug-tab-link"
                 onClick={() => setActiveTab("info")}
               >
                 Infos
               </button>
-            )}
-          </div>
+          )}
 
           <section
             id="panel-moves"
@@ -3975,11 +5779,11 @@ export default function App() {
             />
           </section>
 
-          {reviewTabVisible && (
+          {reviewPanelVisible && (
             <section
               id="panel-review"
               role="tabpanel"
-              aria-labelledby="tab-review"
+              aria-label="Review contextuelle"
               hidden={activeTab !== "review"}
               className="tab-panel"
             >
@@ -4018,7 +5822,6 @@ export default function App() {
                 onSolutionHintAnnotation={handleSolutionHintAnnotation}
                 onSolutionReset={resetSolutionReveal}
                 practiceState={reviewPracticeState}
-                practicePvLineState={reviewPvLineState}
                 onStartPractice={handleStartReviewPractice}
                 onPracticeHint={showPracticeHint}
                 onPracticeRevealSolution={revealPracticeSolution}
@@ -4026,12 +5829,6 @@ export default function App() {
                 onPracticeTryAgain={resetPracticeAttempt}
                 onPracticeNext={goToNextPracticeItem}
                 onPracticeShowPvLine={showPracticePvLine}
-                onPracticePvPrevious={showPreviousPvLineStep}
-                onPracticePvNext={showNextPvLineStep}
-                onPracticePvRestart={restartManualPvLine}
-                onPracticePvToggleAutoplay={toggleManualPvLineAutoplay}
-                onPracticePvSelectLine={selectManualPvLineMode}
-                onPracticePvClose={closeManualPvLine}
                 onPracticeQuit={quitPracticeSession}
                 onPracticeRetryFailed={() => retryFailedPracticeSession()}
                 onPracticeRedoAll={redoPracticeSession}
@@ -4047,6 +5844,7 @@ export default function App() {
                 onPracticeViewSessionSummary={viewPracticeSessionSummary}
                 onPracticeRetryFailedSession={retryFailedPracticeSession}
                 selectedReviewPov={selectedReviewPov}
+                activeReviewFocus={activeReviewDisplayFocus}
                 onReviewPovChange={handleReviewPovChange}
                 onReviewFocusChange={handleReviewFocusChange}
                 selectedMovePly={selectedReviewMovePly}
@@ -4054,7 +5852,7 @@ export default function App() {
                 analysisProfile={reviewAnalysisProfile}
                 onAnalysisProfileChange={setReviewAnalysisProfile}
               />
-              {import.meta.env.DEV && (
+              {import.meta.env.DEV && activeReviewDisplayFocus === "lab" && (
                 <details className="review-debug" data-review-debug="true">
                   <summary>Debug Review</summary>
                   <div className="review-debug-title">Review debug:</div>
@@ -4149,7 +5947,9 @@ export default function App() {
                 <label>
                   Coller PGN
                   <textarea
+                    ref={pgnTextareaRef}
                     value={pgnText}
+                    data-testid="pgn-textarea"
                     onChange={(event) => {
                       setPgnText(event.target.value);
                       setPgnPreview(null);
@@ -4199,13 +5999,50 @@ export default function App() {
                   <button onClick={handlePgnPreview} disabled={pgnImportLoading}>
                     Prévisualiser
                   </button>
-                  <button onClick={handlePgnImport} disabled={pgnImportLoading}>
+                  <button
+                    onClick={handlePgnImport}
+                    disabled={pgnImportLoading}
+                    data-testid="import-pgn-button"
+                  >
                     Importer
                   </button>
                 </div>
               </div>
 
-              {pgnImportError && <div className="review-note">{pgnImportError}</div>}
+              {pgnImportNotice && (
+                <StateNotice
+                  variant={pgnImportNotice.variant}
+                  title={pgnImportNotice.title}
+                  message={pgnImportNotice.message}
+                  primaryActionLabel={pgnImportNotice.primaryActionLabel}
+                  secondaryActionLabel={pgnImportNotice.secondaryActionLabel}
+                  details={pgnImportNotice.details}
+                  testId="degraded-import-notice"
+                  onPrimaryAction={() => {
+                    if (pgnImportNotice.stateId === "IMPORT_DUPLICATE_GAME") {
+                      setActiveTab("history");
+                      void loadHistory();
+                      return;
+                    }
+                    pgnTextareaRef.current?.focus();
+                  }}
+                  onSecondaryAction={() => {
+                    if (pgnImportNotice.stateId === "IMPORT_INVALID_PGN") {
+                      setPgnText(EXAMPLE_IMPORT_PGN);
+                      setPgnPreview(null);
+                      setPgnImportResult(null);
+                      setPgnImportError(null);
+                      pgnTextareaRef.current?.focus();
+                      return;
+                    }
+                    setPgnText("");
+                    setPgnPreview(null);
+                    setPgnImportResult(null);
+                    setPgnImportError(null);
+                    pgnTextareaRef.current?.focus();
+                  }}
+                />
+              )}
 
               {pgnPreview && (
                 <div className="import-report">
@@ -4319,6 +6156,7 @@ export default function App() {
                       <div className="game-history-actions">
                         <button
                           type="button"
+                          data-testid="review-open-button"
                           onClick={() => {
                             void handleOpenHistoryGame(item);
                           }}
@@ -4397,8 +6235,20 @@ export default function App() {
           )}
         </aside>
       </section>
+      )}
     </main>
   );
+}
+
+function readCurrentPath(): string {
+  if (typeof window === "undefined") {
+    return "/";
+  }
+  return window.location.pathname || "/";
+}
+
+function normalizeRoute(pathname: string): NeuroChessRoute {
+  return pathname.startsWith("/app") ? "/app" : "/";
 }
 
 function messageFromError(error: unknown): string {
@@ -4598,6 +6448,14 @@ function makeShortGameReviewResponse(
     black_lichess_like_accuracy: null,
     user_lichess_like_accuracy: null,
     opponent_lichess_like_accuracy: null,
+    white_public_neuro_score: null,
+    black_public_neuro_score: null,
+    user_public_neuro_score: null,
+    opponent_public_neuro_score: null,
+    public_neuro_score: null,
+    public_score_formula_version: "public_neuro_score_lichess_like_v1",
+    qualitative_game_label: "Partie à analyser",
+    qualitative_game_label_formula_version: "qualitative_game_label_v1",
     white_neuro_score: null,
     black_neuro_score: null,
     user_neuro_score: null,
@@ -4821,13 +6679,42 @@ function evaluationBarStateForBoardFen(
   positionEvaluationCache: Record<string, PositionEvaluationLookup>,
   context: BoardEvaluationContext,
   liveAnalysisSessionId: string | null,
+  liveAnalysisTargetFen: string | null,
   reviewBarPhase: ReviewBarPhase,
   reviewReplayMoveMode: ReviewReplayMoveMode,
   selectedReviewAnnotation: ReviewMoveAnnotation | null,
   reviewPracticeState: ReviewPracticeState | null,
 ): EvaluationBarState {
+  const liveAllowedMode =
+    mode === "LIVE" || mode === "REVIEW" || mode === "HISTORICAL";
+
+  if (reviewPracticeState?.active) {
+    return {
+      evaluation: null,
+      source: null,
+      placeholder: {
+        label: selectedReviewAnnotation
+          ? `Mode entrainement - ${formatGuidedImpact(selectedReviewAnnotation.win_loss)}`
+          : "Mode entrainement",
+        sourceLabel: "review",
+        sourceTitle: fr.liveAnalysis.hiddenDuringPractice,
+      },
+      delta: null,
+      deltaOverlay: null,
+    };
+  }
+
   if (
-    mode === "LIVE" &&
+    liveAllowedMode &&
+    boardFen &&
+    (liveAnalysisSessionId || liveAnalysisTargetFen === boardFen) &&
+    !source?.kind?.includes("live")
+  ) {
+    return boardEvaluationPendingPlaceholder(context);
+  }
+
+  if (
+    liveAllowedMode &&
     boardFen &&
     evaluationFen === boardFen &&
     evaluation &&
@@ -4877,7 +6764,7 @@ function evaluationBarStateForBoardFen(
         evaluation: null,
         source: null,
         placeholder: {
-          label: "analyse en cours",
+          label: fr.liveAnalysis.updating,
           sourceLabel: "historique",
           sourceTitle: "analyse de la position historique en cours",
         },
@@ -4890,7 +6777,7 @@ function evaluationBarStateForBoardFen(
       evaluation: null,
       source: null,
       placeholder: {
-        label: "analyse indisponible",
+        label: fr.liveAnalysis.positionNotAnalyzed,
         sourceLabel: "historique",
         sourceTitle: boardFen === currentFen
           ? "position courante sans evaluation disponible"
@@ -4928,7 +6815,7 @@ function evaluationBarStateForBoardFen(
       evaluation: null,
       source: null,
       placeholder: {
-        label: "Évaluation non disponible pour ce moment.",
+        label: fr.liveAnalysis.positionNotAnalyzed,
         sourceLabel: "review",
         sourceTitle: "données review absentes pour ce moment",
       },
@@ -4947,7 +6834,7 @@ function evaluationBarStateForBoardFen(
           : "Mode entraînement"
         : selectedReviewAnnotation
           ? `Impact du moment : ${formatGuidedImpact(selectedReviewAnnotation.win_loss)}`
-          : "Mode Review",
+          : "Review guidée",
       sourceLabel: "review",
       sourceTitle: reviewPracticeState?.active
         ? "trouve le meilleur coup en mode entraînement"
@@ -5248,6 +7135,93 @@ function normalizeReviewPovForReview(
   return userColor ? "user" : "both";
 }
 
+function resolveReviewBoardOrientation({
+  activeTab,
+  selectedReviewPov,
+  review,
+  activePracticeItem,
+  selectedReviewAnnotation,
+  selectedReviewMoment,
+  selectedReviewMovePly,
+}: {
+  activeTab: ActiveTab;
+  selectedReviewPov: ReviewPov;
+  review: ReviewResponse | null;
+  activePracticeItem: ReviewPracticeItem | null;
+  selectedReviewAnnotation: ReviewMoveAnnotation | null;
+  selectedReviewMoment: ReviewMoment | null;
+  selectedReviewMovePly: number | null;
+}): "white" | "black" {
+  if (activeTab !== "review") {
+    return "white";
+  }
+  const practiceColor = normalizedColor(activePracticeItem?.color);
+  if (practiceColor) {
+    return practiceColor;
+  }
+  const userColor = normalizedReviewUserColor(review);
+  if (selectedReviewPov === "white" || selectedReviewPov === "black") {
+    return selectedReviewPov;
+  }
+  if (selectedReviewPov === "user" && userColor) {
+    return userColor;
+  }
+  const decisionColor =
+    reviewAnnotationDecisionColor(selectedReviewAnnotation) ??
+    reviewAnnotationDecisionColor(reviewAnnotationForPly(review, selectedReviewMovePly)) ??
+    reviewMomentDecisionColor(selectedReviewMoment) ??
+    "white";
+  if (selectedReviewPov === "both") {
+    return decisionColor;
+  }
+  return decisionColor;
+}
+
+function reviewAnnotationDecisionColor(
+  annotation: ReviewMoveAnnotation | null | undefined,
+): "white" | "black" | null {
+  return annotation ? normalizedAnnotationColor(annotation) : null;
+}
+
+function reviewAnnotationForPly(
+  review: ReviewResponse | null,
+  ply: number | null,
+): ReviewMoveAnnotation | null {
+  if (!review || typeof ply !== "number") {
+    return null;
+  }
+  const candidates = [
+    ...(review.review_sections?.to_review ?? []),
+    ...(review.review_sections?.strong_moves ?? []),
+    ...(review.review_sections?.missed_opportunities ?? []),
+    ...(review.review_sections?.all ?? []),
+    ...(review.move_annotations ?? []),
+  ];
+  return candidates.find((annotation) => annotation.ply === ply) ?? null;
+}
+
+function reviewMomentDecisionColor(
+  moment: ReviewMoment | null,
+): "white" | "black" | null {
+  return (
+    normalizedColor(moment?.played_by) ??
+    activeColorFromFen(moment?.fen_before) ??
+    null
+  );
+}
+
+function normalizedColor(value: unknown): "white" | "black" | null {
+  const normalized = String(value ?? "").toLowerCase();
+  return normalized === "white" || normalized === "black" ? normalized : null;
+}
+
+function activeColorFromFen(fen: string | null | undefined): "white" | "black" | null {
+  const activeColor = String(fen ?? "").split(/\s+/)[1];
+  if (activeColor === "w") return "white";
+  if (activeColor === "b") return "black";
+  return null;
+}
+
 function normalizedReviewUserColor(
   review: ReviewResponse | null,
 ): "white" | "black" | null {
@@ -5341,6 +7315,137 @@ function tryMoveFenAfter(
   }
 }
 
+function markReviewExplorationMove(
+  state: ReviewExplorationState | null,
+  moveUci: string,
+  patch: Partial<ReviewExplorationMove>,
+  message: string,
+): ReviewExplorationState | null {
+  if (!state?.active) {
+    return state;
+  }
+  const targetIndex = [...state.moves]
+    .reverse()
+    .findIndex((move) => move.uci === moveUci);
+  if (targetIndex < 0) {
+    return state;
+  }
+  const realIndex = state.moves.length - 1 - targetIndex;
+  const moves = state.moves.map((move, index) =>
+    index === realIndex ? { ...move, ...patch } : move,
+  );
+  return {
+    ...state,
+    moves,
+    message,
+  };
+}
+
+function buildBoardMoveOutcome({
+  activeTab,
+  positionMode,
+  boardFen,
+  reviewPracticeState,
+  reviewTryMoveState,
+  reviewExplorationState,
+  reviewPvLineState,
+}: {
+  activeTab: ActiveTab;
+  positionMode: PositionMode;
+  boardFen: string | null;
+  reviewPracticeState: ReviewPracticeState | null;
+  reviewTryMoveState: ReviewTryMoveState | null;
+  reviewExplorationState: ReviewExplorationState | null;
+  reviewPvLineState: ReviewPvLineState | null;
+}): BoardMoveOutcomeOverlayState | null {
+  if (activeTab !== "review" || positionMode !== "REVIEW" || reviewPvLineState?.active) {
+    return null;
+  }
+
+  if (
+    reviewPracticeState?.active &&
+    reviewPracticeState.status === "running" &&
+    reviewPracticeState.itemState === "attempted" &&
+    !reviewPracticeState.solutionRevealed &&
+    reviewPracticeState.feedback
+  ) {
+    const item = currentPracticeItem(reviewPracticeState);
+    if (item) {
+      return boardMoveOutcomeForAttempt({
+        boardFen,
+        fenBefore: item.fen_before,
+        attemptedUci: reviewPracticeState.attemptedUci,
+        result: reviewPracticeState.feedback.result,
+      });
+    }
+  }
+
+  if (
+    reviewTryMoveState?.active &&
+    reviewTryMoveState.feedback &&
+    !reviewTryMoveState.solutionRevealed &&
+    reviewTryMoveState.fenBefore
+  ) {
+    return boardMoveOutcomeForAttempt({
+      boardFen,
+      fenBefore: reviewTryMoveState.fenBefore,
+      attemptedUci: reviewTryMoveState.attemptedUci,
+      result: reviewTryMoveState.feedback.result,
+    });
+  }
+
+  const latestExplorationMove =
+    reviewExplorationState?.active && reviewExplorationState.moves.length > 0
+      ? reviewExplorationState.moves[reviewExplorationState.moves.length - 1]
+      : null;
+  if (
+    latestExplorationMove?.status === "evaluated" &&
+    latestExplorationMove.result
+  ) {
+    return boardMoveOutcomeForAttempt({
+      boardFen,
+      fenBefore: latestExplorationMove.fenBefore,
+      attemptedUci: latestExplorationMove.uci,
+      result: latestExplorationMove.result,
+    });
+  }
+
+  return null;
+}
+
+function boardMoveOutcomeForAttempt({
+  boardFen,
+  fenBefore,
+  attemptedUci,
+  result,
+}: {
+  boardFen: string | null;
+  fenBefore: string;
+  attemptedUci: string | null;
+  result: string | null | undefined;
+}): BoardMoveOutcomeOverlayState | null {
+  if (!boardFen) {
+    return null;
+  }
+  const attempt = attemptedUci ? tryMoveFenAfter(fenBefore, attemptedUci) : null;
+  const expectedFen = attempt?.fenAfter ?? fenBefore;
+  if (boardFen !== expectedFen) {
+    return null;
+  }
+  return {
+    visible: true,
+    qualityId: getMoveQualityGlyphForAttemptResult(result),
+    result: result ?? null,
+    square: destinationSquareFromUci(attemptedUci),
+    moveUci: attemptedUci,
+  };
+}
+
+function destinationSquareFromUci(uci: string | null | undefined): string | null {
+  const square = String(uci ?? "").slice(2, 4).toLowerCase();
+  return /^[a-h][1-8]$/.test(square) ? square : null;
+}
+
 function currentPracticeItem(
   state: ReviewPracticeState | null,
 ): ReviewPracticeItem | null {
@@ -5348,6 +7453,13 @@ function currentPracticeItem(
     return null;
   }
   return state.items[state.currentIndex] ?? null;
+}
+
+function practiceTimeSpentMs(state: ReviewPracticeState): number | null {
+  if (!state.itemStartedAt) {
+    return null;
+  }
+  return Math.max(0, Date.now() - state.itemStartedAt);
 }
 
 function reviewIsCompletedForPractice(review: ReviewResponse | null): boolean {
@@ -5375,11 +7487,11 @@ function reviewPvLineMessageForMode(
   lineMode: ReviewPvLineMode,
 ): string {
   if (lineMode === "played") {
-    return "Ligne après le coup joué indisponible.";
+    return fr.lines.unavailable;
   }
   return (
     annotation.pv_line_message ??
-    "Ligne complète de la solution indisponible."
+    fr.lines.unavailable
   );
 }
 
@@ -5408,9 +7520,10 @@ function practiceItemToAnnotation(item: ReviewPracticeItem): ReviewMoveAnnotatio
     player_percent_after: null,
     best_move_uci: item.best_move_uci,
     best_move_san: item.best_move_san ?? null,
-    top_moves: [],
+    top_moves: item.top_moves ?? [],
     try_move_supported: item.try_move_supported,
     acceptable_moves: item.acceptable_moves ?? [],
+    candidate_moves: item.candidate_moves ?? [],
     pv_line: item.pv_line ?? [],
     pv_line_available: item.pv_line_available ?? false,
     pv_line_message: item.pv_line_message ?? null,
@@ -5423,56 +7536,6 @@ function practiceItemToAnnotation(item: ReviewPracticeItem): ReviewMoveAnnotatio
     move_quality_label: item.move_quality_label ?? null,
     coach_card_title: item.coach_card_title ?? null,
     compact_label: item.compact_label ?? null,
-  };
-}
-
-function evaluateTryMoveAttempt(
-  attemptUci: string,
-  annotation: ReviewMoveAnnotation,
-): NonNullable<TryMoveFeedback> {
-  const attempt = tryMoveFenAfter(annotation.fen_before, attemptUci);
-  if (!attempt.legal) {
-    return {
-      result: "illegal",
-      message: "Ce coup est illégal dans cette position.",
-      show_best_move: false,
-    };
-  }
-  if (!annotation.best_move_uci) {
-    return {
-      result: "unknown",
-      message: "Coup joué. Les données disponibles ne permettent pas de l'évaluer précisément.",
-      show_best_move: false,
-    };
-  }
-  if (attemptUci === annotation.best_move_uci) {
-    return {
-      result: "best",
-      message: "Excellent : tu as trouvé le meilleur coup.",
-      show_best_move: false,
-    };
-  }
-  const accepted = annotation.acceptable_moves?.find(
-    (move) => move.uci === attemptUci,
-  );
-  if (accepted?.quality === "very_good") {
-    return {
-      result: "very_good",
-      message: "Très bon : ce coup garde presque autant de chances.",
-      show_best_move: false,
-    };
-  }
-  if (accepted?.quality === "acceptable") {
-    return {
-      result: "acceptable",
-      message: "Jouable : ce coup fonctionne, mais le meilleur coup était plus précis.",
-      show_best_move: false,
-    };
-  }
-  return {
-    result: "wrong",
-    message: "À revoir : ce coup ne résout pas le problème principal.",
-    show_best_move: true,
   };
 }
 
@@ -5535,7 +7598,7 @@ function boardEvaluationPendingPlaceholder(
     evaluation: null,
     source: null,
     placeholder: {
-      label: "analyse live continue",
+      label: fr.liveAnalysis.updating,
       sourceLabel,
       sourceTitle: `Stockfish analyse la position ${sourceLabel} tant qu'elle reste affichee`,
     },
@@ -5562,6 +7625,71 @@ function reviewJobUserMessage(job: ReviewJobResponse): string {
 
 function reviewJobNeedsExplicitReconcile(job: ReviewJobResponse): boolean {
   return Boolean(job.derived_needs_reconcile && job.can_reconcile);
+}
+
+function reviewJobIsActive(job: ReviewJobResponse): boolean {
+  return (
+    job.status === "queued" ||
+    job.status === "running" ||
+    job.status === "finalizing"
+  );
+}
+
+function reviewJobProgressSignature(job: ReviewJobResponse): string {
+  return [
+    job.status,
+    job.completed_position_count,
+    job.failed_position_count,
+    job.current_fen_index,
+    job.percent,
+    job.current_phase ?? "",
+  ].join(":");
+}
+
+function reviewJobFrontendWatchdogMs(job: ReviewJobResponse): number {
+  const perPositionMs = Number(job.per_position_time_ms ?? 0);
+  return Math.max(
+    REVIEW_JOB_NO_PROGRESS_WATCHDOG_MS,
+    perPositionMs * 3 + 30_000,
+  );
+}
+
+function makeFrontendStalledReviewJob(job: ReviewJobResponse): ReviewJobResponse {
+  return {
+    ...job,
+    status: "stalled",
+    can_cancel: false,
+    retryable: true,
+    error_message: fr.analysis.interruptedWithResume,
+    failed_reason: job.failed_reason ?? "frontend_no_progress_watchdog",
+    last_error: job.last_error ?? "frontend_no_progress_watchdog",
+    current_phase: "stalled",
+    stalled_reason: "frontend_no_progress_watchdog",
+    derived_is_stale: true,
+    derived_needs_reconcile: true,
+    can_reconcile: true,
+    derived_reconcile_reason: "frontend_no_progress_watchdog",
+  };
+}
+
+function makeFrontendIncompleteReviewJob(
+  job: ReviewJobResponse,
+  reason: string,
+): ReviewJobResponse {
+  return {
+    ...job,
+    status: "incomplete",
+    can_cancel: false,
+    retryable: true,
+    error_message: fr.analysis.incompleteReviewDetail,
+    failed_reason: job.failed_reason ?? reason,
+    last_error: job.last_error ?? reason,
+    current_phase: "incomplete_review",
+    derived_is_stale: false,
+    derived_needs_reconcile: false,
+    can_reconcile: true,
+    derived_reconcile_reason: reason,
+  };
 }
 
 function reviewJobReconcileMessage(job: ReviewJobResponse): string {
@@ -5757,10 +7885,10 @@ function buildReviewSquareStyles(
 
   const styles: Record<string, CSSProperties> = {};
   if (moveMode === "best") {
-    addUciSquares(styles, moment.best_move_uci, "rgba(34, 197, 94, 0.36)");
+    addUciSquares(styles, moment.best_move_uci, "rgba(0, 229, 255, 0.34)");
   } else {
-    addUciSquares(styles, moment.played_uci, "rgba(245, 125, 59, 0.38)");
-    addUciSquares(styles, moment.best_move_uci, "rgba(34, 197, 94, 0.18)");
+    addUciSquares(styles, moment.played_uci, "rgba(0, 229, 255, 0.36)");
+    addUciSquares(styles, moment.best_move_uci, "rgba(105, 92, 255, 0.24)");
   }
   return styles;
 }
@@ -5900,8 +8028,13 @@ function addUciSquares(
   }
   const from = uci.slice(0, 2);
   const to = uci.slice(2, 4);
-  styles[from] = { backgroundColor: color };
-  styles[to] = { backgroundColor: color };
+  const highlight = {
+    background:
+      `radial-gradient(circle at center, ${color} 0%, rgba(0, 229, 255, 0.18) 42%, rgba(0, 0, 0, 0) 76%)`,
+    boxShadow: `inset 0 0 0 1px ${color}, 0 0 18px ${color}`,
+  };
+  styles[from] = highlight;
+  styles[to] = highlight;
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {

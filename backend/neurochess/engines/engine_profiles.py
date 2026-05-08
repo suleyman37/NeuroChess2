@@ -39,7 +39,7 @@ ENGINE_PROFILES: dict[str, EngineProfile] = {
         analysis_profile="quick",
         threads=2,
         hash_mb=256,
-        multipv=2,
+        multipv=5,
         limit_mode="time",
     ),
     "standard": EngineProfile(
@@ -47,7 +47,7 @@ ENGINE_PROFILES: dict[str, EngineProfile] = {
         analysis_profile="standard",
         threads=6,
         hash_mb=1024,
-        multipv=3,
+        multipv=5,
         limit_mode="time",
     ),
     "deep": EngineProfile(
@@ -55,7 +55,7 @@ ENGINE_PROFILES: dict[str, EngineProfile] = {
         analysis_profile="deep",
         threads=8,
         hash_mb=2048,
-        multipv=3,
+        multipv=5,
         limit_mode="time",
     ),
 }

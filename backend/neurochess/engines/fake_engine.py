@@ -138,6 +138,15 @@ class FakeStockfishService:
             return cls._global_call_index
 
     def _maybe_delay_or_fail(self, call_index: int, fen_key: str) -> None:
+        timeout_on_index = _optional_int(os.environ.get("FAKE_ENGINE_TIMEOUT_ON_INDEX"))
+        timeout_on_key = os.environ.get("FAKE_ENGINE_TIMEOUT_ON_FEN_KEY")
+        should_timeout = (
+            (timeout_on_index is not None and call_index == timeout_on_index)
+            or (timeout_on_key is not None and timeout_on_key == fen_key)
+        )
+        if should_timeout:
+            raise RuntimeError("engine_hard_timeout")
+
         hang_on_index = _optional_int(os.environ.get("FAKE_ENGINE_HANG_ON_INDEX"))
         hang_on_key = os.environ.get("FAKE_ENGINE_HANG_ON_FEN_KEY")
         should_hang = (

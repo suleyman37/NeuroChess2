@@ -5,6 +5,9 @@ __pycache__/
 *.so
 .Python
 .venv/
+.venv_repair*/
+.manual_pydeps/
+.wheelhouse/
 venv/
 env/
 *.egg-info/
@@ -15,14 +18,21 @@ env/
 # Node / frontend
 node_modules/
 frontend/dist/
+frontend/storybook-static/
 frontend/.vite/
 *.tsbuildinfo
 
 # Local DB / data
 neurochess.db
 neurochess.db-journal
+neurochess.db-shm
+neurochess.db-wal
 *.sqlite
 *.sqlite3
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3-shm
+*.sqlite3-wal
 
 # Logs / temp
 logs/
@@ -30,6 +40,7 @@ logs/
 .tmp-tests/
 *.log
 *.err
+.claude/worktrees/
 
 # Secrets / local config
 .env

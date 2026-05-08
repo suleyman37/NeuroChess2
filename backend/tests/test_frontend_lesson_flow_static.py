@@ -1,0 +1,496 @@
+from __future__ import annotations
+
+import unittest
+from pathlib import Path
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+REVIEW_DIR = PROJECT_ROOT / "frontend" / "src" / "components" / "review"
+
+
+def read(path: Path) -> str:
+    return path.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+
+class FrontendLessonFlowStaticTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.lesson = read(REVIEW_DIR / "ReviewLessonPanel.tsx")
+        self.labels = read(REVIEW_DIR / "reviewLabels.ts")
+        self.summary = read(REVIEW_DIR / "ReviewCockpitSummary.tsx")
+        self.practice = read(REVIEW_DIR / "ReviewPracticePanel.tsx")
+        self.laboratory = read(REVIEW_DIR / "ReviewLaboratoryPanel.tsx")
+        self.panel = read(REVIEW_DIR / "ReviewPanel.tsx")
+        self.focus_tabs = read(REVIEW_DIR / "ReviewFocusTabs.tsx")
+        self.view_model = read(REVIEW_DIR / "reviewViewModel.ts")
+        self.types = read(REVIEW_DIR / "reviewTypes.ts")
+        self.step_status = read(REVIEW_DIR / "ReviewStepStatus.tsx")
+        self.line_comparison = read(REVIEW_DIR / "ReviewLineComparison.tsx")
+        self.move_quality_badge = read(REVIEW_DIR / "MoveQualityBadge.tsx")
+        self.move_quality_glyphs = read(REVIEW_DIR / "moveQualityGlyphs.ts")
+        self.board_outcome_overlay = read(REVIEW_DIR / "BoardMoveOutcomeOverlay.tsx")
+        self.chess_board_panel = read(PROJECT_ROOT / "frontend" / "src" / "components" / "ChessBoardPanel.tsx")
+        self.styles = read(PROJECT_ROOT / "frontend" / "src" / "styles.css")
+        self.app = read(PROJECT_ROOT / "frontend" / "src" / "App.tsx")
+        self.i18n = read(PROJECT_ROOT / "frontend" / "src" / "i18n" / "fr.ts")
+        self.user_pov_smoke = read(
+            PROJECT_ROOT / "scripts" / "browser_review_user_pov_focus_layout_contract_smoke.mjs"
+        )
+
+    def section(self, name: str) -> str:
+        start = self.lesson.index(f'data-public-lesson-step="{name}"')
+        if name == "challenge":
+            end = self.lesson.index('data-public-lesson-step="correction"')
+        elif name == "correction":
+            end = self.lesson.index('data-public-lesson-step="training"')
+        else:
+            end = self.lesson.index("\n    </section>", start)
+        return self.lesson[start:end]
+
+    def test_review_tabs_are_four_guided_contract_tabs(self) -> None:
+        for usage in (
+            "fr.review.focusSummary",
+            "fr.review.focusLearn",
+            "fr.review.focusPractice",
+            "fr.review.focusExplorer",
+        ):
+            self.assertIn(usage, self.labels)
+        for label in ("Résumé", "Apprendre", "S'entraîner", "Explorer"):
+            self.assertIn(label, self.i18n + self.summary + self.laboratory)
+        self.assertNotIn('label: "Laboratoire"', self.labels)
+        self.assertIn('aria-label="Explorer Review"', self.laboratory)
+        self.assertIn("<strong>Explorer la partie en profondeur</strong>", self.laboratory)
+        self.assertIn("Détails techniques", self.laboratory)
+
+    def test_review_tabs_load_from_capabilities_with_local_fallback(self) -> None:
+        self.assertIn('import { getCapabilities, type CapabilityTab } from "../../api/client"', self.focus_tabs)
+        self.assertIn("normalizeCapabilityReviewTabs(capabilities.review?.tabs)", self.focus_tabs)
+        self.assertIn('explorer: "lab"', self.focus_tabs)
+        self.assertIn("REVIEW_FOCUS_TABS", self.focus_tabs)
+        self.assertIn("catch(() => REVIEW_FOCUS_TABS)", self.focus_tabs)
+        self.assertIn("REQUIRED_REVIEW_FOCUS_KEYS", self.focus_tabs)
+        self.assertNotIn("getCapabilities", self.app)
+        self.assertNotIn("capabilities.review", self.app)
+
+    def test_visible_lesson_flow_is_three_public_steps(self) -> None:
+        self.assertIn('export type ReviewPublicLessonStep = "challenge" | "correction" | "training"', self.types)
+        self.assertIn("REVIEW_PUBLIC_LESSON_STEPS", self.labels)
+        for label in ("Défi", "Correction", "Entraînement"):
+            self.assertIn(label, self.labels + self.lesson)
+        self.assertIn("review-public-stepper", self.lesson)
+        self.assertNotIn("REVIEW_LESSON_STEPS.map", self.lesson)
+        self.assertNotIn("review-lesson-stepper", self.lesson)
+
+    def test_internal_six_steps_are_grouped_not_exposed_as_navigation(self) -> None:
+        for step in ('"observe"', '"try"', '"played"', '"solution"', '"compare"', '"takeaway"'):
+            self.assertIn(step, self.types + self.labels + self.view_model)
+        self.assertIn("getPublicLessonStep", self.view_model)
+        self.assertIn('lessonStep === "takeaway"', self.view_model)
+        self.assertIn('return "training"', self.view_model)
+        self.assertIn('lessonStep === "played"', self.view_model)
+        self.assertIn('lessonStep === "solution"', self.view_model)
+        self.assertIn('lessonStep === "compare"', self.view_model)
+        self.assertIn('return "correction"', self.view_model)
+
+    def test_challenge_step_does_not_reveal_solution_or_line(self) -> None:
+        challenge = self.section("challenge")
+        self.assertIn("Trouve le meilleur coup.", challenge + self.i18n)
+        self.assertIn("Essayer", challenge)
+        self.assertIn("Indice", challenge + self.i18n)
+        self.assertIn("Voir la correction", challenge + self.i18n)
+        self.assertNotIn("solutionMove", challenge)
+        self.assertNotIn("best_move_san", challenge)
+        self.assertNotIn("ReviewLineComparison", challenge)
+        self.assertNotIn("Voir la ligne", challenge)
+
+    def test_correction_reveals_solution_after_explicit_action(self) -> None:
+        correction = self.section("correction")
+        self.assertIn("handleShowCorrection", self.lesson)
+        self.assertIn('onShowAnnotation(lessonAnnotation, index, "best")', self.lesson)
+        self.assertIn('publicStep === "correction" && canShowSolutionData', self.lesson)
+        self.assertIn("const correctionMain", self.lesson)
+        self.assertIn("Voici ce que ton coup a permis.", self.lesson + self.i18n)
+        self.assertIn("Le meilleur coup était", correction + self.i18n)
+        self.assertIn("solutionMove", correction)
+        self.assertIn("ReviewLineComparison", correction)
+        self.assertIn("review-line-comparison-disclosure review-details-disclosure", correction)
+
+    def test_current_attempt_wrong_feedback_does_not_reuse_historical_commentary(self) -> None:
+        correction = self.section("correction")
+        self.assertIn("hasCurrentAttempt", self.view_model)
+        self.assertIn("showAttemptSpecificFeedback", self.view_model)
+        self.assertIn(
+            "const showHistoricalMoveDiagnostics = !hasCurrentAttempt && !accepted && !needsRebuild",
+            self.view_model,
+        )
+        self.assertIn("const shouldShowLine = accepted || !hasCurrentAttempt", self.view_model)
+        self.assertIn("fr.feedback.currentAttemptWrong", self.lesson)
+        self.assertIn("fr.feedback.currentAttemptPlayable", self.lesson)
+        self.assertIn("fr.feedback.currentAttemptIllegal", self.lesson)
+        self.assertIn("correctionFeedback.showAttemptSpecificFeedback", self.lesson)
+        self.assertIn("currentAttemptFeedbackText", self.lesson)
+        self.assertIn("Pas encore. Ce coup ne répond pas à l'idée clé de la position.", self.i18n)
+
+        attempt_branch_start = correction.index("correctionFeedback.showAttemptSpecificFeedback ? (")
+        historical_branch_start = correction.index(
+            "correctionFeedback.showHistoricalMoveDiagnostics",
+            attempt_branch_start,
+        )
+        attempt_branch = correction[attempt_branch_start:historical_branch_start]
+        self.assertIn("currentAttemptFeedbackText", attempt_branch)
+        self.assertNotIn("correctionProblem", attempt_branch)
+        self.assertNotIn("formatImpact(annotation.win_loss)", attempt_branch)
+        self.assertNotIn("fr.feedback.qualityLabel(qualityLabel)", attempt_branch)
+
+    def test_practice_feedback_best_or_accepted_cannot_force_problem_copy(self) -> None:
+        self.assertIn("evaluateReviewTryMoveAttempt", self.app)
+        self.assertIn("attemptState?.feedback?.show_best_move", self.view_model)
+        self.assertNotIn("Boolean(attemptMatches && attemptState?.feedback) ||", self.view_model)
+        self.assertIn("const feedbackWantsCorrection", self.practice)
+        self.assertIn("state.feedback?.show_best_move", self.practice)
+        self.assertNotIn("state.feedback ||", self.practice)
+        self.assertIn("buildReviewCorrectionFeedbackView", self.lesson)
+        self.assertIn("ACCEPTED_TRY_MOVE_RESULTS", self.view_model)
+        self.assertIn('new Set(["best", "very_good", "acceptable"])', self.view_model)
+        self.assertIn("correctionPlayedLabel", self.lesson)
+        self.assertIn("Bonne id", self.lesson + self.i18n)
+        self.assertIn("{correctionFeedback.showMissedBest && (", self.lesson)
+        self.assertIn("Review ", self.lesson + self.i18n)
+        self.assertIn(" reconstruire", self.lesson + self.i18n)
+
+    def test_move_quality_badges_are_attempt_scoped_and_visual_only(self) -> None:
+        self.assertIn("MoveQualityBadge", self.move_quality_badge)
+        self.assertIn("MOVE_QUALITY_GLYPH_REGISTRY", self.move_quality_glyphs)
+        self.assertIn("getMoveQualityGlyphForAttemptResult", self.move_quality_glyphs)
+        self.assertIn("getMoveQualityGlyphForHistoricalCategory", self.move_quality_glyphs)
+        self.assertIn('case "best":', self.move_quality_glyphs)
+        self.assertIn('return "critical_best";', self.move_quality_glyphs)
+        self.assertIn('case "very_good":', self.move_quality_glyphs)
+        self.assertIn('return "excellent";', self.move_quality_glyphs)
+        self.assertIn('case "acceptable":', self.move_quality_glyphs)
+        self.assertIn('return "good";', self.move_quality_glyphs)
+        self.assertIn('case "wrong":', self.move_quality_glyphs)
+        self.assertIn('case "illegal":', self.move_quality_glyphs)
+        self.assertIn('case "needs_rebuild":', self.move_quality_glyphs)
+        self.assertIn("userVisible: false", self.move_quality_glyphs)
+        for unsafe_source in ("win_loss", "move_accuracy", "criticality_score", "diagnostic_gap"):
+            self.assertNotIn(unsafe_source, self.move_quality_glyphs)
+        self.assertIn("review-attempt-quality-badge", self.lesson)
+        self.assertIn("practice-attempt-quality-badge", self.practice)
+        self.assertIn("review-historical-quality-badge", self.lesson)
+        self.assertIn("review-line-game-quality-badge", self.line_comparison)
+        self.assertIn("review-line-solution-quality-badge", self.line_comparison)
+        self.assertIn("data-quality-id", self.move_quality_badge)
+        self.assertIn("aria-label", self.move_quality_badge)
+        self.assertIn("state.feedback &&", self.practice)
+        self.assertIn("tryActiveForAnnotation && tryMoveState?.feedback", self.lesson)
+        challenge = self.section("challenge")
+        self.assertNotIn("Meilleure idée", challenge)
+        self.assertIn("moveQuality:", self.i18n)
+
+    def test_board_move_outcome_overlay_is_attempt_scoped_and_css_based(self) -> None:
+        self.assertIn("BoardMoveOutcomeOverlay", self.board_outcome_overlay)
+        self.assertIn("squareToBoardCoordinates", self.board_outcome_overlay)
+        self.assertIn("data-testid={testId}", self.board_outcome_overlay)
+        self.assertIn("data-quality-id={definition.id}", self.board_outcome_overlay)
+        self.assertIn("data-square={displayedSquare}", self.board_outcome_overlay)
+        self.assertIn("data-board-orientation={orientation}", self.board_outcome_overlay)
+        self.assertIn('aria-live="polite"', self.board_outcome_overlay)
+        self.assertIn("pointer-events: none", self.styles)
+        self.assertIn("board-move-outcome-overlay", self.styles)
+        self.assertIn("BoardMoveOutcomeOverlay", self.chess_board_panel)
+        self.assertIn("moveOutcome?: BoardMoveOutcomeOverlayState | null", self.chess_board_panel)
+        self.assertIn("moveOutcome={boardMoveOutcome}", self.app)
+        self.assertIn("buildBoardMoveOutcome", self.app)
+        self.assertIn("reviewPracticeState.feedback", self.app)
+        self.assertIn("reviewTryMoveState.feedback", self.app)
+        self.assertIn("reviewPvLineState?.active", self.app)
+        self.assertIn("destinationSquareFromUci", self.app)
+        self.assertIn("getMoveQualityGlyphForAttemptResult(result)", self.app)
+        self.assertIn('glyph: "!"', self.move_quality_glyphs)
+        self.assertIn('glyph: "✓"', self.move_quality_glyphs)
+        self.assertIn('glyph: "="', self.move_quality_glyphs)
+        self.assertIn('glyph: "?"', self.move_quality_glyphs)
+        self.assertIn('left: `${(squareCoordinates.column + 0.74) * 12.5}%`', self.board_outcome_overlay)
+        self.assertIn('[data-piece^="b"] > svg', self.styles)
+        self.assertIn('glyph: "×"', self.move_quality_glyphs)
+        self.assertIn('glyph: "↻"', self.move_quality_glyphs)
+        for generated_asset in (".svg", ".png", ".webp"):
+            self.assertNotIn(generated_asset, self.board_outcome_overlay)
+
+    def test_review_training_success_has_local_next_or_finish_action(self) -> None:
+        self.assertIn("PRACTICE_SUCCESS_RESULTS", self.practice)
+        self.assertIn("feedbackCanContinue", self.practice)
+        self.assertIn("review-training-position-label", self.practice)
+        self.assertIn("review-training-feedback", self.practice)
+        self.assertIn("review-training-user-move", self.practice)
+        self.assertIn("review-training-next-button", self.practice)
+        self.assertIn("review-training-finish-button", self.practice)
+        self.assertIn("fr.practice.acceptedCanContinue", self.practice)
+        self.assertIn("fr.practice.nextPosition", self.practice)
+        self.assertIn("fr.practice.finishSession", self.practice)
+        success_start = self.practice.index("{feedbackCanContinue && (")
+        wrong_or_reveal_start = self.practice.index("{showSolution && !feedbackCanContinue", success_start)
+        success_branch = self.practice[success_start:wrong_or_reveal_start]
+        self.assertIn("onNext", success_branch)
+        self.assertIn("review-training-next-button", success_branch)
+        self.assertIn("review-training-finish-button", success_branch)
+        self.assertNotIn("onTryAgain", success_branch)
+        self.assertNotIn("fr.actions.showCorrection", success_branch)
+
+        wrong_or_reveal_branch = self.practice[wrong_or_reveal_start:]
+        self.assertIn("onTryAgain", wrong_or_reveal_branch)
+        self.assertIn("canContinueAfterReveal", wrong_or_reveal_branch)
+        self.assertNotIn("review-training-next-button", wrong_or_reveal_branch)
+
+    def test_correction_tab_has_no_best_move_contradiction_invariant(self) -> None:
+        self.assertIn("buildReviewCorrectionFeedbackView", self.view_model)
+        self.assertIn("correctionAcceptedSource", self.view_model)
+        self.assertIn("moveCandidateSetsIntersect", self.view_model)
+        self.assertIn("const attemptMoveCandidates", self.view_model)
+        self.assertIn("tryMoveState?.attemptedUci || tryMoveState?.attemptedSan", self.view_model)
+        self.assertIn(
+            "const userMoveCandidates =\n"
+            "    attemptMoveCandidates ?? [displayedPlayedMove, annotation.uci, annotation.san];",
+            self.view_model,
+        )
+        self.assertIn("annotation.best_move_uci", self.view_model)
+        self.assertIn("annotation.best_move_san", self.view_model)
+        self.assertIn("annotation.acceptable_moves", self.view_model)
+        self.assertIn("normalizeReviewMoveForComparison", self.view_model)
+        self.assertIn(
+            "const hasCurrentAttempt = Boolean(tryActiveForAnnotation && tryMoveState?.feedback);",
+            self.view_model,
+        )
+        self.assertIn(
+            "const showAttemptSpecificFeedback = hasCurrentAttempt && !accepted && !needsRebuild;",
+            self.view_model,
+        )
+        self.assertIn("tryActiveForAnnotation && tryMoveState?.feedback", self.lesson)
+        self.assertIn("isNegativeCorrectionLabel", self.view_model)
+        self.assertIn("correctionMoveAccepted", self.lesson)
+        self.assertIn("visibleTags", self.lesson)
+        self.assertIn("fr.feedback.bestMoveSuccess(displayedPlayedMove)", self.lesson)
+        self.assertIn("correctionFeedback.categoryIsNegative", self.lesson)
+        self.assertIn("correctionFeedback.showMissedBest", self.lesson)
+        self.assertNotIn("Ouvre la correction pour comparer", self.lesson + self.app + self.step_status)
+
+    def test_correction_success_uses_safe_historical_impact_semantics(self) -> None:
+        correction = self.section("correction")
+        self.assertIn("showSuccessHistoricalContext", self.view_model)
+        self.assertIn("showHistoricalMoveDiagnostics", self.view_model)
+        self.assertIn("showRecoveredGain", self.view_model)
+        self.assertIn("recoveredGainPointsFromWinLoss", self.view_model)
+        self.assertIn("correctionFeedback.showSuccessHistoricalContext ? (", correction)
+        self.assertIn("fr.feedback.historicalIdeaMissed", correction)
+        self.assertIn("fr.feedback.recoveredGain(", correction)
+        self.assertIn("fr.feedback.historicalImpact(impactLabel)", correction)
+        self.assertIn("correctionFeedback.showHistoricalMoveDiagnostics ? (", correction)
+        self.assertIn("formatImpact(annotation.win_loss)", correction)
+        self.assertIn("fr.feedback.qualityLabel(qualityLabel)", correction)
+
+        success_start = correction.index("correctionFeedback.showSuccessHistoricalContext")
+        diagnostics_start = correction.index("correctionFeedback.showHistoricalMoveDiagnostics")
+        success_branch = correction[success_start:diagnostics_start]
+        self.assertNotIn("formatImpact(annotation.win_loss)", success_branch)
+        self.assertNotIn("fr.feedback.qualityLabel(qualityLabel)", success_branch)
+        self.assertIn("Dans la partie", self.i18n)
+        self.assertIn("Gain récupéré", self.i18n)
+        self.assertIn("Impact :", self.i18n)
+
+    def test_success_attempt_uses_success_ctas_not_retry_or_correction(self) -> None:
+        challenge = self.section("challenge")
+        self.assertIn("tryFeedbackSucceeded", self.lesson)
+        self.assertIn("fr.feedback.successAttemptTitle", self.lesson)
+        self.assertIn("fr.feedback.viewWhyItWorks", challenge)
+        self.assertIn("fr.actions.continue", challenge)
+        self.assertIn("correctionFeedback.shouldShowRetry", challenge)
+        self.assertIn("correctionFeedback.shouldShowCorrection", challenge)
+        self.assertIn("tryFeedbackCanShowLine", challenge)
+        success_start = challenge.index("tryFeedbackSucceeded ? (")
+        wrong_start = challenge.index(") : (", success_start)
+        success_branch = challenge[success_start:wrong_start]
+        self.assertIn("handleTrainingStep", success_branch)
+        self.assertIn("handleTryRevealSolution", success_branch)
+        self.assertNotIn("onTryMoveReset", success_branch)
+        self.assertNotIn("fr.actions.showCorrection", success_branch)
+        self.assertIn("Tentative réussie", self.i18n)
+        self.assertIn("Voir pourquoi ça marche", self.i18n)
+        self.assertIn("Continuer", self.i18n)
+
+    def test_line_action_requires_real_line_and_opens_visible_panel(self) -> None:
+        correction = self.section("correction")
+        self.assertIn("canShowAnyPvLine", self.lesson)
+        self.assertIn("correctionFeedback.shouldShowLine", self.lesson)
+        self.assertIn("canShowAnyPvLine && (", correction)
+        self.assertNotIn("canShowAnyPvLine || hasContrastCoach", self.lesson)
+        self.assertNotIn("hasContrastCoach", self.lesson)
+        self.assertIn("review-line-comparison-disclosure review-details-disclosure", correction)
+        self.assertIn("fr.feedback.lineHistoricalContext", self.line_comparison)
+        self.assertIn("fr.feedback.historicalPlayedMove(view.playedMove)", self.line_comparison)
+        self.assertIn("fr.lines.playGameLine", self.line_comparison)
+        self.assertIn("fr.lines.playSolutionLine", self.line_comparison)
+        self.assertIn('data-testid="review-line-game-play-button"', self.line_comparison)
+        self.assertIn('data-testid="review-line-solution-play-button"', self.line_comparison)
+        self.assertIn("review-line-player-dock", self.app)
+        self.assertIn("ReviewPvStepper", self.app)
+        self.assertIn("reviewPvLineState?.active", self.app)
+        pv_stepper = read(REVIEW_DIR / "ReviewPvStepper.tsx")
+        self.assertIn('data-testid="review-line-player"', pv_stepper)
+        self.assertIn('data-testid="review-line-player-next"', pv_stepper)
+        self.assertNotIn(">Voir la ligne<", self.line_comparison)
+        self.assertNotIn("Après ton coup", self.line_comparison)
+
+    def test_review_pov_orientation_and_focus_layout_contract(self) -> None:
+        score_details = read(REVIEW_DIR / "ReviewScoreDetails.tsx")
+        self.assertIn("resolveReviewBoardOrientation", self.app)
+        self.assertIn('selectedReviewPov === "both"', self.app)
+        self.assertIn("reviewAnnotationForPly(review, selectedReviewMovePly)", self.app)
+        self.assertIn("reviewMomentDecisionColor(selectedReviewMoment)", self.app)
+        self.assertIn('normalizedReviewUserColor(review) ? "user" : "both"', self.app)
+        self.assertIn('return userColor ? "user" : "both"', self.app)
+        self.assertIn('selectedPov === "user" && !userColor ? "both"', self.view_model)
+        self.assertIn("buildPovOptions(userColor)", self.view_model)
+        self.assertIn("fr.review.pov.me", self.labels)
+        self.assertIn("fr.review.pov.unknownColor", score_details)
+        self.assertIn("review-analyzed-player-me-disabled-reason", score_details)
+        self.assertIn("review-user-color-detected-label", score_details)
+        self.assertIn("optionTestIdSuffix(option.value)", score_details)
+        self.assertIn("review-focus-layout", self.app)
+        self.assertIn("review-board-sticky-column", self.app)
+        self.assertIn("review-primary-action-zone", self.practice)
+        self.assertIn("review-current-moment-side", self.lesson + self.practice)
+        self.assertIn("review-details-disclosure", self.lesson)
+        self.assertIn("review-analyzed-player-me-disabled-reason", self.user_pov_smoke)
+        self.assertIn("data-board-orientation", self.user_pov_smoke)
+        self.assertIn("review-line-player-dock", self.user_pov_smoke)
+        self.assertIn("review-training-next-button", self.user_pov_smoke)
+        self.assertIn("expectedIndex + 1", self.user_pov_smoke)
+        self.assertIn("Position ${expectedIndex + 1}", self.user_pov_smoke)
+
+    def test_training_step_has_takeaway_and_training_action(self) -> None:
+        training = self.section("training")
+        self.assertIn("Transforme ce moment en entraînement.", training)
+        self.assertIn("À retenir", training)
+        self.assertIn("Prochaine action", training)
+        self.assertIn("S'entraîner", training)
+        self.assertIn("Moment suivant", training)
+        self.assertIn("Retour au résumé", training)
+
+    def test_one_primary_action_is_selected_per_public_state(self) -> None:
+        self.assertIn("const challengePrimaryAction", self.lesson)
+        self.assertIn("const correctionPrimaryAction", self.lesson)
+        self.assertIn("const trainingPrimaryAction", self.lesson)
+        self.assertIn('challengePrimaryAction === "try" ? "primary"', self.lesson)
+        self.assertIn('correctionPrimaryAction === "continue" ? "primary"', self.lesson)
+        self.assertNotIn('correctionPrimaryAction === "line" ? "primary"', self.lesson)
+        self.assertIn('trainingPrimaryAction === "practice" ? "primary"', self.lesson)
+        self.assertIn('trainingPrimaryAction === "next" ? "primary"', self.lesson)
+
+    def test_summary_hides_audit_details_and_practice_is_state_driven(self) -> None:
+        self.assertIn("NeuroScore", self.summary)
+        self.assertIn("Score coach", self.summary + self.view_model)
+        self.assertIn("Précision de référence", self.summary + self.view_model)
+        self.assertIn("coachNeuroScoreForReview", self.view_model)
+        self.assertIn("referencePrecisionForReview", self.view_model)
+        self.assertIn("user_headline_neurochess_score", self.view_model)
+        self.assertIn("user_public_neuro_score", self.view_model)
+        self.assertIn("S'entraîner sur cette Review", self.summary)
+        self.assertIn("Moments clés", self.summary)
+        self.assertIn("Explorer les détails", self.summary)
+        self.assertIn("review-summary-simple", self.summary)
+        self.assertIn("review-key-moment-list", self.summary)
+        self.assertIn("review-training-card", self.summary)
+        self.assertNotIn("scoreAuditDetailsForPov", self.summary)
+        self.assertNotIn("Écart diagnostique", self.summary)
+        self.assertNotIn("Détails techniques / audit", self.summary)
+        self.assertNotIn("criticality_score", self.summary)
+        self.assertNotIn("diagnostic_gap", self.summary)
+        self.assertNotIn("neuro_score_diag", self.summary)
+        self.assertIn("Commencer l'entraînement", self.practice + self.i18n)
+        self.assertIn("Session recommandée", self.practice + self.i18n)
+        self.assertIn("Plan en construction", self.practice + self.i18n)
+        self.assertIn("Explorer les moments", self.practice + self.i18n)
+        self.assertIn("Voir la correction", self.practice + self.i18n)
+        self.assertNotIn("Voir solution", self.practice)
+        self.assertIn("Revoir les positions ratées", self.practice)
+        self.assertIn("Faire une nouvelle session", self.practice)
+        self.assertNotIn("disabled={!canShowPv", self.practice)
+        self.assertNotIn("board-neuro3d-monitor", self.app)
+        self.assertNotIn("boardNeuroBrainData", self.app)
+
+    def test_score_mock_contract_is_visible_in_sources(self) -> None:
+        raw_start = self.view_model.index("function rawCoachNeuroScoreForReview")
+        coach_start = self.view_model.index("export function coachNeuroScoreForReview")
+        reference_start = self.view_model.index("export function referencePrecisionForReview")
+        raw_block = self.view_model[raw_start:coach_start]
+        coach_block = self.view_model[coach_start:reference_start]
+        self.assertLess(raw_block.index("review.user_coach_neuro_score"), raw_block.index("review.user_public_neuro_score") if "review.user_public_neuro_score" in raw_block else len(raw_block))
+        self.assertIn("review.user_headline_neurochess_score", raw_block)
+        self.assertIn("review.user_public_neuro_score", self.view_model[reference_start:])
+        self.assertIn("rawCoachNeuroScoreForReview", coach_block)
+        self.assertIn("referencePrecisionForReview", coach_block)
+        self.assertIn("rawCoachNeuroScoreForReview(review, povContext) ?? referencePrecisionForReview(review, povContext)", coach_block)
+        self.assertIn("coachScoreLabelForPov", self.view_model)
+        self.assertIn("referencePrecisionLabelForPov", self.view_model)
+        self.assertIn("NeuroScore ${formatHeadlineScore(coachScore)} / 100", self.summary)
+        self.assertIn("referencePrecisionLabel", self.summary)
+        self.assertNotIn("NeuroScore ${formatHeadlineScore(publicScore)} / 100", self.summary)
+        self.assertNotIn("active={selectedMovePly === selectedCoachAnnotation?.ply}\n            active=", self.panel)
+
+    def test_review_practice_grading_is_backend_authoritative(self) -> None:
+        self.assertIn("recordReviewPracticeAttempt", self.app)
+        self.assertIn("summary.attempt_feedback", self.app)
+        self.assertNotIn("function evaluateTryMoveAttempt", self.app)
+        self.assertNotIn("result: evaluation.result", self.app)
+        for local_result in (
+            'result: "best"',
+            'result: "very_good"',
+            'result: "acceptable"',
+            'result: "wrong"',
+            'result: "illegal"',
+        ):
+            self.assertNotIn(local_result, self.app)
+
+    def test_reveal_gate_still_resets_and_hides_before_correction(self) -> None:
+        self.assertIn('setSolutionRevealForAnnotation(annotation, "hidden")', self.app)
+        self.assertIn('setSolutionRevealForAnnotation(annotation, "hint_shown")', self.app)
+        self.assertIn('setSolutionRevealForAnnotation(annotation, "solution_revealed")', self.app)
+        self.assertIn('setSolutionRevealForAnnotation(annotation, "attempted")', self.app)
+        self.assertIn('revealMode === "hint_shown"', self.view_model)
+        self.assertIn('revealMode === "solution_revealed"', self.view_model)
+        self.assertIn('revealMode === "pv_line"', self.view_model)
+        self.assertIn('publicStep === "correction"', self.view_model)
+
+    def test_under_board_status_is_compact(self) -> None:
+        self.assertIn("Position critique - trouve le meilleur coup.", self.step_status)
+        self.assertIn("Résumé Review", self.step_status)
+        self.assertIn("NeuroScore, priorités et plan sont dans le panneau coach.", self.step_status)
+        self.assertIn("Ton coup et la correction sont affichés.", self.step_status)
+        self.assertIn("À retenir : cherche les coups forcing.", self.step_status)
+        self.assertIn("review-step-status-actions", self.step_status)
+        self.assertNotIn("ReviewLineComparison", self.step_status)
+        self.assertNotIn("CoachExplanationBlock", self.step_status)
+        self.assertNotIn("Rejouer étape", self.step_status)
+
+    def test_explorer_contains_folded_complexity_and_detail_panel(self) -> None:
+        explorer = read(REVIEW_DIR / "ReviewExplorerPanel.tsx")
+        self.assertIn("Explorer la partie en profondeur", self.laboratory)
+        self.assertIn('<details className="review-lab-section" open>', self.laboratory)
+        self.assertIn("<summary>Ouverture détaillée</summary>", self.laboratory)
+        self.assertIn("<summary>Options d'analyse</summary>", self.laboratory)
+        self.assertIn("<summary>Détails techniques</summary>", self.laboratory)
+        self.assertIn("<summary>Preuves PV</summary>", self.laboratory)
+        self.assertIn("ReviewExplorerDetail", explorer)
+        self.assertIn("Voir la leçon", explorer)
+        self.assertIn("Rejouer la ligne", explorer)
+
+    def test_sources_have_no_visible_mojibake(self) -> None:
+        combined = "\n".join(
+            [self.lesson, self.labels, self.view_model, self.types, self.step_status]
+        )
+        for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
+            self.assertNotIn(marker, combined)
+
+
+if __name__ == "__main__":
+    unittest.main()

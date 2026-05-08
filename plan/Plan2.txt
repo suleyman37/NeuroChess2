@@ -1,0 +1,4951 @@
+DOCUMENT MAÎTRE FINAL — PLAN 2/3 NEUROCHESS
+EXPÉRIENCE UTILISATEUR, DESIGN SYSTEM, PARCOURS, INTERACTIONS DYNAMIQUES, ÉCRANS, BOUTONS, ÉTATS, ACCESSIBILITÉ ET PÉDAGOGIE PRODUIT
+
+Version : Plan UX / Produit / Interface v4.0 FINAL — 20/20 — Codex-ready
+Statut : source de vérité UX de NeuroChess
+Remplace : Plan2 v1.0 et Plan2 v3.0
+Compatibilité : à lire avec Plan1 v3.0 FINAL — Constitution scientifique et Plan3 — exécution technique / gouvernance Codex
+Langue produit V1 : français
+Doctrine centrale : une action utile, une expérience calme, une progression mesurable, aucun faux signal scientifique, aucun bouton sans contrat
+
+============================================================
+AVERTISSEMENT D’USAGE POUR CODEX ET TOUT AGENT IA
+============================================================
+
+Ce document est une constitution UX, pas une mission unique.
+
+Règles absolues :
+
+1. Ne jamais appliquer tout ce Plan 2 d’un coup.
+2. Ne jamais transformer une section V2/V3 en fonctionnalité V1 sans mission explicite.
+3. Ne jamais ajouter un écran, un bouton, une métrique, un mode, une animation ou une interaction sans contrat utilisateur clair.
+4. Ne jamais ajouter un quatrième onglet principal en V1.
+5. Ne jamais rendre visibles les métriques interdites par Plan1 :
+   - raw criticality_score ;
+   - ETV ;
+   - FSRS ;
+   - BKT ;
+   - IRT ;
+   - diagnostic_gap ;
+   - raw WDL ;
+   - Transfer Gap visible ;
+   - SkillTrace mastery numérique ;
+   - posterior Beta ;
+   - Evidence JSON brut ;
+   - transition_weight ;
+   - persistence_weight ;
+   - reliability_weight.
+6. Ne jamais réintroduire en V1 :
+   - NeuroMonitor ;
+   - brain ;
+   - cortex ;
+   - atlas ;
+   - Cognitive Map ;
+   - Candidate Trainer ;
+   - Intent Layer profond ;
+   - LLM coach ;
+   - free-play IA ;
+   - multiplayer ;
+   - social feed ;
+   - paywall agressif.
+7. Une mission Codex = un objectif précis = un diff contrôlé = tests = rapport.
+8. L’UX doit servir la boucle scientifique du Plan1, jamais la contredire.
+9. Le produit doit toujours répondre à la question utilisateur :
+   “Qu’est-ce que je fais maintenant ?”
+10. Si Codex reçoit ce document sans mission explicite, il doit répondre :
+   “Plan 2 compris. Quelle mission précise dois-je exécuter ?”
+
+Règle de hiérarchie :
+
+Plan1 décide ce qui est scientifiquement vrai.
+Plan2 décide comment l’utilisateur le ressent et l’utilise.
+Plan3 décide comment on le construit sans se perdre.
+
+============================================================
+0. THÈSE CENTRALE DU PLAN 2
+============================================================
+
+Le Plan 1 définit comment NeuroChess pense scientifiquement :
+
+- vérité moteur ;
+- Win% ;
+- perte de chances ;
+- score coach ;
+- moments critiques ;
+- training_items ;
+- Practice events ;
+- répétition espacée ;
+- SkillTrace shadow ;
+- Transfer Opportunity Model ;
+- prudence sur les claims ;
+- validation scientifique.
+
+Le Plan 2 définit comment l’utilisateur vit cette science.
+
+La mission du Plan 2 est de transformer une architecture scientifique complexe en une expérience :
+
+- claire ;
+- belle ;
+- rapide ;
+- calme ;
+- motivante ;
+- non humiliante ;
+- active ;
+- émotionnellement sûre ;
+- accessible ;
+- fluide ;
+- mesurable ;
+- orientée vers la prochaine action utile.
+
+NeuroChess ne doit jamais ressembler à :
+
+- un dashboard de métriques ;
+- un clone de Stockfish ;
+- un puzzle trainer générique ;
+- une app de statistiques anxiogène ;
+- un faux cerveau scientifique ;
+- un chatbot bavard ;
+- un produit qui culpabilise ;
+- une app qui cache les actions importantes ;
+- un logiciel où le board est décoratif.
+
+NeuroChess doit ressembler à :
+
+- un coach calme ;
+- un laboratoire personnel de progression ;
+- un carnet d’entraînement intelligent ;
+- un système qui transforme les parties en actions ;
+- une expérience qu’on a envie de rouvrir ;
+- un espace où l’erreur est utile et non honteuse.
+
+Phrase fondatrice UX :
+
+NeuroChess cache la complexité,
+montre l’action utile,
+préserve l’envie,
+et transforme chaque vraie erreur en progression.
+
+============================================================
+0.1 NORTH STAR UX
+============================================================
+
+La North Star UX de NeuroChess est :
+
+L’utilisateur comprend quoi faire en moins de 5 secondes,
+obtient une première valeur en moins de 90 secondes,
+fait un effort actif en moins de 3 minutes,
+et revient parce que l’expérience est claire, utile et émotionnellement sûre.
+
+Formule UX :
+
+Expérience NeuroChess =
+clarté
+× action
+× confiance
+× feedback
+× autonomie
+× plaisir
+× progression visible
+
+Si un facteur tombe à zéro, l’expérience échoue.
+
+Exemples :
+
+- Clarté sans action = jolie interface passive.
+- Action sans feedback = frustration.
+- Feedback sans autonomie = app autoritaire.
+- Progression sans plaisir = abandon.
+- Plaisir sans rigueur = jeu superficiel.
+- Science sans empathie = utilisateur qui ne revient pas.
+- Board sans interaction = frustration échiquéenne.
+- Bouton sans effet visible = perte de confiance.
+
+============================================================
+0.2 PRINCIPES NON NÉGOCIABLES
+============================================================
+
+------------------------------------------------------------
+0.2.1 Une action principale par état
+------------------------------------------------------------
+
+Chaque écran doit avoir :
+
+- 1 action principale ;
+- 0 à 2 actions secondaires ;
+- le reste replié, masqué ou placé dans un menu avancé.
+
+Si un écran a cinq CTA concurrents, il est faux.
+
+------------------------------------------------------------
+0.2.2 Complexité cachée, action visible
+------------------------------------------------------------
+
+L’utilisateur ne doit pas voir en V1 :
+
+- raw criticality_score ;
+- diagnostic_gap ;
+- ETV ;
+- FSRS ;
+- BKT ;
+- IRT ;
+- posterior Beta ;
+- Evidence JSON ;
+- raw Stockfish WDL ;
+- transition_weight ;
+- persistence_weight ;
+- reliability_weight ;
+- SkillTrace mastery % ;
+- Transfer Gap visible.
+
+L’utilisateur doit voir :
+
+- une priorité ;
+- une phrase claire ;
+- un exercice ;
+- une correction ;
+- une progression compacte ;
+- une prochaine action.
+
+------------------------------------------------------------
+0.2.3 Essayer avant de voir
+------------------------------------------------------------
+
+La pédagogie active est centrale.
+
+Dans Practice et Leçon complète :
+
+Défi
+→ Tentative
+→ Micro-pause
+→ Feedback
+→ Correction
+→ À retenir
+→ Révision future
+
+Le bouton “Voir la correction” existe, mais ne doit jamais devenir le chemin principal.
+
+------------------------------------------------------------
+0.2.4 L’erreur n’est jamais une humiliation
+------------------------------------------------------------
+
+Une erreur est :
+
+- une donnée d’apprentissage ;
+- une future révision ;
+- un signal de progression.
+
+Jamais :
+
+- un jugement ;
+- une honte ;
+- une preuve d’incompétence.
+
+------------------------------------------------------------
+0.2.5 L’app ne doit jamais tourner dans le vide
+------------------------------------------------------------
+
+Interdit :
+
+- spinner infini ;
+- analyse infinie sans action ;
+- état bloqué sans CTA ;
+- erreur technique brute ;
+- bouton qui ne répond pas ;
+- board qui semble cliquable mais ne réagit pas.
+
+Chaque état doit avoir :
+
+- statut ;
+- message ;
+- action ;
+- recovery ;
+- debug replié si nécessaire.
+
+------------------------------------------------------------
+0.2.6 Le board doit être vivant
+------------------------------------------------------------
+
+L’échiquier est le centre émotionnel de l’app.
+
+Il doit permettre selon le contexte :
+
+- Review : observer, naviguer, explorer localement ;
+- Practice : jouer une tentative ;
+- Leçon complète : essayer puis comprendre ;
+- Daily Plan : tenter les positions du jour ;
+- Sandbox V1.1/V2 : tester une position librement sans IA.
+
+Le board ne doit jamais être un décor statique incompréhensible.
+
+------------------------------------------------------------
+0.2.7 V1 n’est pas une V3 amputée
+------------------------------------------------------------
+
+V1 doit être une boucle complète minimale :
+
+Import PGN
+→ Analyse
+→ Review
+→ Practice
+→ Attempt
+→ due_at
+→ Daily Plan
+→ Révision
+→ Progression compacte
+
+V1 ne doit pas inclure :
+
+- Candidate Trainer ;
+- LLM coach ;
+- Intent Layer profond ;
+- Transfer Gap visible ;
+- NeuroMonitor ;
+- brain/cortex/atlas ;
+- ETV visible ;
+- FSRS visible.
+
+------------------------------------------------------------
+0.2.8 Les labels visibles passent par l’Action Registry
+------------------------------------------------------------
+
+Aucun label critique ne doit être inventé dans un composant.
+
+Tous les labels d’action doivent exister dans :
+
+- Action Registry ;
+- fichier i18n français ;
+- tests statiques si action critique.
+
+Exemples d’incohérences interdites :
+
+- “Voir Review” à un endroit et “Voir la Review” ailleurs ;
+- “Réessayer analyse” à un endroit et “Reprendre l’analyse” ailleurs ;
+- “Commencer” sans contexte quand plusieurs commencements existent.
+
+============================================================
+1. FONDATIONS UX ACTUELLES ET RÉFÉRENCES
+============================================================
+
+Ce Plan 2 s’appuie sur des principes UX modernes :
+
+- visibilité du statut système ;
+- contrôle et liberté utilisateur ;
+- prévention des erreurs ;
+- reconnaissance plutôt que rappel ;
+- aide à reconnaître, diagnostiquer et récupérer des erreurs ;
+- esthétique minimale ;
+- accessibilité, focus visible, taille des cibles, alternative au drag/drop ;
+- design tokens pour cohérence multi-écrans ;
+- progressive disclosure pour cacher la complexité ;
+- feedback immédiat après chaque action.
+
+Principes obligatoires dans NeuroChess :
+
+1. Toujours montrer l’état d’une action longue.
+2. Toujours proposer une récupération.
+3. Toujours permettre une action non destructive en premier dans les modales de danger.
+4. Toujours fournir une alternative au drag/drop.
+5. Toujours cacher le debug par défaut.
+6. Toujours utiliser la langue de l’utilisateur, pas le jargon interne.
+
+============================================================
+2. PERSONAS ET MOMENTS UTILISATEUR
+============================================================
+
+L’utilisateur ne pense pas en pages.
+
+Il pense en moments.
+
+------------------------------------------------------------
+2.1 Persona A — Débutant anxieux, 400–800
+------------------------------------------------------------
+
+Pensée :
+
+Je ne sais même pas pourquoi je perds.
+J’ai peur que l’analyse me dise juste que je suis nul.
+
+Besoin :
+
+- sécurité émotionnelle ;
+- explications simples ;
+- pas de jargon ;
+- petites victoires ;
+- repères visuels.
+
+UX prioritaire :
+
+- moments très courts ;
+- feedback doux ;
+- pas de PV brute ;
+- pas de score humiliant ;
+- orientation visuelle forte ;
+- module Foundations futur.
+
+Risques :
+
+- abandon si trop de variantes ;
+- honte après mauvais score ;
+- confusion sur les règles.
+
+------------------------------------------------------------
+2.2 Persona B — Joueur amateur motivé, 800–1400
+------------------------------------------------------------
+
+Pensée :
+
+Je fais toujours les mêmes erreurs.
+Je veux progresser mais je ne sais pas quoi travailler.
+
+Besoin :
+
+- priorité claire ;
+- exercices issus de ses parties ;
+- révision espacée ;
+- progression visible ;
+- explication courte.
+
+UX prioritaire :
+
+- Review simple ;
+- Practice immédiate ;
+- Daily Plan court ;
+- phrases motivantes.
+
+------------------------------------------------------------
+2.3 Persona C — Joueur sérieux, 1400–2000
+------------------------------------------------------------
+
+Pensée :
+
+Je veux comprendre mes patterns d’erreurs.
+Je veux transférer l’entraînement en partie.
+
+Besoin :
+
+- moments critiques précis ;
+- rejouer les décisions ;
+- analyse plus profonde si demandée ;
+- autonomie ;
+- export ;
+- exploration.
+
+UX prioritaire :
+
+- détails repliés ;
+- exploration locale ;
+- training_items durables ;
+- progression par domaine prudente.
+
+------------------------------------------------------------
+2.4 Persona D — Joueur avancé, 2000+
+------------------------------------------------------------
+
+Pensée :
+
+Je veux réduire les erreurs rares mais coûteuses.
+Je veux auditer mes décisions.
+
+Besoin :
+
+- finesse ;
+- contrôle ;
+- historique ;
+- recherche ;
+- comparaison ;
+- respect de son expertise.
+
+UX prioritaire V1 :
+
+- pas de faux dashboard avancé ;
+- détails accessibles mais repliés ;
+- export ;
+- review fiable ;
+- réanalyse deep optionnelle mais pas centrale.
+
+UX future V2/V3 :
+
+- Candidate Trainer ;
+- Intent Layer ;
+- Transfer Gap ;
+- repertoire audit ;
+- advanced review.
+
+------------------------------------------------------------
+2.5 Moments utilisateur
+------------------------------------------------------------
+
+Moments à couvrir :
+
+- Je viens d’arriver.
+- Je veux importer une partie.
+- J’ai perdu et je suis frustré.
+- J’ai gagné mais je veux comprendre.
+- L’analyse prend du temps.
+- L’analyse est bloquée.
+- Ma Review est prête.
+- Je veux comprendre vite.
+- Je veux apprendre activement.
+- Je veux essayer un coup.
+- Je veux explorer une position.
+- Je veux m’entraîner.
+- Je veux revoir ce qui est dû.
+- Je reviens après plusieurs jours.
+- Je veux contrôler mes données.
+- Je veux supprimer mes données.
+- Je suis sur mobile.
+
+Chaque moment doit avoir :
+
+- état ;
+- message ;
+- action principale ;
+- récupération ;
+- test browser si critique.
+
+============================================================
+3. ARCHITECTURE DE NAVIGATION
+============================================================
+
+------------------------------------------------------------
+3.1 Navigation principale V1
+------------------------------------------------------------
+
+La navigation principale V1 reste exactement :
+
+1. Aujourd’hui
+2. Mes parties
+3. Entraînement
+
+Aucun quatrième onglet principal.
+
+Interdit en V1 comme onglet principal :
+
+- Review ;
+- Progression ;
+- Profil ;
+- Paramètres ;
+- Analyse ;
+- Coach IA ;
+- Cognitive Map ;
+- NeuroMonitor ;
+- Jouer ;
+- Sandbox ;
+- Foundations.
+
+------------------------------------------------------------
+3.2 Accès secondaires
+------------------------------------------------------------
+
+Profil / Paramètres :
+
+- icône ou bouton discret en haut à droite ;
+- hors navigation principale.
+
+Import :
+
+- action header ou carte selon contexte ;
+- pas onglet principal.
+
+Review :
+
+- contextuelle ;
+- ouverte depuis Aujourd’hui, Mes parties, Entraînement ou état Review prête ;
+- pas onglet permanent.
+
+Progression :
+
+- carte compacte dans Aujourd’hui ;
+- vue détaillée future via lien discret.
+
+Sandbox / Jouer local :
+
+- pas onglet V1 ;
+- accessible V1.1/V2 depuis :
+  - Review exploration ;
+  - menu avancé ;
+  - éventuel bouton “Tester une position” hors nav principale.
+- ne doit pas devenir promesse principale.
+
+Foundations :
+
+- pas onglet V1 ;
+- module V2/V3 ou onboarding futur pour 400–800.
+
+------------------------------------------------------------
+3.3 App Shell desktop
+------------------------------------------------------------
+
+Structure :
+
+- Header 72 px.
+- Logo à gauche.
+- Navigation au centre.
+- Actions à droite.
+- Contenu max-width 1440 px.
+- Padding global 24–32 px.
+
+Header :
+
+Gauche :
+- NeuroChess
+- sous-label : Chess · Decision Science
+
+Centre :
+- Aujourd’hui
+- Mes parties
+- Entraînement
+
+Droite :
+- Importer
+- Profil / Paramètres
+
+Règle :
+
+- Le header doit rester calme.
+- Pas de badges rouges agressifs.
+- Pas de notifications anxiogènes.
+- Pas d’onglet supplémentaire caché dans la nav principale.
+
+------------------------------------------------------------
+3.4 App Shell mobile
+------------------------------------------------------------
+
+Mobile :
+
+- bottom navigation ;
+- Aujourd’hui ;
+- Parties ;
+- Entraînement.
+
+Profil :
+
+- en haut à droite ;
+- ou dans menu “Plus” seulement si contrainte forte.
+
+Board / Review :
+
+- board en haut ;
+- contenu en dessous ;
+- actions sticky en bas si Practice.
+
+Practice mobile :
+
+- mode focus plein écran ;
+- nav globale masquée ou réduite ;
+- CTA accessible au pouce.
+
+------------------------------------------------------------
+3.5 Zone de pouce mobile
+------------------------------------------------------------
+
+Règle :
+
+Sur mobile, toute action principale doit être dans la zone atteignable au pouce :
+
+- partie inférieure de l’écran ;
+- CTA sticky quand l’utilisateur doit agir ;
+- pas de CTA principal uniquement en haut de page.
+
+Applications :
+
+- Practice : Indice / Voir correction / Passer sous le board.
+- Review : S’entraîner sticky après scroll.
+- Import : Analyser cette partie sticky si textarea longue.
+- Modal danger : Annuler et Confirmer visibles sans scroll.
+
+------------------------------------------------------------
+3.6 Règle de navigation émotionnelle
+------------------------------------------------------------
+
+L’utilisateur doit toujours savoir :
+
+- où il est ;
+- ce qu’il regarde ;
+- ce qu’il peut faire maintenant ;
+- comment revenir.
+
+Chaque vue contextuelle doit avoir :
+
+- retour visible ;
+- titre clair ;
+- état sauvegardé si possible ;
+- pas de piège de navigation.
+
+============================================================
+4. DESIGN SYSTEM — NEUROCHESS NEBULA
+============================================================
+
+Nom du design system :
+
+NeuroChess Nebula
+
+Objectif :
+
+- premium ;
+- sombre ;
+- calme ;
+- intelligent ;
+- non flashy ;
+- non casino ;
+- non dashboard de debug.
+
+Inspiration émotionnelle :
+
+- laboratoire nocturne ;
+- coach personnel ;
+- échiquier premium ;
+- calme futuriste ;
+- concentration.
+
+------------------------------------------------------------
+4.1 Design tokens
+------------------------------------------------------------
+
+Les tokens doivent être centralisés.
+
+Format recommandé futur :
+
+- tokens JSON compatibles design token ;
+- export CSS variables ;
+- pas de couleurs hardcodées dispersées.
+
+### Couleurs de base
+
+--nc-bg-main: #050A14;
+--nc-bg-grid: #07111F;
+--nc-bg-deep: #030712;
+
+--nc-panel: #0A1224;
+--nc-panel-soft: #0D172B;
+--nc-panel-elevated: #101B33;
+--nc-panel-hover: #14213F;
+
+--nc-border-subtle: rgba(148, 163, 184, 0.16);
+--nc-border-cyan: rgba(94, 234, 255, 0.34);
+--nc-border-danger: rgba(255, 92, 122, 0.42);
+
+--nc-text-main: #F4F7FB;
+--nc-text-secondary: #A9B4C7;
+--nc-text-muted: #667085;
+--nc-text-inverse: #03111D;
+
+--nc-cyan: #19D9FF;
+--nc-blue: #2E7BFF;
+--nc-purple: #7C5CFF;
+--nc-green: #35D48B;
+--nc-yellow: #F6B94C;
+--nc-red: #FF5C7A;
+--nc-neutral: #7B8499;
+
+### Couleurs sémantiques
+
+--nc-success: #35D48B;
+--nc-warning: #F6B94C;
+--nc-danger: #FF5C7A;
+--nc-info: #19D9FF;
+--nc-learning: #7C5CFF;
+--nc-review: #2E7BFF;
+--nc-practice: #35D48B;
+
+### Gradients
+
+--nc-cta-gradient: linear-gradient(135deg, #19D9FF 0%, #2E7BFF 100%);
+--nc-panel-gradient: linear-gradient(180deg, rgba(16,27,51,0.96), rgba(7,13,27,0.96));
+--nc-danger-gradient: linear-gradient(135deg, rgba(255,92,122,0.20), rgba(255,92,122,0.06));
+--nc-success-gradient: linear-gradient(135deg, rgba(53,212,139,0.18), rgba(53,212,139,0.04));
+
+### Typographie
+
+Police recommandée :
+
+- Inter ;
+- Satoshi ;
+- ou sans-serif moderne équivalent.
+
+Échelle :
+
+--nc-font-xs: 11px;
+--nc-font-sm: 13px;
+--nc-font-md: 15px;
+--nc-font-lg: 18px;
+--nc-font-xl: 22px;
+--nc-font-hero: 30px;
+--nc-font-score: 36px;
+
+Règles :
+
+- Score Review : 32–36 px.
+- Hero Today : 28–32 px.
+- Texte principal : 15–16 px.
+- Texte secondaire : 13–14 px.
+- Debug : 11–12 px, toujours replié.
+
+Interdit :
+
+- Score énorme 56 px dans l’app.
+- Typographie décorative illisible.
+- Texte gris trop faible.
+
+### Spacing
+
+--nc-space-1: 4px;
+--nc-space-2: 8px;
+--nc-space-3: 12px;
+--nc-space-4: 16px;
+--nc-space-5: 20px;
+--nc-space-6: 24px;
+--nc-space-8: 32px;
+--nc-space-10: 40px;
+
+### Radius
+
+--nc-radius-sm: 8px;
+--nc-radius-md: 12px;
+--nc-radius-lg: 18px;
+--nc-radius-xl: 22px;
+--nc-radius-pill: 999px;
+
+### Ombres
+
+--nc-shadow-card: 0 18px 40px rgba(0,0,0,0.20);
+--nc-shadow-focus: 0 0 0 2px rgba(25,217,255,0.55);
+--nc-shadow-cta: 0 0 24px rgba(25,217,255,0.20);
+
+Règle :
+
+- Glow uniquement sur CTA, focus ou état actif.
+- Jamais de glow partout.
+
+------------------------------------------------------------
+4.2 Couleurs échiquier
+------------------------------------------------------------
+
+Board sombre premium :
+
+--nc-board-light: #8EA4C8;
+--nc-board-dark: #263A5F;
+--nc-board-selected: rgba(25, 217, 255, 0.45);
+--nc-board-legal: rgba(53, 212, 139, 0.35);
+--nc-board-last-move: rgba(246, 185, 76, 0.35);
+--nc-board-error: rgba(255, 92, 122, 0.38);
+
+Règles :
+
+- Ne pas dépendre uniquement de la couleur.
+- Ajouter contours, points, labels ou motifs.
+- Le dernier coup doit être visible.
+- La case sélectionnée doit rester lisible sur mobile.
+
+------------------------------------------------------------
+4.3 Mode clair
+------------------------------------------------------------
+
+V1 :
+
+- mode sombre uniquement autorisé.
+
+V1.1/V2 :
+
+- préparer les tokens pour light mode ;
+- ne pas hardcoder les couleurs dans les composants ;
+- ajouter preference slot “Thème : sombre / clair / système” même si seul sombre est actif en V1.
+
+Raison :
+
+- accessibilité ;
+- usage en environnement lumineux ;
+- fatigue visuelle.
+
+------------------------------------------------------------
+4.4 Motion
+------------------------------------------------------------
+
+Motion doit être :
+
+- subtile ;
+- utile ;
+- rapide ;
+- désactivable.
+
+Durées :
+
+--nc-motion-fast: 120ms;
+--nc-motion-normal: 180ms;
+--nc-motion-slow: 260ms;
+
+Easing :
+
+--nc-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+--nc-ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
+--nc-ease-feedback: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+Utilisations :
+
+- transition de carte ;
+- feedback correct/wrong ;
+- ouverture details ;
+- sélection de case ;
+- progress update ;
+- toast appearance ;
+- modal entrance.
+
+Interdit :
+
+- confettis agressifs ;
+- flash rouge humiliant ;
+- shake violent ;
+- animation longue bloquante ;
+- motion obligatoire si reduced motion activé.
+
+------------------------------------------------------------
+4.5 Accessibilité de base
+------------------------------------------------------------
+
+Obligatoire :
+
+- contraste lisible ;
+- focus clavier visible ;
+- target size minimum ;
+- click-click en alternative au drag/drop ;
+- labels ARIA sur actions critiques ;
+- reduced motion ;
+- mode daltonien futur ;
+- board utilisable sans couleur seule ;
+- texte non minuscule.
+
+Pour le board :
+
+- chaque case doit pouvoir avoir data-testid ou label stable ;
+- les actions clavier futures doivent être possibles ;
+- les coups illégaux doivent être annoncés calmement.
+
+============================================================
+5. COMPONENT SYSTEM
+============================================================
+
+------------------------------------------------------------
+5.1 Boutons
+------------------------------------------------------------
+
+### Primary Button
+
+Usage :
+
+- action principale de l’écran ;
+- une seule par zone.
+
+Exemples :
+
+- Commencer ;
+- Voir la Review ;
+- S’entraîner ;
+- Reprendre l’analyse.
+
+Style :
+
+- hauteur 44–48 px ;
+- gradient cyan/blue ;
+- font-weight 700 ;
+- radius 12 px.
+
+### Secondary Button
+
+Usage :
+
+- alternative non destructive.
+
+Exemples :
+
+- Importer une autre partie ;
+- Voir le détail ;
+- Réessayer.
+
+### Tertiary Button
+
+Usage :
+
+- action discrète.
+
+Exemples :
+
+- Voir PGN ;
+- Détails techniques ;
+- Changer de format.
+
+### Danger Button
+
+Usage :
+
+- suppression ;
+- réinitialisation ;
+- abandon session.
+
+Règle :
+
+- confirmation obligatoire ;
+- jamais en CTA principal sauf contexte de danger zone ;
+- ne reçoit pas le focus initial dans une modale.
+
+------------------------------------------------------------
+5.2 Cards
+------------------------------------------------------------
+
+Types :
+
+- HeroCard ;
+- ActionCard ;
+- ReviewMomentCard ;
+- TrainingEntryCard ;
+- ProgressCard ;
+- StateNoticeCard ;
+- DangerZoneCard ;
+- EmptyStateCard ;
+- DemoBannerCard ;
+- EngineStatusCard ;
+- DataSummaryCard.
+
+Chaque carte doit avoir :
+
+- titre ;
+- message ;
+- état ;
+- CTA éventuel ;
+- data-testid si critique.
+
+------------------------------------------------------------
+5.3 State Notice
+------------------------------------------------------------
+
+Composant obligatoire pour états dégradés.
+
+Props :
+
+- variant: info | warning | danger | success ;
+- title ;
+- message ;
+- primaryAction ;
+- secondaryAction ;
+- detailsCollapsed ;
+- technicalDetails ;
+- data-testid.
+
+Règle :
+
+- message humain d’abord ;
+- debug replié ;
+- action claire ;
+- pas de stack trace visible par défaut.
+
+------------------------------------------------------------
+5.4 Disclosure
+------------------------------------------------------------
+
+Les détails techniques et avancés utilisent progressive disclosure.
+
+Exemples :
+
+- Voir le détail du score ;
+- Détails techniques ;
+- Voir PV ;
+- Voir PGN ;
+- Pourquoi cette position ?
+- Pourquoi ce tri ?
+
+Règle :
+
+- fermé par défaut ;
+- ouverture animée courte ;
+- état mémorisé seulement si utile ;
+- jamais de debug ouvert par défaut.
+
+------------------------------------------------------------
+5.5 Feedback
+------------------------------------------------------------
+
+Chaque action doit produire un feedback :
+
+- bouton loading ;
+- succès ;
+- erreur ;
+- état suivant.
+
+Interdit :
+
+- click silencieux ;
+- bouton qui semble mort ;
+- spinner sans message.
+
+------------------------------------------------------------
+5.6 Toast System
+------------------------------------------------------------
+
+Le toast system est obligatoire.
+
+Position desktop :
+
+- en bas à droite ;
+- max 3 toasts visibles ;
+- pile verticale.
+
+Position mobile :
+
+- bas de l’écran ;
+- au-dessus de la bottom nav ;
+- jamais sous le CTA sticky.
+
+Types :
+
+- success ;
+- info ;
+- warning ;
+- error.
+
+Durées :
+
+- success : 3 s ;
+- info : 4 s ;
+- warning : 5 s ;
+- error : persistant ou dismissible après 6 s selon gravité.
+
+Règles :
+
+- toujours dismissible ;
+- jamais plusieurs toasts identiques répétés ;
+- pas de toast pour état critique qui mérite une carte ;
+- toast = feedback court, pas diagnostic complet.
+
+Exemples :
+
+- “Partie importée.”
+- “Export téléchargé.”
+- “Session enregistrée.”
+- “Tentative non enregistrée. Réessaie.”
+- “Analyse mise en file.”
+
+------------------------------------------------------------
+5.7 Modal & Confirmation Pattern
+Canonical marker: MODAL & CONFIRMATION PATTERN
+------------------------------------------------------------
+
+Toute action destructive utilise ce pattern.
+
+Actions concernées :
+
+- supprimer une partie ;
+- supprimer toutes les données ;
+- abandonner une session ;
+- réinitialiser un mode exploration si perte de coups explorés ;
+- réanalyser si cela remplace une Review visible.
+
+Structure modale :
+
+Titre :
+- clair, action spécifique.
+
+Message :
+- expliquer ce qui sera supprimé ou perdu ;
+- expliquer ce qui ne sera pas supprimé si important.
+
+Boutons :
+- bouton secondaire à gauche : Annuler ;
+- bouton danger à droite : Supprimer / Confirmer.
+
+Focus initial :
+- toujours sur Annuler ;
+- jamais sur action destructive.
+
+Escape :
+- ferme la modale si aucune action en cours.
+
+Backdrop click :
+- ferme seulement si non destructive faible ;
+- pour suppression données, backdrop ne ferme pas ou demande Annuler visible.
+
+Suppression de toutes les données :
+- exige saisie exacte : SUPPRIMER ;
+- bouton danger disabled tant que le texte n’est pas exact.
+
+Exemple suppression partie :
+
+Titre :
+Supprimer cette partie ?
+
+Message :
+Cette partie, sa Review et ses exercices associés seront supprimés de NeuroChess.
+
+Boutons :
+Annuler
+Supprimer la partie
+
+Exemple suppression données :
+
+Titre :
+Supprimer toutes mes données ?
+
+Message :
+Cette action supprime tes parties, Reviews, exercices, tentatives, révisions, plans et inférences locales. Elle ne supprime pas les fichiers du projet.
+
+Champ :
+Tape SUPPRIMER pour confirmer.
+
+Boutons :
+Annuler
+Supprimer définitivement
+
+Toast après succès :
+Données supprimées.
+
+------------------------------------------------------------
+5.8 Skeleton Screens
+------------------------------------------------------------
+
+Skeletons standardisés :
+
+- SkeletonHeroCard ;
+- SkeletonGameCard ;
+- SkeletonReviewSummary ;
+- SkeletonBoard ;
+- SkeletonTrainingCard ;
+- SkeletonProfilePanel.
+
+Motion :
+
+- pulse 1.4 s ease-in-out infinite ;
+- désactivé si reduced motion.
+
+Règles :
+
+- skeleton si attente < 10 s ;
+- progress explicite si attente plus longue ;
+- jamais skeleton infini sans fallback.
+
+------------------------------------------------------------
+5.9 Tooltip / Popover
+------------------------------------------------------------
+
+Tooltips autorisés pour :
+
+- NeuroScore ;
+- Plus instructives ;
+- Précision de référence ;
+- Révisions ;
+- Mode Exploration ;
+- Détails techniques.
+
+NeuroScore tooltip :
+
+Score coach combinant précision et gravité des moments critiques. C’est un repère pour cette partie, pas une mesure absolue de ton niveau.
+
+Règles :
+
+- court ;
+- accessible clavier ;
+- pas d’information essentielle uniquement en tooltip.
+
+------------------------------------------------------------
+5.10 Badges
+------------------------------------------------------------
+
+Badges possibles :
+
+- Review prête ;
+- Analyse en cours ;
+- Analyse interrompue ;
+- Review partielle ;
+- Entraînement disponible ;
+- Plan court ;
+- Profil en construction ;
+- Exemple ;
+- Local ;
+- Moteur OK.
+
+Interdit :
+
+- badges rouges agressifs sauf danger réel ;
+- “échec” comme badge utilisateur.
+
+============================================================
+6. ACTION REGISTRY UX
+============================================================
+
+Chaque bouton critique doit avoir un contrat.
+
+Format :
+
+action_id
+label_user
+screen
+visible_when
+hidden_when
+effect
+api_call
+loading_state
+success_state
+failure_state
+destructive
+confirmation_required
+plan1_constraints
+test_required
+
+Règle :
+
+Tous les labels visibles critiques doivent être issus de l’Action Registry et du fichier i18n.
+
+------------------------------------------------------------
+6.1 Actions globales
+------------------------------------------------------------
+
+action_id: nav_today
+label_user: Aujourd’hui
+screen: App Shell
+effect: open Today
+destructive: false
+test_required: nav smoke
+
+action_id: nav_games
+label_user: Mes parties
+screen: App Shell
+effect: open Games
+destructive: false
+test_required: nav smoke
+
+action_id: nav_training
+label_user: Entraînement
+screen: App Shell
+effect: open Training
+destructive: false
+test_required: nav smoke
+
+action_id: open_profile_settings
+label_user: Profil / Paramètres
+screen: Header
+effect: open profile/settings panel
+destructive: false
+test_required: profile smoke
+
+action_id: open_import
+label_user: Importer
+screen: Header / Today / Games
+effect: open import panel
+destructive: false
+test_required: import smoke
+
+action_id: go_back
+label_user: Retour
+screen: contextual screens
+effect: return to previous stable screen
+destructive: false
+test_required: browser flow
+
+------------------------------------------------------------
+6.2 Onboarding actions
+------------------------------------------------------------
+
+action_id: onboarding_select_level
+label_user: niveau choisi
+screen: Onboarding step 1
+effect: set user_initial_level_bucket
+destructive: false
+
+action_id: onboarding_continue
+label_user: Continuer
+screen: Onboarding step 1
+effect: go to step 2
+destructive: false
+
+action_id: onboarding_skip
+label_user: Passer
+screen: Onboarding
+effect: skip current onboarding step
+destructive: false
+
+action_id: onboarding_import_game
+label_user: Importer
+screen: Onboarding step 2
+effect: open import panel
+destructive: false
+
+action_id: onboarding_paste_pgn
+label_user: Coller
+screen: Onboarding step 2
+effect: focus PGN textarea
+destructive: false
+
+action_id: onboarding_view_demo
+label_user: Voir exemple
+screen: Onboarding / Empty states
+effect: open demo review mode
+destructive: false
+plan1_constraints: demo must not pollute user learning data
+test_required: demo mode smoke future
+
+------------------------------------------------------------
+6.3 Import actions
+------------------------------------------------------------
+
+action_id: submit_pgn
+label_user: Analyser cette partie
+screen: Import panel
+visible_when: pgn_text not empty
+effect: import PGN then offer analysis/start analysis according to flow
+api_call: POST /api/games/import/pgn
+loading_state: Import en cours
+success_state: Partie importée
+failure_state: PGN non reconnu / coup illégal / import trop volumineux
+destructive: false
+test_required: pgn import smoke
+
+action_id: clear_pgn
+label_user: Effacer
+screen: Import panel
+effect: clear textarea
+destructive: false
+
+action_id: correct_pgn
+label_user: Corriger le PGN
+screen: Invalid PGN state
+effect: focus textarea
+destructive: false
+
+action_id: open_duplicate_game
+label_user: Ouvrir la partie
+screen: Duplicate game state
+effect: open existing game
+destructive: false
+
+action_id: import_another_game
+label_user: Importer une autre partie
+screen: import success / review ready
+effect: reset import panel
+destructive: false
+
+------------------------------------------------------------
+6.4 Game actions
+------------------------------------------------------------
+
+action_id: analyze_game
+label_user: Analyser
+screen: Game card
+visible_when: game not analyzed
+effect: start review job
+api_call: POST /api/games/{game_id}/analyze
+loading_state: Analyse en cours
+success_state: Review prête
+failure_state: Analyse interrompue / moteur introuvable
+destructive: false
+test_required: analysis smoke
+
+action_id: resume_analysis
+label_user: Reprendre l’analyse
+screen: Game card / Today / Analysis state
+visible_when: job stalled_resumable
+effect: retry missing/stalled positions
+api_call: POST /api/games/{game_id}/review/reconcile or resume endpoint
+loading_state: Reprise de l’analyse
+success_state: Review prête
+failure_state: Analyse toujours interrompue
+destructive: false
+test_required: stall recovery smoke
+
+action_id: open_review
+label_user: Voir la Review
+screen: Today / Games / Training
+visible_when: review ready/done/partial
+effect: open contextual Review
+api_call: GET /api/games/{game_id}/review
+destructive: false
+test_required: review smoke
+
+action_id: view_analysis_progress
+label_user: Voir la progression
+screen: Today / Game card
+effect: show job progress
+destructive: false
+
+action_id: reanalyze_game
+label_user: Réanalyser
+screen: Game menu / Review menu
+effect: start new analysis with current engine profile
+destructive: false but overwrites displayed review context
+confirmation_required: if replacing existing review display
+test_required: review regression smoke
+
+action_id: view_pgn
+label_user: Voir PGN
+screen: Game menu / Review menu
+effect: open PGN disclosure/modal
+destructive: false
+
+action_id: export_game
+label_user: Exporter
+screen: Game menu
+effect: export game PGN/JSON if supported
+destructive: false
+
+action_id: delete_game
+label_user: Supprimer
+screen: Game menu
+effect: delete game and related review/practice data according to backend contract
+destructive: true
+confirmation_required: true
+test_required: delete game test if implemented
+
+------------------------------------------------------------
+6.5 Today actions
+------------------------------------------------------------
+
+action_id: start_daily_plan_from_today
+label_user: Commencer
+screen: Today Hero / Daily Plan
+effect: start daily plan practice
+api_call: POST /api/training/daily-plan/practice
+destructive: false
+test_required: daily plan smoke
+
+action_id: resume_interrupted_session
+label_user: Reprendre
+screen: Today Hero / Practice interrupted
+effect: open active practice session
+api_call: GET /api/practice/sessions/{session_id}
+destructive: false
+
+action_id: abandon_interrupted_session
+label_user: Abandonner la session
+screen: Today Hero / Practice interrupted
+effect: mark session abandoned
+destructive: true
+confirmation_required: true
+
+action_id: open_progress_details
+label_user: Détails
+screen: Progress card
+effect: open progress details if available
+destructive: false
+
+------------------------------------------------------------
+6.6 Review actions
+------------------------------------------------------------
+
+action_id: start_quick_reading
+label_user: Lecture rapide — 3 min
+screen: Review
+effect: enter quick reading mode
+destructive: false
+
+action_id: start_full_lesson
+label_user: Leçon complète — 15 min
+screen: Review
+effect: enter active lesson mode
+destructive: false
+
+action_id: select_review_moment
+label_user: Voir
+screen: Review moment card
+effect: select moment and update board
+destructive: false
+test_required: review board sync smoke
+
+action_id: previous_review_position
+label_user: Précédent
+screen: Review board
+effect: move to previous move/moment
+destructive: false
+
+action_id: next_review_position
+label_user: Suivant
+screen: Review board
+effect: move to next move/moment
+destructive: false
+
+action_id: start_review_practice
+label_user: S’entraîner
+screen: Review
+visible_when: training_items_available > 0
+api_call: POST /api/practice/sessions
+source_context: review
+destructive: false
+test_required: core board smoke
+
+action_id: open_score_details
+label_user: Voir le détail du score
+screen: Review summary
+effect: open score disclosure
+destructive: false
+plan1_constraints: no raw forbidden metrics visible by default
+
+action_id: open_technical_details
+label_user: Détails techniques
+screen: Review / Analysis
+effect: open collapsed debug details
+destructive: false
+
+------------------------------------------------------------
+6.7 Exploration actions
+------------------------------------------------------------
+
+action_id: enter_local_exploration
+label_user: Explorer la position
+screen: Review board
+visible_when: valid FEN loaded
+effect: enter local exploration mode
+api_call: none V1
+destructive: false
+plan1_constraints: no practice_attempt, no due_at, no learning_summary update
+test_required: review exploration smoke
+
+action_id: exploration_play_move
+label_user: board click/tap
+screen: Review exploration
+effect: play legal local move
+api_call: none V1
+destructive: false
+
+action_id: exploration_undo
+label_user: Annuler le coup
+screen: Review exploration
+effect: undo last exploration move
+destructive: false
+
+action_id: exploration_reset
+label_user: Réinitialiser
+screen: Review exploration
+effect: reset to original review FEN
+destructive: false
+
+action_id: exploration_exit
+label_user: Quitter l’exploration
+screen: Review exploration
+effect: return to review board mode
+destructive: false
+
+------------------------------------------------------------
+6.8 Practice actions
+------------------------------------------------------------
+
+action_id: practice_select_square
+label_user: board square selection
+screen: Practice
+effect: select source/target square
+destructive: false
+
+action_id: practice_submit_move
+label_user: board move
+screen: Practice
+effect: submit attempted move to backend
+api_call: POST /api/practice/sessions/{session_id}/attempt
+loading_state: Coup en cours
+success_state: feedback correct/wrong/illegal
+failure_state: Tentative non enregistrée
+destructive: false
+test_required: core board interaction smoke
+
+action_id: practice_use_hint
+label_user: Indice
+screen: Practice
+effect: reveal next hint level
+api_call: may record hint depending backend contract
+destructive: false
+
+action_id: practice_reveal
+label_user: Voir la correction
+screen: Practice
+effect: reveal correction and record reveal if contract requires
+api_call: POST reveal/attempt endpoint
+plan1_constraints: reveal != mastery; schedule due soon
+destructive: false
+test_required: v1 flow smoke
+
+action_id: practice_skip
+label_user: Passer
+screen: Practice
+effect: skip item
+api_call: POST skip if backend supports
+destructive: false
+
+action_id: practice_retry_item
+label_user: Réessayer
+screen: Practice feedback wrong
+effect: reset board to item FEN
+destructive: false
+
+action_id: practice_next
+label_user: Continuer
+screen: Practice feedback
+effect: go to next item
+destructive: false
+
+action_id: practice_complete_return_today
+label_user: Retour à Aujourd’hui
+screen: Practice complete
+effect: open Today
+destructive: false
+
+action_id: practice_retry_failed
+label_user: Revoir les ratées
+screen: Practice complete
+effect: create/reopen failed items session
+destructive: false
+
+------------------------------------------------------------
+6.9 Training actions
+------------------------------------------------------------
+
+action_id: create_daily_plan
+label_user: Créer le plan du jour
+screen: Training / Today
+api_call: POST /api/training/daily-plan
+destructive: false
+test_required: daily plan smoke
+
+action_id: start_daily_plan
+label_user: Commencer
+screen: Training daily plan card
+api_call: POST /api/training/daily-plan/practice
+destructive: false
+
+action_id: open_failed_positions
+label_user: Voir
+screen: Training failed card
+effect: open failed positions list/session
+destructive: false
+
+action_id: start_failed_positions_practice
+label_user: S’entraîner
+screen: Training failed card
+effect: start failed-items session
+destructive: false
+
+action_id: start_due_reviews
+label_user: Réviser
+screen: Training due card
+effect: start due review session
+destructive: false
+
+------------------------------------------------------------
+6.10 Profile / Privacy actions
+------------------------------------------------------------
+
+action_id: export_user_data
+label_user: Exporter mes données
+screen: Profile / Privacy
+api_call: GET /api/export
+loading_state: Export en cours
+success_state: Export téléchargé
+failure_state: Export indisponible
+destructive: false
+test_required: profile privacy smoke
+
+action_id: delete_user_data
+label_user: Supprimer mes données
+screen: Profile / Privacy danger zone
+api_call: DELETE /api/user-data?confirm=SUPPRIMER
+destructive: true
+confirmation_required: type SUPPRIMER
+test_required: profile privacy smoke
+
+action_id: test_engine
+label_user: Tester Stockfish
+screen: Profile / Engine
+api_call: POST /api/engine/test
+loading_state: Test du moteur
+success_state: Moteur prêt
+failure_state: Moteur introuvable / erreur moteur
+destructive: false
+
+action_id: save_preferences
+label_user: Enregistrer
+screen: Profile / Preferences
+api_call: PATCH /api/settings
+destructive: false
+
+============================================================
+7. ÉTATS GLOBAUX ET MACHINES UX
+============================================================
+
+Chaque flux majeur doit être une state machine.
+
+------------------------------------------------------------
+7.1 Analyse
+------------------------------------------------------------
+
+États :
+
+idle
+queued
+running
+stalled_resumable
+partial_ready
+done
+failed_recoverable
+failed_final
+
+Règles :
+
+running => progress visible
+stalled_resumable => CTA Reprendre l’analyse
+partial_ready => CTA Voir la Review + Réessayer l’analyse complète
+failed_recoverable => CTA Réessayer
+failed_final => CTA Importer une autre partie ou Configurer Stockfish
+
+Interdit :
+
+running infini sans heartbeat
+message dupliqué
+progress bloqué sans action
+
+------------------------------------------------------------
+7.2 Review
+------------------------------------------------------------
+
+États :
+
+loading
+summary_ready
+moment_selected
+quick_reading
+lesson_active
+exploration_mode
+practice_starting
+partial_warning
+error_recoverable
+
+Transitions clés :
+
+summary_ready -> quick_reading via Lecture rapide
+summary_ready -> lesson_active via Leçon complète
+summary_ready -> exploration_mode via Explorer la position
+summary_ready -> practice_starting via S’entraîner
+partial_warning -> summary_ready via Voir la Review
+
+------------------------------------------------------------
+7.3 Practice
+------------------------------------------------------------
+
+États :
+
+loading_session
+item_ready
+piece_selected
+move_pending
+attempt_submitting
+feedback_correct
+feedback_wrong
+feedback_illegal
+hint_shown
+reveal_shown
+next_item
+completed
+interrupted
+save_failed
+
+Transitions clés :
+
+item_ready -> piece_selected via click source
+piece_selected -> attempt_submitting via click target legal/submit
+attempt_submitting -> feedback_correct/wrong/illegal
+feedback_wrong -> item_ready via Réessayer
+feedback_wrong -> hint_shown via Indice
+feedback_wrong -> reveal_shown via Voir la correction
+feedback_correct -> next_item via Continuer
+next_item -> item_ready
+last_item -> completed
+
+------------------------------------------------------------
+7.4 Daily Plan
+------------------------------------------------------------
+
+États :
+
+empty
+partial
+ready
+started
+in_progress
+completed
+failed_to_create
+failed_to_start
+
+Règles :
+
+empty => CTA Importer une partie
+partial => CTA Commencer
+ready => CTA Commencer
+failed_to_create => CTA Réessayer
+completed => CTA Voir progression / Session bonus
+
+------------------------------------------------------------
+7.5 Import
+------------------------------------------------------------
+
+États :
+
+empty
+editing
+submitting
+success
+invalid_pgn
+illegal_pgn
+duplicate_game
+too_short
+too_large
+backend_error
+
+Règles :
+
+duplicate_game => CTA Ouvrir la partie
+invalid_pgn => focus textarea
+success => CTA Analyser
+too_large => CTA Réduire l’import
+
+------------------------------------------------------------
+7.6 Profile / Privacy
+------------------------------------------------------------
+
+États :
+
+idle
+export_loading
+export_success
+export_failed
+delete_confirm_required
+delete_loading
+delete_success
+delete_failed
+
+------------------------------------------------------------
+7.7 Onboarding
+------------------------------------------------------------
+
+États :
+
+not_started
+level_step
+first_action_step
+demo_mode
+completed
+interrupted
+
+Règle :
+
+si interrupted, reprendre au dernier step non terminé.
+
+============================================================
+8. ONBOARDING V1
+============================================================
+
+Objectif :
+
+- première valeur < 90 secondes ;
+- pas plus de deux écrans ;
+- pas de compte obligatoire en local-first ;
+- pas d’Intent Layer ;
+- pas de notification.
+
+------------------------------------------------------------
+8.1 Écran 1 — Niveau
+------------------------------------------------------------
+
+Titre :
+
+Bienvenue dans NeuroChess
+
+Sous-titre :
+
+On va transformer tes parties en entraînement ciblé.
+
+Question :
+
+Quel est ton niveau approximatif ?
+
+Options :
+
+Je débute
+400–800
+800–1200
+1200–1600
+1600–2000
+2000+
+Je ne sais pas
+
+Si “Je ne sais pas” :
+
+Pas grave, on calibrera avec tes premières parties.
+
+CTA :
+
+Continuer
+
+Secondaire :
+
+Passer
+
+Données :
+
+user_initial_level_bucket
+onboarding_completed_step_1
+
+------------------------------------------------------------
+8.2 Écran 2 — Première action
+------------------------------------------------------------
+
+Titre :
+
+Commence avec une partie
+
+Sous-titre :
+
+NeuroChess a besoin d’une partie pour construire ta première Review.
+
+Cartes :
+
+### Importer une partie
+
+Depuis Lichess, Chess.com ou un fichier PGN.
+CTA : Importer
+
+### Coller un PGN
+
+Colle directement une partie.
+CTA : Coller
+
+### Voir un exemple
+
+Découvre une Review complète sans rien importer.
+CTA : Voir exemple
+
+Règle :
+
+Importer en premier.
+Voir exemple autorisé mais ne doit pas remplacer l’import.
+
+------------------------------------------------------------
+8.3 Onboarding interrompu
+------------------------------------------------------------
+
+Si l’utilisateur ferme l’app entre deux étapes :
+
+- reprendre à la dernière étape non terminée ;
+- ne pas afficher l’onboarding si l’utilisateur a déjà importé une partie ;
+- permettre “Passer” à tout moment.
+
+État Today après onboarding incomplet :
+
+Titre :
+Construisons ton profil
+
+Message :
+Importe une partie pour obtenir ta première Review.
+
+CTA :
+Importer une partie
+
+------------------------------------------------------------
+8.4 Progressive onboarding contextuel
+------------------------------------------------------------
+
+Micro-tooltips autorisés :
+
+Première Review :
+- “Commence par le résumé. Les détails sont repliés.”
+
+Première Practice :
+- “Essaie un coup avant de voir la correction.”
+
+Première Exploration :
+- “Ces coups ne sont pas enregistrés comme exercices.”
+
+Règles :
+
+- 1 tooltip maximum par écran ;
+- dismissible ;
+- ne revient pas après fermeture ;
+- stocké dans user_settings/onboarding state ;
+- pas de tour guidé long.
+
+------------------------------------------------------------
+8.5 Voir un exemple — contrat démo
+------------------------------------------------------------
+
+“Voir un exemple” ouvre un mode démo isolé.
+
+Règles :
+
+- bannière visible : Exemple ;
+- aucune écriture dans les données utilisateur ;
+- aucun practice_attempt réel ;
+- aucun due_at ;
+- aucun learning_summary ;
+- aucun training_item durable ;
+- pas de pollution export ;
+- sortie claire : Quitter l’exemple.
+
+Si l’utilisateur clique “S’entraîner” dans l’exemple :
+
+- soit mode Practice démo sans sauvegarde ;
+- soit message :
+  “Importe une partie pour créer tes propres exercices.”
+
+CTA recommandé :
+
+Importer ma première partie
+
+============================================================
+9. PAGE AUJOURD’HUI
+============================================================
+
+Objectif :
+
+répondre à “qu’est-ce que je fais maintenant ?”
+
+C’est la page la plus importante.
+
+------------------------------------------------------------
+9.1 Layout desktop
+------------------------------------------------------------
+
+max-width 1180 px
+colonne principale 720 px
+colonne secondaire 360 px
+gap 24 px
+
+Mobile :
+
+une seule colonne
+Hero en premier
+actions sticky si nécessaire
+
+------------------------------------------------------------
+9.2 Règle du Hero unique
+------------------------------------------------------------
+
+Aujourd’hui a toujours un seul Hero principal.
+
+Priorité :
+
+1. Session Practice interrompue < 7 jours
+2. Plan du jour disponible non commencé
+3. Review prête récente < 24h
+4. Analyse en cours ou stalled
+5. Révisions dues > 0
+6. Profil en construction
+7. Plan terminé aujourd’hui
+8. Invitation à importer
+
+Les autres états deviennent cartes secondaires.
+
+------------------------------------------------------------
+9.3 Hero — Session interrompue
+------------------------------------------------------------
+
+Titre :
+
+On reprend ?
+
+Message :
+
+Tu étais à la position 3 sur 5.
+
+Info :
+
+Session : Tactique personnelle · 8 min restantes
+
+CTA principal :
+
+Reprendre
+
+Secondaire :
+
+Abandonner la session
+
+Si abandon :
+
+Session arrêtée. Tu pourras reprendre plus tard.
+
+------------------------------------------------------------
+9.4 Hero — Plan du jour
+------------------------------------------------------------
+
+Titre :
+
+Aujourd’hui — 12 minutes
+
+Message :
+
+On travaille les positions les plus utiles maintenant.
+
+Si plan riche :
+
+6 positions · environ 12 minutes
+
+Si plan partiel :
+
+Plan court aujourd’hui · 2 positions utiles
+
+CTA :
+
+Commencer
+
+Secondaire :
+
+Changer de format
+
+Changer de format :
+
+Session courte 5 min
+Réviser mes erreurs
+Choisir une partie
+
+Interdit V1 :
+
+8 modes concurrents
+session libre confuse
+Candidate Trainer
+Intent Deep
+
+------------------------------------------------------------
+9.5 Hero — Review prête
+------------------------------------------------------------
+
+Titre :
+
+Ta Review est prête
+
+Message :
+
+Deux moments expliquent l’essentiel de cette partie.
+
+CTA :
+
+Voir la Review
+
+Secondaire :
+
+Importer une autre partie
+
+------------------------------------------------------------
+9.6 Hero — Analyse en cours
+------------------------------------------------------------
+
+Titre :
+
+Analyse en cours
+
+Message :
+
+On prépare ta Review. Tu peux revenir dans quelques instants.
+
+Progress :
+
+34 / 78 positions
+
+CTA :
+
+Voir la progression
+
+Secondaire :
+
+Continuer ailleurs
+
+------------------------------------------------------------
+9.7 Hero — Analyse interrompue
+------------------------------------------------------------
+
+Titre :
+
+Analyse interrompue temporairement
+
+Message :
+
+Stockfish n’a pas répondu sur une position. Tu peux reprendre l’analyse.
+
+CTA :
+
+Reprendre l’analyse
+
+Secondaire :
+
+Détails techniques
+
+Règle :
+
+pas de message dupliqué
+pas de stack trace visible
+
+------------------------------------------------------------
+9.8 Hero — Profil en construction
+------------------------------------------------------------
+
+Titre :
+
+Construisons ton profil
+
+Message :
+
+Importe quelques parties et termine des sessions pour obtenir un plan fiable.
+
+CTA :
+
+Importer une partie
+
+Secondaire :
+
+Voir un exemple
+
+------------------------------------------------------------
+9.9 Hero — Plan terminé
+------------------------------------------------------------
+
+Titre :
+
+Plan terminé pour aujourd’hui
+
+Message :
+
+Tu as fait le travail utile aujourd’hui.
+
+CTA :
+
+Voir ma progression
+
+Secondaire :
+
+Session bonus
+
+Animation :
+
+petite coche
+pas de feu d’artifice
+
+------------------------------------------------------------
+9.10 Carte Progression compacte
+------------------------------------------------------------
+
+Titre :
+
+Cette semaine
+
+Données autorisées :
+
+jours actifs
+positions revues
+réussies / tentatives
+révisions dues
+erreurs récurrentes moins fréquentes
+
+Interdit :
+
+score de maîtrise non calibré
+Transfer Gap visible
+SkillTrace %
+
+Exemples :
+
+4 jours actifs
+27 positions revues
+Tactique : 12 réussies / 18 tentatives
+3 erreurs récurrentes moins fréquentes
+
+CTA :
+
+Détails
+
+------------------------------------------------------------
+9.11 Carte Révisions dues
+------------------------------------------------------------
+
+Titre :
+
+À revoir
+
+Message :
+
+5 positions prêtes à être consolidées.
+
+CTA :
+
+Réviser maintenant
+
+------------------------------------------------------------
+9.12 Carte Dernière Review
+------------------------------------------------------------
+
+Titre :
+
+Dernière Review
+
+Contenu :
+
+joueurs
+résultat
+NeuroScore
+phrase courte
+mini board si disponible
+
+CTA :
+
+Ouvrir
+
+============================================================
+10. PAGE MES PARTIES
+============================================================
+
+Objectif :
+
+gérer les parties sans complexité.
+
+------------------------------------------------------------
+10.1 Header
+------------------------------------------------------------
+
+Titre :
+
+Mes parties
+
+Sous-titre :
+
+X parties · Y Reviews prêtes
+
+Actions :
+
+Importer
+Coller PGN
+
+------------------------------------------------------------
+10.2 Filtres V1
+------------------------------------------------------------
+
+Toutes
+Non analysées
+Analyse en cours
+Review prête
+Entraînement disponible
+
+------------------------------------------------------------
+10.3 Recherche
+------------------------------------------------------------
+
+Placeholder :
+
+Rechercher joueur, ouverture, date
+
+------------------------------------------------------------
+10.4 Tri
+------------------------------------------------------------
+
+Options :
+
+Plus récentes
+Plus instructives
+Score bas
+Score haut
+
+Règle :
+
+“Plus instructives” utilise un signal interne mais n’affiche pas criticality brute.
+
+Tooltip obligatoire :
+
+Trie les parties qui contiennent le plus de moments utiles à travailler.
+
+Si ce tri n’est pas fiable :
+
+- le cacher en V1 ;
+- ou le déplacer en V1.1.
+
+------------------------------------------------------------
+10.5 Pagination / lazy load
+------------------------------------------------------------
+
+Si moins de 50 parties :
+
+- liste simple.
+
+Si 50–300 parties :
+
+- pagination par pages de 25 ou 50 ;
+- filtre et recherche visibles.
+
+Si plus de 300 parties :
+
+- groupement par mois ;
+- chargement progressif ;
+- recherche côté backend si disponible ;
+- pas de rendu massif d’un coup.
+
+État loading :
+
+SkeletonGameCard x 6
+
+------------------------------------------------------------
+10.6 Carte partie
+------------------------------------------------------------
+
+Contenu :
+
+joueurs
+date
+cadence
+résultat
+source
+statut
+NeuroScore si disponible
+phrase courte
+
+Phrases :
+
+Deux moments critiques.
+Partie solide.
+Entraînement disponible.
+Analyse en cours.
+Review prête avec avertissement.
+
+Actions selon état :
+
+Non analysée => Analyser
+Analyse en cours => Voir la progression
+Analyse interrompue => Reprendre l’analyse
+Review prête => Voir la Review
+Entraînement disponible => S’entraîner
+
+Menu avancé :
+
+Voir PGN
+Exporter
+Réanalyser
+Supprimer
+
+------------------------------------------------------------
+10.7 État vide
+------------------------------------------------------------
+
+Titre :
+
+Aucune partie pour le moment
+
+Message :
+
+Importe une partie pour obtenir ta première Review.
+
+CTA :
+
+Importer une partie
+
+Secondaire :
+
+Voir un exemple
+
+------------------------------------------------------------
+10.8 Recherche sans résultat
+------------------------------------------------------------
+
+Titre :
+
+Aucune partie trouvée
+
+Message :
+
+Essaie un autre joueur, une autre ouverture ou retire les filtres.
+
+CTA :
+
+Réinitialiser les filtres
+
+============================================================
+11. IMPORT PGN
+============================================================
+
+------------------------------------------------------------
+11.1 Import panel
+------------------------------------------------------------
+
+Titre :
+
+Importer une partie
+
+Options :
+
+Coller un PGN
+Importer fichier PGN
+
+V1 :
+
+Lichess/Chess.com API non obligatoire.
+
+------------------------------------------------------------
+11.2 Zone PGN
+------------------------------------------------------------
+
+Placeholder :
+
+Colle ici le PGN de ta partie.
+
+Actions :
+
+Analyser cette partie
+Effacer
+
+------------------------------------------------------------
+11.3 Déduplication
+------------------------------------------------------------
+
+La déduplication UX s’appuie sur duplicate_key côté backend.
+
+Critères possibles côté backend :
+
+- hash normalisé des coups ;
+- headers principaux ;
+- joueurs/date si disponibles ;
+- source_id si import plateforme futur.
+
+UI duplicate :
+
+Titre :
+
+Partie déjà importée
+
+Message :
+
+Cette partie est déjà dans Mes parties.
+
+CTA :
+
+Ouvrir la partie
+
+Secondaire :
+
+Importer une autre partie
+
+------------------------------------------------------------
+11.4 États
+------------------------------------------------------------
+
+### Empty
+
+Colle une partie pour commencer.
+
+### Invalid PGN
+
+PGN non reconnu.
+Le texte ne ressemble pas à une partie PGN complète. Vérifie le copier-coller puis réessaie.
+
+### Illegal PGN
+
+Un coup n’est pas légal.
+La partie contient un coup que NeuroChess ne peut pas rejouer correctement.
+
+### Duplicate
+
+Partie déjà importée.
+Cette partie est déjà dans Mes parties.
+
+CTA :
+
+Ouvrir la partie
+
+### Too short
+
+Partie trop courte.
+Cette partie ne contient pas assez de décisions pour créer une Review utile.
+
+### Too large
+
+Import trop volumineux.
+Commence avec une ou quelques parties pour garder l’analyse rapide.
+
+CTA :
+
+Réduire l’import
+
+------------------------------------------------------------
+11.5 Après import
+------------------------------------------------------------
+
+Succès :
+
+Partie importée.
+Tu peux lancer l’analyse.
+
+CTA :
+
+Analyser
+
+Secondaire :
+
+Importer une autre partie
+
+============================================================
+12. ANALYSE
+============================================================
+
+------------------------------------------------------------
+12.1 Analyse standard
+------------------------------------------------------------
+
+Message :
+
+Analyse en cours
+On prépare ta Review.
+
+Progress :
+
+positions analysées / total
+phase actuelle
+
+CTA secondaire :
+
+Continuer ailleurs
+
+------------------------------------------------------------
+12.2 Analyse lente
+------------------------------------------------------------
+
+Message :
+
+L’analyse prend un peu plus de temps.
+Tu peux continuer à utiliser l’app.
+
+CTA :
+
+Voir la progression
+
+------------------------------------------------------------
+12.3 Analyse stalled
+------------------------------------------------------------
+
+Titre :
+
+Analyse interrompue temporairement
+
+Message :
+
+Stockfish n’a pas répondu sur une position. Tu peux reprendre l’analyse.
+
+CTA :
+
+Reprendre l’analyse
+
+Secondaire :
+
+Détails techniques
+
+------------------------------------------------------------
+12.4 Review partielle
+------------------------------------------------------------
+
+Titre :
+
+Review prête avec avertissement
+
+Message :
+
+Une position n’a pas pu être analysée, mais la Review reste exploitable.
+
+CTA :
+
+Voir la Review
+
+Secondaire :
+
+Réessayer l’analyse complète
+
+------------------------------------------------------------
+12.5 Moteur introuvable
+------------------------------------------------------------
+
+Titre :
+
+Moteur introuvable
+
+Message :
+
+NeuroChess a besoin de Stockfish pour analyser tes parties.
+
+CTA :
+
+Configurer Stockfish
+
+Secondaire :
+
+Réessayer
+
+------------------------------------------------------------
+12.6 Règle anti-spinner
+------------------------------------------------------------
+
+Toute analyse doit finir par :
+
+Review prête
+Review partielle
+Analyse interrompue
+Échec récupérable
+Échec final
+
+Jamais :
+
+spinner infini
+
+============================================================
+13. REVIEW — STRUCTURE GÉNÉRALE
+============================================================
+
+Objectif :
+
+comprendre la partie et choisir une profondeur d’engagement.
+
+Review est un parcours, pas un onglet principal.
+
+------------------------------------------------------------
+13.1 Layout desktop
+------------------------------------------------------------
+
+Gauche :
+
+échiquier sticky
+barre d’évaluation simple
+liste de coups / navigation
+mode exploration locale
+
+Droite :
+
+résumé
+moments clés
+engagement
+entraînement
+détails repliés
+
+Largeurs :
+
+gauche 52–58 %
+droite 42–48 %
+
+Mobile :
+
+board en haut
+contenu en dessous
+CTA sticky si Practice
+
+------------------------------------------------------------
+13.2 Header Review
+------------------------------------------------------------
+
+Contenu :
+
+← Retour
+Review — Toi vs Adversaire
+date / cadence
+menu ...
+
+Menu :
+
+Réanalyser
+Exporter
+Voir PGN
+Supprimer
+
+------------------------------------------------------------
+13.3 Résumé immédiat
+------------------------------------------------------------
+
+Bloc :
+
+NeuroScore 77 / 100
+Score coach de cette partie
+
+Tooltip NeuroScore :
+
+Score coach combinant précision et gravité des moments critiques. C’est un repère pour cette partie, pas une mesure absolue de ton niveau.
+
+Phrase principale :
+
+Tu étais bien jusqu’au coup 23, où une tactique manquée a changé la partie.
+
+Phrase secondaire :
+
+Ta précision moyenne était bonne, mais trois moments critiques pèsent sur la note.
+
+Lien :
+
+Voir le détail du score
+
+Détail replié :
+
+Précision de référence : 87 %
+Score coach : précision + gravité des moments
+Détails techniques masqués
+
+Interdit :
+
+criticality_score
+diagnostic_gap
+ETV
+raw PV visible par défaut
+
+------------------------------------------------------------
+13.4 Choix d’engagement
+------------------------------------------------------------
+
+Deux boutons :
+
+Lecture rapide — 3 min
+Leçon complète — 15 min
+
+Règle :
+
+Lecture rapide = comprendre
+Leçon complète = apprendre activement
+
+------------------------------------------------------------
+13.5 Moments clés
+------------------------------------------------------------
+
+Max 3 en résumé V1.
+
+Carte :
+
+Coup 23 — Tactique manquée
+Une fourchette pouvait gagner une pièce.
+CTA : Voir
+Badge : Moment clé
+
+Chaque carte :
+
+coup
+tag humain
+phrase simple
+CTA
+mini board optionnel
+
+------------------------------------------------------------
+13.6 CTA entraînement
+------------------------------------------------------------
+
+Carte :
+
+S’entraîner sur cette Review
+5 positions · environ 8 minutes
+CTA : Commencer
+
+------------------------------------------------------------
+13.7 Détails avancés
+------------------------------------------------------------
+
+Lien :
+
+Voir tous les détails
+
+Contenu replié :
+
+tous les coups
+PV
+détails moteur
+PGN
+debug
+
+============================================================
+14. REVIEW — EXPLORATION LOCALE
+============================================================
+
+Le Plan1 v3 exige une exploration locale distincte de Practice.
+
+------------------------------------------------------------
+14.1 Objectif
+------------------------------------------------------------
+
+Permettre à l’utilisateur de tester des coups sans IA, sans adversaire et sans créer d’attempt.
+
+------------------------------------------------------------
+14.2 Entrée
+------------------------------------------------------------
+
+Bouton :
+
+Explorer la position
+
+Visible :
+
+sur Review board
+sur moment sélectionné
+
+------------------------------------------------------------
+14.3 Mode actif
+------------------------------------------------------------
+
+Label :
+
+Exploration locale
+
+Message :
+
+Tu peux tester des coups. Rien n’est enregistré comme exercice.
+
+Actions :
+
+Annuler le coup
+Réinitialiser
+Quitter l’exploration
+
+------------------------------------------------------------
+14.4 Règles
+------------------------------------------------------------
+
+Autorisé :
+
+jouer des coups légaux pour les deux camps
+undo
+reset
+sélection de case
+highlight légal
+
+Interdit :
+
+créer practice_attempt
+créer due_at
+modifier learning_summary
+modifier Review
+lancer Stockfish
+faire jouer une IA
+
+------------------------------------------------------------
+14.5 Coup illégal
+------------------------------------------------------------
+
+Message :
+
+Ce coup n’est pas légal dans cette position.
+
+Pas de crash.
+
+------------------------------------------------------------
+14.6 Switch de moment
+------------------------------------------------------------
+
+Si l’utilisateur change de moment :
+
+réinitialiser exploration automatiquement
+ou afficher : “L’exploration sera réinitialisée.”
+
+============================================================
+15. BOARD INTERACTION SPEC
+============================================================
+
+Cette section est obligatoire pour éviter que le board soit “visuellement présent mais fonctionnellement mort”.
+
+------------------------------------------------------------
+15.1 Modes du board
+------------------------------------------------------------
+
+board_mode:
+
+review_static
+review_exploration
+lesson_attempt
+practice_attempt
+demo
+sandbox
+
+review_static :
+
+- observer ;
+- naviguer ;
+- sélectionner moment ;
+- pas de coup joué.
+
+review_exploration :
+
+- jouer localement ;
+- pas de sauvegarde ;
+- pas de backend attempt.
+
+lesson_attempt / practice_attempt :
+
+- jouer un coup ;
+- envoyer attempt ;
+- feedback ;
+- due_at.
+
+sandbox :
+
+- jouer librement sans IA ;
+- V1.1/V2 ;
+- pas de données d’apprentissage par défaut.
+
+------------------------------------------------------------
+15.2 Click-click
+------------------------------------------------------------
+
+Obligatoire.
+
+Flux :
+
+1. clic source ;
+2. source highlight ;
+3. destinations légales highlight si disponibles ;
+4. clic target ;
+5. validation ;
+6. action selon mode.
+
+Same-square click :
+
+- désélectionne.
+
+Click illegal target :
+
+- message calme ;
+- sélection conservée ou reset selon ergonomie ;
+- pas de crash.
+
+------------------------------------------------------------
+15.3 Drag/drop
+------------------------------------------------------------
+
+Optionnel mais recommandé.
+
+Comportement :
+
+- ghost piece pendant drag ;
+- source highlight ;
+- destinations légales highlight si disponibles ;
+- snap to square si legal ;
+- retour animé si drop illégal ;
+- drop hors board = annulation ;
+- Escape pendant drag = annulation si supporté.
+
+Règle accessibilité :
+
+drag/drop ne doit jamais être le seul moyen de jouer.
+
+------------------------------------------------------------
+15.4 Promotion
+------------------------------------------------------------
+
+V1 minimum :
+
+- si promotion apparaît en Practice, proposer promotion dame par défaut ;
+- ou afficher une limitation claire si non supportée.
+
+V1.1/V2 :
+
+- popup promotion :
+  Dame
+  Tour
+  Fou
+  Cavalier
+
+Règle :
+
+pas de crash sur promotion.
+
+------------------------------------------------------------
+15.5 Orientation
+------------------------------------------------------------
+
+Review :
+
+- orientation selon user_color si connue ;
+- sinon blanc par défaut.
+
+Practice :
+
+- orientation selon side_to_move ou user_color selon contrat produit ;
+- jamais orientation qui rend le coup attendu inversé.
+
+Option future :
+
+- bouton discret “Retourner l’échiquier”.
+
+------------------------------------------------------------
+15.6 Haptics mobile
+------------------------------------------------------------
+
+V1.1/V2 si supporté :
+
+- coup correct : pulse court ;
+- coup illégal : double pulse court ;
+- session terminée : pulse doux long.
+
+Règle :
+
+désactivable via préférences.
+
+------------------------------------------------------------
+15.7 Board keyboard future
+------------------------------------------------------------
+
+V1 minimum :
+
+- focus visible sur board ;
+- pas de piège clavier.
+
+V1.1 :
+
+- sélection par coordonnées ;
+- arrow navigation ;
+- Enter select ;
+- Escape cancel.
+
+============================================================
+16. REVIEW — LECTURE RAPIDE
+============================================================
+
+Objectif :
+
+comprendre en 3 minutes sans surcharge.
+
+Pas de défi obligatoire.
+Pas d’Intent Layer.
+Pas de Candidate Trainer.
+
+Flux :
+
+Moment 1
+Moment 2
+Moment 3
+Résumé final
+
+Moment :
+
+position
+coup joué
+meilleure idée
+une phrase
+impact simple
+
+Fin :
+
+Tu veux transformer cette lecture en entraînement ?
+
+Boutons :
+
+M’entraîner maintenant
+Me le rappeler demain
+Terminer
+
+Si “Me le rappeler demain” :
+
+créer rappel doux / due review selon contrat.
+
+============================================================
+17. REVIEW — LEÇON COMPLÈTE
+============================================================
+
+Objectif :
+
+apprentissage actif.
+
+Flux par moment :
+
+Défi
+→ Tentative
+→ Micro-pause
+→ Correction
+→ À retenir
+→ Suite
+
+------------------------------------------------------------
+17.1 Défi
+------------------------------------------------------------
+
+Visible :
+
+échiquier
+position
+phrase courte
+boutons Indice / Voir correction / Passer
+
+Texte :
+
+Coup 23 — à toi de jouer
+Trouve l’idée qui change la position.
+
+Caché :
+
+solution
+PV
+score
+criticality
+diagnostic
+
+------------------------------------------------------------
+17.2 Tentative
+------------------------------------------------------------
+
+L’utilisateur joue sur le board.
+
+Entrées acceptées :
+
+click-click
+drag/drop si disponible
+
+Click-click est obligatoire comme alternative accessible au drag/drop.
+
+------------------------------------------------------------
+17.3 Micro-pause
+------------------------------------------------------------
+
+Si coup incorrect :
+
+Observe ce que ton coup permet à l’adversaire.
+
+Pause :
+
+2–3 secondes
+
+Puis correction.
+
+------------------------------------------------------------
+17.4 Correction
+------------------------------------------------------------
+
+Structure :
+
+Ton coup
+Conséquence
+
+Meilleure idée
+Pourquoi
+
+À retenir
+Règle courte
+
+Boutons :
+
+Continuer
+Réessayer
+Rejouer la ligne
+
+------------------------------------------------------------
+17.5 Suite
+------------------------------------------------------------
+
+Options :
+
+Moment suivant
+S’entraîner maintenant
+Terminer
+
+============================================================
+18. PRACTICE
+============================================================
+
+Practice est un mode focus.
+
+La nav globale peut disparaître.
+
+Objectif :
+
+faire produire une réponse active
+enregistrer la tentative
+mettre à jour la révision
+préserver la motivation
+
+------------------------------------------------------------
+18.1 Écran avant tentative
+------------------------------------------------------------
+
+Visible :
+
+Position X / Y
+progress bar discrète
+échiquier
+instruction courte
+Indice
+Voir la correction
+Passer
+
+Texte :
+
+Trouve le meilleur coup.
+
+Caché :
+
+source longue
+criticality
+ETV
+score
+PV
+difficulty brute
+timer par défaut
+
+------------------------------------------------------------
+18.2 Board Practice
+------------------------------------------------------------
+
+Obligatoire :
+
+click-source / click-target
+drag/drop si disponible
+highlight sélection
+highlight coups légaux si possible
+feedback coup illégal
+
+------------------------------------------------------------
+18.3 Tentative correcte
+------------------------------------------------------------
+
+Message :
+
+Bien joué. Tu as trouvé l’idée.
+
+Données :
+
+result = best / correct
+time_spent_ms
+hint_used
+reveal_used = false
+due_at selon SRS
+learning_summary update
+
+------------------------------------------------------------
+18.4 Tentative mauvaise légale
+------------------------------------------------------------
+
+Message initial :
+
+Ce coup ne résout pas encore le problème.
+
+Micro-pause :
+
+Regarde ce que l’adversaire peut faire maintenant.
+
+Puis :
+
+Réessayer
+Indice
+Voir la correction
+
+------------------------------------------------------------
+18.5 Coup illégal
+------------------------------------------------------------
+
+Message :
+
+Ce coup n’est pas légal dans cette position.
+
+Règle :
+
+pas de crash
+pas de honte
+peut être enregistré comme illegal si backend contract
+
+------------------------------------------------------------
+18.6 Indices
+------------------------------------------------------------
+
+Indice 1 :
+
+oriente sans révéler
+
+Indice 2 :
+
+plus précis
+
+Indice 3 :
+
+proche solution
+
+Après indice 3 :
+
+Voir la correction
+
+------------------------------------------------------------
+18.7 Reveal
+------------------------------------------------------------
+
+Message :
+
+Bonne décision de regarder. Cette position reviendra bientôt.
+
+Règle Plan1 :
+
+reveal != mastery
+schedule due soon
+
+------------------------------------------------------------
+18.8 Fin session
+------------------------------------------------------------
+
+Titre :
+
+Session terminée
+
+Résumé :
+
+5 positions tentées
+3 réussies sans aide
+1 avec indice
+1 à revoir
+
+Message :
+
+Les positions ratées vont revenir. C’est comme ça qu’on consolide.
+
+CTA :
+
+Revoir les ratées
+
+Secondaire :
+
+Retour à Aujourd’hui
+
+------------------------------------------------------------
+18.9 Session interrompue
+------------------------------------------------------------
+
+Si reload ou sortie :
+
+On reprend ?
+Tu étais à la position 3 sur 5.
+
+CTA :
+
+Reprendre
+
+Secondaire :
+
+Abandonner la session
+
+============================================================
+19. RÉPÉTITION ESPACÉE
+============================================================
+
+Nom UI :
+
+Révisions
+
+Nom technique V1 :
+
+simple_spaced_repetition_v1
+
+Interdit UI V1 :
+
+FSRS
+stability
+difficulty
+memory model
+
+Règles V1 :
+
+wrong / illegal => demain
+revealed => demain
+success with hint => 3 jours
+success without help => 7 jours
+skipped => pas de due V1
+
+UI :
+
+Cette position reviendra bientôt.
+Prochaine révision : demain.
+
+ou :
+
+Prochaine révision : dans 3 jours.
+
+Règle :
+
+ne jamais faire peur avec des files de retard.
+
+============================================================
+20. ENTRAÎNEMENT V1
+============================================================
+
+La page Entraînement a exactement 3 entrées :
+
+1. Plan du jour
+2. Mes positions ratées
+3. Révisions
+
+Aucun quatrième mode.
+
+------------------------------------------------------------
+20.1 Plan du jour
+------------------------------------------------------------
+
+Titre :
+
+Plan du jour
+
+Ready :
+
+12 minutes · 6 positions
+
+Partial :
+
+Plan court aujourd’hui · 2 positions
+
+Empty :
+
+Plan en construction
+Importe quelques parties et termine des exercices pour obtenir un plan fiable.
+
+CTA :
+
+Commencer
+Créer le plan du jour
+Importer une partie
+
+selon état.
+
+------------------------------------------------------------
+20.2 Mes positions ratées
+------------------------------------------------------------
+
+Titre :
+
+Mes positions ratées
+
+Message :
+
+Les positions où tu as eu besoin d’aide ou raté le coup.
+
+CTA :
+
+Voir
+S’entraîner
+
+------------------------------------------------------------
+20.3 Révisions
+------------------------------------------------------------
+
+Titre :
+
+Révisions
+
+Message :
+
+Les positions prêtes à être consolidées.
+
+CTA :
+
+Réviser
+
+------------------------------------------------------------
+20.4 Règles UI
+------------------------------------------------------------
+
+Interdit :
+
+Candidate Trainer V1
+Intent Layer mode
+LLM coach
+Transfer Gap visible
+
+============================================================
+21. PROGRESSION
+============================================================
+
+------------------------------------------------------------
+21.1 V1 — carte compacte
+------------------------------------------------------------
+
+Dans Aujourd’hui.
+
+Titre :
+
+Cette semaine
+
+Données :
+
+jours actifs
+positions revues
+réussites / tentatives
+révisions faites
+erreurs récurrentes moins fréquentes
+
+Exemple :
+
+4 jours actifs
+27 positions revues
+Tactique : 12 réussies / 18 tentatives
+3 erreurs récurrentes moins fréquentes
+
+CTA :
+
+Détails
+
+Règle :
+
+ratios bruts autorisés
+pas de score calibré inventé
+pas de SkillTrace %
+
+------------------------------------------------------------
+21.2 V2 — progression détaillée
+------------------------------------------------------------
+
+Onglets V2 possibles :
+
+Vue d’ensemble
+Domaines
+Révisions
+Moments récurrents
+Transfert prudent
+Historique
+
+Vue d’ensemble :
+
+- activité ;
+- positions revues ;
+- tentatives ;
+- progression compacte ;
+- prochaines priorités.
+
+Domaines :
+
+- priorité actuelle ;
+- profil en construction si seuil non atteint ;
+- pas de maîtrise numérique brute.
+
+Révisions :
+
+- dues ;
+- faites ;
+- retenues ;
+- à consolider.
+
+Transfert prudent :
+
+- uniquement si seuils Plan1 atteints ;
+- signaux faible/moyen/fort ;
+- jamais “Transfer Gap 27 %”.
+
+Visualisations :
+
+- barres simples ;
+- sparklines prudentes ;
+- pas de heatmap cognitive fake.
+
+------------------------------------------------------------
+21.3 Messages
+------------------------------------------------------------
+
+Progrès positif :
+
+Tu rates ce motif moins souvent qu’avant.
+
+Profil en construction :
+
+Termine encore quelques sessions pour obtenir une tendance fiable.
+
+Plateau :
+
+On va consolider avant d’ajouter de nouveaux thèmes.
+
+============================================================
+22. PROFIL / PARAMÈTRES / CONFIDENTIALITÉ
+============================================================
+
+Accessible hors nav principale.
+
+------------------------------------------------------------
+22.1 Sections V1
+------------------------------------------------------------
+
+Profil local
+Préférences
+Moteur
+Confidentialité
+Mes données
+Export
+Suppression
+
+------------------------------------------------------------
+22.2 Profil local
+------------------------------------------------------------
+
+Afficher :
+
+niveau déclaré
+préférence de session
+langue
+
+Ne pas afficher :
+
+maîtrise scientifique
+Elo prédit
+intelligence
+profil cognitif
+
+------------------------------------------------------------
+22.3 Préférences
+------------------------------------------------------------
+
+durée session : 5 / 10 / 15 min
+ton coach : doux / standard / direct
+aide : minimale / standard / détaillée
+animations : normales / réduites
+chrono visible : oui/non
+langue : français V1
+thème : sombre V1, clair futur
+haptics mobile : oui/non futur
+
+------------------------------------------------------------
+22.4 Moteur
+------------------------------------------------------------
+
+statut Stockfish
+chemin moteur
+test moteur
+profil analyse par défaut
+
+------------------------------------------------------------
+22.5 Mes données
+------------------------------------------------------------
+
+Objectif :
+
+montrer ce qui est stocké sans anxiété.
+
+Afficher :
+
+X parties
+Y Reviews
+Z positions d’entraînement
+N tentatives Practice
+M révisions planifiées
+Intentions déclarées : activé/non activé ou compteur si disponible
+
+Ne pas afficher :
+
+inférences sensibles non expliquées
+profil cognitif
+score de maîtrise brut
+
+------------------------------------------------------------
+22.6 Confidentialité
+------------------------------------------------------------
+
+Texte :
+
+Tes données locales servent à construire tes Reviews, exercices, révisions et plans.
+Tu peux les exporter ou les supprimer.
+
+Actions :
+
+Exporter mes données
+Supprimer mes données
+
+Suppression :
+
+confirmation obligatoire
+danger zone
+pas de suppression fichiers projet
+
+============================================================
+23. ÉTATS DÉGRADÉS
+============================================================
+
+Chaque état doit avoir :
+
+titre humain
+message court
+CTA principal
+CTA secondaire optionnel
+debug replié
+
+------------------------------------------------------------
+23.1 PGN invalide
+------------------------------------------------------------
+
+Titre :
+
+PGN non reconnu
+
+Message :
+
+Le texte ne ressemble pas à une partie PGN complète. Vérifie le copier-coller puis réessaie.
+
+CTA :
+
+Corriger le PGN
+
+------------------------------------------------------------
+23.2 Stockfish absent
+------------------------------------------------------------
+
+Titre :
+
+Moteur introuvable
+
+Message :
+
+NeuroChess a besoin de Stockfish pour analyser tes parties.
+
+CTA :
+
+Configurer Stockfish
+
+------------------------------------------------------------
+23.3 Backend indisponible
+------------------------------------------------------------
+
+Titre :
+
+NeuroChess local ne répond pas
+
+Message :
+
+L’interface est ouverte, mais le service local ne répond pas pour le moment.
+
+CTA :
+
+Réessayer
+
+------------------------------------------------------------
+23.4 Review sans moment
+------------------------------------------------------------
+
+Titre :
+
+Aucun moment majeur détecté
+
+Message :
+
+Cette partie ne contient pas de moment suffisamment clair pour une Review ciblée.
+
+CTA :
+
+Voir la partie
+
+------------------------------------------------------------
+23.5 Practice sans item
+------------------------------------------------------------
+
+Titre :
+
+Pas encore d’exercice
+
+Message :
+
+Importe et analyse quelques parties pour créer des positions d’entraînement.
+
+CTA :
+
+Importer une partie
+
+------------------------------------------------------------
+23.6 Tentative non sauvegardée
+------------------------------------------------------------
+
+Titre :
+
+Tentative non enregistrée
+
+Message :
+
+Le coup a été joué, mais la sauvegarde n’a pas abouti.
+
+CTA :
+
+Réessayer d’enregistrer
+
+------------------------------------------------------------
+23.7 Daily Plan vide
+------------------------------------------------------------
+
+Titre :
+
+Plan en construction
+
+Message :
+
+Importe quelques parties et termine des exercices pour obtenir un plan fiable.
+
+CTA :
+
+Importer une partie
+
+============================================================
+24. EMPTY STATE MATRIX
+============================================================
+
+| Écran | Cas vide | Titre | Message | CTA principal | Secondaire |
+|---|---|---|---|---|---|
+| Aujourd’hui | nouvel utilisateur | Construisons ton profil | Importe une partie pour obtenir ta première Review. | Importer une partie | Voir un exemple |
+| Mes parties | aucune partie | Aucune partie pour le moment | Importe une partie pour obtenir ta première Review. | Importer une partie | Voir un exemple |
+| Mes parties | filtre sans résultat | Aucune partie trouvée | Essaie un autre filtre ou une autre recherche. | Réinitialiser les filtres | Importer |
+| Import | PGN vide | Colle une partie pour commencer | Ajoute un PGN ou importe un fichier. | Coller un PGN | Importer fichier |
+| Review | aucune Review | Review en préparation | L’analyse est encore en cours. | Voir la progression | Continuer ailleurs |
+| Review | aucun moment | Aucun moment majeur détecté | Cette partie ne contient pas de moment suffisamment clair. | Voir la partie | Importer une autre |
+| Practice | aucun item | Pas encore d’exercice | Analyse quelques parties pour créer des positions. | Importer une partie | Retour |
+| Entraînement | Daily Plan vide | Plan en construction | Termine quelques exercices pour obtenir un plan fiable. | Importer une partie | Voir mes parties |
+| Positions ratées | aucune | Rien à retravailler ici | Les positions ratées apparaîtront après tes sessions. | Commencer un plan | Importer |
+| Révisions | aucune due | Rien à revoir maintenant | Les positions reviendront au bon moment. | Retour Aujourd’hui | Session bonus |
+| Progression | données insuffisantes | Profil en construction | Termine encore quelques sessions pour obtenir une tendance fiable. | Commencer | Importer |
+| Profil | aucune donnée | Données locales vides | Aucune partie ou tentative enregistrée. | Importer | Retour |
+
+============================================================
+25. ANTI-TILT
+============================================================
+
+Objectif :
+
+réduire honte, frustration, abandon.
+
+------------------------------------------------------------
+25.1 Après défaite importée
+------------------------------------------------------------
+
+Si perte détectée avec confiance :
+
+Titre :
+
+On regarde ça calmement ?
+
+Message :
+
+On peut se concentrer sur deux moments utiles, pas sur toute la partie.
+
+Actions :
+
+Voir calmement maintenant
+Me le rappeler plus tard
+Juste enregistrer
+
+------------------------------------------------------------
+25.2 Review difficile
+------------------------------------------------------------
+
+Titre :
+
+Partie difficile
+
+Message :
+
+On va garder les moments vraiment utiles et les transformer en exercices.
+
+CTA :
+
+Voir les moments clés
+
+------------------------------------------------------------
+25.3 Plusieurs mauvais coups
+------------------------------------------------------------
+
+Après 2 ou 3 mauvais essais :
+
+Cette position est difficile. Prends ton temps : l’objectif est d’apprendre, pas de réussir du premier coup.
+
+Actions :
+
+Réessayer
+Voir un indice
+Voir la correction
+
+------------------------------------------------------------
+25.4 Reveal utilisé
+------------------------------------------------------------
+
+Message :
+
+Bonne décision de regarder. Cette position reviendra bientôt.
+
+------------------------------------------------------------
+25.5 Session abandonnée
+------------------------------------------------------------
+
+Message :
+
+Session arrêtée. Tu pourras reprendre plus tard.
+
+Interdit :
+
+Tu as échoué
+Encore raté
+Mauvaise série
+Streak perdu
+
+============================================================
+26. MODE HORS LIGNE
+============================================================
+
+V1 partiel.
+
+Possible :
+
+voir Reviews déjà calculées
+faire Practice déjà chargé
+voir progression locale
+préparer import PGN en attente
+
+Impossible :
+
+sync Lichess/Chess.com
+LLM cloud
+analyse cloud
+
+UI :
+
+badge discret
+pas de blocage brutal
+
+Message :
+
+Mode local. Certaines actions reviendront quand le service sera disponible.
+
+============================================================
+27. MOBILE ET RESPONSIVE
+============================================================
+
+------------------------------------------------------------
+27.1 Breakpoints
+------------------------------------------------------------
+
+mobile: 0–767 px
+tablet: 768–1023 px
+desktop: 1024–1439 px
+wide: 1440 px+
+
+------------------------------------------------------------
+27.2 Mobile Today
+------------------------------------------------------------
+
+Hero
+CTA
+cartes secondaires
+bottom nav
+
+------------------------------------------------------------
+27.3 Mobile Review
+------------------------------------------------------------
+
+board en haut
+summary sous board
+moments en cartes
+CTA sticky “S’entraîner”
+
+------------------------------------------------------------
+27.4 Mobile Practice
+------------------------------------------------------------
+
+focus plein écran
+board prioritaire
+actions sous board
+bottom action bar
+
+------------------------------------------------------------
+27.5 Touch
+------------------------------------------------------------
+
+Obligatoire :
+
+click-click / tap-tap
+pas seulement drag/drop
+target size suffisante
+focus visible
+
+Haptics V1.1/V2 :
+
+correct : pulse court
+illegal : double pulse court
+complete : pulse doux long
+
+============================================================
+28. ACCESSIBILITÉ AVANCÉE
+============================================================
+
+Obligatoire V1 :
+
+contraste
+focus visible
+reduced motion
+labels ARIA
+mode daltonien futur
+taille cible
+board sans couleur seule
+alternative drag/drop
+navigation clavier minimale
+
+Board :
+
+case sélectionnée avec contour + couleur
+coup légal avec point + contraste
+dernier coup avec contour
+erreur avec message texte
+
+Tests :
+
+keyboard smoke
+reduced motion static check
+color contrast audit
+board click-click smoke
+
+============================================================
+29. MICROCOPY SYSTEM
+============================================================
+
+Ton :
+
+calme
+direct
+encourageant
+non infantilisant
+non dramatique
+
+------------------------------------------------------------
+29.1 Phrases génériques
+------------------------------------------------------------
+
+Après défaite :
+
+On reprend calmement. Deux moments suffisent pour progresser.
+
+Après victoire :
+
+Belle victoire. Voyons ce qui peut encore devenir plus propre.
+
+Après absence :
+
+Content de te revoir. On repart sur une session courte.
+
+Après progression :
+
+Tu rates ce motif moins souvent qu’avant.
+
+Après mauvaise session :
+
+Ces positions étaient difficiles. Elles reviendront.
+
+Début Practice :
+
+On commence par une position claire. Prends ton temps.
+
+------------------------------------------------------------
+29.2 Mots interdits
+------------------------------------------------------------
+
+nul
+catastrophique
+humiliant
+cerveau
+intelligence
+neuroplasticité directe
+tu as échoué
+streak perdu
+raté encore
+mauvaise série
+
+------------------------------------------------------------
+29.3 Mots recommandés
+------------------------------------------------------------
+
+moment utile
+idée
+position difficile
+à revoir
+consolider
+progression
+calmement
+prochaine action
+réessayer
+revenir
+comprendre
+
+============================================================
+30. DESIGN DES FEEDBACKS PRACTICE
+============================================================
+
+------------------------------------------------------------
+30.1 Correct
+------------------------------------------------------------
+
+Bien joué. Tu as trouvé l’idée.
+
+Variante :
+
+C’est exactement le motif à retenir.
+
+------------------------------------------------------------
+30.2 Wrong
+------------------------------------------------------------
+
+Pas encore. Regarde ce que ce coup permet à l’adversaire.
+
+------------------------------------------------------------
+30.3 Illegal
+------------------------------------------------------------
+
+Ce coup n’est pas légal dans cette position.
+
+------------------------------------------------------------
+30.4 Hint
+------------------------------------------------------------
+
+Cherche d’abord les coups forcés.
+
+------------------------------------------------------------
+30.5 Reveal
+------------------------------------------------------------
+
+Bonne décision de regarder. Cette position reviendra bientôt.
+
+------------------------------------------------------------
+30.6 Complete
+------------------------------------------------------------
+
+Session terminée. Ces positions reviendront au bon moment.
+
+============================================================
+31. FOUNDATIONS MODULE — V2/V3
+============================================================
+
+Le module Foundations est dédié aux joueurs 400–800.
+
+Statut :
+
+pas V1 core
+V2/V3 ou V1.1 expérimental si demandé explicitement
+
+Objectif :
+
+développer la perception de base.
+
+UX :
+
+- board simplifié ;
+- flèches attaque/défense ;
+- pièces en danger ;
+- questions oui/non ;
+- feedback immédiat ;
+- pas de PV ;
+- pas d’Intent Deep ;
+- pas de Candidate Trainer ;
+- pas de score humiliant.
+
+Exemples d’exercices :
+
+- Quelle pièce est attaquée ?
+- Ton roi est-il en danger ?
+- Quelle capture est gratuite ?
+- Ce coup est-il légal ?
+- Quelle pièce dois-tu défendre ?
+
+Boutons :
+
+- Montrer les attaques ;
+- J’ai compris ;
+- Réessayer ;
+- Voir l’explication ;
+- Continuer.
+
+Interdit :
+
+- lignes moteur longues ;
+- jargon tactique avancé ;
+- diagnostic de maîtrise numérique.
+
+============================================================
+32. PAGE JOUER LOCALE / SANDBOX — V1.1/V2
+============================================================
+
+La page Jouer locale n’est pas le pilier produit V1.
+
+Mais elle répond à un besoin utilisateur différent de l’exploration Review :
+
+- tester une position sans importer ;
+- sandbox libre ;
+- support Try Move futur ;
+- comprendre une idée.
+
+Statut :
+
+V1 : pas d’onglet principal, pas de mode complet.
+V1.1 : possible mini-sandbox hors nav principale.
+V2 : sandbox complète.
+
+Entrées possibles :
+
+- depuis Review exploration : “Ouvrir en sandbox” ;
+- depuis menu avancé : “Tester une position” ;
+- depuis import FEN futur.
+
+Règles :
+
+- pas d’IA en V1.1 sauf mission dédiée ;
+- pas de sauvegarde comme Practice ;
+- pas de due_at ;
+- pas de learning_summary ;
+- pas de promesse “jouer contre NeuroChess”.
+
+Boutons sandbox :
+
+- Coller une FEN ;
+- Démarrer depuis position initiale ;
+- Jouer un coup ;
+- Annuler ;
+- Réinitialiser ;
+- Retour ;
+- Exporter FEN.
+
+Message :
+
+Sandbox locale
+Tu peux tester des coups. Rien n’est enregistré comme exercice.
+
+============================================================
+33. FEATURE BOUNDARIES V1 / V2 / V3
+============================================================
+
+------------------------------------------------------------
+33.1 V1 inclus
+------------------------------------------------------------
+
+Onboarding simple
+Aujourd’hui
+Mes parties
+Import PGN
+Analyse
+Review summary
+Lecture rapide
+Leçon complète simple
+Practice
+Daily Plan
+Positions ratées
+Révisions
+Profile/Privacy
+Export/Delete
+Exploration locale Review
+États dégradés
+Anti-tilt
+Progression compacte
+Responsive minimum
+i18n strings centralisées
+empty state matrix
+toast system
+modal confirmation pattern
+browser smokes critiques
+
+------------------------------------------------------------
+33.2 V1 interdit
+------------------------------------------------------------
+
+Candidate Trainer
+LLM coach
+Intent Layer profond
+Transfer Gap visible
+ETV visible
+FSRS visible
+NeuroMonitor
+brain/cortex/atlas
+Cognitive Map
+free-play IA
+multiplayer
+social
+paywall agressif
+sandbox comme onglet principal
+Foundations core
+
+------------------------------------------------------------
+33.3 V1.1
+------------------------------------------------------------
+
+mobile smoke complet
+strings polish
+meilleures micro-interactions
+SkillTrace shadow UX invisible
+benchmark léger
+good decision mining UI légère
+mini-sandbox hors nav
+first Foundations prototype
+
+------------------------------------------------------------
+33.4 V2
+------------------------------------------------------------
+
+Intent Light
+Candidate Trainer opt-in
+Progression détaillée
+motif-based repetition
+near-transfer variants
+notifications douces
+Lichess/Chess.com sync
+mobile premium
+light mode
+
+------------------------------------------------------------
+33.5 V3
+------------------------------------------------------------
+
+LLM coach vérifié
+Transfer Gap visible prudent
+coach/club mode
+advanced audit
+opening repertoire model
+endgame curriculum
+adaptive contextual bandit
+
+============================================================
+34. FREEMIUM FUTUR
+============================================================
+
+Pas V1 core.
+
+Doctrine :
+
+vendre la progression, pas bloquer l’apprentissage essentiel.
+
+Gratuit :
+
+Reviews limitées
+Practice basique
+stockage local
+
+Premium :
+
+analyses illimitées
+plans avancés
+révisions enrichies
+cloud sync
+
+Pro :
+
+deep analysis
+Candidate Trainer
+LLM coach vérifié
+stats avancées
+
+Interdit :
+
+bloquer export/delete
+bloquer correction basique
+bloquer privacy
+
+============================================================
+35. I18N / STRINGS CENTRALISÉES
+============================================================
+
+Langue produit V1 :
+
+français
+
+Règle :
+
+Même avec une seule langue, toutes les chaînes UI doivent être centralisées.
+
+Fichiers possibles :
+
+frontend/src/i18n/fr.ts
+frontend/src/i18n/strings.ts
+
+Interdit :
+
+- labels critiques hardcodés dans App.tsx ;
+- messages d’erreur dispersés ;
+- boutons avec texte inline non référencé.
+
+Chaque string doit avoir :
+
+- key ;
+- texte FR ;
+- contexte ;
+- écran ;
+- statut V1/V2 ;
+- tests si critique.
+
+Exemples de keys :
+
+nav.today
+nav.games
+nav.training
+action.openReview
+action.startPractice
+practice.feedback.correct
+practice.feedback.illegal
+analysis.stalled.title
+analysis.stalled.message
+privacy.delete.confirmTitle
+
+============================================================
+36. TESTS UTILISATEUR
+============================================================
+
+Avant chaque gros refactor UX :
+
+prototype cliquable
+5 utilisateurs minimum
+3 écrans critiques
+
+Écrans :
+
+Aujourd’hui
+Review résumé
+Practice tentative/correction
+
+Questions :
+
+Qu’est-ce que tu fais maintenant ?
+Qu’est-ce que cette page te dit ?
+Qu’est-ce que tu dois faire ici ?
+Est-ce que tu te sens jugé ?
+Est-ce que tu as envie de continuer ?
+
+Succès minimal :
+
+4/5 comprennent la prochaine action
+4/5 ne se sentent pas humiliés
+3/5 veulent continuer sans explication
+
+============================================================
+37. TESTS BROWSER OBLIGATOIRES
+============================================================
+
+V1 doit prouver :
+
+/app charge
+nav 3 entrées
+import PGN
+analyse terminale ou récupérable
+Review ouverte
+board visible
+exploration locale marche
+Practice depuis Review
+vrai coup board correct
+mauvais coup légal
+coup illégal
+reveal
+attempt sauvegardé
+due_at
+learning_summary
+Daily Plan Practice
+export
+delete temp DB
+no forbidden labels
+responsive mobile minimum
+backend offline handled
+invalid PGN handled
+
+Smokes recommandés :
+
+browser_v1_flow_smoke
+browser_profile_privacy_smoke
+browser_daily_plan_smoke
+browser_core_board_interaction_smoke
+browser_review_exploration_real_smoke
+browser_real_analysis_no_infinite_loop_smoke
+browser_degraded_states_smoke
+browser_mobile_responsive_smoke
+browser_keyboard_accessibility_smoke
+browser_demo_mode_smoke
+
+============================================================
+38. DATA-TESTID CONTRACT
+============================================================
+
+Éléments critiques :
+
+app-root
+main-nav
+nav-today
+nav-games
+nav-training
+profile-settings-button
+import-pgn-button
+pgn-textarea
+analyze-button
+review-open-button
+review-summary
+review-board
+review-moment-card
+review-practice-button
+review-explore-button
+exploration-label
+exploration-undo-button
+exploration-reset-button
+exploration-exit-button
+practice-panel
+practice-board
+practice-feedback
+practice-hint-button
+practice-reveal-button
+practice-skip-button
+practice-next-button
+training-daily-plan-card
+training-failed-card
+training-due-card
+daily-plan-start-button
+toast-container
+state-notice
+modal-confirm
+modal-cancel-button
+modal-danger-button
+demo-banner
+sandbox-board
+
+Règle :
+
+data-testid stable
+pas de pollution visuelle
+
+============================================================
+39. PERFORMANCE UX
+============================================================
+
+Budgets :
+
+/app perceived load < 1.5 s local
+Today API < 800 ms
+Review déjà calculée < 1 s
+Practice attempt feedback < 200 ms hors automation
+click board response < 50 ms
+screen transition < 150 ms
+import PGN normal < 500 ms perçu
+toast display < 100 ms après action
+modal open < 120 ms
+mobile tap response < 80 ms
+
+Si dépassement :
+
+feedback immédiat
+skeleton
+progress
+action de sortie
+
+Interdit :
+
+blocage sans explication
+spinner seul
+skeleton infini
+
+============================================================
+40. ALIGNEMENT PLAN1
+============================================================
+
+Chaque écran doit respecter Plan1.
+
+------------------------------------------------------------
+40.1 Metrics
+------------------------------------------------------------
+
+Visible :
+
+NeuroScore coach
+Précision de référence repliée
+ratios bruts
+next action
+
+Invisible :
+
+criticality_score
+ETV
+SkillTrace numeric
+Transfer Gap V1
+FSRS
+BKT/IRT/MIRT
+
+------------------------------------------------------------
+40.2 Practice
+------------------------------------------------------------
+
+Doit enregistrer :
+
+item_id
+move_played
+result
+time_spent_ms
+hint_used
+reveal_used
+source_context
+due_at
+
+------------------------------------------------------------
+40.3 Exploration
+------------------------------------------------------------
+
+Ne doit pas enregistrer :
+
+practice_attempt
+due_at
+learning_summary
+
+------------------------------------------------------------
+40.4 Claims
+------------------------------------------------------------
+
+Interdit :
+
+garantie 2400
+mesure cerveau
+mesure intelligence
+
+============================================================
+41. ALIGNEMENT PLAN3
+============================================================
+
+Chaque mission UX doit avoir :
+
+sprint ID
+objectif précis
+fichiers attendus
+tests
+acceptance criteria
+rapport
+no commit sauf autorisation
+
+Interdit :
+
+refactor global
+réécriture App.tsx complète
+feature hors mission
+
+============================================================
+42. ROADMAP UX FINALE
+============================================================
+
+------------------------------------------------------------
+42.1 V1 — boucle utilisable
+------------------------------------------------------------
+
+Inclut :
+
+Onboarding 2 écrans
+Aujourd’hui
+Mes parties
+Import PGN
+Analyse robuste
+Review résumé
+Lecture rapide
+Leçon complète simple
+Practice
+Daily Plan
+Révisions
+Positions ratées
+Exploration locale Review
+Profile/Privacy
+Export/Delete
+États dégradés
+Anti-tilt
+Progression compacte
+Responsive minimal
+i18n strings centralisées
+modal/toast/empty state systems
+
+------------------------------------------------------------
+42.2 V1.1 — fiabilité et polish
+------------------------------------------------------------
+
+Inclut :
+
+mobile smoke complet
+strings polish
+meilleures micro-interactions
+SkillTrace shadow UX invisible
+benchmark léger
+good decision mining UI légère
+mini sandbox hors nav
+Foundations prototype
+
+------------------------------------------------------------
+42.3 V2 — différenciation
+------------------------------------------------------------
+
+Inclut :
+
+Intent Light
+Candidate Trainer
+Progression détaillée
+motif variants
+sync plateformes
+notifications douces
+light mode
+sandbox complète
+
+------------------------------------------------------------
+42.4 V3 — système avancé
+------------------------------------------------------------
+
+Inclut :
+
+LLM coach vérifié
+Transfer Gap visible prudent
+coach mode
+club mode
+advanced audit
+
+============================================================
+43. DEFINITION OF DONE UX
+============================================================
+
+Une fonctionnalité UX est done seulement si :
+
+1. l’utilisateur comprend l’action principale ;
+2. état vide existe ;
+3. état loading existe ;
+4. état erreur existe ;
+5. recovery existe ;
+6. feedback existe après action ;
+7. mobile minimal fonctionne ;
+8. keyboard/focus minimal fonctionne ;
+9. no forbidden metrics visible ;
+10. no fake-science copy ;
+11. browser smoke couvre le flow ;
+12. docs mises à jour ;
+13. strings centralisées ;
+14. data-testid stable si flow critique ;
+15. toast ou state notice prévu si action async ;
+16. modal confirmation prévue si destructif ;
+17. empty state présent si absence de données ;
+18. reduced motion respecté si animation ;
+19. performance budget respecté ou feedback immédiat ;
+20. Plan1 constraints vérifiées.
+
+============================================================
+44. VERDICT FINAL
+============================================================
+
+NeuroChess doit être :
+
+clair en 5 secondes
+utile en 90 secondes
+actif en 3 minutes
+consolidant en 48 heures
+motivant en 7 jours
+mesurable en 30 jours
+transformateur en 6 mois
+
+La différence entre une app propre et une app révolutionnaire se joue dans :
+
+timing du feedback
+charge cognitive
+régulation émotionnelle
+qualité du board
+répétition espacée
+autonomie
+preuve de progression
+transfert réel
+cohérence des boutons
+absence de friction invisible
+plaisir d’utiliser l’échiquier
+
+Phrase finale :
+
+Plan1 dit ce qui est scientifiquement vrai.
+Plan2 décide comment l’utilisateur le ressent.
+Plan3 décide comment on le construit sans se perdre.
+
+NeuroChess doit toujours répondre :
+
+Voici ce que cette partie révèle.
+Voici ce que tu dois travailler.
+Voici l’exercice.
+Voici la correction.
+Voici quand ça revient.
+Voici si ça progresse.
+Voici la prochaine action utile.
+
+============================================================
+45. SOURCES DE PRINCIPES UX
+============================================================
+
+Cette section n’est pas destinée à l’UI. Elle sert à rappeler les références de conception.
+
+Sources conceptuelles :
+
+- Nielsen Norman Group — 10 usability heuristics : visibilité du statut, contrôle utilisateur, prévention d’erreur, récupération.
+- WCAG 2.2 — focus visible, target size, dragging movements, alternatives à certaines interactions.
+- Design Tokens Community Group — standardisation des tokens de design.
+- Apple Human Interface Guidelines — feedback, disclosure, drag/drop, clarté des interactions.
+- Material Design 3 — motion, composants et systèmes visuels.
+
+============================================================
+FIN DU PLAN 2 — EXPÉRIENCE UTILISATEUR NEUROCHESS v4.0 FINAL 20/20 CODEX-READY
+============================================================

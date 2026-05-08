@@ -125,10 +125,10 @@ class ReviewPracticeNoEngineTests(unittest.TestCase):
             int(session["session_id"]),
             ply=1,
             attempted_uci="e2e4",
-            result="best",
         )
 
         self.assertEqual(summary["correct_count"], 1)
+        self.assertEqual(summary["attempt_feedback"]["result"], "best")
 
     def test_history_retry_failed_and_abandon_do_not_call_engine_paths(self) -> None:
         review = {
@@ -171,8 +171,8 @@ class ReviewPracticeNoEngineTests(unittest.TestCase):
         service.record_attempt(
             int(session["session_id"]),
             ply=1,
-            attempted_uci="d2d4",
-            result="wrong",
+            attempted_uci=None,
+            result="skipped",
         )
         retry = service.retry_failed_session(int(session["session_id"]))
         listed = service.list_sessions_for_game(self.game_id)

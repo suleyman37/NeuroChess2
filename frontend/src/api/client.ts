@@ -204,6 +204,15 @@ export type ReviewMoment = {
   top_moves: Array<Record<string, unknown>>;
 };
 
+export type ReviewMomentImportance =
+  | "priority_training"
+  | "secondary_training"
+  | "micro_gap"
+  | "good_decision"
+  | "informational"
+  | "no_major_moment"
+  | string;
+
 export type ReviewMoveAnnotation = {
   ply: number;
   move_number: number;
@@ -243,8 +252,10 @@ export type ReviewMoveAnnotation = {
   best_move_uci?: string | null;
   best_move_san?: string | null;
   top_moves?: Array<Record<string, unknown>>;
+  stable_attempt_evaluation?: Record<string, unknown> | null;
   try_move_supported?: boolean;
   acceptable_moves?: ReviewAcceptableMove[];
+  candidate_moves?: ReviewAcceptableMove[];
   pv_line?: ReviewPvLineMove[];
   pv_line_available?: boolean;
   pv_line_message?: string | null;
@@ -267,13 +278,30 @@ export type ReviewMoveAnnotation = {
   move_category_formula_version?: string | null;
   pv_contrast_evidence?: PvContrastEvidence | null;
   pv_contrast_evidence_version?: string | null;
+  moment_importance?: ReviewMomentImportance | null;
+  moment_group?: ReviewMomentImportance | null;
+  moment_label?: string | null;
+  moment_reason?: string | null;
+  moment_importance_version?: string | null;
+  is_training_recommended?: boolean | null;
+  is_micro_gap?: boolean | null;
+  is_good_decision?: boolean | null;
+  is_book?: boolean | null;
 };
 
 export type ReviewAcceptableMove = {
   uci: string;
   san?: string | null;
-  quality: "best" | "very_good" | "acceptable" | string;
+  quality:
+    | "best"
+    | "very_good"
+    | "acceptable"
+    | "playable"
+    | "imprecise"
+    | string;
   delta_from_best_win_percent: number | null;
+  eval_cp?: number | null;
+  mate_in?: number | null;
 };
 
 export type ReviewPvLineMove = {
@@ -356,10 +384,27 @@ export type PedagogicalExplanation = {
 };
 
 export type ReviewSections = {
+  priority_training?: ReviewMoveAnnotation[];
+  secondary_training?: ReviewMoveAnnotation[];
+  micro_gaps?: ReviewMoveAnnotation[];
+  good_decisions?: ReviewMoveAnnotation[];
+  informational?: ReviewMoveAnnotation[];
   to_review: ReviewMoveAnnotation[];
   strong_moves: ReviewMoveAnnotation[];
   missed_opportunities: ReviewMoveAnnotation[];
   all: ReviewMoveAnnotation[];
+};
+
+export type ReviewMomentSelectionSummary = {
+  review_moment_importance_version?: string | null;
+  priority_training_count?: number;
+  secondary_training_count?: number;
+  micro_gap_count?: number;
+  good_decision_count?: number;
+  informational_count?: number;
+  no_major_moment?: boolean;
+  label?: string | null;
+  message?: string | null;
 };
 
 export type OpeningRealityMoment = {
@@ -417,19 +462,31 @@ export type OpeningRealityEvidence = {
 
 export type ReviewPracticePov = "user" | "white" | "black" | "both" | string;
 
-export type ReviewPracticeScope = "top_priority" | "all_to_review" | string;
+export type ReviewPracticeScope =
+  | "top_priority"
+  | "all_to_review"
+  | "retry_failed"
+  | "due_review"
+  | string;
 
 export type ReviewPracticeResult =
   | "best"
   | "very_good"
   | "acceptable"
+  | "playable"
+  | "imprecise"
   | "wrong"
   | "illegal"
+  | "needs_rebuild"
+  | "attempted"
   | "skipped"
   | "revealed"
   | string;
 
 export type ReviewPracticeItem = {
+  item_id?: string | null;
+  training_item_id?: number | null;
+  source_context?: string | null;
   game_id?: number | null;
   ply: number;
   move_number: number | null;
@@ -440,7 +497,9 @@ export type ReviewPracticeItem = {
   fen_after?: string | null;
   best_move_uci: string;
   best_move_san?: string | null;
+  top_moves?: Array<Record<string, unknown>>;
   acceptable_moves: ReviewAcceptableMove[];
+  candidate_moves?: ReviewAcceptableMove[];
   pedagogical_explanation?: PedagogicalExplanation | null;
   contrast_coach_explanation?: ContrastCoachExplanation | null;
   impact_label?: string | null;
@@ -459,6 +518,14 @@ export type ReviewPracticeItem = {
   coach_priority_rank?: number | null;
   compact_label?: string | null;
   coach_card_title?: string | null;
+  moment_importance?: ReviewMomentImportance | null;
+  moment_group?: ReviewMomentImportance | null;
+  moment_label?: string | null;
+  moment_reason?: string | null;
+  moment_importance_version?: string | null;
+  is_training_recommended?: boolean | null;
+  is_micro_gap?: boolean | null;
+  is_good_decision?: boolean | null;
 };
 
 export type ReviewPracticeSummary = {
@@ -471,6 +538,9 @@ export type ReviewPracticeSummary = {
   acceptable_count?: number;
   correct_count: number;
   partial_count: number;
+  playable_count?: number;
+  imprecise_count?: number;
+  needs_rebuild_count?: number;
   wrong_count: number;
   illegal_count?: number;
   revealed_count: number;
@@ -486,7 +556,77 @@ export type ReviewPracticeSummary = {
   retry_failed_available?: boolean;
   failed_plies?: number[];
   failed_count?: number;
+  success_without_help_count?: number;
+  success_with_hint_count?: number;
+  due_count?: number;
+  scheduled_count?: number;
+  next_due_at?: string | null;
   result_by_ply?: Record<string, ReviewPracticeResult>;
+  attempt_feedback?: ReviewPracticeAttemptFeedback | null;
+  latest_attempt?: Partial<ReviewPracticeAttempt> | null;
+};
+
+export type ReviewPracticeAttemptFeedback = {
+  result: ReviewPracticeResult;
+  message: string;
+  show_best_move: boolean;
+  attempted_uci?: string | null;
+  attempted_san?: string | null;
+  best_move_uci?: string | null;
+  best_move_san?: string | null;
+  try_move_model_version?: string | null;
+  evidence?: Record<string, unknown>;
+};
+
+export type ReviewTryMoveEvaluationResponse = ReviewPracticeAttemptFeedback & {
+  reason_code?: string | null;
+};
+
+export type ReviewExplorerMoveEvaluationResponse = {
+  legal: boolean;
+  result: ReviewPracticeResult;
+  quality_id: string;
+  label: string;
+  san?: string | null;
+  uci: string;
+  fen_before: string;
+  fen_after?: string | null;
+  stable_evaluation_status: string;
+  no_side_effects: boolean;
+  source_context?: string | null;
+  analysis_preset?: ReviewExplorerAnalysisPreset | string | null;
+  try_move_model_version?: string | null;
+  feedback?: ReviewTryMoveEvaluationResponse | null;
+};
+
+export type ReviewExplorerAnalysisPreset = "fast" | "standard" | "deep";
+
+export type ReviewExplorerLineMoveResult = {
+  move_index: number;
+  uci: string;
+  san?: string | null;
+  fen_before?: string | null;
+  fen_after?: string | null;
+  result: ReviewPracticeResult;
+  quality_id: string;
+  label: string;
+  stable_evaluation_status: string;
+  no_side_effects: boolean;
+};
+
+export type ReviewExplorerLineEvaluationResponse = {
+  status: "ok" | "illegal" | "needs_rebuild" | "error" | string;
+  line_length: number;
+  final_fen?: string | null;
+  per_move_results: ReviewExplorerLineMoveResult[];
+  final_quality: ReviewPracticeResult;
+  final_badge: string;
+  message: string;
+  no_side_effects: boolean;
+  analysis_preset?: ReviewExplorerAnalysisPreset | string | null;
+  max_line_plies?: number | null;
+  illegal_move_index?: number | null;
+  illegal_move_uci?: string | null;
 };
 
 export type ReviewPracticeAttempt = {
@@ -500,6 +640,12 @@ export type ReviewPracticeAttempt = {
   expected_best_uci?: string | null;
   result: ReviewPracticeResult;
   attempt_number: number;
+  item_id?: string | null;
+  time_spent_ms?: number | null;
+  hint_used?: boolean;
+  reveal_used?: boolean;
+  source_context?: string | null;
+  due_at?: string | null;
   created_at: string;
 };
 
@@ -526,7 +672,54 @@ export type ReviewPracticeSessionListItem = Omit<
 
 export type ReviewPracticeSessionListResponse = {
   game_id: number;
+  learning_summary?: ReviewPracticeLearningSummary | null;
   sessions: ReviewPracticeSessionListItem[];
+};
+
+export type ReviewPracticeLearningSummary = {
+  game_id: number;
+  schema_version: string;
+  session_count: number;
+  practice_event_count: number;
+  positions_worked_count: number;
+  week_positions_worked_count?: number;
+  week_success_without_help_count?: number;
+  week_success_with_hint_count?: number;
+  week_failed_count?: number;
+  week_revealed_count?: number;
+  success_without_help_count: number;
+  success_with_hint_count: number;
+  failed_count: number;
+  revealed_count: number;
+  due_count: number;
+  scheduled_count: number;
+  next_due_at?: string | null;
+};
+
+export type DailyPlanItem = {
+  plan_item_id: number;
+  item_id: number;
+  order_index: number;
+  source_bucket: "due" | "failed_recent" | "recent_critical" | "diversity_fill" | string;
+  selection_reason: string;
+  source_game_id?: number | null;
+  source_ply?: number | null;
+  primary_tag?: string | null;
+  domain?: string | null;
+  created_at?: string | null;
+};
+
+export type DailyPlanResponse = {
+  schema_version: string;
+  user_id: string;
+  plan_date: string;
+  status: "ready" | "partial" | "empty" | string;
+  item_count: number;
+  target_item_count: number;
+  estimated_minutes: number;
+  empty_reason?: string | null;
+  message: string;
+  items: DailyPlanItem[];
 };
 
 export type ReviewResponse = {
@@ -579,6 +772,20 @@ export type ReviewResponse = {
   black_lichess_like_accuracy?: number | null;
   user_lichess_like_accuracy?: number | null;
   opponent_lichess_like_accuracy?: number | null;
+  white_public_neuro_score?: number | null;
+  black_public_neuro_score?: number | null;
+  user_public_neuro_score?: number | null;
+  opponent_public_neuro_score?: number | null;
+  public_neuro_score?: number | null;
+  public_score_formula_version?: string | null;
+  qualitative_game_label?: string | null;
+  qualitative_game_label_formula_version?: string | null;
+  white_coach_neuro_score?: number | null;
+  black_coach_neuro_score?: number | null;
+  user_coach_neuro_score?: number | null;
+  opponent_coach_neuro_score?: number | null;
+  coach_neuro_score?: number | null;
+  coach_score_formula_version?: string | null;
   white_neuro_score?: number | null;
   black_neuro_score?: number | null;
   user_neuro_score?: number | null;
@@ -595,6 +802,7 @@ export type ReviewResponse = {
   headline_score_subject?: "user" | "white" | "black" | string | null;
   headline_score_formula_version?: string | null;
   review_summary_sentence?: string | null;
+  training_items_available?: number | null;
   score_availability?: ReviewScoreAvailability | null;
   review_score_deprecated?: boolean;
   review_score_alias_of?: "lichess_like_accuracy" | string | null;
@@ -605,6 +813,7 @@ export type ReviewResponse = {
   neuro_score_formula_version?: string | null;
   formula_versions?: Record<string, string>;
   move_category_formula_version?: string | null;
+  review_moment_importance_version?: string | null;
   review_sections_version?: string | null;
   pedagogical_explanation_version?: string | null;
   contrast_coach_explanation_version?: string | null;
@@ -675,6 +884,7 @@ export type ReviewResponse = {
   review_score_audit_rows?: ReviewScoreAuditRow[];
   move_annotations?: ReviewMoveAnnotation[];
   review_sections?: ReviewSections;
+  moment_selection_summary?: ReviewMomentSelectionSummary;
   opening_reality_evidence?: OpeningRealityEvidence | null;
   message: string | null;
   warnings: string[];
@@ -997,6 +1207,116 @@ export type StartLiveAnalysisResponse = {
   fen: string;
   context: BoardEvaluationContext | string;
   status: string;
+  latest_payload?: LiveAnalysisUpdate | null;
+};
+
+export type CapabilityProduct = {
+  name: string;
+};
+
+export type CapabilityTab = {
+  id: string;
+  label: string;
+  screen_id: string;
+};
+
+export type CapabilityMetric = {
+  metric_id: string;
+  label: string;
+  category: string;
+  visibility: string;
+  source_field?: string | null;
+  formula_version_field?: string | null;
+};
+
+export type CapabilityAction = {
+  action_id: string;
+  label: string;
+  screen_id: string;
+  type: string;
+};
+
+export type CapabilityPractice = {
+  enabled: boolean;
+  grading_authority: string;
+  default_scope: string;
+  default_max_items: number;
+  result_values: string[];
+};
+
+export type CapabilityUiContract = {
+  summary_max_priorities: number;
+  summary_max_takeaways: number;
+  prescriptive_max_primary_actions: number;
+  prescriptive_max_secondary_actions: number;
+  beginner_hides_raw_formulas: boolean;
+  beginner_hides_evidence_json: boolean;
+  technical_details_location: string;
+};
+
+export type CapabilityReview = {
+  tabs: CapabilityTab[];
+  visible_metrics: CapabilityMetric[];
+  advanced_metrics: CapabilityMetric[];
+  hidden_metrics: string[];
+  actions: CapabilityAction[];
+  practice: CapabilityPractice;
+  ui_contract: CapabilityUiContract;
+};
+
+export type ProductCapabilities = {
+  schema_version: string;
+  product: CapabilityProduct;
+  review: CapabilityReview;
+};
+
+export type UserDataExport = {
+  metadata: {
+    app_name: string;
+    schema_version: string;
+    exported_at: string;
+    storage_model: string;
+    warning: string;
+  };
+  games: Array<Record<string, unknown>>;
+  moves: Array<Record<string, unknown>>;
+  engine_analysis: Array<Record<string, unknown>>;
+  review_jobs: Array<Record<string, unknown>>;
+  review_summaries: Array<Record<string, unknown>>;
+  review_moments: Array<Record<string, unknown>>;
+  training_items: Array<Record<string, unknown>>;
+  practice_sessions: Array<Record<string, unknown>>;
+  practice_session_items: Array<Record<string, unknown>>;
+  practice_attempts: Array<Record<string, unknown>>;
+  due_reviews: Array<Record<string, unknown>>;
+  daily_plan_items: Array<Record<string, unknown>>;
+  skilltrace_states: Array<Record<string, unknown>>;
+  telemetry_events: Array<Record<string, unknown>>;
+  user_settings: Array<Record<string, unknown>>;
+  local_profile: Array<Record<string, unknown>>;
+  user_aliases?: Array<Record<string, unknown>>;
+};
+
+export type UserDataDeleteSummary = {
+  schema_version: string;
+  deleted_at: string;
+  games_deleted: number;
+  moves_deleted: number;
+  engine_analysis_deleted: number;
+  reviews_deleted: number;
+  review_jobs_deleted: number;
+  review_summaries_deleted: number;
+  review_moments_deleted: number;
+  training_items_deleted: number;
+  practice_sessions_deleted: number;
+  practice_attempts_deleted: number;
+  due_items_deleted: number;
+  telemetry_deleted: number;
+  daily_plan_items_deleted: number;
+  skilltrace_states_deleted: number;
+  settings_deleted: number;
+  user_aliases_deleted: number;
+  total_deleted: number;
 };
 
 const API_BASE_URL =
@@ -1028,6 +1348,58 @@ async function request<T>(
   }
 
   return response.json() as Promise<T>;
+}
+
+export function getCapabilities(): Promise<ProductCapabilities> {
+  return request<ProductCapabilities>("/capabilities");
+}
+
+export function exportUserData(): Promise<UserDataExport> {
+  return request<UserDataExport>("/api/export");
+}
+
+export function deleteUserData(confirm: string): Promise<UserDataDeleteSummary> {
+  const params = new URLSearchParams({ confirm });
+  return request<UserDataDeleteSummary>(`/api/user-data?${params.toString()}`, {
+    method: "DELETE",
+  });
+}
+
+export function getDailyPlanToday(): Promise<DailyPlanResponse> {
+  return request<DailyPlanResponse>("/api/training/daily-plan/today");
+}
+
+export function createDailyPlan(
+  options: {
+    maxItems?: number;
+    durationPreference?: string | null;
+  } = {},
+): Promise<DailyPlanResponse> {
+  return request<DailyPlanResponse>("/api/training/daily-plan", {
+    method: "POST",
+    body: JSON.stringify({
+      max_items: options.maxItems ?? 6,
+      duration_preference: options.durationPreference ?? null,
+    }),
+  });
+}
+
+export function startDailyPlanPracticeSession(
+  options: {
+    maxItems?: number;
+    durationPreference?: string | null;
+  } = {},
+): Promise<ReviewPracticeSessionResponse & { daily_plan?: DailyPlanResponse }> {
+  return request<ReviewPracticeSessionResponse & { daily_plan?: DailyPlanResponse }>(
+    "/api/training/daily-plan/practice",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        max_items: options.maxItems ?? 6,
+        duration_preference: options.durationPreference ?? null,
+      }),
+    },
+  );
 }
 
 export function createGame(): Promise<GameState> {
@@ -1157,6 +1529,26 @@ export function getReviewPracticeSessions(
   );
 }
 
+export function startDueReviewPracticeSession(
+  gameId: number,
+  options: {
+    pov?: ReviewPracticePov;
+    maxItems?: number;
+  } = {},
+): Promise<ReviewPracticeSessionResponse> {
+  return request<ReviewPracticeSessionResponse>(
+    `/games/${gameId}/review/practice/revisions`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        pov: options.pov ?? "user",
+        scope: "due_review",
+        max_items: options.maxItems ?? 5,
+      }),
+    },
+  );
+}
+
 export function getReviewPracticeSession(
   sessionId: number | string,
 ): Promise<ReviewPracticeSessionResponse> {
@@ -1170,20 +1562,122 @@ export function recordReviewPracticeAttempt(
   payload: {
     ply: number;
     attemptedUci?: string | null;
-    result: ReviewPracticeResult;
+    result?: ReviewPracticeResult | null;
+    timeSpentMs?: number | null;
+    hintUsed?: boolean;
+    revealUsed?: boolean;
+    sourceContext?: string | null;
   },
 ): Promise<ReviewPracticeSummary> {
+  const body: {
+    ply: number;
+    attempted_uci: string | null;
+    result?: ReviewPracticeResult | null;
+    time_spent_ms?: number | null;
+    hint_used?: boolean;
+    reveal_used?: boolean;
+    source_context?: string | null;
+  } = {
+    ply: payload.ply,
+    attempted_uci: payload.attemptedUci ?? null,
+  };
+  if (payload.result !== undefined) {
+    body.result = payload.result;
+  }
+  if (payload.timeSpentMs !== undefined) {
+    body.time_spent_ms = payload.timeSpentMs;
+  }
+  if (payload.hintUsed !== undefined) {
+    body.hint_used = payload.hintUsed;
+  }
+  if (payload.revealUsed !== undefined) {
+    body.reveal_used = payload.revealUsed;
+  }
+  if (payload.sourceContext !== undefined) {
+    body.source_context = payload.sourceContext;
+  }
   return request<ReviewPracticeSummary>(
     `/review/practice/sessions/${sessionId}/attempts`,
     {
       method: "POST",
-      body: JSON.stringify({
-        ply: payload.ply,
-        attempted_uci: payload.attemptedUci ?? null,
-        result: payload.result,
-      }),
+      body: JSON.stringify(body),
     },
   );
+}
+
+export function evaluateReviewTryMoveAttempt(payload: {
+  fenBefore?: string | null;
+  movePlayed: string;
+  bestMoveUci?: string | null;
+  bestMoveSan?: string | null;
+  acceptableMoves?: ReviewAcceptableMove[];
+  candidateMoves?: ReviewAcceptableMove[];
+  topMoves?: Array<Record<string, unknown>>;
+  stableAttemptEvaluation?: Record<string, unknown> | null;
+  sourceContext?: string | null;
+  reviewMomentId?: number | string | null;
+  ply?: number | null;
+  winLoss?: number | null;
+  primaryCategory?: string | null;
+}): Promise<ReviewTryMoveEvaluationResponse> {
+  return request<ReviewTryMoveEvaluationResponse>("/review/try-move/evaluate", {
+    method: "POST",
+    body: JSON.stringify({
+      fen_before: payload.fenBefore ?? null,
+      move_played: payload.movePlayed,
+      best_move_uci: payload.bestMoveUci ?? null,
+      best_move_san: payload.bestMoveSan ?? null,
+      acceptable_moves: payload.acceptableMoves ?? [],
+      candidate_moves: payload.candidateMoves ?? [],
+      top_moves: payload.topMoves ?? [],
+      stable_attempt_evaluation: payload.stableAttemptEvaluation ?? null,
+      source_context: payload.sourceContext ?? "review_try_move",
+      review_moment_id: payload.reviewMomentId ?? null,
+      ply: payload.ply ?? null,
+      win_loss: payload.winLoss ?? null,
+      primary_category: payload.primaryCategory ?? null,
+    }),
+  });
+}
+
+export function evaluateReviewExplorerMove(payload: {
+  fenBefore: string;
+  moveUci: string;
+  analysisPreset?: ReviewExplorerAnalysisPreset | string | null;
+  gameId?: number | null;
+  reviewMomentId?: number | string | null;
+}): Promise<ReviewExplorerMoveEvaluationResponse> {
+  return request<ReviewExplorerMoveEvaluationResponse>("/api/review/explorer/evaluate-move", {
+    method: "POST",
+    body: JSON.stringify({
+      fen_before: payload.fenBefore,
+      move_uci: payload.moveUci,
+      analysis_preset: payload.analysisPreset ?? "standard",
+      source_context: "review_explorer",
+      game_id: payload.gameId ?? null,
+      review_moment_id: payload.reviewMomentId ?? null,
+    }),
+  });
+}
+
+export function evaluateReviewExplorerLine(payload: {
+  fenStart: string;
+  movesUci: string[];
+  analysisPreset?: ReviewExplorerAnalysisPreset | string | null;
+  gameId?: number | null;
+  reviewMomentId?: number | string | null;
+}): Promise<ReviewExplorerLineEvaluationResponse> {
+  return request<ReviewExplorerLineEvaluationResponse>("/api/review/explorer/evaluate-line", {
+    method: "POST",
+    body: JSON.stringify({
+      fen_start: payload.fenStart,
+      moves_uci: payload.movesUci,
+      analysis_preset: payload.analysisPreset ?? "standard",
+      source_context: "review_explorer",
+      game_id: payload.gameId ?? null,
+      review_moment_id: payload.reviewMomentId ?? null,
+    }),
+  });
 }
 
 export function abandonReviewPracticeSession(

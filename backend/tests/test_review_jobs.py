@@ -23,7 +23,11 @@ from neurochess.analysis_service import AnalysisService
 from neurochess.data.database import init_db
 from neurochess.data.repositories import Repository
 from neurochess.review_job_service import ReviewJobService
-from neurochess.review_service import REVIEW_PIPELINE_VERSION, ReviewService
+from neurochess.review_service import (
+    REVIEW_ANALYSIS_MULTIPV,
+    REVIEW_PIPELINE_VERSION,
+    ReviewService,
+)
 
 
 REVIEWABLE_MOVES = [
@@ -216,7 +220,7 @@ class ReviewJobServiceTests(unittest.TestCase):
         self.assertEqual(completed["status"], "completed")
         self.assertEqual(failures["count"], 1)
 
-    def test_get_review_job_status_is_read_only(self) -> None:
+    def test_get_review_job_status_materializes_stale_job_as_recoverable(self) -> None:
         game_id, _positions = self._create_finished_game()
         job = self.job_service.start_job(game_id, profile="standard")
         stale = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat(
@@ -241,12 +245,51 @@ class ReviewJobServiceTests(unittest.TestCase):
         payload = self.job_service.get_job(job["job_id"])
         after = self._job_snapshot(job["job_id"])
 
-        self.assertEqual(after, before)
-        self.assertEqual(payload["status"], "running")
+        self.assertEqual(before["status"], "running")
+        self.assertEqual(after["status"], "stalled")
+        self.assertEqual(payload["status"], "stalled")
+        self.assertTrue(payload["retryable"])
+        self.assertEqual(payload["current_phase"], "stalled")
+        self.assertEqual(payload["stalled_reason"], "position_timeout")
         self.assertTrue(payload["derived_is_stale"])
-        self.assertTrue(payload["derived_needs_reconcile"])
+        self.assertFalse(payload["derived_needs_reconcile"])
         self.assertTrue(payload["can_reconcile"])
-        self.assertEqual(payload["derived_reconcile_reason"], "position_timeout")
+        self.assertIsNone(payload["derived_reconcile_reason"])
+
+    def test_get_review_job_status_materializes_stale_queued_job_as_recoverable(self) -> None:
+        game_id, _positions = self._create_finished_game()
+        job = self.job_service.start_job(game_id, profile="standard")
+        stale = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat(
+            timespec="seconds"
+        )
+
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            connection.execute(
+                """
+                UPDATE review_jobs
+                SET status = 'queued',
+                    heartbeat_at = ?,
+                    updated_at = ?,
+                    current_phase = 'queued'
+                WHERE job_id = ?
+                """,
+                (stale, stale, job["job_id"]),
+            )
+            connection.commit()
+
+        before = self._job_snapshot(job["job_id"])
+        payload = self.job_service.get_job(job["job_id"])
+        after = self._job_snapshot(job["job_id"])
+
+        self.assertEqual(before["status"], "queued")
+        self.assertEqual(after["status"], "stalled")
+        self.assertEqual(payload["status"], "stalled")
+        self.assertTrue(payload["retryable"])
+        self.assertEqual(payload["current_phase"], "stalled")
+        self.assertEqual(payload["stalled_reason"], "heartbeat_timeout")
+        self.assertTrue(payload["derived_is_stale"])
+        self.assertFalse(payload["derived_needs_reconcile"])
+        self.assertTrue(payload["can_reconcile"])
 
     def test_post_reconcile_mutates_stale_job(self) -> None:
         game_id, _positions = self._create_finished_game()
@@ -299,6 +342,60 @@ class ReviewJobServiceTests(unittest.TestCase):
         self.assertEqual(reconciled["status"], "completed")
         self.assertEqual(reconciled["completed_position_count"], len(positions))
         self.assertEqual(review["status"], "done")
+
+    def test_get_job_auto_finalizes_standard_when_last_ply_cache_is_complete(self) -> None:
+        game_id, positions = self._create_finished_game()
+        job = self.job_service.start_job(game_id, profile="standard")
+        self._insert_done_standard_cache(positions)
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            connection.execute(
+                """
+                UPDATE review_jobs
+                SET status = 'running',
+                    completed_position_count = ?,
+                    current_fen_index = ?,
+                    current_phase = 'analyzing_position'
+                WHERE job_id = ?
+                """,
+                (len(positions) - 1, len(positions), job["job_id"]),
+            )
+            connection.commit()
+
+        completed = self.job_service.get_job(job["job_id"])
+        review = self.review_service.get_review(game_id)
+
+        self.assertEqual(completed["status"], "completed")
+        self.assertEqual(completed["completed_position_count"], len(positions))
+        self.assertEqual(completed["required_position_count"], len(positions))
+        self.assertEqual(completed["percent"], 100)
+        self.assertFalse(completed["derived_needs_reconcile"])
+        self.assertFalse(completed["can_reconcile"])
+        self.assertEqual(review["status"], "done")
+
+    def test_active_job_elapsed_uses_stable_created_at_when_started_at_is_missing(self) -> None:
+        game_id, _positions = self._create_finished_game()
+        job = self.job_service.start_job(game_id, profile="standard")
+        created_at = (datetime.now(timezone.utc) - timedelta(seconds=37)).isoformat(
+            timespec="seconds"
+        )
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            connection.execute(
+                """
+                UPDATE review_jobs
+                SET status = 'queued',
+                    created_at = ?,
+                    started_at = NULL,
+                    elapsed_seconds = 0
+                WHERE job_id = ?
+                """,
+                (created_at, job["job_id"]),
+            )
+            connection.commit()
+
+        payload = self.job_service.get_job(job["job_id"])
+
+        self.assertGreaterEqual(payload["elapsed_seconds"], 30)
+        self.assertEqual(payload["status"], "queued")
 
     def test_run_job_stalls_when_only_running_analysis_remains(self) -> None:
         game_id, _positions = self._create_finished_game()
@@ -505,7 +602,7 @@ class ReviewJobServiceTests(unittest.TestCase):
                     "review_pipeline_version": REVIEW_PIPELINE_VERSION,
                     "requested_time_ms": 10000,
                     "analysis_limit_mode": "time",
-                    "requested_multipv": 3,
+                    "requested_multipv": REVIEW_ANALYSIS_MULTIPV,
                 }
                 payload = {
                     "fen": fen,
@@ -513,12 +610,12 @@ class ReviewJobServiceTests(unittest.TestCase):
                     "engine_version": "FastJobFake 1",
                     "depth": 18,
                     "achieved_depth": 18,
-                    "multipv": 3,
+                    "multipv": REVIEW_ANALYSIS_MULTIPV,
                     "analysis_kind": "deep",
                     "analysis_profile": "standard",
                     "requested_time_ms": 10000,
                     "analysis_limit_mode": "time",
-                    "requested_multipv": 3,
+                    "requested_multipv": REVIEW_ANALYSIS_MULTIPV,
                     "settings_json": settings,
                     "eval_cp": 0,
                     "mate_in": None,
@@ -549,12 +646,18 @@ class ReviewJobServiceTests(unittest.TestCase):
                         analysis_limit_mode,
                         settings_json
                     )
-                    VALUES (?, ?, 'stockfish', 'FastJobFake 1', 802, 3, 'deep',
+                    VALUES (?, ?, 'stockfish', 'FastJobFake 1', 802, ?, 'deep',
                             'engine_analysis_v2', 'done', datetime('now'),
                             datetime('now'), 0.95, 'high', 1, 'standard',
-                            10000, NULL, 3, 'time', ?)
+                            10000, NULL, ?, 'time', ?)
                     """,
-                    (fen, json.dumps(payload), json.dumps(settings)),
+                    (
+                        fen,
+                        json.dumps(payload),
+                        REVIEW_ANALYSIS_MULTIPV,
+                        REVIEW_ANALYSIS_MULTIPV,
+                        json.dumps(settings),
+                    ),
                 )
             connection.commit()
 

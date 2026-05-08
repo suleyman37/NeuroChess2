@@ -28,7 +28,10 @@ from neurochess.api.game_routes import (  # noqa: E402
 )
 from neurochess.data.database import init_db  # noqa: E402
 from neurochess.data.repositories import Repository  # noqa: E402
-from neurochess.review_practice_service import ReviewPracticeService  # noqa: E402
+from neurochess.review_practice_service import (  # noqa: E402
+    ReviewPracticeService,
+    ReviewPracticeServiceError,
+)
 from neurochess.review_service import (  # noqa: E402
     REVIEW_SCHEMA_VERSION,
     SELECTION_ALGORITHM_VERSION,
@@ -36,6 +39,9 @@ from neurochess.review_service import (  # noqa: E402
 
 
 START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+AFTER_E4_FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
+AFTER_E4_E5_FEN = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
+FEN_BXF7 = "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4"
 
 
 class StaticReviewService:
@@ -61,7 +67,7 @@ def practice_review(game_id: int, user_color: str | None = "white") -> dict[str,
             "san": "e4",
             "uci": "e2e4",
             "fen_before": START_FEN,
-            "fen_after": START_FEN,
+            "fen_after": AFTER_E4_FEN,
             "primary_category": "critical",
             "category_label": "Critique",
             "tags": ["missed_opportunity"],
@@ -85,7 +91,7 @@ def practice_review(game_id: int, user_color: str | None = "white") -> dict[str,
                 "why_best_move_good": "Le meilleur coup force la position.",
             },
             "pv_line": [
-                {"ply_offset": 1, "uci": "e2e4", "san": "e4", "fen_after": START_FEN}
+                {"ply_offset": 1, "uci": "e2e4", "san": "e4", "fen_after": AFTER_E4_FEN}
             ],
             "pv_line_available": True,
             "coach_priority_rank": 1,
@@ -97,8 +103,8 @@ def practice_review(game_id: int, user_color: str | None = "white") -> dict[str,
             "side": "black",
             "san": "e5",
             "uci": "e7e5",
-            "fen_before": START_FEN,
-            "fen_after": START_FEN,
+            "fen_before": AFTER_E4_FEN,
+            "fen_after": AFTER_E4_E5_FEN,
             "primary_category": "inexact",
             "category_label": "Imprecis",
             "tags": ["cluster"],
@@ -132,6 +138,50 @@ def practice_review(game_id: int, user_color: str | None = "white") -> dict[str,
             "strong_moves": [],
             "missed_opportunities": [annotations[0]],
             "all": annotations,
+        },
+    }
+
+
+def practice_review_bxf7_legacy(game_id: int) -> dict[str, Any]:
+    annotation = {
+        "ply": 7,
+        "move_number": 4,
+        "color": "white",
+        "side": "white",
+        "san": "Bc4",
+        "uci": "f1c4",
+        "fen_before": FEN_BXF7,
+        "fen_after": FEN_BXF7,
+        "primary_category": "critical",
+        "category_label": "Critique",
+        "tags": ["missed_opportunity"],
+        "tag_labels": ["Opportunite manquee"],
+        "win_loss": 31.0,
+        "move_accuracy": 34.0,
+        "best_move_uci": "Bxf7+",
+        "best_move_san": "Bxf7+",
+        "try_move_supported": True,
+        "acceptable_moves": [],
+        "accepted_moves_json": None,
+        "pedagogical_explanation": {
+            "error_type": "tactical",
+            "why_best_move_good": "Le coup force le roi adverse.",
+        },
+        "pv_line": [],
+        "pv_line_available": False,
+        "coach_priority_rank": 1,
+    }
+    return {
+        "game_id": game_id,
+        "status": "done",
+        "user_color": "white",
+        "coverage": 1.0,
+        "move_annotations": [annotation],
+        "review_sections": {
+            "to_review": [annotation],
+            "strong_moves": [],
+            "missed_opportunities": [annotation],
+            "all": [annotation],
         },
     }
 
@@ -181,13 +231,13 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
             int(session["session_id"]),
             ply=1,
             attempted_uci="e2e4",
-            result="best",
+            result="wrong",
         )
         wrong_summary = service.record_attempt(
             int(session["session_id"]),
             ply=1,
             attempted_uci="d2d4",
-            result="wrong",
+            result="best",
         )
         revealed_summary = service.record_attempt(
             int(session["session_id"]),
@@ -204,10 +254,16 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
         completed = service.complete_session(int(session["session_id"]))
 
         self.assertEqual(best_summary["correct_count"], 1)
-        self.assertEqual(wrong_summary["wrong_count"], 1)
+        self.assertEqual(best_summary["attempt_feedback"]["result"], "best")
+        self.assertEqual(best_summary["attempt_feedback"]["attempted_san"], "e4")
+        self.assertEqual(wrong_summary["needs_rebuild_count"], 1)
+        self.assertEqual(wrong_summary["attempt_feedback"]["result"], "needs_rebuild")
         self.assertEqual(revealed_summary["revealed_count"], 1)
-        self.assertEqual(skipped_summary["wrong_count"], 1)
+        self.assertEqual(revealed_summary["attempt_feedback"]["result"], "revealed")
+        self.assertEqual(skipped_summary["wrong_count"], 0)
+        self.assertEqual(skipped_summary["needs_rebuild_count"], 1)
         self.assertEqual(skipped_summary["skipped_count"], 1)
+        self.assertEqual(skipped_summary["attempt_feedback"]["result"], "skipped")
         self.assertEqual(completed["status"], "completed")
         self.assertEqual(completed["attempt_count"], 4)
         with closing(sqlite3.connect(self.db_path)) as connection:
@@ -227,6 +283,123 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
         self.assertEqual(attempts, 4)
         self.assertEqual(snapshot["best_move_uci"], "e2e4")
 
+    def test_exact_best_move_san_legacy_review_is_success(self) -> None:
+        service = ReviewPracticeService(
+            self.db_path,
+            review_service=StaticReviewService(practice_review_bxf7_legacy(self.game_id)),  # type: ignore[arg-type]
+        )
+
+        session = service.create_session(self.game_id, pov="both", max_items=5)
+        summary = service.record_attempt(
+            int(session["session_id"]),
+            ply=7,
+            attempted_uci="c4f7",
+            result="wrong",
+            source_context="review_practice",
+        )
+
+        self.assertEqual(summary["attempt_feedback"]["result"], "best")
+        self.assertEqual(summary["attempt_feedback"]["attempted_san"], "Bxf7+")
+        self.assertEqual(summary["attempt_feedback"]["best_move_uci"], "c4f7")
+        self.assertFalse(summary["attempt_feedback"]["show_best_move"])
+        self.assertIsNotNone(summary["latest_attempt"]["due_at"])
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            row = connection.execute(
+                """
+                SELECT result, attempted_uci, expected_best_uci, due_at,
+                       evidence_snapshot_json
+                FROM review_practice_attempts
+                ORDER BY id DESC
+                LIMIT 1
+                """
+            ).fetchone()
+        self.assertIsNotNone(row)
+        self.assertEqual(row[0], "best")
+        self.assertEqual(row[1], "c4f7")
+        self.assertEqual(row[2], "c4f7")
+        self.assertIsNotNone(row[3])
+        evidence = json.loads(row[4])
+        self.assertEqual(
+            evidence["attempt_classification"]["reason_code"],
+            "exact_best_move",
+        )
+
+    def test_original_game_move_is_not_reused_as_user_attempt(self) -> None:
+        review = practice_review(self.game_id)
+        annotation = review["move_annotations"][0]
+        annotation["san"] = "d4"
+        annotation["uci"] = "d2d4"
+        annotation["best_move_uci"] = "e2e4"
+        annotation["best_move_san"] = "e4"
+        annotation["acceptable_moves"] = []
+        service = ReviewPracticeService(
+            self.db_path,
+            review_service=StaticReviewService(review),  # type: ignore[arg-type]
+        )
+
+        session = service.create_session(self.game_id, pov="both", max_items=5)
+        summary = service.record_attempt(
+            int(session["session_id"]),
+            ply=1,
+            attempted_uci="e2e4",
+            result="wrong",
+        )
+
+        self.assertEqual(summary["attempt_feedback"]["result"], "best")
+        self.assertEqual(summary["attempt_feedback"]["attempted_uci"], "e2e4")
+        self.assertEqual(summary["attempt_feedback"]["attempted_san"], "e4")
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            row = connection.execute(
+                """
+                SELECT result, attempted_uci, evidence_snapshot_json
+                FROM review_practice_attempts
+                ORDER BY id DESC
+                LIMIT 1
+                """
+            ).fetchone()
+        self.assertEqual(row[0], "best")
+        self.assertEqual(row[1], "e2e4")
+        evidence = json.loads(row[2])
+        self.assertEqual(evidence["uci"], "d2d4")
+        self.assertEqual(
+            evidence["attempt_classification"]["user_move_uci"],
+            "e2e4",
+        )
+
+    def test_unparseable_legacy_best_move_requires_rebuild_not_wrong(self) -> None:
+        review = practice_review(self.game_id)
+        annotation = review["move_annotations"][0]
+        annotation["best_move_uci"] = "not-a-legal-move"
+        annotation["best_move_san"] = None
+        annotation["acceptable_moves"] = []
+        service = ReviewPracticeService(
+            self.db_path,
+            review_service=StaticReviewService(review),  # type: ignore[arg-type]
+        )
+
+        session = service.create_session(self.game_id, pov="both", max_items=5)
+        with self.assertRaises(ReviewPracticeServiceError) as context:
+            service.record_attempt(
+                int(session["session_id"]),
+                ply=1,
+                attempted_uci="e2e4",
+            )
+
+        self.assertEqual(context.exception.status_code, 409)
+        self.assertEqual(
+            context.exception.payload["error_code"],
+            "REVIEW_LEGACY_REBUILD_REQUIRED",
+        )
+        self.assertEqual(
+            context.exception.payload["feedback"]["reason_code"],
+            "best_move_missing_or_unparseable",
+        )
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            attempts = connection.execute(
+                "SELECT COUNT(*) FROM review_practice_attempts"
+            ).fetchone()[0]
+        self.assertEqual(attempts, 0)
+
     def test_api_endpoints_create_attempt_and_complete(self) -> None:
         static_review_service = StaticReviewService(practice_review(self.game_id))
         app.dependency_overrides[get_repository] = lambda: self.repository
@@ -243,16 +416,45 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
 
         attempt_response = client.post(
             f"/review/practice/sessions/{session_payload['session_id']}/attempts",
-            json={"ply": 1, "attempted_uci": "e2e4", "result": "best"},
+            json={"ply": 1, "attempted_uci": "e2e4", "result": "wrong"},
         )
         self.assertEqual(attempt_response.status_code, 200)
         self.assertEqual(attempt_response.json()["correct_count"], 1)
+        self.assertEqual(attempt_response.json()["attempt_feedback"]["result"], "best")
+        self.assertEqual(attempt_response.json()["attempt_feedback"]["attempted_san"], "e4")
 
         complete_response = client.post(
             f"/review/practice/sessions/{session_payload['session_id']}/complete"
         )
         self.assertEqual(complete_response.status_code, 200)
         self.assertEqual(complete_response.json()["status"], "completed")
+
+    def test_api_try_move_evaluation_has_no_practice_side_effect(self) -> None:
+        client = TestClient(app)
+
+        response = client.post(
+            "/review/try-move/evaluate",
+            json={
+                "fen_before": FEN_BXF7,
+                "move_played": "Bxf7+",
+                "best_move_san": "Bxf7+",
+                "source_context": "review_try_move",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["result"], "best")
+        self.assertFalse(payload["show_best_move"])
+        self.assertEqual(payload["evidence"]["user_move_uci"], "c4f7")
+        self.assertEqual(payload["evidence"]["best_move_uci"], "c4f7")
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            attempts = connection.execute(
+                "SELECT COUNT(*) FROM review_practice_attempts"
+            ).fetchone()[0]
+            jobs = connection.execute("SELECT COUNT(*) FROM review_jobs").fetchone()[0]
+        self.assertEqual(attempts, 0)
+        self.assertEqual(jobs, 0)
 
     def test_api_history_detail_abandon_and_retry_failed(self) -> None:
         static_review_service = StaticReviewService(practice_review(self.game_id))
@@ -270,7 +472,7 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
 
         client.post(
             f"/review/practice/sessions/{session_id}/attempts",
-            json={"ply": 1, "attempted_uci": "d2d4", "result": "wrong"},
+            json={"ply": 1, "attempted_uci": "e2e5", "result": "illegal"},
         )
 
         list_response = client.get(
@@ -287,7 +489,7 @@ class ReviewPracticeSessionsTests(unittest.TestCase):
         self.assertEqual(list_response.status_code, 200)
         self.assertEqual(len(list_response.json()["sessions"]), 1)
         self.assertEqual(detail_response.status_code, 200)
-        self.assertEqual(detail_response.json()["summary"]["wrong_count"], 1)
+        self.assertEqual(detail_response.json()["summary"]["illegal_count"], 1)
         self.assertEqual(retry_response.status_code, 200)
         self.assertEqual([item["ply"] for item in retry_response.json()["items"]], [1])
         self.assertEqual(abandon_response.status_code, 200)

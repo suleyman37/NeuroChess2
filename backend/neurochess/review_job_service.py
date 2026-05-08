@@ -254,6 +254,7 @@ class ReviewJobService:
         return self.get_job(job_id)
 
     def get_job(self, job_id: str) -> dict[str, Any]:
+        should_finalize = False
         with closing(get_connection(self.db_path)) as connection:
             row = self._get_job_row(connection, job_id)
             if row is None:
@@ -269,12 +270,45 @@ class ReviewJobService:
                 if status == "completed"
                 else None
             )
-            derived = self._derive_reconcile_state(
-                row,
-                coverage=coverage,
-                final_review_exists=final_review_exists,
+            watchdog_action = (
+                self._watchdog_action(row, coverage)
+                if status in {"queued", "running", "finalizing"} and coverage is not None
+                else None
             )
-            return self._job_payload(row, coverage=coverage, derived=derived)
+            if watchdog_action == "finalize":
+                should_finalize = True
+            elif watchdog_action == "stalled":
+                reason = self._stalled_reason(row)
+                message = (
+                    ENGINE_TIMEOUT_USER_MESSAGE
+                    if reason in {"position_timeout", "engine_hard_timeout"}
+                    else "Analyse bloquee temporairement. Vous pouvez reprendre l'analyse."
+                )
+                self._update_job_from_coverage(
+                    connection,
+                    job_id,
+                    status="stalled",
+                    coverage=coverage,
+                    error_message=message,
+                    failed_reason=STALLED_FAILED_REASON,
+                    last_error=reason,
+                    retryable=True,
+                    current_phase="stalled",
+                    stalled_reason=reason,
+                )
+                connection.commit()
+                row = self._get_job_row(connection, job_id)
+                if row is None:
+                    raise ReviewServiceError("review job not found", status_code=404)
+                status = str(row["status"])
+            if not should_finalize:
+                derived = self._derive_reconcile_state(
+                    row,
+                    coverage=coverage,
+                    final_review_exists=final_review_exists,
+                )
+                return self._job_payload(row, coverage=coverage, derived=derived)
+        return self.finalize_review_job(job_id)
 
     def get_job_diagnostics(self, job_id: str) -> dict[str, Any]:
         """Read-only diagnostic pack for copying a Review job state."""
@@ -297,7 +331,7 @@ class ReviewJobService:
             settings = _parse_json(row["settings_json"])
             watchdog_action = (
                 self._watchdog_action(row, coverage)
-                if str(row["status"]) in {"running", "finalizing"}
+                if str(row["status"]) in {"queued", "running", "finalizing"}
                 else None
             )
             final_review_exists = (
@@ -676,7 +710,7 @@ class ReviewJobService:
         elif status == "completed" and coverage is not None and not coverage_is_complete(coverage):
             derived_needs_reconcile = True
             derived_reconcile_reason = "completed_without_full_coverage"
-        elif status in {"running", "finalizing"} and coverage is not None:
+        elif status in {"queued", "running", "finalizing"} and coverage is not None:
             action = self._watchdog_action(row, coverage)
             if action == "finalize":
                 derived_needs_reconcile = True
@@ -733,7 +767,7 @@ class ReviewJobService:
                 )
                 return self.get_job(job_id)
 
-            if row["status"] in {"running", "finalizing"}:
+            if row["status"] in {"queued", "running", "finalizing"}:
                 action = self._watchdog_action(row, coverage)
                 if action == "stalled":
                     self._mark_job_stalled(
@@ -1118,7 +1152,8 @@ class ReviewJobService:
         percent = int(round((completed / required) * 100)) if required else 0
         row = self._get_job_row(connection, job_id)
         started_at = row["started_at"] if row is not None else None
-        elapsed = _elapsed_seconds(started_at)
+        created_at = row["created_at"] if row is not None else None
+        elapsed = _elapsed_seconds(started_at or created_at)
         previous_completed = int(row["completed_position_count"] or 0) if row is not None else 0
         previous_status = str(row["status"]) if row is not None else None
         last_progress_at = _row_get(row, "last_progress_at") if row is not None else None
@@ -1130,7 +1165,7 @@ class ReviewJobService:
             last_progress_at = now
         if not last_progress_at:
             last_progress_at = now
-        terminal = status in {"completed", "failed", "cancelled", "stalled"}
+        terminal = status in {"completed", "failed", "cancelled", "stalled", "incomplete"}
         can_cancel = 0 if terminal or status == "finalizing" else 1
         phase = current_phase or (
             "completed" if status == "completed"
@@ -1322,7 +1357,7 @@ class ReviewJobService:
             "current_fen_index": int(row["current_fen_index"] or 0),
             "total_budget_seconds": int(row["total_budget_seconds"] or 0),
             "per_position_time_ms": int(row["per_position_time_ms"] or 0),
-            "elapsed_seconds": int(row["elapsed_seconds"] or 0),
+            "elapsed_seconds": _job_elapsed_seconds(row),
             "estimated_remaining_seconds": int(row["estimated_remaining_seconds"] or 0),
             "can_cancel": bool(row["can_cancel"]),
             "force_reanalysis": bool(row["force_reanalysis"]),
@@ -1409,6 +1444,15 @@ def _row_get(row: Any, key: str, default: Any = None) -> Any:
     except AttributeError:
         return default
     return row[key] if key in keys else default
+
+
+def _job_elapsed_seconds(row: Any) -> int:
+    stored = int(_row_get(row, "elapsed_seconds", 0) or 0)
+    status = str(_row_get(row, "status", "") or "")
+    if status in ACTIVE_REVIEW_JOB_STATUSES:
+        stable_started_at = _row_get(row, "started_at") or _row_get(row, "created_at")
+        return max(stored, _elapsed_seconds(stable_started_at))
+    return stored
 
 
 def _friendly_failure(error_message: str) -> tuple[str, str, bool]:

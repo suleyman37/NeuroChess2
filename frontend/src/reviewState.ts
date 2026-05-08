@@ -1,18 +1,15 @@
+import { fr } from "./i18n";
+
 export const MIN_REVIEW_HALF_MOVES = 10;
 export const REVIEW_VISIBLE_SPINNER_TIMEOUT_MS = 3_000;
 export const REVIEW_PENDING_TIMEOUT_MS = 60_000;
-export const REVIEW_TIMEOUT_MESSAGE =
-  "L'analyse prend plus de temps que prévu. Réessayez plus tard.";
-export const REVIEW_PENDING_BACKGROUND_MESSAGE =
-  "L'analyse approfondie continue en arrière-plan. Vérifiez à nouveau dans quelques instants.";
-export const REVIEW_NOT_REVIEWABLE_MESSAGE =
-  "Partie trop courte pour générer une review fiable.";
+export const REVIEW_TIMEOUT_MESSAGE = fr.analysis.timeout;
+export const REVIEW_PENDING_BACKGROUND_MESSAGE = fr.analysis.pendingBackground;
+export const REVIEW_NOT_REVIEWABLE_MESSAGE = fr.analysis.notReviewable;
 export const REVIEW_NO_SIGNIFICANT_MOMENTS_MESSAGE =
-  "Aucun moment majeur détecté : la partie est restée trop équilibrée pour générer une review utile.";
-export const REVIEW_STALLED_MESSAGE =
-  "L'analyse approfondie n'a pas pu être lancée. Réessayez plus tard.";
-export const REVIEW_FAILED_DEEP_MESSAGE =
-  "L'analyse approfondie a échoué sur une ou plusieurs positions.";
+  fr.analysis.noSignificantMoments;
+export const REVIEW_STALLED_MESSAGE = fr.analysis.stalled;
+export const REVIEW_FAILED_DEEP_MESSAGE = fr.analysis.failedDeep;
 
 export function isShortGameForReview(halfMovesCount: number): boolean {
   return halfMovesCount <= MIN_REVIEW_HALF_MOVES;

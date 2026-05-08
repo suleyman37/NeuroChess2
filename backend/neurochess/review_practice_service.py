@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from contextlib import closing
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +12,11 @@ import chess
 from neurochess.data.database import (
     execute_sqlite_write_with_retry,
     get_connection,
+)
+from neurochess.analysis_service import AnalysisService
+from neurochess.metrics.try_move import TRY_MOVE_MODEL_VERSION, evaluate_try_move_attempt
+from neurochess.review_try_move_stabilization import (
+    enrich_annotation_with_stable_attempt_evaluation,
 )
 from neurochess.review_service import (
     REVIEW_SCHEMA_VERSION,
@@ -26,17 +31,30 @@ PRACTICE_DEFAULT_MAX_ITEMS = 5
 PRACTICE_MAX_ITEMS_LIMIT = 20
 
 PRACTICE_ALLOWED_POVS = {"user", "white", "black", "both"}
-PRACTICE_ALLOWED_SCOPES = {"top_priority", "all_to_review", "retry_failed"}
+PRACTICE_ALLOWED_SCOPES = {
+    "top_priority",
+    "all_to_review",
+    "retry_failed",
+    "due_review",
+    "daily_plan",
+}
 PRACTICE_ALLOWED_RESULTS = {
     "best",
     "very_good",
     "acceptable",
+    "playable",
+    "imprecise",
     "wrong",
     "illegal",
+    "needs_rebuild",
     "skipped",
     "revealed",
 }
 PRACTICE_FAILED_RETRY_RESULTS = {"wrong", "illegal", "revealed", "skipped"}
+PRACTICE_SUCCESS_RESULTS = {"best", "very_good", "acceptable"}
+PRACTICE_SOFT_RESULTS = {"playable", "imprecise", "needs_rebuild"}
+PRACTICE_DUE_REVIEW_SCOPE = "due_review"
+LEARNING_LOOP_SUMMARY_SCHEMA_VERSION = "learning_loop_v1"
 
 PRACTICE_PRIMARY_PRIORITY = {
     "decisive": 0,
@@ -79,9 +97,11 @@ class ReviewPracticeService:
         db_path: str | Path | None = None,
         *,
         review_service: ReviewService | None = None,
+        analysis_service: AnalysisService | None = None,
     ) -> None:
         self.db_path = db_path
         self.review_service = review_service or ReviewService(db_path)
+        self.analysis_service = analysis_service or AnalysisService(db_path)
 
     def build_review_practice_items(
         self,
@@ -153,7 +173,11 @@ class ReviewPracticeService:
         scope: str,
         items: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        session_items = [dict(item, game_id=game_id) for item in items]
+        session_items: list[dict[str, Any]] = []
+        for item in items:
+            payload = dict(item)
+            payload.setdefault("game_id", game_id)
+            session_items.append(payload)
         items_json = json.dumps(session_items, ensure_ascii=False, sort_keys=True)
 
         def write_session() -> int:
@@ -229,15 +253,52 @@ class ReviewPracticeService:
             "summary": _summary_payload(session_row, [], session_items),
         }
 
+    def create_session_from_training_items(
+        self,
+        items: list[dict[str, Any]],
+        *,
+        scope: str = "daily_plan",
+        pov: str = "user",
+    ) -> dict[str, Any]:
+        if not items:
+            raise ReviewPracticeServiceError(
+                "no daily plan practice items",
+                status_code=409,
+                payload={
+                    "status": "no_daily_plan_items",
+                    "scope": scope,
+                    "items": [],
+                    "summary": _empty_summary(),
+                },
+            )
+        first_game_id = _int_or_none(items[0].get("game_id"))
+        if first_game_id is None:
+            raise ReviewPracticeServiceError(
+                "daily plan item is missing source game",
+                status_code=409,
+            )
+        normalized_scope = _normalize_scope(scope)
+        normalized_pov = _normalize_pov(pov)
+        return self._create_session_from_items(
+            first_game_id,
+            review_id=None,
+            pov=normalized_pov,
+            scope=normalized_scope,
+            items=items,
+        )
+
     def record_attempt(
         self,
         session_id: int,
         *,
         ply: int,
         attempted_uci: str | None = None,
-        result: str,
+        result: str | None = None,
+        time_spent_ms: int | None = None,
+        hint_used: bool | None = None,
+        reveal_used: bool | None = None,
+        source_context: str | None = None,
     ) -> dict[str, Any]:
-        normalized_result = _normalize_result(result)
         with closing(get_connection(self.db_path)) as connection:
             session = _session_row(connection, session_id)
             if session is None:
@@ -259,8 +320,34 @@ class ReviewPracticeService:
                 )
             attempt_number = _next_attempt_number(connection, session_id, ply)
 
-        attempted_san = _attempted_san(item.get("fen_before"), attempted_uci)
+        feedback = _practice_attempt_feedback(
+            item,
+            attempted_uci=attempted_uci,
+            requested_result=result,
+            analysis_service=self.analysis_service,
+        )
+        normalized_result = _normalize_result(feedback["result"])
+        attempted_uci = feedback.get("attempted_uci")
+        attempted_san = feedback.get("attempted_san")
         snapshot = _evidence_snapshot(item)
+        snapshot["attempt_classification"] = feedback.get("evidence") or {}
+        created_at = _utc_now()
+        normalized_hint_used = bool(hint_used)
+        normalized_reveal_used = bool(reveal_used) or normalized_result == "revealed"
+        normalized_time_spent_ms = _normalize_time_spent_ms(time_spent_ms)
+        normalized_source_context = _normalize_source_context(
+            source_context or item.get("source_context")
+        )
+        expected_best_uci = feedback.get("best_move_uci") or item.get("best_move_uci")
+        attempt_game_id = int(item.get("game_id") or session["game_id"])
+        raw_item_id = item.get("item_id")
+        item_id = str(raw_item_id) if raw_item_id else _practice_item_id(attempt_game_id, int(ply))
+        due_at = practice_revision_due_at(
+            normalized_result,
+            created_at,
+            hint_used=normalized_hint_used,
+            reveal_used=normalized_reveal_used,
+        )
 
         def write_attempt() -> dict[str, Any]:
             with closing(get_connection(self.db_path)) as connection:
@@ -279,22 +366,34 @@ class ReviewPracticeService:
                             result,
                             attempt_number,
                             evidence_snapshot_json,
+                            item_id,
+                            time_spent_ms,
+                            hint_used,
+                            reveal_used,
+                            source_context,
+                            due_at,
                             created_at
                         )
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (
                             session_id,
-                            int(session["game_id"]),
+                            attempt_game_id,
                             int(ply),
                             str(item.get("color") or ""),
                             attempted_uci,
                             attempted_san,
-                            item.get("best_move_uci"),
+                            expected_best_uci,
                             normalized_result,
                             attempt_number,
                             json.dumps(snapshot, ensure_ascii=False, sort_keys=True),
-                            _utc_now(),
+                            item_id,
+                            normalized_time_spent_ms,
+                            1 if normalized_hint_used else 0,
+                            1 if normalized_reveal_used else 0,
+                            normalized_source_context,
+                            due_at,
+                            created_at,
                         ),
                     )
                     _increment_session_counts(connection, session_id, normalized_result)
@@ -302,7 +401,27 @@ class ReviewPracticeService:
                 except Exception:
                     connection.rollback()
                     raise
-                return self.get_session_summary(session_id)
+                summary = self.get_session_summary(session_id)
+                summary["attempt_feedback"] = feedback
+                summary["latest_attempt"] = {
+                    "session_id": session_id,
+                    "game_id": attempt_game_id,
+                    "ply": int(ply),
+                    "color": str(item.get("color") or ""),
+                    "attempted_uci": attempted_uci,
+                    "attempted_san": attempted_san,
+                    "expected_best_uci": expected_best_uci,
+                    "result": normalized_result,
+                    "attempt_number": attempt_number,
+                    "item_id": item_id,
+                    "time_spent_ms": normalized_time_spent_ms,
+                    "hint_used": normalized_hint_used,
+                    "reveal_used": normalized_reveal_used,
+                    "source_context": normalized_source_context,
+                    "due_at": due_at,
+                    "created_at": created_at,
+                }
+                return summary
 
         return execute_sqlite_write_with_retry(write_attempt)
 
@@ -368,14 +487,95 @@ class ReviewPracticeService:
                 """,
                 (game_id,),
             ).fetchall()
+            attempts = _game_practice_attempt_rows(connection, game_id)
+            learning_summary = _learning_summary_payload(
+                game_id,
+                attempts,
+                session_count=len(rows),
+            )
 
         return {
             "game_id": game_id,
+            "learning_summary": learning_summary,
             "sessions": [
                 self._session_payload(row, include_items=False)
                 for row in rows
             ],
         }
+
+    def build_learning_summary_for_game(self, game_id: int) -> dict[str, Any]:
+        with closing(get_connection(self.db_path)) as connection:
+            session_count = connection.execute(
+                """
+                SELECT COUNT(*)
+                FROM review_practice_sessions
+                WHERE game_id = ?
+                """,
+                (game_id,),
+            ).fetchone()[0]
+            attempts = _game_practice_attempt_rows(connection, game_id)
+        return _learning_summary_payload(
+            game_id,
+            attempts,
+            session_count=int(session_count or 0),
+        )
+
+    def create_due_review_session(
+        self,
+        game_id: int,
+        *,
+        pov: str = "user",
+        max_items: int = PRACTICE_DEFAULT_MAX_ITEMS,
+    ) -> dict[str, Any]:
+        review = self.review_service.get_review(game_id)
+        _ensure_review_completed(review)
+        normalized_pov = _normalize_pov(pov)
+        max_count = _normalized_max_items(max_items)
+        review_items = build_review_practice_items_from_review(
+            review,
+            pov=normalized_pov,
+            scope="all_to_review",
+            max_items=PRACTICE_MAX_ITEMS_LIMIT,
+        )
+        for item in review_items:
+            item["game_id"] = game_id
+        with closing(get_connection(self.db_path)) as connection:
+            attempts = _game_practice_attempt_rows(connection, game_id)
+            due_by_ply = _due_ply_map(attempts)
+            review_id = _current_review_id(connection, game_id)
+        due_items = [
+            item
+            for item in review_items
+            if int(item.get("ply") or 0) in due_by_ply
+        ]
+        due_items.sort(
+            key=lambda item: (
+                due_by_ply.get(int(item.get("ply") or 0)) or "",
+                int(item.get("ply") or 0),
+            )
+        )
+        due_items = due_items[:max_count]
+        if not due_items:
+            raise ReviewPracticeServiceError(
+                "no due review items",
+                status_code=409,
+                payload={
+                    "status": "no_due_items",
+                    "game_id": game_id,
+                    "pov": normalized_pov,
+                    "scope": PRACTICE_DUE_REVIEW_SCOPE,
+                    "items": [],
+                    "summary": _empty_summary(),
+                    "learning_summary": self.build_learning_summary_for_game(game_id),
+                },
+            )
+        return self._create_session_from_items(
+            game_id,
+            review_id=review_id,
+            pov=normalized_pov,
+            scope=PRACTICE_DUE_REVIEW_SCOPE,
+            items=due_items,
+        )
 
     def get_session(self, session_id: int) -> dict[str, Any]:
         with closing(get_connection(self.db_path)) as connection:
@@ -552,7 +752,10 @@ def _practice_item_from_annotation(annotation: dict[str, Any]) -> dict[str, Any]
         "fen_after": annotation.get("fen_after"),
         "best_move_uci": annotation.get("best_move_uci"),
         "best_move_san": annotation.get("best_move_san"),
+        "top_moves": annotation.get("top_moves") or [],
         "acceptable_moves": annotation.get("acceptable_moves") or [],
+        "candidate_moves": annotation.get("candidate_moves") or [],
+        "accepted_moves_json": annotation.get("accepted_moves_json"),
         "pedagogical_explanation": annotation.get("pedagogical_explanation") or {},
         "contrast_coach_explanation": annotation.get("contrast_coach_explanation") or {},
         "impact_label": annotation.get("impact_label"),
@@ -566,15 +769,26 @@ def _practice_item_from_annotation(annotation: dict[str, Any]) -> dict[str, Any]
         "pv_line_message": annotation.get("pv_line_message"),
         "pv_contrast_evidence": annotation.get("pv_contrast_evidence"),
         "try_move_supported": bool(annotation.get("try_move_supported")),
+        "try_move_model_version": annotation.get("try_move_model_version"),
         "win_loss": annotation.get("win_loss"),
         "move_accuracy": annotation.get("move_accuracy"),
         "coach_priority_rank": annotation.get("coach_priority_rank"),
         "compact_label": annotation.get("compact_label"),
         "coach_card_title": annotation.get("coach_card_title"),
+        "moment_importance": annotation.get("moment_importance"),
+        "moment_group": annotation.get("moment_group"),
+        "moment_label": annotation.get("moment_label"),
+        "moment_reason": annotation.get("moment_reason"),
+        "moment_importance_version": annotation.get("moment_importance_version"),
+        "is_training_recommended": annotation.get("is_training_recommended"),
+        "is_micro_gap": annotation.get("is_micro_gap"),
+        "is_good_decision": annotation.get("is_good_decision"),
     }
 
 
 def _annotation_is_practice_eligible(annotation: dict[str, Any]) -> bool:
+    if annotation.get("is_training_recommended") is False:
+        return False
     if not annotation.get("try_move_supported"):
         return False
     if not annotation.get("fen_before") or not annotation.get("best_move_uci"):
@@ -646,7 +860,7 @@ def _increment_session_counts(
 ) -> None:
     if result == "best":
         column = "correct_count"
-    elif result in {"very_good", "acceptable"}:
+    elif result in {"very_good", "acceptable"} | PRACTICE_SOFT_RESULTS:
         column = "partial_count"
     elif result == "revealed":
         column = "revealed_count"
@@ -664,6 +878,138 @@ def _increment_session_counts(
     )
 
 
+def _practice_attempt_feedback(
+    item: dict[str, Any],
+    *,
+    attempted_uci: str | None,
+    requested_result: str | None,
+    analysis_service: AnalysisService | None = None,
+) -> dict[str, Any]:
+    normalized_attempt_uci = str(attempted_uci).strip() if attempted_uci else None
+    attempted_san = _attempted_san(item.get("fen_before"), normalized_attempt_uci)
+    if normalized_attempt_uci:
+        feedback = dict(evaluate_try_move_attempt(normalized_attempt_uci, item))
+        if feedback.get("reason_code") == "stable_evaluation_required_for_legal_out_of_list":
+            enriched_item = enrich_annotation_with_stable_attempt_evaluation(
+                item,
+                normalized_attempt_uci,
+                analysis_service,
+            )
+            if enriched_item is not item:
+                item = enriched_item
+                feedback = dict(evaluate_try_move_attempt(normalized_attempt_uci, item))
+            if (
+                feedback.get("reason_code")
+                == "stable_evaluation_required_for_legal_out_of_list"
+                and requested_result
+                and _normalize_result(requested_result)
+                in {"playable", "imprecise", "wrong", "needs_rebuild"}
+            ):
+                feedback = _explicit_attempt_result_feedback(requested_result)
+    else:
+        feedback = _explicit_practice_action_feedback(requested_result)
+    if (
+        str(feedback.get("result") or "") == "needs_rebuild"
+        and feedback.get("reason_code")
+        != "stable_evaluation_required_for_legal_out_of_list"
+    ):
+        evidence = feedback.get("evidence") if isinstance(feedback.get("evidence"), dict) else {}
+        raise ReviewPracticeServiceError(
+            "review_legacy_rebuild_required",
+            status_code=409,
+            payload={
+                "status": "review_legacy_rebuild_required",
+                "error_code": "REVIEW_LEGACY_REBUILD_REQUIRED",
+                "message": "Cette position vient d'une ancienne Review. Reconstruis la Review avant de corriger cet exercice.",
+                "recoverable": True,
+                "recommended_action": "reanalyze_review",
+                "feedback": feedback,
+                "debug": {
+                    "reason_code": feedback.get("reason_code"),
+                    "ply": item.get("ply"),
+                    "source_context": item.get("source_context"),
+                    "classifier_version": evidence.get("classifier_version"),
+                },
+            },
+        )
+    feedback["result"] = _normalize_result(str(feedback.get("result") or ""))
+    feedback["attempted_uci"] = normalized_attempt_uci
+    feedback["attempted_san"] = feedback.get("evidence", {}).get("user_move_san") or attempted_san
+    feedback["best_move_uci"] = feedback.get("evidence", {}).get("best_move_uci") or item.get("best_move_uci")
+    feedback["best_move_san"] = feedback.get("evidence", {}).get("best_move_san") or item.get("best_move_san")
+    feedback["try_move_model_version"] = (
+        item.get("try_move_model_version") or TRY_MOVE_MODEL_VERSION
+    )
+    classification_evidence = (
+        dict(feedback.get("evidence"))
+        if isinstance(feedback.get("evidence"), dict)
+        else {}
+    )
+    feedback["evidence"] = {
+        **classification_evidence,
+        "ply": item.get("ply"),
+        "color": item.get("color"),
+        "accepted_move_count": len(item.get("acceptable_moves") or []),
+        "try_move_model_version": feedback["try_move_model_version"],
+        "source_context": item.get("source_context"),
+        "item_id": item.get("item_id"),
+    }
+    return feedback
+
+
+def _explicit_practice_action_feedback(result: str | None) -> dict[str, Any]:
+    normalized_result = _normalize_result(result)
+    if normalized_result == "revealed":
+        return {
+            "result": "revealed",
+            "message": "Solution révélée sans tentative.",
+            "show_best_move": True,
+        }
+    if normalized_result == "skipped":
+        return {
+            "result": "skipped",
+            "message": "Position passée.",
+            "show_best_move": False,
+        }
+    raise ReviewPracticeServiceError(
+        "practice result must be revealed or skipped without attempted move",
+        status_code=400,
+    )
+
+
+def _explicit_attempt_result_feedback(result: str) -> dict[str, Any]:
+    normalized_result = _normalize_result(result)
+    if normalized_result in {"skipped", "revealed"}:
+        return _explicit_practice_action_feedback(normalized_result)
+    return {
+        "result": normalized_result,
+        "message": _message_for_explicit_attempt_result(normalized_result),
+        "show_best_move": normalized_result in {"imprecise", "wrong"},
+        "reason_code": "explicit_attempt_result_after_unavailable_stable_eval",
+        "evidence": {
+            "result": normalized_result,
+            "reason_code": "explicit_attempt_result_after_unavailable_stable_eval",
+            "stable_evaluation_available": False,
+        },
+    }
+
+
+def _message_for_explicit_attempt_result(result: str) -> str:
+    if result == "best":
+        return "Meilleure idee trouvee."
+    if result in {"very_good", "acceptable"}:
+        return "Bonne idee."
+    if result == "playable":
+        return "Coup jouable."
+    if result == "imprecise":
+        return "Jouable, mais a ameliorer."
+    if result == "wrong":
+        return "A revoir."
+    if result == "illegal":
+        return "Coup illegal."
+    return "Evaluation a reconstruire."
+
+
 def _summary_payload(
     session: sqlite3.Row | dict[str, Any],
     attempts: list[sqlite3.Row],
@@ -678,9 +1024,13 @@ def _summary_payload(
         for ply, row in latest_attempts.items()
         if str(row["result"]) in PRACTICE_FAILED_RETRY_RESULTS
     )
+    learning_counts = _learning_counts_for_latest_attempts(latest_attempts)
     theme = _practice_theme(list(latest_attempts.values()), failed_plies=set(failed_plies))
     very_good_count = counts.get("very_good", 0)
     acceptable_count = counts.get("acceptable", 0)
+    playable_count = counts.get("playable", 0)
+    imprecise_count = counts.get("imprecise", 0)
+    needs_rebuild_count = counts.get("needs_rebuild", 0)
     wrong_count = counts.get("wrong", 0)
     illegal_count = counts.get("illegal", 0)
     summary_sentence = _summary_message(
@@ -702,12 +1052,21 @@ def _summary_payload(
         "best_count": counts.get("best", 0),
         "very_good_count": very_good_count,
         "acceptable_count": acceptable_count,
+        "playable_count": playable_count,
+        "imprecise_count": imprecise_count,
+        "needs_rebuild_count": needs_rebuild_count,
         "wrong_count": wrong_count,
         "illegal_count": illegal_count,
         "revealed_count": counts.get("revealed", 0),
         "skipped_count": counts.get("skipped", 0),
         "correct_count": counts.get("best", 0),
-        "partial_count": very_good_count + acceptable_count,
+        "partial_count": (
+            very_good_count
+            + acceptable_count
+            + playable_count
+            + imprecise_count
+            + needs_rebuild_count
+        ),
         "attempt_count": len(attempts),
         "completed_at": _row_get(session, "completed_at"),
         "schema_version": _row_get(session, "schema_version"),
@@ -719,6 +1078,11 @@ def _summary_payload(
         "retry_failed_available": bool(failed_plies),
         "failed_plies": failed_plies,
         "failed_count": len(failed_plies),
+        "success_without_help_count": learning_counts["success_without_help_count"],
+        "success_with_hint_count": learning_counts["success_with_hint_count"],
+        "due_count": learning_counts["due_count"],
+        "scheduled_count": learning_counts["scheduled_count"],
+        "next_due_at": learning_counts["next_due_at"],
         "result_by_ply": {
             str(ply): str(row["result"])
             for ply, row in sorted(latest_attempts.items())
@@ -733,6 +1097,9 @@ def _empty_summary() -> dict[str, Any]:
         "best_count": 0,
         "very_good_count": 0,
         "acceptable_count": 0,
+        "playable_count": 0,
+        "imprecise_count": 0,
+        "needs_rebuild_count": 0,
         "correct_count": 0,
         "partial_count": 0,
         "wrong_count": 0,
@@ -748,6 +1115,11 @@ def _empty_summary() -> dict[str, Any]:
         "retry_failed_available": False,
         "failed_plies": [],
         "failed_count": 0,
+        "success_without_help_count": 0,
+        "success_with_hint_count": 0,
+        "due_count": 0,
+        "scheduled_count": 0,
+        "next_due_at": None,
         "result_by_ply": {},
     }
 
@@ -871,6 +1243,159 @@ def _result_counts(attempts_by_ply: dict[int, sqlite3.Row]) -> dict[str, int]:
     return counts
 
 
+def _game_practice_attempt_rows(
+    connection: sqlite3.Connection,
+    game_id: int,
+) -> list[sqlite3.Row]:
+    return connection.execute(
+        """
+        SELECT *
+        FROM review_practice_attempts
+        WHERE game_id = ?
+        ORDER BY id
+        """,
+        (game_id,),
+    ).fetchall()
+
+
+def _latest_learning_attempts_by_item(
+    attempts: list[sqlite3.Row],
+) -> dict[str, sqlite3.Row]:
+    latest: dict[str, sqlite3.Row] = {}
+    for row in attempts:
+        item_id = str(_row_get(row, "item_id") or _practice_item_id(row["game_id"], row["ply"]))
+        latest[item_id] = row
+    return latest
+
+
+def _learning_summary_payload(
+    game_id: int,
+    attempts: list[sqlite3.Row],
+    *,
+    session_count: int,
+) -> dict[str, Any]:
+    latest = _latest_learning_attempts_by_item(attempts)
+    counts = _learning_counts_for_attempt_rows(list(latest.values()))
+    now = _parse_utc_datetime(_utc_now())
+    week_cutoff = now - timedelta(days=7)
+    week_attempts = [
+        row
+        for row in attempts
+        if _parse_utc_datetime(str(_row_get(row, "created_at") or _utc_now())) >= week_cutoff
+    ]
+    latest_week_attempts = _latest_learning_attempts_by_item(week_attempts)
+    week_counts = _learning_counts_for_attempt_rows(list(latest_week_attempts.values()))
+    return {
+        "game_id": int(game_id),
+        "schema_version": LEARNING_LOOP_SUMMARY_SCHEMA_VERSION,
+        "session_count": int(session_count),
+        "practice_event_count": len(attempts),
+        "positions_worked_count": len(latest),
+        "week_positions_worked_count": len(latest_week_attempts),
+        "week_success_without_help_count": week_counts["success_without_help_count"],
+        "week_success_with_hint_count": week_counts["success_with_hint_count"],
+        "week_failed_count": week_counts["failed_count"],
+        "week_revealed_count": week_counts["revealed_count"],
+        **counts,
+    }
+
+
+def _learning_counts_for_latest_attempts(
+    latest_attempts: dict[int, sqlite3.Row],
+) -> dict[str, Any]:
+    return _learning_counts_for_attempt_rows(list(latest_attempts.values()))
+
+
+def _learning_counts_for_attempt_rows(attempts: list[sqlite3.Row]) -> dict[str, Any]:
+    now = _parse_utc_datetime(_utc_now())
+    success_without_help_count = 0
+    success_with_hint_count = 0
+    failed_count = 0
+    revealed_count = 0
+    due_count = 0
+    scheduled_count = 0
+    next_due_at: str | None = None
+    for row in attempts:
+        result = str(_row_get(row, "result") or "")
+        hint_used = _bool_row_value(_row_get(row, "hint_used", 0))
+        reveal_used = _bool_row_value(_row_get(row, "reveal_used", 0))
+        if result in PRACTICE_SUCCESS_RESULTS:
+            if hint_used:
+                success_with_hint_count += 1
+            elif not reveal_used:
+                success_without_help_count += 1
+        elif result in {"wrong", "illegal"}:
+            failed_count += 1
+        elif result == "revealed":
+            revealed_count += 1
+
+        due_at = _due_at_for_row(row)
+        if not due_at:
+            continue
+        due_dt = _parse_utc_datetime(due_at)
+        if due_dt <= now:
+            due_count += 1
+        else:
+            scheduled_count += 1
+            if next_due_at is None or due_dt < _parse_utc_datetime(next_due_at):
+                next_due_at = due_at
+    return {
+        "success_without_help_count": success_without_help_count,
+        "success_with_hint_count": success_with_hint_count,
+        "failed_count": failed_count,
+        "revealed_count": revealed_count,
+        "due_count": due_count,
+        "scheduled_count": scheduled_count,
+        "next_due_at": next_due_at,
+    }
+
+
+def _due_ply_map(attempts: list[sqlite3.Row]) -> dict[int, str]:
+    now = _parse_utc_datetime(_utc_now())
+    due: dict[int, str] = {}
+    for row in _latest_learning_attempts_by_item(attempts).values():
+        due_at = _due_at_for_row(row)
+        if not due_at:
+            continue
+        if _parse_utc_datetime(due_at) <= now:
+            due[int(row["ply"])] = due_at
+    return due
+
+
+def practice_revision_delay_days(
+    result: str,
+    *,
+    hint_used: bool = False,
+    reveal_used: bool = False,
+) -> int | None:
+    normalized_result = str(result or "").lower()
+    if normalized_result in {"wrong", "illegal", "revealed"} or reveal_used:
+        return 1
+    if normalized_result in PRACTICE_SUCCESS_RESULTS:
+        return 3 if hint_used else 7
+    if normalized_result == "skipped":
+        return None
+    return None
+
+
+def practice_revision_due_at(
+    result: str,
+    attempted_at: str,
+    *,
+    hint_used: bool = False,
+    reveal_used: bool = False,
+) -> str | None:
+    delay_days = practice_revision_delay_days(
+        result,
+        hint_used=hint_used,
+        reveal_used=reveal_used,
+    )
+    if delay_days is None:
+        return None
+    due_dt = _parse_utc_datetime(attempted_at) + timedelta(days=delay_days)
+    return due_dt.isoformat(timespec="seconds")
+
+
 def _items_from_session_row(
     session: sqlite3.Row | dict[str, Any],
 ) -> list[dict[str, Any]] | None:
@@ -898,6 +1423,12 @@ def _attempt_payload(row: sqlite3.Row) -> dict[str, Any]:
         "expected_best_uci": row["expected_best_uci"],
         "result": row["result"],
         "attempt_number": int(row["attempt_number"]),
+        "item_id": _row_get(row, "item_id") or _practice_item_id(row["game_id"], row["ply"]),
+        "time_spent_ms": _row_get(row, "time_spent_ms"),
+        "hint_used": _bool_row_value(_row_get(row, "hint_used", 0)),
+        "reveal_used": _bool_row_value(_row_get(row, "reveal_used", 0)),
+        "source_context": _row_get(row, "source_context") or "review_practice",
+        "due_at": _due_at_for_row(row),
         "created_at": row["created_at"],
     }
 
@@ -907,10 +1438,14 @@ def _evidence_snapshot(item: dict[str, Any]) -> dict[str, Any]:
         "ply": item.get("ply"),
         "color": item.get("color"),
         "san": item.get("san"),
+        "uci": item.get("uci"),
         "fen_before": item.get("fen_before"),
         "best_move_uci": item.get("best_move_uci"),
         "best_move_san": item.get("best_move_san"),
+        "top_moves": item.get("top_moves") or [],
         "acceptable_moves": item.get("acceptable_moves") or [],
+        "candidate_moves": item.get("candidate_moves") or [],
+        "accepted_moves_json": item.get("accepted_moves_json"),
         "pedagogical_explanation": item.get("pedagogical_explanation") or {},
         "contrast_coach_explanation": item.get("contrast_coach_explanation") or {},
         "primary_category": item.get("primary_category"),
@@ -919,6 +1454,7 @@ def _evidence_snapshot(item: dict[str, Any]) -> dict[str, Any]:
         "move_quality_label": item.get("move_quality_label"),
         "pv_line": item.get("pv_line") or [],
         "pv_contrast_evidence": item.get("pv_contrast_evidence"),
+        "try_move_model_version": item.get("try_move_model_version"),
     }
 
 
@@ -960,6 +1496,25 @@ def _normalize_result(value: str | None) -> str:
     if normalized not in PRACTICE_ALLOWED_RESULTS:
         raise ReviewPracticeServiceError("invalid practice result", status_code=400)
     return normalized
+
+
+def _normalize_time_spent_ms(value: int | None) -> int | None:
+    if value is None:
+        return None
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return None
+    if parsed < 0:
+        return None
+    return min(parsed, 2 * 60 * 60 * 1000)
+
+
+def _normalize_source_context(value: str | None) -> str:
+    normalized = str(value or "review_practice").strip().lower()
+    if not normalized:
+        return "review_practice"
+    return normalized[:80]
 
 
 def _normalized_max_items(value: int) -> int:
@@ -1005,6 +1560,39 @@ def _row_get(row: sqlite3.Row | dict[str, Any], key: str, default: Any = None) -
     if isinstance(row, dict):
         return row.get(key, default)
     return row[key] if key in row.keys() else default
+
+
+def _practice_item_id(game_id: Any, ply: Any) -> str:
+    return f"review:{int(game_id)}:ply:{int(ply)}"
+
+
+def _bool_row_value(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    try:
+        return int(value or 0) != 0
+    except (TypeError, ValueError):
+        return False
+
+
+def _due_at_for_row(row: sqlite3.Row) -> str | None:
+    due_at = _row_get(row, "due_at")
+    if due_at:
+        return str(due_at)
+    return practice_revision_due_at(
+        str(_row_get(row, "result") or ""),
+        str(_row_get(row, "created_at") or _utc_now()),
+        hint_used=_bool_row_value(_row_get(row, "hint_used", 0)),
+        reveal_used=_bool_row_value(_row_get(row, "reveal_used", 0)),
+    )
+
+
+def _parse_utc_datetime(value: str) -> datetime:
+    raw = str(value or _utc_now()).replace("Z", "+00:00")
+    parsed = datetime.fromisoformat(raw)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 def _utc_now() -> str:

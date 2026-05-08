@@ -54,6 +54,8 @@ class ReviewPracticeRevealSkipTests(unittest.TestCase):
         self.assertEqual(summary["revealed_count"], 1)
         self.assertEqual(summary["wrong_count"], 0)
         self.assertEqual(summary["skipped_count"], 0)
+        self.assertEqual(summary["attempt_feedback"]["result"], "revealed")
+        self.assertTrue(summary["attempt_feedback"]["show_best_move"])
 
     def test_skip_is_distinct_from_revealed_and_wrong(self) -> None:
         session = self.service.create_session(self.game_id, pov="both", max_items=5)
@@ -68,6 +70,8 @@ class ReviewPracticeRevealSkipTests(unittest.TestCase):
         self.assertEqual(summary["skipped_count"], 1)
         self.assertEqual(summary["revealed_count"], 0)
         self.assertEqual(summary["wrong_count"], 0)
+        self.assertEqual(summary["attempt_feedback"]["result"], "skipped")
+        self.assertFalse(summary["attempt_feedback"]["show_best_move"])
 
 
 if __name__ == "__main__":

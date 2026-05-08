@@ -12,15 +12,21 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from neurochess.analysis_service import AnalysisService, InvalidFenError
 from neurochess.api.schemas import (
     CreateGameRequest,
+    DailyPlanRequest,
     FinishGameRequest,
     GameStateResponse,
     PlayMoveRequest,
+    ProductCapabilitiesResponse,
+    ReviewExplorerEvaluateLineRequest,
+    ReviewExplorerEvaluateMoveRequest,
     RecordReviewPracticeAttemptRequest,
+    ReviewTryMoveEvaluationRequest,
     StartLiveAnalysisRequest,
     StartReviewPracticeSessionRequest,
     StartReviewJobRequest,
     StopLiveAnalysisRequest,
 )
+from neurochess.capabilities import get_capabilities_manifest
 from neurochess.core.evaluation_display import make_evaluation_display, to_json_safe
 from neurochess.core.game_recorder import GameRecorder, GameRecorderError
 from neurochess.core.game_session import GameSession, GameSessionError
@@ -29,14 +35,26 @@ from neurochess.live_analysis_service import (
     LiveAnalysisService,
     get_default_live_analysis_service,
 )
+from neurochess.metrics.try_move import evaluate_try_move_attempt
+from neurochess.daily_plan_service import DailyPlanService
 from neurochess.opening_service import OpeningService, OpeningServiceError
 from neurochess.pgn_import_service import PgnImportService
+from neurochess.privacy_service import UserDataConfirmationError, UserDataService
 from neurochess.review_job_service import ReviewJobService
+from neurochess.review_explorer_service import (
+    ReviewExplorerEvaluationError,
+    evaluate_review_explorer_line,
+    evaluate_review_explorer_move,
+)
 from neurochess.review_practice_service import (
     ReviewPracticeService,
     ReviewPracticeServiceError,
 )
 from neurochess.review_service import ReviewService, ReviewServiceError
+from neurochess.review_try_move_stabilization import (
+    enrich_annotation_with_stable_attempt_evaluation,
+)
+from neurochess.training_item_service import TrainingItemService
 
 
 ACTIVE_SESSIONS: dict[int, GameSession] = {}
@@ -94,10 +112,12 @@ def get_review_job_service(
 def get_review_practice_service(
     repository: Repository = Depends(get_repository),
     review_service: ReviewService = Depends(get_review_service),
+    analysis_service: AnalysisService = Depends(get_analysis_service),
 ) -> ReviewPracticeService:
     return ReviewPracticeService(
         repository.db_path,
         review_service=review_service,
+        analysis_service=analysis_service,
     )
 
 
@@ -113,6 +133,39 @@ def get_pgn_import_service(
     return PgnImportService(repository.db_path)
 
 
+def get_user_data_service(
+    repository: Repository = Depends(get_repository),
+) -> UserDataService:
+    return UserDataService(repository.db_path)
+
+
+def get_training_item_service(
+    repository: Repository = Depends(get_repository),
+) -> TrainingItemService:
+    return TrainingItemService(repository.db_path)
+
+
+def get_daily_plan_service(
+    repository: Repository = Depends(get_repository),
+) -> DailyPlanService:
+    return DailyPlanService(repository.db_path)
+
+
+def _ensure_training_items_for_review_payload(
+    game_id: int,
+    payload: dict[str, Any],
+    training_item_service: TrainingItemService,
+) -> dict[str, Any]:
+    if payload.get("status") in {"done", "completed", "partial"}:
+        training_items = training_item_service.ensure_training_items_for_game(
+            game_id,
+            review_payload=payload,
+        )
+        payload = dict(payload)
+        payload["training_items_available"] = len(training_items)
+    return payload
+
+
 @router.get("/health")
 def health() -> dict[str, str]:
     return {
@@ -120,6 +173,32 @@ def health() -> dict[str, str]:
         "app": "NeuroChess 2",
         "version": "v3",
     }
+
+
+@router.get("/api/export")
+def export_user_data(
+    user_data_service: UserDataService = Depends(get_user_data_service),
+) -> dict[str, Any]:
+    return user_data_service.export_user_data()
+
+
+@router.delete("/api/user-data")
+def delete_user_data(
+    confirm: str | None = Query(None),
+    user_data_service: UserDataService = Depends(get_user_data_service),
+) -> dict[str, Any]:
+    try:
+        return user_data_service.delete_user_data(confirm=confirm)
+    except UserDataConfirmationError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="confirmation_required",
+        ) from exc
+
+
+@router.get("/capabilities", response_model=ProductCapabilitiesResponse)
+def get_capabilities() -> dict[str, Any]:
+    return get_capabilities_manifest()
 
 
 @router.post("/games", response_model=GameStateResponse)
@@ -354,6 +433,7 @@ def generate_game_review(
     force_retry_failed: bool = Query(False),
     profile: str = Query("standard"),
     review_service: ReviewService = Depends(get_review_service),
+    training_item_service: TrainingItemService = Depends(get_training_item_service),
     analysis_service: AnalysisService = Depends(get_analysis_service),
     live_analysis_service: LiveAnalysisService = Depends(get_live_analysis_service),
 ) -> Any:
@@ -377,7 +457,11 @@ def generate_game_review(
         )
         return JSONResponse(status_code=202, content=payload)
 
-    return payload
+    return _ensure_training_items_for_review_payload(
+        game_id,
+        payload,
+        training_item_service,
+    )
 
 
 @router.post("/games/{game_id}/review/jobs")
@@ -463,9 +547,15 @@ def get_game_review(
     game_id: int,
     profile: str = Query("standard"),
     review_service: ReviewService = Depends(get_review_service),
+    training_item_service: TrainingItemService = Depends(get_training_item_service),
 ) -> dict[str, Any]:
     try:
-        return review_service.get_review(game_id, profile=profile)
+        payload = review_service.get_review(game_id, profile=profile)
+        return _ensure_training_items_for_review_payload(
+            game_id,
+            payload,
+            training_item_service,
+        )
     except ReviewServiceError as exc:
         if exc.payload is not None:
             return JSONResponse(status_code=exc.status_code, content=exc.payload)
@@ -477,15 +567,63 @@ def rebuild_game_review_metrics(
     game_id: int,
     profile: str = Query("standard"),
     review_service: ReviewService = Depends(get_review_service),
+    training_item_service: TrainingItemService = Depends(get_training_item_service),
 ) -> dict[str, Any]:
     try:
-        return review_service.rebuild_review_metrics_from_cached_analyses(
+        payload = review_service.rebuild_review_metrics_from_cached_analyses(
             game_id,
             profile=profile,
+        )
+        return _ensure_training_items_for_review_payload(
+            game_id,
+            payload,
+            training_item_service,
         )
     except ReviewServiceError as exc:
         if exc.payload is not None:
             return JSONResponse(status_code=exc.status_code, content=exc.payload)
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+
+@router.get("/api/training/daily-plan/today")
+def get_daily_plan_today(
+    daily_plan_service: DailyPlanService = Depends(get_daily_plan_service),
+) -> dict[str, Any]:
+    return daily_plan_service.get_today_plan()
+
+
+@router.post("/api/training/daily-plan")
+def create_daily_plan(
+    request: DailyPlanRequest,
+    daily_plan_service: DailyPlanService = Depends(get_daily_plan_service),
+) -> dict[str, Any]:
+    return daily_plan_service.create_or_get_today_plan(
+        max_items=request.max_items or 6,
+        duration_preference=request.duration_preference,
+    )
+
+
+@router.post("/api/training/daily-plan/practice")
+def start_daily_plan_practice_session(
+    request: DailyPlanRequest,
+    daily_plan_service: DailyPlanService = Depends(get_daily_plan_service),
+    practice_service: ReviewPracticeService = Depends(get_review_practice_service),
+) -> Any:
+    items, plan = daily_plan_service.create_plan_practice_items(
+        max_items=request.max_items or 6,
+    )
+    try:
+        session = practice_service.create_session_from_training_items(
+            items,
+            scope="daily_plan",
+        )
+        session["daily_plan"] = plan
+        return session
+    except ReviewPracticeServiceError as exc:
+        if exc.payload is not None:
+            payload = dict(exc.payload)
+            payload["daily_plan"] = plan
+            return JSONResponse(status_code=exc.status_code, content=payload)
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
 
 
@@ -521,6 +659,24 @@ def list_review_practice_sessions(
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
 
 
+@router.post("/games/{game_id}/review/practice/revisions")
+def start_due_review_practice_session(
+    game_id: int,
+    request: StartReviewPracticeSessionRequest,
+    practice_service: ReviewPracticeService = Depends(get_review_practice_service),
+) -> Any:
+    try:
+        return practice_service.create_due_review_session(
+            game_id,
+            pov=request.pov,
+            max_items=request.max_items,
+        )
+    except ReviewPracticeServiceError as exc:
+        if exc.payload is not None:
+            return JSONResponse(status_code=exc.status_code, content=exc.payload)
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+
 @router.get("/review/practice/sessions/{session_id}")
 def get_review_practice_session(
     session_id: int,
@@ -546,11 +702,72 @@ def record_review_practice_attempt(
             ply=request.ply,
             attempted_uci=request.attempted_uci,
             result=request.result,
+            time_spent_ms=request.time_spent_ms,
+            hint_used=request.hint_used,
+            reveal_used=request.reveal_used,
+            source_context=request.source_context,
         )
     except ReviewPracticeServiceError as exc:
         if exc.payload is not None:
             return JSONResponse(status_code=exc.status_code, content=exc.payload)
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+
+@router.post("/review/try-move/evaluate")
+def evaluate_review_try_move(
+    request: ReviewTryMoveEvaluationRequest,
+    analysis_service: AnalysisService = Depends(get_analysis_service),
+) -> Any:
+    payload = request.model_dump() if hasattr(request, "model_dump") else request.dict()
+    move_played = str(payload.pop("move_played") or "")
+    feedback = evaluate_try_move_attempt(move_played, payload)
+    if feedback.get("reason_code") == "stable_evaluation_required_for_legal_out_of_list":
+        enriched = enrich_annotation_with_stable_attempt_evaluation(
+            payload,
+            move_played,
+            analysis_service,
+        )
+        if enriched is not payload:
+            feedback = evaluate_try_move_attempt(move_played, enriched)
+    return feedback
+
+
+@router.post("/api/review/explorer/evaluate-move")
+def evaluate_review_explorer_move_endpoint(
+    request: ReviewExplorerEvaluateMoveRequest,
+    analysis_service: AnalysisService = Depends(get_analysis_service),
+) -> Any:
+    try:
+        return evaluate_review_explorer_move(
+            fen_before=request.fen_before,
+            move_uci=request.move_uci,
+            analysis_service=analysis_service,
+            analysis_preset=request.analysis_preset or "standard",
+            source_context=request.source_context,
+            game_id=request.game_id,
+            review_moment_id=request.review_moment_id,
+        )
+    except ReviewExplorerEvaluationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.post("/api/review/explorer/evaluate-line")
+def evaluate_review_explorer_line_endpoint(
+    request: ReviewExplorerEvaluateLineRequest,
+    analysis_service: AnalysisService = Depends(get_analysis_service),
+) -> Any:
+    try:
+        return evaluate_review_explorer_line(
+            fen_start=request.fen_start,
+            moves_uci=request.moves_uci,
+            analysis_service=analysis_service,
+            analysis_preset=request.analysis_preset or "standard",
+            source_context=request.source_context,
+            game_id=request.game_id,
+            review_moment_id=request.review_moment_id,
+        )
+    except ReviewExplorerEvaluationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.post("/review/practice/sessions/{session_id}/abandon")
@@ -663,6 +880,7 @@ def start_live_analysis(
         "fen": request.fen,
         "context": request.context or "live",
         "status": "started",
+        "latest_payload": live_analysis_service.wait_for_latest(session_id),
     }
 
 

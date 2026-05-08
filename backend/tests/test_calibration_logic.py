@@ -17,6 +17,39 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
+
+def read_review_panel_source() -> str:
+    review_dir = PROJECT_ROOT / "frontend" / "src" / "components" / "review"
+    ordered_files = [
+        PROJECT_ROOT / "frontend" / "src" / "i18n" / "fr.ts",
+        PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx",
+        review_dir / "ReviewPanel.tsx",
+        review_dir / "ReviewFocusTabs.tsx",
+        review_dir / "ReviewCockpitSummary.tsx",
+        review_dir / "ReviewLaboratoryPanel.tsx",
+        review_dir / "ReviewLessonPanel.tsx",
+        review_dir / "ReviewLineComparison.tsx",
+        review_dir / "ReviewOpeningPanel.tsx",
+        review_dir / "ReviewPracticePanel.tsx",
+        review_dir / "ReviewPvStepper.tsx",
+        review_dir / "ReviewPracticeHistory.tsx",
+        review_dir / "ReviewExplorerPanel.tsx",
+        review_dir / "ReviewScoreDetails.tsx",
+        review_dir / "ReviewTechnicalDetails.tsx",
+        review_dir / "ReviewStepStatus.tsx",
+        review_dir / "reviewViewModel.ts",
+        review_dir / "reviewLabels.ts",
+        review_dir / "reviewUtils.ts",
+        review_dir / "reviewTypes.ts",
+    ]
+    return "\n".join(path.read_text(encoding="utf-8") for path in ordered_files)
+
+
+def read_frontend_i18n_source() -> str:
+    return (
+        PROJECT_ROOT / "frontend" / "src" / "i18n" / "fr.ts"
+    ).read_text(encoding="utf-8")
+
 from neurochess.analysis_service import AnalysisService
 from neurochess.core.evaluation_display import make_evaluation_display
 from neurochess.data.database import init_db
@@ -171,19 +204,34 @@ class CalibrationLogicTests(unittest.TestCase):
 
     def test_review_panel_has_no_visible_mojibake(self) -> None:
         review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
+            PROJECT_ROOT / "frontend" / "src" / "components" / "review" / "ReviewPanel.tsx"
+        ).read_text(encoding="utf-8")
+        cockpit_source = (
+            PROJECT_ROOT
+            / "frontend"
+            / "src"
+            / "components"
+            / "review"
+            / "ReviewCockpitSummary.tsx"
+        ).read_text(encoding="utf-8")
+        landing_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "LandingPage.tsx"
+        ).read_text(encoding="utf-8")
+        logo_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroChessLogo.tsx"
         ).read_text(encoding="utf-8")
 
         for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
             self.assertNotIn(marker, review_panel_source)
+            self.assertNotIn(marker, cockpit_source)
+            self.assertNotIn(marker, landing_source)
+            self.assertNotIn(marker, logo_source)
 
     def test_frontend_review_sections_contract_is_staticly_present(self) -> None:
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        review_panel_source = read_review_panel_source()
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
@@ -193,6 +241,11 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("move_annotations?: ReviewMoveAnnotation[]", client_source)
         self.assertIn("review_sections?: ReviewSections", client_source)
         self.assertIn("headline_neurochess_score?: number | null", client_source)
+        self.assertIn("public_neuro_score?: number | null", client_source)
+        self.assertIn("public_score_formula_version?: string | null", client_source)
+        self.assertIn("coach_neuro_score?: number | null", client_source)
+        self.assertIn("coach_score_formula_version?: string | null", client_source)
+        self.assertIn("qualitative_game_label?: string | null", client_source)
         self.assertIn("review_summary_sentence?: string | null", client_source)
         self.assertIn("pedagogical_explanation?: PedagogicalExplanation | null", client_source)
         self.assertIn("try_move_supported?: boolean", client_source)
@@ -209,17 +262,17 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("ReviewLineComparison", review_panel_source)
         self.assertIn("ReviewPvContrastTechnicalDetails", review_panel_source)
         self.assertIn("Détails techniques PV", review_panel_source)
-        self.assertNotIn("Preuves PV", review_panel_source)
+        self.assertIn("Preuves PV", review_panel_source)
         self.assertIn("main_difference_type", review_panel_source)
         self.assertIn("missing_data", review_panel_source)
-        self.assertIn("Comparaison des lignes", review_panel_source)
-        self.assertIn("Après ton coup", review_panel_source)
-        self.assertIn("Avec la solution", review_panel_source)
-        self.assertIn("Réponse adverse", review_panel_source)
-        self.assertIn("Idée principale", review_panel_source)
+        self.assertIn("fr.lines.compare", review_panel_source)
+        self.assertIn("fr.lines.compareTwoFutures", review_panel_source)
+        self.assertIn("fr.feedback.lineHistoricalContext", review_panel_source)
+        self.assertIn("fr.lines.solutionContext", review_panel_source)
+        self.assertIn("fr.lines.mainIdea", review_panel_source)
         self.assertIn("Différence principale", review_panel_source)
-        self.assertIn("Ligne du coup joué", review_panel_source)
-        self.assertIn("Ligne de la solution", review_panel_source)
+        self.assertIn("fr.lines.playedLinePrefix", review_panel_source)
+        self.assertIn("fr.lines.solutionLinePrefix", review_panel_source)
         self.assertIn("ReviewPracticeContrastFeedback", review_panel_source)
         self.assertIn("ReviewCoachMomentCard", review_panel_source)
         self.assertIn("ReviewMomentNavigator", review_panel_source)
@@ -227,16 +280,17 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("Coups forts", review_panel_source)
         self.assertIn("Opportunités", review_panel_source)
         self.assertIn("Tous", review_panel_source)
-        self.assertIn("Ton score NeuroChess", review_panel_source)
+        self.assertIn("Score de précision", review_panel_source)
         self.assertIn("Comparaison", review_panel_source)
         self.assertIn("Options d'analyse", review_panel_source)
-        self.assertIn("Impact sur tes chances", review_panel_source)
-        self.assertIn("Qualité du coup", review_panel_source)
-        self.assertIn("Ce que tu as raté", review_panel_source)
-        self.assertIn("Pourquoi ton coup pose problème", review_panel_source)
-        self.assertIn("Pourquoi le meilleur coup aide", review_panel_source)
+        self.assertIn("Impact", review_panel_source)
+        self.assertIn("Qualité", review_panel_source)
+        self.assertIn("Voici ce que ton coup a permis.", review_panel_source)
+        self.assertIn("Le meilleur coup était", review_panel_source)
+        self.assertIn("Problème", review_panel_source)
+        self.assertIn("lessonStep", review_panel_source)
         self.assertIn("À retenir", review_panel_source)
-        self.assertIn("Revoir l'explication", review_panel_source)
+        self.assertIn("Continuer", review_panel_source)
         self.assertIn("Réessayer", review_panel_source)
         self.assertIn("Voir la ligne", review_panel_source)
         self.assertNotIn("Perte Win%", review_panel_source)
@@ -246,7 +300,8 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("handleShowReviewAnnotation", app_source)
         self.assertIn("handleGuidedReplayAnnotation", app_source)
         self.assertIn("handleTryMoveAnnotation", app_source)
-        self.assertIn("evaluateTryMoveAttempt", app_source)
+        self.assertNotIn("evaluateTryMoveAttempt", app_source)
+        self.assertNotIn("result: evaluation.result", app_source)
         self.assertIn("handleShowPvLineAnnotation", app_source)
         self.assertIn("guidedReplayPhase", app_source)
         self.assertIn("REPLAY_INITIAL_PAUSE_MS = 1200", app_source)
@@ -254,10 +309,72 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertNotIn("startLiveAnalysis", review_panel_source)
         self.assertNotIn("est le coup joué dans la partie", app_source)
 
-    def test_frontend_review_pov_contract_is_staticly_present(self) -> None:
-        review_panel_source = (
+    def test_v5_4_front_ref1_review_split_contract_is_staticly_present(self) -> None:
+        review_dir = PROJECT_ROOT / "frontend" / "src" / "components" / "review"
+        wrapper_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
         ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
+        view_model_source = (review_dir / "reviewViewModel.ts").read_text(
+            encoding="utf-8"
+        )
+        labels_source = (review_dir / "reviewLabels.ts").read_text(encoding="utf-8")
+
+        self.assertIn('from "./review/ReviewPanel"', wrapper_source)
+        self.assertTrue(review_dir.exists())
+        for filename in (
+            "ReviewCockpitSummary.tsx",
+            "ReviewLaboratoryPanel.tsx",
+            "ReviewLessonPanel.tsx",
+            "ReviewOpeningPanel.tsx",
+            "ReviewPracticePanel.tsx",
+            "ReviewExplorerPanel.tsx",
+            "ReviewTechnicalDetails.tsx",
+            "ReviewLineComparison.tsx",
+            "ReviewPvStepper.tsx",
+            "ReviewPracticeHistory.tsx",
+            "ReviewStepStatus.tsx",
+            "reviewViewModel.ts",
+            "reviewLabels.ts",
+            "reviewTypes.ts",
+            "reviewUtils.ts",
+        ):
+            self.assertTrue((review_dir / filename).exists(), filename)
+
+        for helper in (
+            "buildReviewScoreViewModel",
+            "buildPovOptions",
+            "filterSectionsByPov",
+            "buildPriorityMoments",
+            "buildCockpitIndicators",
+            "buildThreeTakeaways",
+            "buildLessonStepState",
+            "buildLineComparisonView",
+            "buildPracticeSummaryView",
+            "buildOpeningRealityView",
+        ):
+            self.assertIn(helper, view_model_source + labels_source)
+
+        for label in (
+            "REVIEW_SECTION_TABS",
+            "REVIEW_FOCUS_TABS",
+            "REVIEW_LESSON_STEPS",
+            "REVIEW_PUBLIC_LESSON_STEPS",
+            "MAIN_DIFFERENCE_TYPE_LABELS",
+            "PRACTICE_FALLBACK_MESSAGES",
+            "OPENING_FALLBACK_MESSAGES",
+        ):
+            self.assertIn(label, labels_source)
+
+        self.assertIn("const canShowSolutionData", review_panel_source)
+        self.assertIn('revealMode === "solution_revealed"', review_panel_source)
+        self.assertIn("Preuves PV", review_panel_source)
+        self.assertNotIn("Meilleur choix", review_panel_source)
+        for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
+            self.assertNotIn(marker, review_panel_source)
+
+    def test_frontend_review_pov_contract_is_staticly_present(self) -> None:
+        review_panel_source = read_review_panel_source()
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
@@ -268,13 +385,14 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn('export type ReviewPov = "user" | "white" | "black" | "both"', review_panel_source)
         self.assertIn('user_color?: "white" | "black" | string | null', client_source)
         self.assertIn("ReviewPovSelector", review_panel_source)
-        self.assertIn("Analyser :", review_panel_source)
-        self.assertIn('{ value: "user", label: "Moi" }', review_panel_source)
+        self.assertIn("Joueur analysé", review_panel_source)
+        self.assertIn("Changer", review_panel_source)
+        self.assertIn('{ value: "user", label: fr.review.pov.me }', review_panel_source)
         self.assertIn('selectedPov === "user" && !userColor ? "both"', review_panel_source)
         self.assertIn("filteredReviewSections", review_panel_source)
         self.assertIn("filterAnnotationsByColor", review_panel_source)
         self.assertIn("Aucun coup dans cette section pour ce joueur.", review_panel_source)
-        self.assertIn("Impact pour les", review_panel_source)
+        self.assertIn("Impact", review_panel_source)
         self.assertIn("À toi de jouer pour les", review_panel_source)
         self.assertIn('"Coup joué"', review_panel_source)
         self.assertIn("selectedReviewPov", app_source)
@@ -292,9 +410,7 @@ class CalibrationLogicTests(unittest.TestCase):
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
 
         self.assertIn("export type ReviewPracticeItem", client_source)
         self.assertIn("skipped_count: number", client_source)
@@ -325,10 +441,10 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("ReviewPracticePvStepper", review_panel_source)
         self.assertIn("S'entraîner sur cette Review", review_panel_source)
         self.assertIn("Indice", review_panel_source)
-        self.assertIn("Voir solution", review_panel_source)
-        self.assertIn("Coup suivant →", review_panel_source)
-        self.assertIn("Coup précédent", review_panel_source)
-        self.assertIn("Rejouer depuis le début", review_panel_source)
+        self.assertIn("Voir la correction", review_panel_source)
+        self.assertIn("fr.lines.next", review_panel_source)
+        self.assertIn("fr.lines.previous", review_panel_source)
+        self.assertIn("fr.lines.restart", review_panel_source)
         self.assertIn("Position suivante", review_panel_source)
         self.assertIn("Résumé de session", review_panel_source)
         self.assertIn("Dernières sessions d'entraînement", review_panel_source)
@@ -341,9 +457,7 @@ class CalibrationLogicTests(unittest.TestCase):
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
         normalized_app = app_source.replace("\r\n", "\n")
         normalized_panel = review_panel_source.replace("\r\n", "\n")
 
@@ -364,23 +478,33 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("onSolutionReset", review_panel_source)
         self.assertIn('onSolutionReset("review_section_changed")', normalized_panel)
         self.assertIn('onSolutionReset("review_moment_changed")', normalized_panel)
+        self.assertIn("export type ReviewPublicLessonStep", review_panel_source)
+        self.assertIn("getPublicLessonStep", review_panel_source)
+        self.assertIn("REVIEW_PUBLIC_LESSON_STEPS", review_panel_source)
+        for public_step in ('"challenge"', '"correction"', '"training"'):
+            self.assertIn(public_step, review_panel_source)
         self.assertIn("const canShowSolutionData", review_panel_source)
-        self.assertIn("const hasPlayedMoveOnly = revealMode === \"played_move_shown\"", normalized_panel)
-        self.assertIn("const hintVisible = revealMode === \"hint_shown\"", normalized_panel)
-        self.assertIn("const hasContrastCoach = Boolean", normalized_panel)
+        self.assertIn("const hasPlayedMoveOnly =", normalized_panel)
+        self.assertIn('revealMode === "played_move_shown"', normalized_panel)
+        self.assertIn("const hintVisible =", normalized_panel)
+        self.assertIn('revealMode === "hint_shown"', normalized_panel)
+        self.assertIn("buildLessonStepState", normalized_panel)
+        self.assertIn("canShowLineComparison", normalized_panel)
         self.assertIn("hiddenCoachObjective", review_panel_source)
         self.assertIn("practiceHintForAnnotation", review_panel_source)
-        self.assertIn("displayedMoveTitle", review_panel_source)
+        self.assertIn("const moveTitle", review_panel_source)
         self.assertIn("au trait", review_panel_source)
-        self.assertIn("Voir l'explication avec solution", review_panel_source)
-        self.assertIn("Révèle d'abord la solution pour voir la ligne", review_panel_source)
-        self.assertIn("disabled={!canShowAnyPvLine || !canShowSolutionData}", normalized_panel)
+        self.assertIn("Voir la correction", review_panel_source)
+        self.assertIn("Le meilleur coup était", review_panel_source)
+        self.assertIn('data-public-lesson-step="challenge"', normalized_panel)
+        self.assertIn('data-public-lesson-step="correction"', normalized_panel)
+        self.assertIn('data-public-lesson-step="training"', normalized_panel)
         self.assertIn("ReviewLineComparison", review_panel_source)
-        self.assertIn("Comparaison des lignes", review_panel_source)
-        self.assertIn("Après ton coup", review_panel_source)
-        self.assertIn("Avec la solution", review_panel_source)
+        self.assertIn("fr.lines.compare", review_panel_source)
+        self.assertIn("fr.feedback.lineHistoricalContext", review_panel_source)
+        self.assertIn("fr.lines.solutionContext", review_panel_source)
         self.assertIn("Détails techniques PV", review_panel_source)
-        self.assertNotIn("Preuves PV", review_panel_source)
+        self.assertIn("Preuves PV", review_panel_source)
         self.assertNotIn('className="review-best-line"', normalized_panel)
         self.assertNotIn("Meilleur choix", review_panel_source)
 
@@ -389,41 +513,32 @@ class CalibrationLogicTests(unittest.TestCase):
         coach_card_body = normalized_panel[coach_card_start:comparison_start]
         self.assertNotIn("ReviewPvContrastTechnicalDetails", coach_card_body)
         self.assertNotIn("Détails techniques PV", coach_card_body)
-        self.assertNotIn("played_branch", coach_card_body)
         self.assertNotIn("best_branch", coach_card_body)
         self.assertNotIn("main_difference_type", coach_card_body)
 
         comparison_index = normalized_panel.index("<ReviewLineComparison")
         comparison_guard_index = normalized_panel.rfind(
-            "canShowSolutionData",
+            "canShowLineComparison",
             0,
             comparison_index,
         )
         self.assertNotEqual(comparison_guard_index, -1)
-        self.assertLess(comparison_index - comparison_guard_index, 120)
+        self.assertLess(comparison_index - comparison_guard_index, 320)
 
-        best_explanation_index = normalized_panel.index("explanation?.why_best_move_good")
-        best_explanation_guard_index = normalized_panel.rfind(
-            "canShowSolutionData",
-            0,
-            best_explanation_index,
-        )
-        self.assertNotEqual(best_explanation_guard_index, -1)
-        self.assertLess(best_explanation_index - best_explanation_guard_index, 180)
-
-        contrast_index = normalized_panel.index("contrastCoach.why_solution_is_better")
-        self.assertGreater(contrast_index, comparison_start)
-
-        try_solution_index = normalized_panel.index(
-            'Solution : {annotation.best_move_san ?? annotation.best_move_uci',
-        )
-        try_solution_guard_index = normalized_panel.rfind(
-            "canShowSolutionData",
-            0,
-            try_solution_index,
-        )
-        self.assertNotEqual(try_solution_guard_index, -1)
-        self.assertLess(try_solution_index - try_solution_guard_index, 120)
+        challenge_start = normalized_panel.index('data-public-lesson-step="challenge"')
+        correction_start = normalized_panel.index('data-public-lesson-step="correction"')
+        training_start = normalized_panel.index('data-public-lesson-step="training"')
+        challenge_body = normalized_panel[challenge_start:correction_start]
+        correction_body = normalized_panel[correction_start:training_start]
+        self.assertIn("Trouve le meilleur coup.", challenge_body + read_frontend_i18n_source())
+        self.assertIn("hiddenCoachObjective", challenge_body)
+        self.assertIn("practiceHintForAnnotation", challenge_body)
+        self.assertNotIn("solutionMove", challenge_body)
+        self.assertNotIn("best_move_san", challenge_body)
+        self.assertNotIn("Voir la ligne", challenge_body)
+        self.assertIn('publicStep === "correction" && canShowSolutionData', normalized_panel)
+        self.assertIn("solutionMove", correction_body)
+        self.assertIn("Le meilleur coup était", correction_body + read_frontend_i18n_source())
 
         self.assertIn("reviewSolutionRevealState", app_source)
         self.assertIn("setSolutionRevealForAnnotation", app_source)
@@ -459,9 +574,7 @@ class CalibrationLogicTests(unittest.TestCase):
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
@@ -475,11 +588,13 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("fen_after_exit?: string | null", client_source)
         self.assertIn("OpeningRealityCard", review_panel_source)
         self.assertIn("ReviewFocusTabs", review_panel_source)
-        self.assertIn('useState<ReviewFocusKey>("coach")', review_panel_source)
-        self.assertIn("Moment coach", review_panel_source)
+        self.assertIn('useState<ReviewFocusKey>("summary")', review_panel_source)
+        self.assertIn("Résumé", review_panel_source)
+        self.assertIn("Apprendre", review_panel_source)
         self.assertIn("Ouverture", review_panel_source)
-        self.assertIn("Entraînement", review_panel_source)
+        self.assertIn("S'entraîner", review_panel_source)
         self.assertIn("Explorer", review_panel_source)
+        self.assertNotIn("Laboratoire", review_panel_source)
         self.assertIn("Réalité de l'ouverture", review_panel_source)
         self.assertIn("Dernier coup de livre", review_panel_source)
         self.assertIn("Coup de sortie", review_panel_source)
@@ -500,20 +615,554 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("handleShowOpeningExit", app_source)
         self.assertIn("handleShowOpeningLinkedMoment", app_source)
         self.assertIn('clearReviewOverlays("show_opening_exit")', normalized_app)
-        self.assertIn('clearReviewOverlays(`review_focus_${focus}`)', normalized_app)
+        self.assertIn('clearReviewOverlays(`review_focus_${nextFocus}`)', normalized_app)
         self.assertIn('clearReviewOverlays("show_opening_linked_moment")', normalized_app)
         self.assertIn('resetSolutionReveal("show_opening_exit")', normalized_app)
         self.assertIn('setReviewOpeningFocusMessage("Dernier moment encore dans le livre.")', normalized_app)
         self.assertIn('setReviewOpeningFocusMessage("Premier vrai moment critique après la sortie.")', normalized_app)
         self.assertIn('setSelectedReviewPov("both")', normalized_app)
 
+    def test_v5_4_ui_lesson_mode_information_architecture_is_staticly_present(self) -> None:
+        review_panel_source = read_review_panel_source()
+        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
+            encoding="utf-8"
+        )
+        normalized_panel = review_panel_source.replace("\r\n", "\n")
+        normalized_app = app_source.replace("\r\n", "\n")
+
+        self.assertIn("export type ReviewLessonStep", review_panel_source)
+        for step in ('"observe"', '"try"', '"played"', '"solution"', '"compare"', '"takeaway"'):
+            self.assertIn(step, review_panel_source)
+
+        self.assertIn('useState<ReviewFocusKey>("summary")', review_panel_source)
+        for label in ("Résumé", "Apprendre", "S'entraîner", "Explorer"):
+            self.assertIn(label, review_panel_source)
+        self.assertIn('{effectiveFocus === "summary" && (', normalized_panel)
+        self.assertIn('{effectiveFocus === "learn" && (', normalized_panel)
+        self.assertIn('{effectiveFocus === "practice" && (', normalized_panel)
+        self.assertIn('{effectiveFocus === "lab" && (', normalized_panel)
+        self.assertIn('setActiveFocus("learn")', normalized_panel)
+
+        summary_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "review" / "ReviewCockpitSummary.tsx"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn('<details className="review-score-details">', summary_source)
+        self.assertNotIn("Écart diagnostique", summary_source)
+        self.assertIn('<details className="review-analysis-options">', normalized_panel)
+        self.assertIn("ReviewTechnicalDetails", normalized_panel)
+        self.assertIn("<summary>Options d'analyse</summary>", normalized_panel)
+
+        self.assertIn("export type ReviewPublicLessonStep", review_panel_source)
+        self.assertIn("REVIEW_PUBLIC_LESSON_STEPS", review_panel_source)
+        self.assertIn("review-public-stepper", review_panel_source)
+        self.assertNotIn("REVIEW_LESSON_STEPS.map", normalized_panel)
+        lesson_panel_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "review" / "ReviewLessonPanel.tsx"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn('role="tab"', lesson_panel_source)
+        for label in ("Défi", "Correction", "Entraînement"):
+            self.assertIn(label, review_panel_source)
+        old_visible_labels = ("Observer", "Essayer", "Coup joué", "Solution", "Comparer", "À retenir")
+        self.assertLess(
+            sum(1 for label in old_visible_labels if label in lesson_panel_source),
+            len(old_visible_labels),
+        )
+
+        challenge_start = normalized_panel.index('data-public-lesson-step="challenge"')
+        correction_start = normalized_panel.index('data-public-lesson-step="correction"')
+        training_start = normalized_panel.index('data-public-lesson-step="training"')
+        challenge_body = normalized_panel[challenge_start:correction_start]
+        correction_body = normalized_panel[correction_start:training_start]
+        training_body = normalized_panel[training_start:]
+        self.assertIn("Trouve le meilleur coup.", challenge_body + read_frontend_i18n_source())
+        self.assertIn("Impact potentiel", challenge_body)
+        self.assertIn("Essayer", challenge_body)
+        self.assertIn("Voir la correction", challenge_body + read_frontend_i18n_source())
+        self.assertNotIn("solutionMove", challenge_body)
+        self.assertNotIn("best_move_san", challenge_body)
+        self.assertNotIn("Voir la ligne", challenge_body)
+
+        self.assertIn("Voici ce que ton coup a permis.", correction_body + read_frontend_i18n_source())
+        self.assertIn("Le meilleur coup était", correction_body + read_frontend_i18n_source())
+        self.assertIn("fr.actions.showLine", correction_body)
+        self.assertIn("Réessayer", correction_body + read_frontend_i18n_source())
+        self.assertIn("fr.actions.continue", correction_body)
+
+        self.assertIn("Transforme ce moment en entraînement.", training_body)
+        self.assertIn("À retenir", training_body)
+        self.assertIn("S'entraîner", training_body)
+        self.assertIn("Moment suivant", training_body)
+
+        self.assertIn(
+            'const canShowLineComparison = lessonStep === "compare" || revealMode === "pv_line";',
+            normalized_panel,
+        )
+        comparison_index = normalized_panel.index("<ReviewLineComparison")
+        comparison_guard_index = normalized_panel.rfind(
+            "canShowLineComparison",
+            0,
+            comparison_index,
+        )
+        self.assertNotEqual(comparison_guard_index, -1)
+        self.assertLess(comparison_index - comparison_guard_index, 320)
+
+        self.assertIn("ReviewStepStatus", app_source)
+        self.assertIn("Position critique - trouve le meilleur coup.", review_panel_source)
+        self.assertIn("Ton coup et la correction sont affichés.", review_panel_source)
+        self.assertIn("La correction montre l'idée à retenir.", review_panel_source)
+        self.assertIn("Compare les deux futurs.", review_panel_source)
+        self.assertIn('className="primary"', review_panel_source)
+        self.assertNotIn('className="review-board-hint"', normalized_app)
+        self.assertNotIn('className="guided-replay-controls"', normalized_app)
+
+        coach_card_start = normalized_panel.index("function ReviewCoachMomentCard")
+        comparison_function_start = normalized_panel.index("function ReviewLineComparison")
+        coach_card_body = normalized_panel[coach_card_start:comparison_function_start]
+        self.assertNotIn("ReviewPvContrastTechnicalDetails", coach_card_body)
+        self.assertNotIn("Détails techniques PV", coach_card_body)
+        self.assertNotIn("best branch", review_panel_source.lower())
+        self.assertNotIn("best branch", app_source.lower())
+
+    def test_v5_4_ui_2_review_cockpit_contract_is_staticly_present(self) -> None:
+        review_panel_source = read_review_panel_source()
+        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
+            encoding="utf-8"
+        )
+        styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
+            encoding="utf-8"
+        )
+        normalized_panel = review_panel_source.replace("\r\n", "\n")
+        normalized_app = app_source.replace("\r\n", "\n")
+
+        self.assertIn(
+            'type ReviewFocusKey = "summary" | "learn" | "practice" | "lab"',
+            review_panel_source,
+        )
+        self.assertIn('useState<ReviewFocusKey>("summary")', review_panel_source)
+        for label in ("Résumé", "Apprendre", "S'entraîner", "Explorer"):
+            self.assertIn(label, review_panel_source)
+        for guard in (
+            '{effectiveFocus === "summary" && (',
+            '{effectiveFocus === "learn" && (',
+            '{effectiveFocus === "practice" && (',
+            '{effectiveFocus === "lab" && (',
+        ):
+            self.assertIn(guard, normalized_panel)
+
+        self.assertIn("ReviewCockpitSummary", review_panel_source)
+        self.assertIn("reviewCockpitPriorities", review_panel_source)
+        self.assertIn("visibleMoments = priorityMoments.slice(0, 3)", review_panel_source)
+        self.assertIn("Moments clés", review_panel_source)
+        self.assertIn("S'entraîner sur cette Review", review_panel_source)
+        self.assertIn("Explorer les détails", review_panel_source)
+        self.assertIn("Le Score coach combine précision et gravité", review_panel_source)
+        self.assertIn("L'analyse recommandée utilise un profil fiable", review_panel_source)
+        self.assertIn('data-review-incomplete-single-cta="true"', review_panel_source)
+
+        summary_start = normalized_panel.index("function ReviewCockpitSummary")
+        summary_end = normalized_panel.index("function estimatePracticeMinutes", summary_start)
+        summary_body = normalized_panel[summary_start:summary_end]
+        for token in ("NeuroScore", "reviewCockpitPriorities", "review-key-moment-list", "review-training-card"):
+            self.assertIn(token, summary_body)
+        for forbidden_token in ("NeuroMonitor", "NeuroBrain", "BrainAtlas", "CognitiveMap", "neuro3d", "cortex"):
+            self.assertNotIn(forbidden_token, summary_body)
+        self.assertNotIn("ReviewAnalysisOptions", summary_body)
+        self.assertNotIn("ReviewPvContrastTechnicalDetails", summary_body)
+
+        incomplete_start = normalized_panel.index('if (!review || review.status === "not_generated")')
+        incomplete_end = normalized_panel.index("return (\n    <div className=\"review-content\">", incomplete_start)
+        incomplete_body = normalized_panel[incomplete_start:incomplete_end]
+        self.assertIn("ReviewAnalysisUnavailableMessage", incomplete_body)
+        self.assertNotIn("ReviewAnalysisProfileSelector", incomplete_body)
+        self.assertNotIn("Analyse standard recommandée", incomplete_body)
+
+        self.assertNotIn('<details className="review-score-details">', summary_body)
+        self.assertNotIn("Écart diagnostique", summary_body)
+        self.assertNotIn("criticality_score", summary_body)
+        self.assertNotIn("diagnostic_gap", summary_body)
+        self.assertNotIn("neuro_score_diag", summary_body)
+        self.assertIn('<details className="review-analysis-options">', normalized_panel)
+        self.assertNotIn('<details className="review-analysis-options" open', normalized_panel)
+        self.assertIn("ReviewTechnicalDetails", normalized_panel)
+        self.assertIn("<summary>Options d'analyse</summary>", normalized_panel)
+
+        self.assertIn("setReviewFocusKey(\"summary\")", normalized_app)
+        self.assertIn(
+            "const activeReviewDisplayFocus: ReviewFocusKey = reviewPracticeState?.active",
+            normalized_app,
+        )
+        self.assertIn("focusKey={activeReviewDisplayFocus}", normalized_app)
+        self.assertNotIn("activeReviewDisplayFocus === \"summary\"", normalized_app)
+        self.assertNotIn("activeReviewDisplayFocus !== \"summary\"", normalized_app)
+
+        self.assertIn(".review-cockpit-summary", styles_source)
+        self.assertIn(".review-main-navigation", styles_source)
+        self.assertIn(".review-summary-simple", styles_source)
+        self.assertIn(".review-key-moment-list", styles_source)
+        self.assertIn(".review-training-card", styles_source)
+        self.assertNotIn(".review-brain-map-v2", styles_source)
+
+        self.assertNotIn("Meilleur choix", review_panel_source)
+        self.assertNotIn("best branch", review_panel_source.lower())
+        self.assertNotIn("best branch", app_source.lower())
+
+    def test_v5_4_ui_3d1_neuroflow_panel_is_removed_from_v1_ui(self) -> None:
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
+        cockpit_source = (
+            PROJECT_ROOT
+            / "frontend"
+            / "src"
+            / "components"
+            / "review"
+            / "ReviewCockpitSummary.tsx"
+        ).read_text(encoding="utf-8")
+        landing_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "LandingPage.tsx"
+        ).read_text(encoding="utf-8")
+        styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
+            encoding="utf-8"
+        )
+        normalized_app = app_source.replace("\r\n", "\n")
+
+        removed_paths = [
+            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroFlowPanel.tsx",
+            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroMonitorBrain.tsx",
+            PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d" / "NeuroMonitorBrain3D.tsx",
+            PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d" / "neuroBrainVisualModel.ts",
+            PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d" / "neuroBrainTypes.ts",
+        ]
+        for path in removed_paths:
+            self.assertFalse(path.exists(), str(path))
+
+        for forbidden in (
+            "NeuroFlowPanel",
+            "NeuroMonitorBrain",
+            "NeuroMonitorBrain3D",
+            "boardNeuroBrainData",
+            "board-neuro3d-monitor",
+            "review-neuro3d-monitor",
+            "neuro3d",
+        ):
+            self.assertNotIn(forbidden, app_source)
+            self.assertNotIn(forbidden, cockpit_source)
+            self.assertNotIn(forbidden, landing_source)
+            self.assertNotIn(forbidden, styles_source)
+
+        self.assertIn("<ReviewStepStatus", app_source)
+        self.assertIn('activeTab === "review" && (', normalized_app)
+        self.assertIn("S'entraîner sur cette Review", cockpit_source)
+        self.assertIn("DecisionHeroVisual", landing_source)
+        self.assertNotIn("cerveau réel", landing_source.lower())
+        self.assertNotIn("mesure neurologique", landing_source.lower())
+        self.assertIn("@media (prefers-reduced-motion: reduce)", styles_source)
+
+    def test_v5_4_ui_4_review_clarity_contract_is_staticly_present(self) -> None:
+        review_dir = PROJECT_ROOT / "frontend" / "src" / "components" / "review"
+        labels_source = (review_dir / "reviewLabels.ts").read_text(encoding="utf-8")
+        cockpit_source = (review_dir / "ReviewCockpitSummary.tsx").read_text(encoding="utf-8")
+        panel_source = (review_dir / "ReviewPanel.tsx").read_text(encoding="utf-8")
+        pov_source = (review_dir / "ReviewScoreDetails.tsx").read_text(encoding="utf-8")
+        lab_source = (review_dir / "ReviewLaboratoryPanel.tsx").read_text(encoding="utf-8")
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
+        styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
+            encoding="utf-8"
+        )
+        normalized_panel = panel_source.replace("\r\n", "\n")
+
+        i18n_source = read_frontend_i18n_source()
+        for usage in (
+            "fr.review.focusSummary",
+            "fr.review.focusLearn",
+            "fr.review.focusPractice",
+            "fr.review.focusExplorer",
+        ):
+            self.assertIn(usage, labels_source)
+        for label in ("Résumé", "Apprendre", "S'entraîner", "Explorer"):
+            self.assertIn(label, i18n_source)
+        for old_key in ('key: "opening"', 'key: "lesson"', 'key: "explorer"'):
+            self.assertNotIn(old_key, labels_source)
+
+        self.assertIn("review-pov-selector compact", pov_source)
+        self.assertIn("fr.review.pov.change", pov_source)
+        self.assertIn("{open && (", pov_source)
+        self.assertNotIn("<span>Analyser :</span>", pov_source)
+
+        self.assertIn("NeuroScore", cockpit_source)
+        self.assertIn("S'entraîner sur cette Review", cockpit_source)
+        self.assertIn("Moments clés", cockpit_source)
+        self.assertIn("visibleMoments = priorityMoments.slice(0, 3)", cockpit_source)
+        self.assertIn("Explorer les détails", cockpit_source)
+        self.assertIn(".slice(0, 3)", (review_dir / "reviewViewModel.ts").read_text(encoding="utf-8"))
+        self.assertNotIn("solutionBranch", cockpit_source)
+
+        for forbidden in ("NeuroMonitor", "NeuroBrain", "BrainAtlas", "CognitiveMap", "neuro3d", "cortex"):
+            self.assertNotIn(forbidden, cockpit_source)
+            self.assertNotIn(forbidden, panel_source)
+
+        self.assertIn('{effectiveFocus === "learn" && (', normalized_panel)
+        self.assertIn('{effectiveFocus === "practice" && (', normalized_panel)
+        self.assertIn('{effectiveFocus === "lab" && (', normalized_panel)
+        self.assertNotIn('{effectiveFocus === "opening" && (', normalized_panel)
+        self.assertNotIn('{effectiveFocus === "explorer" && (', normalized_panel)
+
+        for token in (
+            "Explorer tous les coups",
+            "Ouverture détaillée",
+            "Options d'analyse",
+            "Détails techniques",
+            "Preuves PV",
+        ):
+            self.assertIn(token, lab_source)
+        self.assertNotIn('<details className="review-score-details">', cockpit_source)
+        self.assertNotIn("Écart diagnostique", cockpit_source)
+        summary_body = cockpit_source[cockpit_source.index("export function ReviewCockpitSummary") :]
+        self.assertNotIn("ReviewTechnicalDetails", summary_body)
+        self.assertNotIn("Options d'analyse", summary_body)
+        self.assertNotIn("criticality_score", summary_body)
+        self.assertNotIn("diagnostic_gap", summary_body)
+        self.assertNotIn("neuro_score_diag", summary_body)
+
+        self.assertIn(
+            "const activeReviewDisplayFocus: ReviewFocusKey = reviewPracticeState?.active",
+            app_source,
+        )
+        self.assertIn("focusKey={activeReviewDisplayFocus}", app_source)
+        self.assertNotIn('activeReviewDisplayFocus === "summary"', app_source)
+        self.assertNotIn('activeReviewDisplayFocus !== "summary"', app_source)
+        self.assertIn(".review-main-navigation", styles_source)
+        self.assertIn(".review-summary-simple", styles_source)
+        self.assertIn(".review-training-card", styles_source)
+        self.assertNotIn(".review-brain-map-v2", styles_source)
+        self.assertIn(".review-laboratory", styles_source)
+
+        for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
+            self.assertNotIn(marker, cockpit_source + panel_source + pov_source + lab_source)
+
+    def test_v5_5_neuro_visuals_are_research_only_not_v1_ui(self) -> None:
+        neuro3d_dir = PROJECT_ROOT / "frontend" / "src" / "components" / "neuro3d"
+        frontend_src = PROJECT_ROOT / "frontend" / "src"
+        research_backlog = (PROJECT_ROOT / "docs" / "RESEARCH_BACKLOG.md").read_text(
+            encoding="utf-8"
+        )
+        feature_boundaries = (
+            PROJECT_ROOT / "docs" / "PLAN_FEATURE_BOUNDARIES.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertFalse((frontend_src / "components" / "NeuroMonitorBrain.tsx").exists())
+        self.assertFalse((frontend_src / "components" / "NeuroFlowPanel.tsx").exists())
+        self.assertFalse((neuro3d_dir / "NeuroMonitorBrain3D.tsx").exists())
+        self.assertFalse((neuro3d_dir / "neuroBrainVisualModel.ts").exists())
+        self.assertFalse((neuro3d_dir / "neuroBrainTypes.ts").exists())
+        self.assertIn("RESEARCH / not V1 / not user-facing", research_backlog)
+        self.assertIn("NeuroMonitor / brain visual", feature_boundaries)
+        self.assertIn("research", feature_boundaries.lower())
+        self.assertIn("hide", feature_boundaries.lower())
+
+    def test_v5_5_review_summary_has_no_neuro_visual_contract(self) -> None:
+        review_dir = PROJECT_ROOT / "frontend" / "src" / "components" / "review"
+        cockpit_source = (review_dir / "ReviewCockpitSummary.tsx").read_text(encoding="utf-8")
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
+        styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("NeuroScore", cockpit_source)
+        self.assertIn("S'entraîner sur cette Review", cockpit_source)
+        self.assertIn("visibleMoments = priorityMoments.slice(0, 3)", cockpit_source)
+        self.assertIn("review-reference-details", cockpit_source)
+        self.assertIn("review-training-card", cockpit_source)
+        for forbidden in (
+            "buildNeuroMonitorBrainData",
+            "findNeuroMonitorAnnotationForDomain",
+            "handleBrainDomainClick",
+            "review-neuro3d-monitor",
+            "brainData",
+            "NeuroFlowPanel",
+        ):
+            self.assertNotIn(forbidden, cockpit_source)
+            self.assertNotIn(forbidden, app_source)
+        for forbidden_selector in (
+            ".review-brain-map-v2",
+            ".neuroflow-panel",
+            ".neuro-monitor-brain",
+            ".neuro-brain-visual",
+            "@keyframes neuro3d-flow",
+        ):
+            self.assertNotIn(forbidden_selector, styles_source)
+
+    def test_v5_4_landing_1_landing_page_navigation_contract_is_staticly_present(self) -> None:
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
+        landing_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "LandingPage.tsx"
+        ).read_text(encoding="utf-8")
+        logo_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroChessLogo.tsx"
+        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
+        styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
+            encoding="utf-8"
+        )
+        normalized_app = app_source.replace("\r\n", "\n")
+
+        self.assertIn("export function LandingPage", landing_source)
+        self.assertIn("function DecisionHeroVisual", landing_source)
+        self.assertIn("export function NeuroChessLogo", logo_source)
+        self.assertIn("import { LandingPage }", app_source)
+        self.assertIn("import { NeuroChessLogo }", app_source)
+        self.assertIn("function NeuroChessApp", app_source)
+        self.assertIn("<LandingPage", app_source)
+        self.assertIn("<NeuroChessApp", app_source)
+        self.assertIn("normalizeRoute(readCurrentPath())", app_source)
+        self.assertIn('pathname.startsWith("/app") ? "/app" : "/"', normalized_app)
+        self.assertIn('currentRoute === "/app"', app_source)
+        self.assertIn("window.history.pushState", app_source)
+        self.assertIn('onNavigateApp={() => navigateTo("/app")}', normalized_app)
+        self.assertIn('onNavigateHome={() => navigateTo("/")}', normalized_app)
+
+        self.assertIn('href = "/"', logo_source)
+        self.assertIn('variant = "light"', logo_source)
+        self.assertIn('"compact"', logo_source)
+        self.assertIn('href="/app"', landing_source)
+        self.assertIn("Commencer", landing_source)
+        self.assertIn("Importer une partie", landing_source)
+        self.assertIn("Ouvrir l'app", landing_source)
+        for token in (
+            "Fonctionnalites",
+            "Parcours",
+            "Methode",
+            "Comprends ta partie",
+            "Review coach",
+            "NeuroScore",
+            "Practice Review",
+            "Import PGN",
+            "Stockfish local",
+        ):
+            self.assertIn(token, landing_source)
+        for section_id in (
+            'id="features"',
+            'id="how-it-works"',
+            'id="science"',
+        ):
+            self.assertIn(section_id, landing_source)
+        self.assertNotIn("Tarifs", landing_source)
+        self.assertNotIn('id="pricing"', landing_source)
+        self.assertNotIn("landing-price-card", landing_source)
+
+        self.assertIn("decision-visual", landing_source)
+        self.assertIn("DecisionHeroVisual", landing_source)
+        self.assertIn("Stockfish local", landing_source)
+        self.assertIn("une action utile", landing_source.lower())
+        for forbidden_user_facing in (
+            "NeuroMonitor",
+            "Neuro-Monitor",
+            "NeuroBrain",
+            "BrainAtlas",
+            "CognitiveMap",
+            "neuro3d",
+            "cortex",
+            "cartographie",
+            "brain",
+        ):
+            self.assertNotIn(forbidden_user_facing, landing_source)
+        for forbidden_claim in (
+            "EEG",
+            "mesure neurologique",
+            "mesure votre cerveau en temps réel",
+        ):
+            self.assertNotIn(forbidden_claim.lower(), landing_source.lower())
+
+        self.assertIn(".landing-page", styles_source)
+        self.assertIn(".landing-nav", styles_source)
+        self.assertIn(".landing-hero", styles_source)
+        self.assertIn(".decision-visual", styles_source)
+        self.assertIn(".landing-card", styles_source)
+        self.assertIn(".neuro-logo", styles_source)
+        self.assertIn("@keyframes landing-decision-flow", styles_source)
+        self.assertIn("@media (prefers-reduced-motion: reduce)", styles_source)
+        self.assertNotIn(".landing-page", review_panel_source)
+        self.assertIn("ReviewPanel", app_source)
+
+        for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
+            self.assertNotIn(marker, landing_source)
+            self.assertNotIn(marker, logo_source)
+
+    def test_v5_5_home_ux_removes_monitor_and_keeps_calm_entry_contract(self) -> None:
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
+        landing_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "LandingPage.tsx"
+        ).read_text(encoding="utf-8")
+        logo_source = (
+            PROJECT_ROOT / "frontend" / "src" / "components" / "NeuroChessLogo.tsx"
+        ).read_text(encoding="utf-8")
+        styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("home-shell", landing_source)
+        self.assertIn("home-continuum", landing_source)
+        self.assertIn("DecisionHeroVisual", landing_source)
+        self.assertIn("Review guidee", landing_source)
+        self.assertIn("Importer une partie", landing_source)
+        self.assertIn("entrainement depuis tes parties", landing_source)
+        self.assertIn("une action utile a chaque etape", landing_source)
+
+        self.assertIn('"header"', logo_source)
+        self.assertIn('variant="header"', landing_source)
+        self.assertIn('variant="header"', app_source)
+        self.assertIn('href="/"', app_source)
+        self.assertIn("onNavigateHome()", app_source)
+        self.assertIn("app-brand-title", app_source)
+
+        for selector in (
+            ".home-shell",
+            ".home-continuum",
+            ".decision-visual",
+            ".app-header",
+            ".app-brand",
+            ".app-brand-logo",
+            ".app-brand-title",
+            "@keyframes landing-decision-flow",
+        ):
+            self.assertIn(selector, styles_source)
+
+        for forbidden in (
+            "HomeNeuroMonitor",
+            "NeuroMonitorBrain",
+            "NeuroFlowPanel",
+            "home-neuro-monitor",
+            "neuro-monitor-brain",
+            "neuro-brain-visual",
+            "neuro-monitor-flow",
+            "brain",
+            "cortex",
+        ):
+            self.assertNotIn(forbidden, landing_source)
+            self.assertNotIn(forbidden, styles_source)
+
+        for forbidden_claim in ("cerveau réel", "mesure neurologique", "LLM"):
+            self.assertNotIn(forbidden_claim.lower(), landing_source.lower())
+
+        for marker in ("Ã", "Â", "â", "�", "prÃ", "?coul?", "z?ro"):
+            self.assertNotIn(marker, landing_source)
+            self.assertNotIn(marker, logo_source)
+
     def test_frontend_live_eventsource_contract_is_staticly_present(self) -> None:
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         evaluation_bar_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "EvaluationBar.tsx"
         ).read_text(encoding="utf-8")
@@ -690,12 +1339,10 @@ class CalibrationLogicTests(unittest.TestCase):
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
         review_state_source = (
             PROJECT_ROOT / "frontend" / "src" / "reviewState.ts"
-        ).read_text(encoding="utf-8")
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
 
         self.assertIn("export type ReviewResponse", client_source)
         self.assertIn("generateReview", client_source)
@@ -733,7 +1380,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("handleCancelReviewJob", app_source)
         self.assertIn("export const MIN_REVIEW_HALF_MOVES = 10", review_state_source)
         self.assertIn("const canRequestReview = isGameCompleted", app_source)
-        self.assertIn("Voir la review", app_source)
+        self.assertIn("Voir la Review", app_source)
         self.assertIn("Moments à revoir", review_panel_source)
         self.assertIn("Analyse approfondie en cours", review_panel_source)
         self.assertIn("L'analyse approfondie continue en arrière-plan", review_state_source)
@@ -753,10 +1400,8 @@ class CalibrationLogicTests(unittest.TestCase):
         )
         review_state_source = (
             PROJECT_ROOT / "frontend" / "src" / "reviewState.ts"
-        ).read_text(encoding="utf-8")
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
+        review_panel_source = read_review_panel_source()
         normalized_state = review_state_source.replace("\r\n", "\n")
 
         self.assertIn("export const REVIEW_PENDING_TIMEOUT_MS = 60_000", review_state_source)
@@ -794,15 +1439,13 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertNotIn("loading:", review_panel_source)
 
     def test_frontend_review_visible_spinner_timeout_contract_is_staticly_present(self) -> None:
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         review_state_source = (
             PROJECT_ROOT / "frontend" / "src" / "reviewState.ts"
-        ).read_text(encoding="utf-8")
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
+        review_panel_source = read_review_panel_source()
         normalized_app = app_source.replace("\r\n", "\n")
         normalized_state = review_state_source.replace("\r\n", "\n")
 
@@ -866,10 +1509,8 @@ class CalibrationLogicTests(unittest.TestCase):
         )
         review_state_source = (
             PROJECT_ROOT / "frontend" / "src" / "reviewState.ts"
-        ).read_text(encoding="utf-8")
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
+        review_panel_source = read_review_panel_source()
 
         self.assertIn("empty_reason", client_source)
         self.assertIn('"no_significant_moments"', client_source)
@@ -895,7 +1536,8 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertNotIn("REVIEW_PENDING_BACKGROUND_MESSAGE", no_significant_block)
         self.assertNotIn("spinner", no_significant_block)
         self.assertNotIn("onCheck", no_significant_block)
-        self.assertIn("resetPicker", no_significant_block)
+        self.assertIn("renderFocusedReviewModule(true)", no_significant_block)
+        self.assertIn("resetPicker", review_panel_source)
         self.assertNotIn("Vérifier à nouveau", no_significant_block)
         self.assertNotIn("Réessayer", no_significant_block)
         self.assertIn("handleReviewCheck", app_source)
@@ -912,9 +1554,7 @@ class CalibrationLogicTests(unittest.TestCase):
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
 
         for token in (
             "mover_win_loss",
@@ -949,9 +1589,7 @@ class CalibrationLogicTests(unittest.TestCase):
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
 
         self.assertIn('REVIEW_SCORE_FORMULA_VERSION = DUAL_REVIEW_SCORE_FORMULA_VERSION', review_service_source)
         self.assertIn('DUAL_REVIEW_SCORE_FORMULA_VERSION = "dual_lichess_neuro_v1"', review_metrics_source)
@@ -991,6 +1629,14 @@ class CalibrationLogicTests(unittest.TestCase):
             "black_lichess_like_accuracy",
             "user_lichess_like_accuracy",
             "opponent_lichess_like_accuracy",
+            "white_public_neuro_score",
+            "black_public_neuro_score",
+            "user_public_neuro_score",
+            "opponent_public_neuro_score",
+            "public_neuro_score",
+            "public_score_formula_version",
+            "qualitative_game_label",
+            "qualitative_game_label_formula_version",
             "white_neuro_score",
             "black_neuro_score",
             "user_neuro_score",
@@ -1028,14 +1674,16 @@ class CalibrationLogicTests(unittest.TestCase):
             self.assertIn(token, client_source)
 
         self.assertIn("ReviewScoreSummary", review_panel_source)
-        self.assertIn("Ton score NeuroChess", review_panel_source)
+        self.assertIn("Score coach", review_panel_source)
+        self.assertIn("Précision de référence", review_panel_source)
         self.assertIn("review-headline-score", review_panel_source)
         self.assertIn("Détails du score", review_panel_source)
-        self.assertIn("Qualité moyenne des coups", review_panel_source)
-        self.assertIn("Score diagnostic brut", review_panel_source)
-        self.assertIn("Écart diagnostique", review_panel_source)
+        self.assertIn("NeuroScore coach", review_panel_source)
+        self.assertIn("Le NeuroScore est un score coach", review_panel_source)
+        self.assertNotIn("Score diagnostic interne", review_panel_source)
+        self.assertNotIn("Écart diagnostique interne", review_panel_source)
         self.assertIn("Adversaire", review_panel_source)
-        self.assertIn("NeuroChess", review_panel_source)
+        self.assertIn("NeuroScore", review_panel_source)
         self.assertIn("Blancs", review_panel_source)
         self.assertIn("Noirs", review_panel_source)
         self.assertIn("Score indicatif", review_panel_source)
@@ -1080,9 +1728,7 @@ class CalibrationLogicTests(unittest.TestCase):
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
 
         self.assertIn('REVIEW_ANALYSIS_DEFAULT_PROFILE = "standard"', review_service_source)
         self.assertIn('"quick": 1', review_service_source)
@@ -1179,7 +1825,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertNotIn('<option value="quick">', review_panel_source)
         self.assertIn("Standard recommand", review_panel_source)
         self.assertIn("Approfondie", review_panel_source)
-        self.assertIn("Analyse standard recommand", review_panel_source)
+        self.assertIn("Lancer l'analyse recommand", review_panel_source)
         self.assertIn("Analyse rapide disponible", review_panel_source)
         self.assertIn("Stockfish MultiPV", review_panel_source)
         self.assertIn("Debug score Review", review_panel_source)
@@ -1205,9 +1851,7 @@ class CalibrationLogicTests(unittest.TestCase):
         eval_bar_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "EvaluationBar.tsx"
         ).read_text(encoding="utf-8")
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
 
         for token in (
             '"live_continuous"',
@@ -1252,7 +1896,7 @@ class CalibrationLogicTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         self.assertIn(
-            'SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v4"',
+            'SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v5_trust_gate"',
             review_service_source,
         )
         self.assertIn("CRITICALITY_THRESHOLD = 10.0", review_service_source)
@@ -1271,6 +1915,8 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("def temporal_non_max_suppression", review_service_source)
         self.assertIn("NMS_WINDOW_PLIES = 2", review_service_source)
         self.assertIn("NMS_OVERRIDE_RATIO = 1.5", review_service_source)
+        self.assertIn("LOW_IMPACT_OPENING_MAX_PLY = 8", review_service_source)
+        self.assertIn("def _is_low_impact_opening_drift", review_service_source)
         self.assertIn("STALLED_REVIEW_MESSAGE", review_service_source)
         self.assertIn("FAILED_DEEP_REVIEW_MESSAGE", review_service_source)
         self.assertIn("review_work_active", review_service_source)
@@ -1333,14 +1979,14 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("reliability_score=reliability", review_source)
         self.assertIn("def _stable_eval_from_analysis_json", review_source)
         self.assertIn("REVIEW_STABILIZED_EVAL_SOURCE_KIND", review_source)
-        self.assertIn("moment_selection_criticality_v4", review_source)
+        self.assertIn("moment_selection_criticality_v5_trust_gate", review_source)
         self.assertIn("stabilized_eval?:", client_source)
         self.assertIn("REVIEW_STABILIZED_DEEP_SOURCE_KIND", app_source)
         self.assertIn("REVIEW_DEEP_SNAPSHOT_SOURCE_KIND", app_source)
         self.assertIn("review_stabilized_deep", app_source)
         self.assertIn("review_deep_snapshot", app_source)
         self.assertIn("reviewMomentSourceKind", app_source)
-        self.assertIn("Évaluation non disponible pour ce moment", app_source)
+        self.assertIn("fr.liveAnalysis.positionNotAnalyzed", app_source)
         self.assertIn("review_stabilized_deep", evaluation_bar_source)
         self.assertIn("review_deep_snapshot", evaluation_bar_source)
 
@@ -1482,12 +2128,10 @@ class CalibrationLogicTests(unittest.TestCase):
             self.assertIn(log_name, app_source)
 
     def test_v5_3_a4d_frontend_review_hardening_is_present(self) -> None:
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
+        review_panel_source = read_review_panel_source()
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
@@ -1496,7 +2140,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("restorePersistedAppState", app_source)
         self.assertIn("activeReviewJobId", app_source)
         self.assertIn("liveSuspendedForReview", app_source)
-        self.assertIn("Live suspendu pendant la Review", app_source)
+        self.assertIn("Analyse live en pause pendant la Review", app_source)
         self.assertIn("ForceReanalysisPicker", review_panel_source)
         self.assertIn("Standard recommandée", review_panel_source)
         self.assertIn("Approfondie", review_panel_source)
@@ -1517,9 +2161,7 @@ class CalibrationLogicTests(unittest.TestCase):
         review_service_source = (
             PROJECT_ROOT / "backend" / "neurochess" / "review_service.py"
         ).read_text(encoding="utf-8")
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
 
         self.assertIn("SQLITE_BUSY_TIMEOUT_MS = 30_000", database_source)
         self.assertIn("SQLITE_WRITE_LOCK", database_source)
@@ -1625,9 +2267,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("arePiecesDraggable={Boolean(fen) && !disabled}", board_source)
 
     def test_frontend_v4_1_review_cards_are_scannable_without_raw_metrics(self) -> None:
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
         styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
             encoding="utf-8"
         )
@@ -1669,7 +2309,8 @@ class CalibrationLogicTests(unittest.TestCase):
 
         self.assertIn("type EvaluationBarState", normalized)
         self.assertIn("evaluationBarStateForBoardFen", normalized)
-        self.assertIn("const boardFen = viewedFen ?? currentFen", normalized)
+        self.assertIn("const rawBoardFen = viewedFen ?? currentFen", normalized)
+        self.assertIn("const boardFen = reviewExplorationActive", normalized)
         self.assertIn("boardEvaluationContextForPosition", normalized)
         self.assertIn('if (mode === "LIVE")', normalized)
         self.assertIn('if (mode === "HISTORICAL")', normalized)
@@ -1679,11 +2320,12 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("lookup?.evaluation", normalized)
         self.assertIn('"historical_deep"', normalized)
         self.assertIn('kind: "historical_pending"', normalized)
-        self.assertIn('label: "analyse indisponible"', normalized)
+        self.assertIn("fr.liveAnalysis.positionNotAnalyzed", normalized)
+        self.assertIn("fr.liveAnalysis.updating", normalized)
         self.assertIn('sourceLabel: "historique"', normalized)
         self.assertIn('sourceLabel: "review"', normalized)
         self.assertIn("reviewPracticeState?.active", normalized)
-        self.assertIn('"Mode Review"', normalized)
+        self.assertIn('"Review guidée"', normalized)
         self.assertIn('"Mode entraînement"', normalized)
         self.assertNotIn('"aucune evaluation disponible pour le moment de review"', normalized)
         self.assertIn("startLiveAnalysis({", normalized)
@@ -1702,9 +2344,9 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("placeholder?.label", evaluation_bar_source)
 
     def test_frontend_v5_0_1_review_bar_uses_eval_before_not_live_or_after(self) -> None:
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         normalized = app_source.replace("\r\n", "\n")
         review_start = normalized.index("const moment =", normalized.index("function evaluationBarStateForBoardFen"))
         review_block = normalized[review_start:normalized.index("function positionBadge")]
@@ -1723,9 +2365,7 @@ class CalibrationLogicTests(unittest.TestCase):
         evaluation_bar_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "EvaluationBar.tsx"
         ).read_text(encoding="utf-8")
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
         board_panel_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "ChessBoardPanel.tsx"
         ).read_text(encoding="utf-8")
@@ -1744,7 +2384,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn('setReviewBarPhase(moveMode === "played" ? "after" : "before")', normalized)
         self.assertIn("reviewMomentEvaluation(moment, reviewBarPhase)", normalized)
         self.assertIn("reviewMomentDelta(moment)", normalized)
-        self.assertIn("Évaluation non disponible pour ce moment.", normalized)
+        self.assertIn("fr.liveAnalysis.positionNotAnalyzed", normalized)
         self.assertIn("REVIEW_REPLAY_INITIAL_DELAY_MS = 1200", normalized)
         self.assertIn("REPLAY_INITIAL_PAUSE_MS = 1200", normalized)
         self.assertIn("REPLAY_MOVE_ANIMATION_MS = 800", normalized)
@@ -1771,9 +2411,7 @@ class CalibrationLogicTests(unittest.TestCase):
         evaluation_bar_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "EvaluationBar.tsx"
         ).read_text(encoding="utf-8")
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
         styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
             encoding="utf-8"
         )
@@ -1782,7 +2420,7 @@ class CalibrationLogicTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         normalized = app_source.replace("\r\n", "\n")
 
-        self.assertIn('SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v4"', review_service_source)
+        self.assertIn('SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v5_trust_gate"', review_service_source)
         self.assertIn("CRITICALITY_THRESHOLD = 10.0", review_service_source)
         self.assertIn('const EVAL_VISIBILITY_STORAGE_KEY = "neurochess.hideEvaluation"', normalized)
         self.assertIn("readHideEvaluationPreference", normalized)
@@ -1836,9 +2474,7 @@ class CalibrationLogicTests(unittest.TestCase):
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
         evaluation_bar_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "EvaluationBar.tsx"
         ).read_text(encoding="utf-8")
@@ -1915,9 +2551,7 @@ class CalibrationLogicTests(unittest.TestCase):
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
-        review_panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        review_panel_source = read_review_panel_source()
         board_panel_source = (
             PROJECT_ROOT / "frontend" / "src" / "components" / "ChessBoardPanel.tsx"
         ).read_text(encoding="utf-8")
@@ -1932,7 +2566,7 @@ class CalibrationLogicTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         normalized = app_source.replace("\r\n", "\n")
 
-        self.assertIn('SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v4"', review_service_source)
+        self.assertIn('SELECTION_ALGORITHM_VERSION = "moment_selection_criticality_v5_trust_gate"', review_service_source)
         self.assertIn("CRITICALITY_THRESHOLD = 10.0", review_service_source)
         self.assertIn('type ReviewReplayMoveMode = "played" | "best"', normalized)
         self.assertIn("REVIEW_REPLAY_INITIAL_DELAY_MS = 1200", normalized)
@@ -1951,7 +2585,10 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn("setReviewBarPhase(moveMode === \"played\" ? \"after\" : \"before\")", normalized)
         self.assertIn("buildReviewBoardArrows", normalized)
         self.assertIn("uciToBoardArrow", normalized)
-        self.assertIn("customArrows={reviewBoardArrows}", normalized)
+        self.assertIn(
+            "customArrows={reviewExplorationActive ? [] : reviewBoardArrows}",
+            normalized,
+        )
         self.assertIn("customArrows?: BoardArrow[]", board_panel_source)
         self.assertIn("customArrows={customArrows as Arrow[] | undefined}", board_panel_source)
         self.assertIn("Voir le coup joué", review_panel_source)
@@ -1998,7 +2635,7 @@ class CalibrationLogicTests(unittest.TestCase):
         self.assertIn('return "review_live"', normalized)
         self.assertIn('return "final_live"', normalized)
         self.assertIn('return "initial_live"', normalized)
-        self.assertIn('label: "analyse en cours"', normalized)
+        self.assertIn("label: fr.liveAnalysis.updating", normalized)
         self.assertIn("historique", evaluation_bar_source)
         self.assertIn("review", evaluation_bar_source)
         self.assertIn("finale", evaluation_bar_source)
@@ -2082,9 +2719,9 @@ class CalibrationLogicTests(unittest.TestCase):
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
             encoding="utf-8"
         )
@@ -2138,9 +2775,9 @@ class CalibrationLogicTests(unittest.TestCase):
         client_source = (
             PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts"
         ).read_text(encoding="utf-8")
-        app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
-            encoding="utf-8"
-        )
+        app_source = (
+            PROJECT_ROOT / "frontend" / "src" / "App.tsx"
+        ).read_text(encoding="utf-8") + read_frontend_i18n_source()
         styles_source = (PROJECT_ROOT / "frontend" / "src" / "styles.css").read_text(
             encoding="utf-8"
         )
@@ -2226,14 +2863,22 @@ class CalibrationLogicTests(unittest.TestCase):
         normalized = app_source.replace("\r\n", "\n")
 
         self.assertIn(
-            'const liveSuspendedForReview = activeTab === "review" || reviewJobRunning;',
+            "const liveSuspendedForReview = reviewJobRunning;",
             normalized,
         )
         self.assertIn(
-            'if (liveSuspendedForReview || positionMode === "REVIEW")',
+            "if (liveSuspendedForReview || liveSuspendedForPractice)",
             normalized,
         )
-        self.assertIn('setLiveInfoStatus("Live suspendu pendant la Review")', normalized)
+        self.assertIn(
+            "fr.liveAnalysis.pausedDuringReview",
+            normalized,
+        )
+        self.assertIn(
+            "fr.liveAnalysis.pausedDuringPractice",
+            normalized,
+        )
+        self.assertNotIn('liveSuspendedForReview = activeTab === "review"', normalized)
         self.assertIn("activeReviewJobId", normalized)
         self.assertIn("getReviewJob(saved.activeReviewJobId)", normalized)
 
@@ -2253,9 +2898,7 @@ class CalibrationLogicTests(unittest.TestCase):
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(
             encoding="utf-8"
         )
-        panel_source = (
-            PROJECT_ROOT / "frontend" / "src" / "components" / "ReviewPanel.tsx"
-        ).read_text(encoding="utf-8")
+        panel_source = read_review_panel_source()
         normalized_app = app_source.replace("\r\n", "\n")
 
         self.assertIn("reconcileReviewJob", client_source)
@@ -2320,5 +2963,3 @@ class CalibrationLogicTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-

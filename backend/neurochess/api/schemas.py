@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class CreateGameRequest(BaseModel):
@@ -33,6 +33,66 @@ class StopLiveAnalysisRequest(BaseModel):
     session_id: str
 
 
+class CapabilityProduct(BaseModel):
+    name: str
+
+
+class CapabilityTab(BaseModel):
+    id: str
+    label: str
+    screen_id: str
+
+
+class CapabilityMetric(BaseModel):
+    metric_id: str
+    label: str
+    category: str
+    visibility: str
+    source_field: str | None = None
+    formula_version_field: str | None = None
+
+
+class CapabilityAction(BaseModel):
+    action_id: str
+    label: str
+    screen_id: str
+    type: str
+
+
+class CapabilityPractice(BaseModel):
+    enabled: bool
+    grading_authority: str
+    default_scope: str
+    default_max_items: int
+    result_values: list[str]
+
+
+class CapabilityUiContract(BaseModel):
+    summary_max_priorities: int
+    summary_max_takeaways: int
+    prescriptive_max_primary_actions: int
+    prescriptive_max_secondary_actions: int
+    beginner_hides_raw_formulas: bool
+    beginner_hides_evidence_json: bool
+    technical_details_location: str
+
+
+class CapabilityReview(BaseModel):
+    tabs: list[CapabilityTab]
+    visible_metrics: list[CapabilityMetric]
+    advanced_metrics: list[CapabilityMetric]
+    hidden_metrics: list[str]
+    actions: list[CapabilityAction]
+    practice: CapabilityPractice
+    ui_contract: CapabilityUiContract
+
+
+class ProductCapabilitiesResponse(BaseModel):
+    schema_version: str
+    product: CapabilityProduct
+    review: CapabilityReview
+
+
 class StartReviewJobRequest(BaseModel):
     profile: str = "standard"
     force_reanalysis: bool = False
@@ -47,7 +107,54 @@ class StartReviewPracticeSessionRequest(BaseModel):
 class RecordReviewPracticeAttemptRequest(BaseModel):
     ply: int
     attempted_uci: str | None = None
-    result: str
+    result: str | None = None
+    time_spent_ms: int | None = None
+    hint_used: bool = False
+    reveal_used: bool = False
+    source_context: str | None = None
+
+
+class ReviewTryMoveEvaluationRequest(BaseModel):
+    fen_before: str | None = None
+    move_played: str
+    best_move_uci: str | None = None
+    best_move_san: str | None = None
+    best_move: str | None = None
+    acceptable_moves: list[dict[str, Any] | str] = Field(default_factory=list)
+    candidate_moves: list[dict[str, Any] | str] = Field(default_factory=list)
+    top_moves: list[dict[str, Any]] = Field(default_factory=list)
+    accepted_moves_json: str | list[Any] | None = None
+    stable_attempt_evaluation: dict[str, Any] | None = None
+    source_context: str | None = None
+    review_moment_id: int | str | None = None
+    training_item_id: int | str | None = None
+    ply: int | None = None
+    win_loss: float | None = None
+    primary_category: str | None = None
+    primary_tag: str | None = None
+
+
+class ReviewExplorerEvaluateMoveRequest(BaseModel):
+    fen_before: str
+    move_uci: str
+    analysis_preset: str | None = "standard"
+    source_context: str | None = "review_explorer"
+    game_id: int | None = None
+    review_moment_id: int | str | None = None
+
+
+class ReviewExplorerEvaluateLineRequest(BaseModel):
+    fen_start: str
+    moves_uci: list[str]
+    analysis_preset: str | None = "standard"
+    source_context: str | None = "review_explorer"
+    game_id: int | None = None
+    review_moment_id: int | str | None = None
+
+
+class DailyPlanRequest(BaseModel):
+    max_items: int | None = 6
+    duration_preference: str | None = None
 
 
 class EvaluationResponse(BaseModel):

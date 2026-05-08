@@ -1,0 +1,213 @@
+# QA Checklist
+
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` + `P1.I18N-STRINGS-CATALOG-V1`
+Date: 2026-05-05
+
+## Mission Control
+
+- [x] Mission Control docs created under `docs/mission_control/`.
+- [x] Golden Flows, Failure Ledger, Visual Evidence Contract, Release Radar, and
+  reusable Codex mission protocol are now documented for future missions.
+- [x] Mission Control does not replace Plan1/Plan2/Plan3; it is an operational
+  checklist layer for safer QA/release work.
+- [x] Controlled local tester pilot checklist exists at
+  `docs/pilot/PILOT_CHECKLIST_V1.md`.
+- [x] Pilot bug report and feedback forms exist under `docs/pilot/`.
+
+## Baseline
+
+- [x] Read AGENTS and Plan governance docs.
+- [x] Confirm `plan/Plan1.txt`, `plan/Plan2.txt`, `plan/Plan3.md` exist.
+- [x] Capture `git status --short --branch`.
+- [x] Capture `git diff --stat`.
+- [x] Treat pre-existing dirty worktree as baseline, not as audit edits.
+
+## Serena
+
+- [x] Activate `C:\Users\bahij\OneDrive\Desktop\NeuroChess2_vraie\NeuroChess2`.
+- [x] Confirm active languages: `typescript`, `python`.
+- [x] Inspect `frontend/src/App.tsx`.
+- [x] Inspect `ReviewCockpitSummary`.
+- [x] Inspect `ReviewPanel`.
+- [x] Inspect `ReviewPracticePanel` and `ReviewPracticeSessionPanel`.
+- [x] Inspect Today/Training/PGN/Practice/due-review symbols.
+- [x] Inspect backend Review Practice service/routes/schemas/migrations.
+
+## Automated Validation
+
+- [x] `tools/plan_guard.py` PASS.
+- [x] Backend full suite PASS, 495 tests.
+- [x] Review smoke PASS.
+- [x] PGN import smoke PASS.
+- [x] Sindarov real-flow smoke PASS.
+- [x] Frontend build PASS.
+- [x] TypeScript fallback typecheck PASS.
+- [x] Degraded states backend/static test PASS.
+- [x] Mobile/accessibility backend static test PASS.
+- [ ] Lint unavailable: no `lint` npm script.
+- [ ] `npm run typecheck` unavailable: no `typecheck` npm script.
+
+## Browser Validation
+
+- [x] Temporary backend `/health` PASS.
+- [x] Temporary frontend `/app` HTTP 200.
+- [x] Browser loaded `/app`, title `NeuroChess 2`.
+- [x] Browser sees main nav: `Aujourd'hui`, `Mes parties`, `Entrainement`.
+- [x] Browser Training page shows exactly 3 entries.
+- [x] Browser forbidden V1 labels absent in checked snapshots.
+- [x] Automated browser smoke script added:
+  `cmd /c node scripts\browser_v1_flow_smoke.mjs`.
+- [x] Browser PGN paste/import works in an isolated temp backend DB.
+- [x] Browser ready Review Summary visible.
+- [x] Browser Practice starts from Review.
+- [x] Browser reveal attempt is recorded as `practice_attempt`.
+- [x] Browser/API proof includes `due_at` J+1 and
+  `learning_summary.scheduled_count=1`.
+- [x] Browser app console errors empty.
+- [x] Browser ready Review Summary validated.
+- [x] Browser Practice flow validated for reveal/correction attempt.
+- [x] Browser Profile/Privacy smoke validates top-right panel, export JSON,
+  typed delete confirmation, confirmed local-data deletion in a temp DB, and
+  Plan2 nav integrity.
+- [x] Browser Daily Plan smoke validates temp DB seed, Review done,
+  `training_items`, Daily Plan creation, Training Plan du jour CTA, Practice
+  from plan, attempt with `item_id=training_item:{id}`, and `due_at`.
+- [x] Browser core board smoke validates Review board rendering, Review moment
+  selection, Practice from Review, click-click correct/wrong/illegal attempts,
+  reveal persistence, Daily Plan Practice board attempt, export of attempts,
+  and learning summary update.
+- [x] Browser analysis stall recovery smoke validates controlled fake-engine
+  timeout/failure, one retry copy, `Reprendre`, and Review done after retry.
+- [x] Browser Review exploration smoke validates `Exploration locale`, real
+  click-click move, board FEN change, undo, reset, illegal move feedback, no
+  Practice attempt during exploration, then a separate Practice attempt saved.
+- [x] Browser real analysis no-infinite-loop smoke validates a hard 90s deadline
+  and terminal/recoverable job behavior; latest evidence reached `completed`
+  with progress `13/13`.
+- [x] Browser invalid PGN state validated.
+- [x] Browser illegal PGN state validated.
+- [x] Browser backend unavailable state validated.
+- [x] Browser empty Daily Plan state validated.
+- [x] Browser mobile responsive smoke validates 390x844 viewport, no horizontal
+  overflow on critical screens, Review board visible, Review exploration tap,
+  Review Practice tap attempt, Daily Plan Practice tap attempt, Training exactly
+  3 entries, Profile/Privacy visibility, and no forbidden V1 labels.
+- [x] Browser keyboard/accessibility smoke validates Tab focus and visible focus
+  rings for main nav, import, PGN textarea, Practice board, Indice, Voir la
+  correction, Passer, Profile/Settings focus, reduced-motion CSS, and no
+  network 500.
+- [x] Browser Practice best-move feedback smoke validates that an exact best
+  board move is saved as `best`, shows success feedback, does not show
+  `Ton coup - Probleme` / `Le meilleur coup etait` contradiction, and does not
+  create review jobs, review moments, or training items during classification.
+- [x] Browser Review Correction no-contradiction smoke validates that a legacy
+  Correction payload with displayed move `Nxe4` equal to best move `Nxe4`
+  renders success/accepted feedback and does not show `Ton coup - Probleme`,
+  `Opportunite manquee`, or `Le meilleur coup etait` as missed-best reproach.
+- [x] Browser Review success-state UX smoke validates that exact-best Review
+  try feedback uses `Tentative reussie`, primary `Continuer`, and
+  `Voir pourquoi ca marche`; it also checks recovered historical gain copy and
+  blocks negative raw deltas, `Qualite : Moyenne`, duplicate `important`, and
+  retry/correction CTAs in the success state.
+- [ ] Browser Review attempt-specific feedback smoke validates that a current
+  wrong try-move does not reuse stale historical reply text, and that
+  `Voir la ligne` opens a visible line panel or stays hidden when no line is
+  available.
+- [ ] Browser Review Training continuation smoke validates that success or
+  accepted feedback shows a local `Position suivante`/`Terminer la session`
+  action in the active panel, that next advances and resets the item without a
+  duplicate attempt, and that internal `Lire la ligne jouee` / `Lire la ligne
+  solution` buttons visibly open and step a line player.
+- [ ] Browser Review user-POV/focus layout smoke validates `Les deux` board
+  orientation per White/Black moment, honest `Moi` behavior when user color is
+  unknown, and board/feedback/primary action/line player visibility without
+  burying controls below the fold.
+- [x] French V1 strings catalog exists at `frontend/src/i18n/fr.ts`.
+- [x] Static i18n tests validate critical nav, Training, feedback, degraded,
+  analysis, live-analysis, Profile/Privacy and forbidden-label contracts.
+- [ ] Full WCAG audit/certification not performed.
+
+## V1 Boundaries
+
+- [x] No NeuroMonitor / brain / cortex / atlas in checked UI snapshots.
+- [x] No Candidate Trainer visible.
+- [x] No deep Intent Layer visible.
+- [x] No LLM coach visible.
+- [x] No Transfer Gap visible.
+- [x] No SkillTrace / ETV / FSRS visible in Training/App static guard.
+- [x] Internal metrics are kept out of normal checked UI paths.
+
+## Release Readiness
+
+- [x] Core backend Review/Practice tests pass.
+- [x] Core PGN smoke passes.
+- [x] App shell browser smoke passes for the minimal V1 loop.
+- [x] Automated browser E2E smoke exists for the minimal V1 loop.
+- [x] Automated browser E2E smoke exists for real board click-click attempts.
+- [x] Automated browser E2E smoke exists for Review local exploration.
+- [x] Automated browser E2E smoke exists for analysis stall recovery.
+- [x] Automated browser E2E smoke exists for analysis no-infinite-loop deadline.
+- [x] Automated browser E2E smoke exists for key degraded states and offline
+  recovery copy.
+- [x] Automated browser E2E smoke exists for mobile responsive core flows.
+- [x] Automated browser E2E smoke exists for keyboard/focus basics.
+- [x] Automated browser E2E smoke exists for Practice exact-best feedback
+  correctness and legacy SAN normalization.
+- [x] Privacy/export/delete implemented and browser-smoked in isolated temp DB.
+- [x] Deterministic backend Daily Plan implemented and browser-smoked.
+- [x] Durable `training_items` implemented and exported/deleted.
+- [x] Centralized French strings catalog for critical V1 copy.
+- [ ] SkillTrace shadow missing.
+- [ ] Strict Stockfish cache proof incomplete.
+
+## Documentation
+
+- [x] Create/update `docs/FULL_APPLICATION_QA_AUDIT.md`.
+- [x] Create/update `docs/DEGRADED_STATES_CONTRACT.md`.
+- [x] Create/update `docs/TEST_COVERAGE_MATRIX.md`.
+- [x] Create/update `docs/V1_READINESS_REPORT.md`.
+- [x] Create/update this checklist.
+- [x] Update `docs/NEXT_PLAN_ACTIONS.md`.
+- [x] Update `docs/PROJECT_STATE.md`.
+
+## Decision
+
+- Alpha: usable internally with strong backend evidence.
+- External V1: NO-GO until SkillTrace shadow, release-candidate QA gate,
+  release hardening, and deeper accessibility/manual device checks are handled.
+  Mobile/responsive and keyboard basics are now browser-smoked, but this is not
+  a full accessibility certification.
+
+## P0 Review Analysis Lifecycle / Live Analysis Checklist
+
+- [ ] UI-started Review analysis reaches terminal/recoverable state under a hard
+  deadline.
+- [ ] Frontend polling stops on completed, warning/partial, stalled, failed,
+  cancelled, or incomplete states.
+- [ ] Stale `queued`, `running`, and `finalizing` jobs become retryable/recoverable.
+- [ ] No duplicated `Vous pouvez reprendre l'analyse.` copy.
+- [ ] Live analysis appears by default on Review board.
+- [ ] Live analysis updates when local Review exploration changes the board FEN.
+- [ ] Live analysis pauses during standard/deep Review analysis.
+- [ ] Live analysis is hidden/paused before an active Practice attempt/reveal.
+- [ ] Live analysis does not create Practice attempts, training items, due dates,
+  or learning summary changes.
+
+## P1 Review Trust PV5 / Stable Classification Checklist
+
+- [x] Review candidate generation requests MultiPV5 for standard/deep Review.
+- [x] `accepted_moves_json` remains conservative; PV5 does not auto-accept every
+  candidate.
+- [x] Legal out-of-list try moves no longer become `wrong` without a stabilized
+  resulting-position evaluation.
+- [x] Current-attempt bands support `playable` and `imprecise` before `wrong`.
+- [x] Stable-eval failure falls back to `needs_rebuild` / unknown-safe, not
+  false wrong.
+- [x] Early near-equal opening drift has a low-impact gate and should not be
+  forced into Review retry.
+- [x] Daily Plan / `due_at` semantics remain unchanged for existing success and
+  failure classes; `playable`, `imprecise`, and `needs_rebuild` do not schedule
+  revisions yet.
+- [x] Browser/API smoke exists for PV5/stable classification contract.
+- [ ] Manual Review mini-check remains pending; human pilot remains NO-GO.
+- [ ] New browser smokes PASS and write evidence JSON.

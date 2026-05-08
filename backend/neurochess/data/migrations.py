@@ -978,6 +978,259 @@ def _apply_v5_3_d2_review_practice_session_items(connection: sqlite3.Connection)
     )
 
 
+def _apply_v5_5_learning_loop_practice_event_fields(connection: sqlite3.Connection) -> None:
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "item_id",
+        "TEXT NULL",
+    )
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "time_spent_ms",
+        "INTEGER NULL",
+    )
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "hint_used",
+        "INTEGER NOT NULL DEFAULT 0",
+    )
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "reveal_used",
+        "INTEGER NOT NULL DEFAULT 0",
+    )
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "source_context",
+        "TEXT NOT NULL DEFAULT 'review_practice'",
+    )
+    _add_column_if_missing(
+        connection,
+        "review_practice_attempts",
+        "due_at",
+        "TEXT NULL",
+    )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_review_practice_attempts_game_due
+        ON review_practice_attempts(game_id, due_at)
+        """
+    )
+
+
+def _apply_v5_6_training_items_daily_plan(connection: sqlite3.Connection) -> None:
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS training_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_type TEXT NOT NULL,
+            source_game_id INTEGER NOT NULL,
+            source_ply INTEGER NOT NULL,
+            source_moment_id INTEGER NULL,
+            fen TEXT NOT NULL,
+            side_to_move TEXT NOT NULL,
+            best_move TEXT NOT NULL,
+            accepted_moves_json TEXT NOT NULL DEFAULT '[]',
+            domain TEXT NOT NULL DEFAULT 'unknown',
+            primary_tag TEXT NOT NULL DEFAULT 'unknown',
+            secondary_tags_json TEXT NOT NULL DEFAULT '[]',
+            difficulty_proxy REAL NULL,
+            criticality_score REAL NOT NULL DEFAULT 0.0,
+            explanation_short TEXT NULL,
+            takeaway TEXT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NULL,
+            status TEXT NOT NULL DEFAULT 'active',
+            FOREIGN KEY(source_game_id) REFERENCES games(id) ON DELETE CASCADE,
+            FOREIGN KEY(source_moment_id) REFERENCES review_moments(id) ON DELETE SET NULL
+        )
+        """
+    )
+    connection.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_training_items_source_game_ply
+        ON training_items(source_game_id, source_ply)
+        """
+    )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_training_items_status_created
+        ON training_items(status, created_at)
+        """
+    )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_training_items_game
+        ON training_items(source_game_id, source_ply)
+        """
+    )
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS daily_plan_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL DEFAULT 'local',
+            plan_date TEXT NOT NULL,
+            item_id INTEGER NOT NULL,
+            order_index INTEGER NOT NULL,
+            selection_reason TEXT NOT NULL,
+            selection_score REAL NOT NULL DEFAULT 0.0,
+            source_bucket TEXT NOT NULL
+                CHECK(source_bucket IN (
+                    'due',
+                    'failed_recent',
+                    'recent_critical',
+                    'diversity_fill',
+                    'manual'
+                )),
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(item_id) REFERENCES training_items(id) ON DELETE CASCADE
+        )
+        """
+    )
+    connection.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_plan_items_user_date_item
+        ON daily_plan_items(user_id, plan_date, item_id)
+        """
+    )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_daily_plan_items_user_date_order
+        ON daily_plan_items(user_id, plan_date, order_index)
+        """
+    )
+
+
+def _apply_v5_7_review_practice_result_bands(connection: sqlite3.Connection) -> None:
+    if "review_practice_attempts" not in {
+        row["name"]
+        for row in connection.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table'"
+        ).fetchall()
+    }:
+        return
+
+    before_count = connection.execute(
+        "SELECT COUNT(*) FROM review_practice_attempts"
+    ).fetchone()[0]
+
+    connection.execute("DROP INDEX IF EXISTS idx_review_practice_attempts_session")
+    connection.execute("DROP INDEX IF EXISTS idx_review_practice_attempts_game_due")
+    connection.execute(
+        "ALTER TABLE review_practice_attempts RENAME TO review_practice_attempts_old_v5_7"
+    )
+    connection.execute(
+        """
+        CREATE TABLE review_practice_attempts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            game_id INTEGER NOT NULL,
+            ply INTEGER NOT NULL,
+            color TEXT NOT NULL,
+            attempted_uci TEXT NULL,
+            attempted_san TEXT NULL,
+            expected_best_uci TEXT NULL,
+            result TEXT NOT NULL
+                CHECK(result IN (
+                    'best',
+                    'very_good',
+                    'acceptable',
+                    'playable',
+                    'imprecise',
+                    'wrong',
+                    'illegal',
+                    'needs_rebuild',
+                    'skipped',
+                    'revealed'
+                )),
+            attempt_number INTEGER NOT NULL,
+            evidence_snapshot_json TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            item_id TEXT NULL,
+            time_spent_ms INTEGER NULL,
+            hint_used INTEGER NOT NULL DEFAULT 0,
+            reveal_used INTEGER NOT NULL DEFAULT 0,
+            source_context TEXT NOT NULL DEFAULT 'review_practice',
+            due_at TEXT NULL,
+            FOREIGN KEY(session_id) REFERENCES review_practice_sessions(id)
+                ON DELETE CASCADE,
+            FOREIGN KEY(game_id) REFERENCES games(id) ON DELETE CASCADE
+        )
+        """
+    )
+    connection.execute(
+        """
+        INSERT INTO review_practice_attempts (
+            id,
+            session_id,
+            game_id,
+            ply,
+            color,
+            attempted_uci,
+            attempted_san,
+            expected_best_uci,
+            result,
+            attempt_number,
+            evidence_snapshot_json,
+            created_at,
+            item_id,
+            time_spent_ms,
+            hint_used,
+            reveal_used,
+            source_context,
+            due_at
+        )
+        SELECT
+            id,
+            session_id,
+            game_id,
+            ply,
+            color,
+            attempted_uci,
+            attempted_san,
+            expected_best_uci,
+            result,
+            attempt_number,
+            evidence_snapshot_json,
+            created_at,
+            item_id,
+            time_spent_ms,
+            hint_used,
+            reveal_used,
+            source_context,
+            due_at
+        FROM review_practice_attempts_old_v5_7
+        ORDER BY id
+        """
+    )
+    after_count = connection.execute(
+        "SELECT COUNT(*) FROM review_practice_attempts"
+    ).fetchone()[0]
+    if after_count != before_count:
+        raise RuntimeError(
+            "review_practice_attempts migration row count mismatch: "
+            f"before={before_count}, after={after_count}"
+        )
+    connection.execute("DROP TABLE review_practice_attempts_old_v5_7")
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_review_practice_attempts_session
+        ON review_practice_attempts(session_id, ply, attempt_number)
+        """
+    )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_review_practice_attempts_game_due
+        ON review_practice_attempts(game_id, due_at)
+        """
+    )
+
+
 MIGRATIONS: tuple[tuple[str, MigrationBody], ...] = (
     (
         "0001_v0_schema",
@@ -1093,6 +1346,18 @@ MIGRATIONS: tuple[tuple[str, MigrationBody], ...] = (
     (
         "0017_v5_3_d2_review_practice_session_items",
         _apply_v5_3_d2_review_practice_session_items,
+    ),
+    (
+        "0018_v5_5_learning_loop_practice_event_fields",
+        _apply_v5_5_learning_loop_practice_event_fields,
+    ),
+    (
+        "0019_v5_6_training_items_daily_plan",
+        _apply_v5_6_training_items_daily_plan,
+    ),
+    (
+        "0020_v5_7_review_practice_result_bands",
+        _apply_v5_7_review_practice_result_bands,
     ),
 )
 

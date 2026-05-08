@@ -51,10 +51,11 @@ class EngineProfilesTests(unittest.TestCase):
     def test_review_profile_settings_are_explicit(self) -> None:
         self.assertEqual(review_threads_for_profile("standard"), 6)
         self.assertEqual(review_hash_for_profile("standard"), 1024)
-        self.assertEqual(review_multipv_for_profile("standard"), 3)
+        self.assertEqual(review_multipv_for_profile("standard"), 5)
         self.assertEqual(review_threads_for_profile("deep"), 8)
         self.assertEqual(review_hash_for_profile("deep"), 2048)
-        self.assertEqual(review_multipv_for_profile("quick"), 2)
+        self.assertEqual(review_multipv_for_profile("deep"), 5)
+        self.assertEqual(review_multipv_for_profile("quick"), 5)
 
     def test_live_continuous_profile_is_not_time_budgeted(self) -> None:
         profile = engine_profile_for_name("live_continuous")

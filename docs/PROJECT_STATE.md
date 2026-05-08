@@ -16,6 +16,212 @@ et les fichiers frontend/backend inspectes.
   prochaines versions.
 - V6 : non demarree.
 
+## Mise a jour Mission Control du 2026-05-05
+
+- `docs/mission_control/` existe comme couche de gouvernance operationnelle.
+- Elle documente le protocole Codex, les Golden Flows V1, le Failure Ledger des
+  bugs critiques, le contrat de preuves visuelles/runtime, et le Release Radar.
+- Cette couche ne remplace pas `plan/Plan1.txt`, `plan/Plan2.txt`, ni
+  `plan/Plan3.md`; elle rend les futures missions plus verificables.
+
+## Mise a jour I18N / Strings Catalog V1 du 2026-05-05
+
+- `P1.I18N-STRINGS-CATALOG-V1` ajoute un catalogue francais V1 minimal:
+  `frontend/src/i18n/fr.ts` et `frontend/src/i18n/index.ts`.
+- Les libelles critiques V1 sont centralises pour la navigation, Today/Games,
+  Training, Review, Practice, analyse Review, live analysis, degraded states,
+  import PGN, Profile/Privacy, confirmations destructives et feedback court.
+- Les composants critiques migrent vers `fr.*` sans changement intentionnel de
+  comportement, de route, de data-testid, de layout ou de contrat API.
+- Des tests statiques verrouillent l'existence du catalogue, les libelles V1
+  critiques, les labels Plan2, les feedbacks Practice sans contradiction et
+  l'absence de labels V1 interdits.
+- Ce n'est pas une internationalisation multi-langue: V1 reste francaise, sans
+  runtime language switch.
+- Prochaine mission recommandee: `P1.QA-RELEASE-CANDIDATE-V1`.
+
+## Mise a jour QA RC / Pilot local controle du 2026-05-05
+
+- `P1.QA-RELEASE-CANDIDATE-V1-RERUN` est GO pour testeurs locaux controles:
+  backend full suite, frontend build/typecheck, Python smokes, browser smokes,
+  Golden Flows GF-001 a GF-012 et Failure Ledger F001 a F005 sont PASS.
+- `P1.CONTROLLED-LOCAL-TESTER-PILOT-PACK-V1` ajoute `docs/pilot/` avec le
+  cadrage pilote, le script testeur, la checklist facilitateur, le template de
+  bug, le formulaire de feedback, les limites/safety et les criteres GO/NO-GO.
+- Statut externe: 2-3 testeurs locaux controles GO; public/broad external users
+  restent NO-GO jusqu'au retour pilote manuel.
+
+## Mise a jour QA du 2026-05-04
+
+- `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` est implemente.
+- Le board React (`frontend/src/components/ChessBoardPanel.tsx`) supporte
+  maintenant le click-click en plus du drag/drop, l'orientation
+  Review/Practice, des highlights de selection et des selectors QA stables.
+- `scripts/browser_core_board_interaction_smoke.mjs` prouve en browser reel
+  avec DB temporaire: Review board visible, selection de moment, Practice
+  depuis Review, coup correct sauvegarde (`result=best`), mauvais coup legal
+  sauvegarde (`result=wrong`), coup illegal sauvegarde (`result=illegal`),
+  reveal sauvegarde (`reveal_used=true`), Practice depuis Daily Plan avec
+  `item_id=training_item:{id}`, export des attempts et
+  `learning_summary.practice_event_count=5`.
+- `scripts/browser_analysis_stall_recovery_smoke.mjs` prouve un timeout/fail
+  controle via fake engine, une seule copie de `Vous pouvez reprendre
+  l'analyse.`, puis recovery par `Reprendre` jusqu'a Review `done`.
+- Le fake engine a un hook QA strictement test-only
+  `FAKE_ENGINE_TIMEOUT_ON_INDEX` / `FAKE_ENGINE_TIMEOUT_ON_FEN_KEY`. Aucun
+  changement Stockfish reel ni formule.
+- `docs/CORE_INTERACTION_CONTRACT.md` documente le contrat board / Review /
+  Practice / Daily Plan / stall recovery.
+
+- `P0.BROWSER-SMOKE-FLOW` est implemente via
+  `scripts/browser_v1_flow_smoke.mjs`.
+- Le smoke demarre un backend avec DB temporaire, le fake engine existant, Vite
+  et Edge via CDP. Il ne modifie pas Stockfish, les formules ni les metriques.
+- Dernier resultat connu: PASS.
+- Flow prouve: `/app` charge, navigation Plan2 visible, Entrainement a
+  exactement trois entrees, import PGN UI fonctionne, une Review devient prete,
+  le Summary Review est visible, Practice se lance, `Voir la correction`
+  enregistre un `practice_attempt`, `due_at` J+1 est cree, et
+  `learning_summary.scheduled_count=1`.
+- Mission suivante alors recommandee: `P1.PROFILE-PRIVACY`, maintenant
+  couverte par la mise a jour ci-dessous.
+
+## Mise a jour Profile / Privacy du 2026-05-04
+
+- `P1.PROFILE-PRIVACY-V1` est implemente.
+- Backend ajoute un service local-first `backend/neurochess/privacy_service.py`.
+- Nouveaux endpoints:
+  - `GET /api/export`
+  - `DELETE /api/user-data?confirm=SUPPRIMER`
+- Export V1 retourne JSON avec metadata, parties, coups, analyses moteur,
+  reviews, moments, sessions Practice, attempts, due reviews derivees,
+  user aliases et sections vides coherentes pour tables Plan3 non encore
+  presentes.
+- Suppression V1 refuse toute demande sans confirmation exacte `SUPPRIMER`.
+  La suppression efface les donnees utilisateur locales disponibles, pas
+  Stockfish, pas le repo Git, pas les migrations, pas les fichiers systeme.
+- Frontend ajoute un panneau `Profil / Paramètres` dans le header/top-right,
+  hors navigation principale. La nav principale reste `Aujourd'hui`,
+  `Mes parties`, `Entrainement`.
+- Smoke browser dedie: `cmd /c node scripts\browser_profile_privacy_smoke.mjs`.
+  Dernier resultat connu: PASS, avec DB temporaire isolee, export avec
+  `pgn_raw`, premier clic delete non destructif, confirmation tapee, puis
+  historique/export vides apres suppression.
+- Mission suivante alors recommandee: `P1.DEGRADED-STATES-ANTI-TILT`,
+  maintenant couverte par la mise a jour ci-dessous.
+
+## Mise a jour Degraded States / Anti-Tilt du 2026-05-05
+
+- `P1.DEGRADED-STATES-ANTI-TILT-V1` ajoute une couche V1 de recovery UX sans
+  nouveau mode produit.
+- Nouveau composant frontend: `frontend/src/components/StateNotice.tsx`.
+  Il affiche titre, message, action primaire, action secondaire optionnelle et
+  details techniques replies par defaut.
+- Nouveau mapping frontend: `frontend/src/degradedStates.ts`.
+  Etats implementes: import PGN vide/invalide/illegal/doublon, backend local
+  indisponible, plan du jour vide/partiel/indisponible, Practice sans item,
+  coup illegal, tentative non enregistree, session terminee, reveal rassurant,
+  et copy anti-tilt apres tentatives ratees repetees.
+- Nouveau contrat: `docs/DEGRADED_STATES_CONTRACT.md`.
+- Nouveau smoke browser: `scripts/browser_degraded_states_smoke.mjs`.
+  Il couvre un sous-ensemble robuste avec DB temporaire: PGN invalide, PGN avec
+  coup illegal, Daily Plan vide, backend local indisponible, export/delete safe.
+- Les flows analyse bloquee/reprise, Practice reel et Daily Plan Practice reel
+  restent prouves par les smokes P0 existants.
+- Aucun changement Stockfish, formules scientifiques, metriques backend,
+  SkillTrace, Candidate Trainer, LLM, Intent Layer, Transfer Gap, ETV, FSRS ou
+  quatrieme tab de navigation.
+- Prochaine mission recommandee: `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`.
+
+## Mise a jour Mobile / Accessibilite V1 du 2026-05-05
+
+- `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` ajoute une preuve V1 minimum sans
+  redesign global.
+- `frontend/src/styles.css` a des overrides finaux pour le viewport mobile:
+  nav principale compacte en 3 entrees, layout Review en une colonne, board
+  visible sans overflow, actions Practice/Exploration/StateNotice/Profile
+  atteignables, historique PGN sans largeur fixe, et touch targets critiques a
+  environ 44px.
+- `frontend/src/components/ChessBoardPanel.tsx` rend le board focusable quand il
+  est interactif et ajuste sa largeur a `window.innerWidth - 32` sur mobile,
+  avec minimum 260px.
+- `scripts/browser_test_helpers.mjs` ajoute des helpers de smoke pour viewport
+  mobile, detection d'overflow horizontal, touches clavier et snapshot de focus.
+- Nouveaux smokes:
+  - `scripts/browser_mobile_responsive_smoke.mjs`
+  - `scripts/browser_keyboard_accessibility_smoke.mjs`
+- Resultats connus:
+  - Mobile smoke PASS a 390x844: no horizontal overflow, Review board 358px,
+    Review exploration move `d4c5`, Review Practice attempt `best`, Daily Plan
+    Practice attempt `best`, Training exactement 3 entrees, Profile/Privacy
+    visible, aucun label V1 interdit.
+  - Keyboard/a11y smoke PASS: focus visible pour nav, Importer PGN, textarea
+    PGN, board Practice, Indice, Voir la correction, Passer, Profile/Settings,
+    presence de `prefers-reduced-motion`, aucune network 500.
+- Ce n'est pas une certification WCAG complete ni une QA physique multi-device.
+- Prochaine mission recommandee: `P1.I18N-STRINGS-CATALOG-V1`.
+
+## Mise a jour Practice Feedback Trust du 2026-05-05
+
+- `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` corrige le
+  bug de confiance ou un coup identique au meilleur coup pouvait etre presente
+  comme un probleme.
+- Backend: `evaluate_try_move_attempt` normalise maintenant le coup utilisateur,
+  le meilleur coup et les coups acceptes en UCI depuis le FEN via `python-chess`.
+  Les formats UCI et SAN legacy sont acceptes, y compris `+`, `#`, captures,
+  disambiguation, roque et promotion legalement parsees par la position.
+- Practice: l'exact best move et les coups acceptes ne peuvent plus retourner un
+  resultat wrong/problem. Si les donnees legacy ne permettent pas de normaliser
+  le meilleur coup, le service retourne un etat recuperable de Review a
+  reconstruire au lieu d'un faux wrong.
+- Frontend: Review lesson et Practice n'affichent plus automatiquement la
+  correction sur un feedback success; `Le meilleur coup etait...` n'est affiche
+  comme reproche que lorsque le backend demande explicitement `show_best_move`.
+- Nouveau smoke: `scripts/browser_practice_best_move_feedback_success_smoke.mjs`.
+  Il prouve un exact best move joue sur le board Practice, feedback succes,
+  tentative sauvegardee `result=best`, `due_at` present, absence de contradiction
+  UI, normalisation legacy `Bxf7+`, et aucun side-effect `review_jobs`,
+  `review_moments` ou `training_items` pendant la classification.
+- Prochaine mission recommandee: `P1.I18N-STRINGS-CATALOG-V1`.
+
+## P1.TRAINING-ITEMS-DAILY-PLAN-V1
+
+Etat : implemente le 2026-05-04, validations finales PASS.
+
+- Migration `0019_v5_6_training_items_daily_plan` ajoute `training_items` et
+  `daily_plan_items`.
+- `TrainingItemService` materialise jusqu'a 5 items durables depuis les
+  `review_moments`, avec deduplication `source_game_id + source_ply`,
+  `accepted_moves_json` incluant le meilleur coup, tags fallback et liens
+  source conserves.
+- `DailyPlanService` cree un plan local deterministe (`user_id=local`) avec les
+  buckets `due`, `failed_recent`, `recent_critical`, `diversity_fill`, un tri
+  stable, une limite de repetition par tag quand des alternatives existent, et
+  aucune influence SkillTrace.
+- Nouveaux endpoints:
+  - `GET /api/training/daily-plan/today`
+  - `POST /api/training/daily-plan`
+  - `POST /api/training/daily-plan/practice`
+- Frontend: `Aujourd'hui` et `Entrainement` consomment le vrai Daily Plan.
+  `Entrainement` conserve exactement `Plan du jour`, `Mes positions ratees`,
+  `Revisions`.
+- Practice Daily Plan enregistre les attempts avec
+  `item_id=training_item:{id}`, `source_context=daily_plan`, champs enrichis et
+  `due_at` issu de `simple_spaced_repetition_v1`.
+- Export/delete inclut et purge `training_items` et `daily_plan_items`.
+- Validations principales: plan guard PASS, backend full suite PASS
+  (`486 tests`), Review smoke PASS, PGN smoke PASS, Sindarov real-flow smoke
+  PASS, frontend build PASS, `npx tsc --noEmit` PASS.
+- Smoke browser dedie:
+  `cmd /c node scripts\browser_daily_plan_smoke.mjs`.
+  Dernier resultat: PASS avec DB temporaire, fake engine, PGN seed,
+  training item materialise, plan cree, Practice lancee depuis Training,
+  attempt `revealed` enregistree et `due_at` J+1.
+- Aucun changement Stockfish, formules scientifiques, metriques backend, LLM,
+  Candidate Trainer, Transfer Gap, SkillTrace visible ou NeuroMonitor.
+- Prochaine mission recommandee apres validations completes:
+  `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`.
+
 ## Features livrees
 
 - Backend SQLite avec migrations idempotentes.
@@ -81,6 +287,14 @@ et les fichiers frontend/backend inspectes.
   completes legacy : `POST /games/{game_id}/review/rebuild-metrics` reconstruit
   Accuracy, NeuroScore, Diagnostic Gap et Evidence JSON depuis les
   `position_analyses` existantes, sans relancer Stockfish.
+- V5.4.DOC-1B cree la gouvernance formules, calibration, Learning Engine et
+  Research Backlog : `FORMULAS_AND_METRICS.md`,
+  `CALIBRATION_PROTOCOL.md`, `LEARNING_ENGINE_BLUEPRINT.md` et
+  `RESEARCH_BACKLOG.md`.
+- V5.4.MATH-ALIGN-1 aligne le NeuroScore public visible sur l'accuracy
+  Lichess-like, garde le Headline Score en legacy/audit, retire Diagnostic Gap
+  du resume principal et rend les domaines NeuroMonitor qualitatifs jusqu'a
+  calibration.
 - Detection d'ouverture V5 et import book local V5.1 depuis sources Lichess
   locales.
 - Import PGN manuel V5.2 : preview, import, deduplication, alias utilisateur,
@@ -195,6 +409,8 @@ et les fichiers frontend/backend inspectes.
 - `POST /live-analysis/stop`
 - `GET /live-analysis/stream`
 - `POST /games/import-pgn/preview`
+- `GET /api/export`
+- `DELETE /api/user-data`
 - `POST /games/import-pgn`
 - `GET /games/history?scope=mine|imported|local|ai|observed|all`
 
@@ -558,3 +774,326 @@ A valider navigateur :
 - verifier que l'echiquier s'ouvre depuis le FEN header ;
 - lancer une Review depuis l'historique ;
 - verifier que l'ouverture non applicable ne bloque pas.
+
+## V5.4.REVIEW-UX-1 - Review Screen Contracts
+
+Etat : implemente.
+
+La Review applique les contrats produit : quatre onglets visibles maximum
+(`Resume`, `Apprendre`, `S'entrainer`, `Explorer`) et un onglet Apprendre reduit
+a trois etats publics (`Defi`, `Correction`, `Entrainement`).
+
+Les details techniques, les preuves PV, les options d'analyse et le debug
+restent disponibles dans Explorer, replie par defaut, pour garder le Resume et
+la lecon prescriptifs.
+
+## V5.4.REVIEW-SCORE-UX-R1 - Coach NeuroScore
+
+Etat : implemente.
+
+Le grand NeuroScore Review est restaure comme score coach composite
+severity-aware, via les alias `*_coach_neuro_score` adosses aux champs
+`*_headline_neurochess_score` existants. La precision Lichess-like reste visible
+separement comme `Precision de reference`.
+
+Diagnostic Gap, NeuroDiagnostic et details de fusion restent dans les details
+techniques/audit. Les domaines heuristiques ne doivent pas etre affiches comme
+scores calibres dans la Review normale.
+
+## V5.4.REVIEW-UI-POLISH-1 - Premium Review UI Pass
+
+Etat : implemente.
+
+La Review applique une hierarchie visuelle plus premium sans changer le backend :
+colonne board compacte, colonne coach prioritaire, header plus net et onglets
+`Resume`, `Apprendre`, `S'entrainer`, `Explorer` conserves comme structure
+visible finale.
+
+Le Resume devient une synthese courte : hero NeuroScore coach, precision de
+reference repliee, label qualitatif, trois moments maximum et un CTA principal
+vers l'entrainement. La colonne board ne duplique pas le resume coach.
+
+`Apprendre` reste guide par `Defi`, `Correction`, `Entrainement`; la correction
+est presentee en cartes narratives et les comparaisons de lignes restent
+repliees par defaut. `S'entrainer` affiche toujours une action claire, meme
+quand aucune session n'est active. `Explorer` contient la complexite, les
+details techniques et les preuves PV sous disclosures.
+
+## V5.5.PLAN-GOVERNANCE-NEUROMONITOR-REMOVAL
+
+Etat : implemente.
+
+Plan1 et Plan2 sont ancres comme source de verite locale via les documents
+`PLAN_SOURCE_OF_TRUTH.md`, `PLAN_CONTEXT_MIN.md`,
+`PLAN_FEATURE_BOUNDARIES.md`, `PLAN_ALIGNMENT_AUDIT.md` et
+`NEXT_PLAN_ACTIONS.md`.
+
+Le NeuroMonitor, les visualisations de type cerveau/atlas/cortex/carte
+cognitive et les dependances Three.js associees sont retires de `frontend/src`
+et des manifests frontend. Les concepts visuels futurs restent uniquement dans
+`RESEARCH_BACKLOG.md`.
+
+Le Resume Review est simplifie selon Plan2 : NeuroScore coach principal, detail
+du score replie, trois moments cles maximum, carte unique d'entrainement et lien
+discret vers Explorer.
+
+## V5.5.APP-SHELL-PLAN2-1
+
+Etat : implemente partiellement.
+
+L'application expose maintenant la navigation principale Plan2 :
+`Aujourd'hui`, `Mes parties`, `Entrainement`. Le statut Profil/Parametres reste
+hors navigation principale sous forme de placeholder en haut a droite.
+
+`Aujourd'hui` repond a "que faire maintenant ?" avec un hero prioritaire, un CTA
+unique, une carte Derniere Review, une carte Progression cette semaine et une
+carte A revoir. Les donnees non productisees affichent explicitement "profil en
+construction".
+
+`Mes parties` reutilise l'espace existant board + import PGN + historique +
+analyse + acces Review. La Review n'est plus un onglet permanent de navigation
+principale ; elle s'ouvre depuis un contexte et propose un retour vers le flux
+d'origine.
+
+`Entrainement` reste volontairement V1 : Plan du jour, Mes positions ratees,
+Revisions. La page utilise Practice quand une Review terminee le permet et
+affiche des fallbacks honnetes quand les files de revision ne sont pas encore
+productisees.
+
+Cette mission ne change pas Stockfish, les formules, les metriques backend, ni
+les features research/V2.
+
+## V5.5.SERENA-AND-APP-SHELL-STABILITY-GATE
+
+Etat : implemente.
+
+Serena MCP etait indisponible au debut de cette session, puis est redevenu
+expose apres decouverte d'outils. Le projet s'active et l'onboarding est deja
+fait, mais la navigation semantique TypeScript restait indisponible car Serena
+rapportait seulement `python` comme langage actif.
+
+`P0.FIX-SERENA-TYPESCRIPT-LANGUAGE` corrige `.serena/project.yml` pour declarer
+`typescript` puis `python`. La configuration MCP globale Codex n'a pas ete
+modifiee. La session Serena courante peut necessiter un redemarrage complet
+Codex/MCP avant que `get_symbols_overview` fonctionne sur `frontend/src/App.tsx`.
+
+Apres redemarrage Codex/MCP, Serena rapporte les langages actifs `typescript`
+et `python`. La navigation semantique TypeScript est OK sur `frontend/src/App.tsx`,
+`AppShellPage`, `ReviewCockpitSummary`, `ReviewPanel`,
+`ReviewPracticeSessionPanel`, et `ReviewPracticePanel`.
+
+L'integrite App Shell Plan2 a ete controlee : navigation `Aujourd'hui` /
+`Mes parties` / `Entrainement`, Review contextuelle, page Entrainement limitee
+a `Plan du jour`, `Mes positions ratees`, `Revisions`, et aucune reintroduction
+NeuroMonitor/brain/cortex/atlas.
+
+Le test statique App Shell a ete deplace de
+`backend/tests/test_calibration_logic.py` vers
+`backend/tests/test_frontend_app_shell_static.py`, avec la faute `staticly`
+corrigee en `statically`. La couverture est conservee.
+
+## V5.5.APP-SHELL-PLAN2-2
+
+Etat : implemente partiellement.
+
+`Aujourd'hui` garde une seule intention et un seul CTA principal. Le hero est
+maintenant derive de signaux existants : Practice en cours, Review prete,
+analyse en cours, partie terminee prete a entrer en Review, ou profil en
+construction avec import PGN.
+
+`Mes parties` reste le conteneur de l'import PGN, de l'historique, de l'analyse
+et de l'acces Review. Son header ne met plus les actions de partie locale au
+premier plan ; il priorise `Importer PGN` et `Voir historique`.
+
+`Entrainement` expose toujours exactement trois entrees V1 : Plan du jour,
+Mes positions ratees, Revisions. Les cartes reutilisent les signaux Practice
+deja disponibles quand ils existent, sans inventer de progression ni afficher
+de formule.
+
+La Review reste contextuelle depuis Aujourd'hui, Mes parties ou Entrainement,
+avec retour vers le flux d'origine. Aucun changement Stockfish, formule
+scientifique ou metrique backend.
+
+## P0.RESTORE-PYTHON-TEST-ENV
+
+Etat : restaure via environnement local de reparation.
+
+Le `python` global et le launcher `py` ne sont pas disponibles dans cette
+session Codex. L'ancienne `.venv` existe, mais son `pyvenv.cfg` pointe vers
+`C:\Users\bahij\AppData\Local\Programs\Python\Python312\python.exe`; ce chemin
+existe encore mais retourne `Access denied`, donc `.venv\Scripts\python.exe`
+echoue avec `Unable to create process using Python312`.
+
+Un environnement local `.venv_repair_local` base sur le Python bundle Codex
+3.12.13 est utilisable avec les dependances extraites dans
+`.manual_pydeps\site-packages` depuis `requirements.txt`. La commande fiable de
+test backend dans cette session est :
+
+```powershell
+$env:PYTHONPATH=(Resolve-Path .manual_pydeps\site-packages).Path
+$env:TEMP=(Resolve-Path .tmp\test-run-local).Path
+$env:TMP=$env:TEMP
+$env:TMPDIR=$env:TEMP
+.venv_repair_local\Scripts\python.exe -m unittest discover backend/tests
+```
+
+Le smoke Review utilise le meme environnement :
+
+```powershell
+.venv_repair_local\Scripts\python.exe scripts\review_regression_smoke.py
+```
+
+Statut validation 2026-05-03 : `python tools/plan_guard.py` OK, backend full
+suite OK (`453 tests`), smoke Review OK, frontend build OK hors sandbox. Aucun
+changement Stockfish, formule scientifique, metrique backend ou UI n'a ete fait.
+
+## P1.TRAINING-V1
+
+Etat : implemente.
+
+La page `Entrainement` reste limitee aux trois entrees V1 de Plan2 :
+`Plan du jour`, `Mes positions ratees`, `Revisions`. Aucun Candidate Trainer,
+Intent Layer, LLM coach, Transfer Gap visible ou quatrieme mode n'a ete ajoute.
+
+`Plan du jour` utilise les signaux existants : session Practice active,
+Review prete pour Practice, Review contextuelle, analyse en cours ou fallback
+import. Le hero conserve une seule action principale avec libelle
+`Reprendre`, `Commencer`, `Voir la Review`, `Analyse en cours` ou
+`Importer une partie` selon l'etat reel.
+
+`Mes positions ratees` reutilise l'historique Practice existant :
+nombre de positions ratees, action `Revoir` quand une session avec echecs existe,
+action `Voir` quand seul un resume de session existe, sinon `Profil en
+construction`.
+
+`Revisions` reste un etat honnete non productise : `profil en construction` ou
+`disponible apres plus de Reviews`. Aucune file due/FSRS n'est simulee.
+
+## P1.LEARNING-LOOP-MINIMUM
+
+Etat : implemente.
+
+La boucle minimale est maintenant branchee sans modele avance visible :
+Practice enregistre des tentatives enrichies (`item_id`, temps passe,
+indice/correction, contexte source, `due_at`), puis le backend calcule des
+compteurs simples `due` / `scheduled` a partir des derniers evenements par
+position.
+
+Regles V1 appliquees : erreur ou illegal = revoir demain, correction revelee =
+revoir demain, reussite avec indice = 3 jours, reussite sans aide = 7 jours,
+skip = pas de revision planifiee en V1.
+
+`Aujourd'hui` affiche une progression compacte et `A revoir` a partir de vrais
+compteurs Practice. `Entrainement` garde exactement trois entrees : Plan du jour,
+Mes positions ratees, Revisions. Les revisions peuvent lancer une session
+Practice due quand des positions sont pretes.
+
+Restent caches/non exposes en UI normale : FSRS, ETV, SkillTrace, BKT, IRT,
+Transfer Gap, posterior Beta et scores de domaine calibres.
+
+## P0.INTEGRATE-PLAN3-MD
+
+Etat : implemente le 2026-05-04.
+
+`plan/Plan3.md` est integre comme troisieme document maitre officiel. Plan1
+reste la source science/moteur/metriques/modele utilisateur. Plan2 reste la
+source UX/ecrans/parcours. Plan3 gouverne l'ordre d'execution, les sprints, la
+gouvernance Codex, les tests et la livraison V1.
+
+Regle ajoutee : Plan3 ne doit jamais etre applique en entier d'un coup. Une
+mission Codex doit rester un objectif precis, un diff controle, des tests et un
+rapport.
+
+Impact sur la suite : `P1.LEARNING-LOOP-MINIMUM` doit etre lu sous le vocabulaire
+Plan3 : `simple_spaced_repetition_v1`, Daily Plan deterministe, SkillTrace
+shadow seulement, pas de FSRS visible, pas de score de maitrise visible, pas de
+Transfer Gap visible.
+
+## P0.FULL-APP-EVIDENCE-QA-AUDIT-V1
+
+Etat : implemente le 2026-05-04.
+
+Mission QA uniquement : aucune feature produit, aucun changement Stockfish,
+aucune formule scientifique et aucune metrique backend n'ont ete modifies.
+
+Documents crees : `docs/FULL_APPLICATION_QA_AUDIT.md`,
+`docs/TEST_COVERAGE_MATRIX.md`, `docs/V1_READINESS_REPORT.md` et
+`docs/QA_CHECKLIST.md`.
+
+Preuves obtenues : Serena actif avec `typescript` et `python`; plan guard PASS;
+backend full suite PASS (`470 tests` apres Profile/Privacy); Review smoke PASS; PGN import smoke PASS;
+Sindarov real-flow smoke PASS; frontend build PASS; fallback typecheck
+`npx tsc --noEmit` PASS. `npm run typecheck` et `npm run lint` ne sont pas
+disponibles comme scripts npm.
+
+Browser smoke reel initial : backend temporaire `/health` OK, Vite `/app` OK,
+nav `Aujourd'hui` / `Mes parties` / `Entrainement` visible, page Entrainement
+limitee aux trois entrees V1, import PGN via UI OK, aucun label interdit V1 dans
+les snapshots testes, et aucun log console applicatif majeur. Cette preuve a
+ensuite ete completee par `P0.BROWSER-SMOKE-FLOW`, qui valide Review prete,
+Summary, Practice et attempt reveal avec `due_at`.
+
+Readiness apres browser smoke : alpha interne estimee a 84%, V1 externe estimee
+a 62%, decision NO-GO pour premiers utilisateurs externes. La mission suivante
+etait `P1.PROFILE-PRIVACY`, maintenant livree; la priorite actuelle apres P1
+degraded states est `P1.MOBILE-RESPONSIVE-AND-A11Y-V1`.
+
+## P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1
+
+Etat : implemente le 2026-05-04, sans commit ni stage.
+
+Le bug utilisateur principal a ete reproduit dans le navigateur local : la
+Review affichait un echiquier, mais aucune action `Explorer la position` n'etait
+disponible et le board etait desactive hors Practice/Try Move. Le correctif
+ajoute un mode `Exploration locale` dans la Review :
+
+- clic source + clic destination depuis la position Review courante ;
+- coups legaux joues localement avec `chess.js`, sans Stockfish ;
+- historique minimal des coups explores ;
+- `Annuler le coup`, `Reinitialiser`, `Quitter l'exploration` ;
+- message calme pour coup illegal ;
+- aucun appel Practice attempt, aucun `due_at`, aucune mise a jour
+  `learning_summary`.
+
+La separation Exploration/Practice est maintenant prouvee par
+`scripts/browser_review_exploration_real_smoke.mjs` : tentative count avant
+exploration = 0, apres exploration = 0, puis Practice sauvegarde ensuite une
+vraie tentative separee avec `result=best` et `due_at`.
+
+Cote analyse, `ReviewJobService.get_job()` materialise maintenant un job
+`running/finalizing` stale en `stalled` recuperable lorsque le watchdog detecte
+un timeout. Le browser smoke `scripts/browser_real_analysis_no_infinite_loop_smoke.mjs`
+impose un hard deadline de 90s et a observe `queued -> running -> completed`
+avec progression `0/13 -> 12/13 -> 13/13`.
+
+## P0.REVIEW-ANALYSIS-INFINITE-TIMER-AND-LIVE-ANALYSIS-V1
+
+Etat : implementation candidate 2026-05-05, a valider par la suite de tests
+complete avant commit.
+
+Objectif : traiter le retour utilisateur prioritaire selon lequel la minuterie
+/ spinner d'analyse Review peut tourner indefiniment dans l'app reelle, et
+activer l'analyse live par defaut sur la position de board affichee quand cela
+ne casse pas la boucle d'apprentissage.
+
+Changements de contrat :
+- `docs/ANALYSIS_LIFECYCLE_CONTRACT.md` definit les modes
+  `standard_review`, `deep_review` et `live_analysis`.
+- Les jobs Review `queued`, `running` et `finalizing` stale doivent devenir
+  recuperables au lieu de rester actifs indefiniment.
+- Le frontend suit `job_id`, status, phase et progression avec un watchdog de
+  non-progression.
+- L'analyse live est autorisee sur Review board et Exploration locale.
+- L'analyse live est suspendue pendant une analyse Review standard/deep.
+- L'analyse live est masquee pendant une Practice active avant tentative/reveal.
+
+Preuves ajoutees dans cette mission :
+- `scripts/browser_review_analysis_from_ui_no_infinite_timer_smoke.mjs`
+- `scripts/browser_live_analysis_default_smoke.mjs`
+- `scripts/browser_live_analysis_pauses_during_review_smoke.mjs`
+- `scripts/browser_practice_no_live_spoiler_smoke.mjs`
+- `backend/tests/test_frontend_review_analysis_live_static.py`
+
+Risques restants : les smokes utilisent une DB temporaire et le fake engine par
+defaut; ils ne modifient pas la DB utilisateur reelle. Stockfish reel depend
+toujours de la configuration locale.

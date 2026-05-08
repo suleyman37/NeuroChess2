@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
@@ -14,6 +15,7 @@ from neurochess.engines.engine_config import (
     bundled_stockfish_path,
     resolve_stockfish_path,
 )
+from neurochess.engines.fake_engine import FakeStockfishService
 
 
 class EngineConfigTests(unittest.TestCase):
@@ -72,6 +74,27 @@ class EngineConfigTests(unittest.TestCase):
         expected = BACKEND_ROOT / "neurochess" / "stockfish.exe"
 
         self.assertEqual(bundled_stockfish_path(), expected)
+
+    def test_fake_engine_timeout_hook_is_test_only_and_retryable(self) -> None:
+        FakeStockfishService.reset_state()
+        with patch.dict("os.environ", {"FAKE_ENGINE_TIMEOUT_ON_INDEX": "1"}):
+            engine = FakeStockfishService()
+            with self.assertRaisesRegex(RuntimeError, "engine_hard_timeout"):
+                engine.analyze_fen(
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                    depth=18,
+                    multipv=3,
+                    analysis_profile="standard",
+                )
+
+        engine = FakeStockfishService()
+        result = engine.analyze_fen(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            depth=18,
+            multipv=3,
+            analysis_profile="standard",
+        )
+        self.assertEqual(result["engine_version"], "FakeFish deterministic v5.3.A4g")
 
 
 if __name__ == "__main__":

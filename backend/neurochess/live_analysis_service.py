@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import queue
 import threading
 import time
@@ -116,6 +117,35 @@ class StockfishLiveAnalyzer:
                 pass
 
 
+class FakeLiveAnalyzer:
+    """Deterministic live analyzer used only when the backend fake engine is active."""
+
+    def stream(
+        self,
+        fen: str,
+        stop_event: threading.Event,
+    ) -> Iterable[dict[str, Any]]:
+        board = chess.Board(fen)
+        legal_moves = list(board.legal_moves)
+        best_move = legal_moves[0].uci() if legal_moves else None
+        started_at = time.monotonic()
+        while not stop_event.is_set():
+            elapsed_ms = int((time.monotonic() - started_at) * 1000)
+            yield {
+                "engine_version": "FakeLive deterministic v1",
+                "depth": 4,
+                "nodes": 1234 + elapsed_ms,
+                "nps": 5678,
+                "time_ms": max(50, elapsed_ms),
+                "elapsed_ms": elapsed_ms,
+                "eval_cp": 42 if board.turn == chess.WHITE else -42,
+                "mate_in": None,
+                "best_move_uci": best_move,
+                "pv": [best_move] if best_move else [],
+            }
+            stop_event.wait(0.25)
+
+
 class LiveAnalysisService:
     def __init__(
         self,
@@ -199,6 +229,19 @@ class LiveAnalysisService:
     def get_latest(self, session_id: str) -> dict[str, Any] | None:
         session = self._session_or_none(session_id)
         return session.latest_payload if session is not None else None
+
+    def wait_for_latest(
+        self,
+        session_id: str,
+        timeout_seconds: float = 0.35,
+    ) -> dict[str, Any] | None:
+        deadline = time.monotonic() + max(0.0, timeout_seconds)
+        while time.monotonic() < deadline:
+            latest = self.get_latest(session_id)
+            if latest is not None:
+                return latest
+            time.sleep(0.025)
+        return self.get_latest(session_id)
 
     def get_session(self, session_id: str) -> dict[str, Any] | None:
         session = self._session_or_none(session_id)
@@ -492,7 +535,17 @@ def _sse(payload: dict[str, Any]) -> str:
     return f"data: {json.dumps(payload, ensure_ascii=False, sort_keys=True)}\n\n"
 
 
-_default_live_analysis_service = LiveAnalysisService()
+def _default_analyzer_factory() -> Any:
+    if os.environ.get("NEUROCHESS_LIVE_ENGINE_MODE") == "fake":
+        return FakeLiveAnalyzer
+    if os.environ.get("NEUROCHESS_ENGINE_MODE") == "fake":
+        return FakeLiveAnalyzer
+    return StockfishLiveAnalyzer
+
+
+_default_live_analysis_service = LiveAnalysisService(
+    analyzer_factory=_default_analyzer_factory(),
+)
 
 
 def get_default_live_analysis_service() -> LiveAnalysisService:
