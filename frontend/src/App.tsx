@@ -11,6 +11,7 @@ import {
   getGameHistory,
   cancelReviewJob,
   deleteUserData,
+  evaluateReviewExplorerLine,
   evaluateReviewExplorerMove,
   evaluateReviewTryMoveAttempt,
   exportUserData,
@@ -54,6 +55,8 @@ import {
   type RecordedMove,
   type ReviewMoment,
   type ReviewMoveAnnotation,
+  type ReviewExplorerAnalysisPreset,
+  type ReviewExplorerLineEvaluationResponse,
   type ReviewJobResponse,
   type ReviewPracticeItem,
   type ReviewPracticeLearningSummary,
@@ -200,12 +203,20 @@ type ReviewExplorationMove = {
   noSideEffects: boolean;
   error: string | null;
 };
+type ReviewExplorationLineStatus = "idle" | "analyzing" | "evaluated";
+type ReviewExplorationLineState = {
+  status: ReviewExplorationLineStatus;
+  result: ReviewExplorerLineEvaluationResponse | null;
+  error: string | null;
+};
 type ReviewExplorationState = {
   active: true;
   baseFen: string;
   currentFen: string;
   moves: ReviewExplorationMove[];
   message: string | null;
+  analysisPreset: ReviewExplorerAnalysisPreset;
+  line: ReviewExplorationLineState;
 };
 type ReviewPracticeState = {
   active: boolean;
@@ -293,9 +304,19 @@ const REPLAY_IMPACT_PAUSE_MS = 1500;
 const REPLAY_BEST_MOVE_PAUSE_MS = 1200;
 const REPLAY_PV_LINE_PAUSE_MS = 1200;
 const REVIEW_REPLAY_MOVE_ANIMATION_MS = REPLAY_MOVE_ANIMATION_MS;
+const DEFAULT_REVIEW_EXPLORER_ANALYSIS_PRESET: ReviewExplorerAnalysisPreset =
+  "standard";
 const REVIEW_PLAYED_ARROW_COLOR = "rgba(0, 229, 255, 0.88)";
 const REVIEW_BEST_ARROW_COLOR = "rgba(105, 92, 255, 0.9)";
 type NeuroChessRoute = "/" | "/app";
+
+function emptyReviewExplorationLineState(): ReviewExplorationLineState {
+  return {
+    status: "idle",
+    result: null,
+    error: null,
+  };
+}
 
 const ANALYSIS_UNAVAILABLE_WARNINGS = new Set([
   "analysis_engine_unavailable",
@@ -1204,6 +1225,8 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       currentFen: rawBoardFen,
       moves: [],
       message: fr.reviewExplorer.activeMessage,
+      analysisPreset: DEFAULT_REVIEW_EXPLORER_ANALYSIS_PRESET,
+      line: emptyReviewExplorationLineState(),
     });
   }
 
@@ -1222,6 +1245,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         currentFen: state.baseFen,
         moves: [],
         message: fr.reviewExplorer.resetMessage,
+        line: emptyReviewExplorationLineState(),
       };
     });
   }
@@ -1243,6 +1267,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         currentFen: previousMove?.fen ?? state.baseFen,
         moves: nextMoves,
         message: fr.reviewExplorer.undoMessage,
+        line: emptyReviewExplorationLineState(),
       };
     });
   }
@@ -1283,6 +1308,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
           currentFen: board.fen(),
           moves: [...state.moves, nextMove],
           message: fr.reviewExplorer.movePlayed(move.san),
+          line: emptyReviewExplorationLineState(),
         };
       } catch {
         return {
@@ -1314,6 +1340,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       const response = await evaluateReviewExplorerMove({
         fenBefore: latest.fenBefore,
         moveUci: latest.uci,
+        analysisPreset: state.analysisPreset,
         gameId,
         reviewMomentId: selectedReviewAnnotation?.ply ?? selectedReviewMovePly,
       });
@@ -1342,6 +1369,95 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         ),
       );
     }
+  }
+
+  async function analyzeReviewExplorationLine() {
+    const state = reviewExplorationState;
+    if (!state?.active || state.moves.length === 0 || state.line.status === "analyzing") {
+      return;
+    }
+
+    const branchMoves = state.moves.map((move) => move.uci);
+    setReviewExplorationState((current) =>
+      current?.active
+        ? {
+            ...current,
+            message: fr.reviewExplorer.analyzingLine,
+            line: { status: "analyzing", result: null, error: null },
+          }
+        : current,
+    );
+    await new Promise((resolve) => window.setTimeout(resolve, 80));
+
+    try {
+      const response = await evaluateReviewExplorerLine({
+        fenStart: state.baseFen,
+        movesUci: branchMoves,
+        analysisPreset: state.analysisPreset,
+        gameId,
+        reviewMomentId: selectedReviewAnnotation?.ply ?? selectedReviewMovePly,
+      });
+      setReviewExplorationState((current) => {
+        if (!current?.active) {
+          return current;
+        }
+        const resultByIndex = new Map(
+          response.per_move_results.map((result) => [
+            Math.max(0, Number(result.move_index) - 1),
+            result,
+          ]),
+        );
+        const moves = current.moves.map((move, index) => {
+          const result = resultByIndex.get(index);
+          if (!result) {
+            return move;
+          }
+          return {
+            ...move,
+            status: "evaluated" as ReviewExplorationMoveStatus,
+            result: result.result,
+            label: result.label,
+            stableEvaluationStatus: result.stable_evaluation_status,
+            noSideEffects: result.no_side_effects === true,
+            error: null,
+          };
+        });
+        return {
+          ...current,
+          moves,
+          currentFen: response.final_fen ?? current.currentFen,
+          message: `${response.message} ${fr.reviewExplorer.localOnly}`,
+          line: { status: "evaluated", result: response, error: null },
+        };
+      });
+    } catch (err) {
+      setReviewExplorationState((current) =>
+        current?.active
+          ? {
+              ...current,
+              message: fr.reviewExplorer.analysisFailed,
+              line: {
+                status: "idle",
+                result: null,
+                error: messageFromError(err),
+              },
+            }
+          : current,
+      );
+    }
+  }
+
+  function setReviewExplorationAnalysisPreset(
+    preset: ReviewExplorerAnalysisPreset,
+  ) {
+    setReviewExplorationState((state) =>
+      state?.active
+        ? {
+            ...state,
+            analysisPreset: preset,
+          }
+        : state,
+    );
   }
 
   function toggleReviewExplorationBoardOrientation() {
@@ -4431,7 +4547,12 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
   const latestReviewExplorationCanAnalyze =
     latestReviewExplorationMove !== null &&
     latestReviewExplorationMove.status !== "evaluated" &&
-    latestReviewExplorationMove.status !== "analyzing";
+    latestReviewExplorationMove.status !== "analyzing" &&
+    reviewExplorationState?.line.status !== "analyzing";
+  const reviewExplorationLineCanAnalyze =
+    reviewExplorationState?.active === true &&
+    reviewExplorationState.moves.length > 0 &&
+    reviewExplorationState.line.status !== "analyzing";
   const reviewSquareStyles = buildReviewSquareStyles(
     positionMode,
     review,
@@ -5220,6 +5341,128 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
             }
             onMove={handleMove}
           />
+          {activeTab === "review" &&
+            reviewExplorationActive &&
+            latestReviewExplorationMove && (
+              <div
+                className="review-explorer-cockpit-actions"
+                data-testid="review-explorer-cockpit-actions"
+                aria-live="polite"
+              >
+                <div className="review-explorer-cockpit-main">
+                  <div>
+                    <span>{fr.reviewExplorer.exploredMove}</span>
+                    <strong>
+                      {latestReviewExplorationMove.san || latestReviewExplorationMove.uci}
+                    </strong>
+                  </div>
+                  {latestReviewExplorationMove.status === "evaluated" ? (
+                    <div className="review-exploration-result">
+                      <MoveQualityBadge
+                        qualityId={getMoveQualityGlyphForAttemptResult(
+                          latestReviewExplorationMove.result,
+                        )}
+                        context="exploration"
+                        size="sm"
+                        testId="review-explorer-quality-badge"
+                      />
+                      <span data-testid="review-explorer-local-only">
+                        {latestReviewExplorationMove.label
+                          ? `${latestReviewExplorationMove.label}. `
+                          : ""}
+                        {fr.reviewExplorer.localOnly}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="review-exploration-result">
+                      <MoveQualityBadge
+                        qualityId="unknown"
+                        context="exploration"
+                        size="sm"
+                        testId="review-explorer-unevaluated-badge"
+                      />
+                      <span data-testid="review-explorer-analysis-state">
+                        {latestReviewExplorationMove.status === "analyzing"
+                          ? fr.reviewExplorer.analyzingMove
+                          : reviewExplorationState?.line.status === "analyzing"
+                            ? fr.reviewExplorer.analyzingLine
+                            : fr.reviewExplorer.notAnalyzed}
+                      </span>
+                    </div>
+                  )}
+                  {reviewExplorationState?.line.result && (
+                    <div
+                      className="review-explorer-line-result"
+                      data-testid="review-explorer-line-result"
+                    >
+                      <MoveQualityBadge
+                        qualityId={getMoveQualityGlyphForAttemptResult(
+                          reviewExplorationState.line.result.final_quality,
+                        )}
+                        context="exploration"
+                        size="sm"
+                        testId="review-explorer-line-quality-badge"
+                      />
+                      <span>
+                        {fr.reviewExplorer.lineResult(
+                          reviewExplorationState.line.result.line_length,
+                          reviewExplorationState.line.result.message,
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  {(latestReviewExplorationMove.error ||
+                    reviewExplorationState?.line.error) && (
+                    <p className="review-exploration-error">
+                      {latestReviewExplorationMove.error ??
+                        reviewExplorationState?.line.error}
+                    </p>
+                  )}
+                </div>
+                <div
+                  className="review-explorer-analysis-preset"
+                  data-testid="review-explorer-analysis-preset"
+                  aria-label={fr.reviewExplorer.analysisPresetAria}
+                >
+                  <span>{fr.reviewExplorer.analysisPresetLabel}</span>
+                  {(["fast", "standard", "deep"] as ReviewExplorerAnalysisPreset[]).map(
+                    (preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        className={
+                          reviewExplorationState?.analysisPreset === preset ? "active" : ""
+                        }
+                        aria-pressed={reviewExplorationState?.analysisPreset === preset}
+                        onClick={() => setReviewExplorationAnalysisPreset(preset)}
+                      >
+                        {fr.reviewExplorer.analysisPresets[preset]}
+                      </button>
+                    ),
+                  )}
+                </div>
+                <div className="review-explorer-cockpit-buttons">
+                  <button
+                    type="button"
+                    className="primary"
+                    data-testid="review-explorer-analyze-move"
+                    disabled={!latestReviewExplorationCanAnalyze}
+                    onClick={() => void analyzeLatestReviewExplorationMove()}
+                  >
+                    {fr.reviewExplorer.analyzeMove}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    data-testid="review-explorer-analyze-line"
+                    disabled={!reviewExplorationLineCanAnalyze}
+                    onClick={() => void analyzeReviewExplorationLine()}
+                  >
+                    {fr.reviewExplorer.analyzeLine}
+                  </button>
+                </div>
+              </div>
+            )}
           {activeTab === "review" && reviewPvLineState?.active && (
             <div className="review-line-player-dock" data-testid="review-line-player-dock">
               <ReviewPvStepper
@@ -5308,7 +5551,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                               )}
                               context="exploration"
                               size="sm"
-                              testId="review-explorer-quality-badge"
+                              testId="review-explorer-detail-quality-badge"
                             />
                             <span data-testid="review-explorer-local-only">
                               {fr.reviewExplorer.localOnly}
@@ -5320,7 +5563,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                               qualityId="unknown"
                               context="exploration"
                               size="sm"
-                              testId="review-explorer-unevaluated-badge"
+                              testId="review-explorer-detail-unevaluated-badge"
                             />
                             <span data-testid="review-explorer-analysis-state">
                               {latestReviewExplorationMove.status === "analyzing"
@@ -5333,16 +5576,6 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                           <p className="review-exploration-error">
                             {latestReviewExplorationMove.error}
                           </p>
-                        )}
-                        {latestReviewExplorationCanAnalyze && (
-                          <button
-                            type="button"
-                            className="primary"
-                            data-testid="review-explorer-analyze-move"
-                            onClick={() => void analyzeLatestReviewExplorationMove()}
-                          >
-                            {fr.reviewExplorer.analyzeMove}
-                          </button>
                         )}
                       </div>
                     )}
@@ -6531,7 +6764,7 @@ function evaluationBarStateForBoardFen(
         evaluation: null,
         source: null,
         placeholder: {
-          label: "analyse en cours",
+          label: fr.liveAnalysis.updating,
           sourceLabel: "historique",
           sourceTitle: "analyse de la position historique en cours",
         },
@@ -6544,7 +6777,7 @@ function evaluationBarStateForBoardFen(
       evaluation: null,
       source: null,
       placeholder: {
-        label: "analyse indisponible",
+        label: fr.liveAnalysis.positionNotAnalyzed,
         sourceLabel: "historique",
         sourceTitle: boardFen === currentFen
           ? "position courante sans evaluation disponible"
@@ -6582,7 +6815,7 @@ function evaluationBarStateForBoardFen(
       evaluation: null,
       source: null,
       placeholder: {
-        label: "Évaluation non disponible pour ce moment.",
+        label: fr.liveAnalysis.positionNotAnalyzed,
         sourceLabel: "review",
         sourceTitle: "données review absentes pour ce moment",
       },
@@ -7365,7 +7598,7 @@ function boardEvaluationPendingPlaceholder(
     evaluation: null,
     source: null,
     placeholder: {
-      label: fr.liveAnalysis.continuous,
+      label: fr.liveAnalysis.updating,
       sourceLabel,
       sourceTitle: `Stockfish analyse la position ${sourceLabel} tant qu'elle reste affichee`,
     },

@@ -91,6 +91,27 @@ python tools/plan_guard.py
   mini-check, then explicit commit/push mission if requested; human pilot
   remains NO-GO.
 
+## Current Explorer Cockpit Readability / Context Follow-Up
+
+- `P1.REVIEW-EXPLORER-COCKPIT-READABILITY-AND-CONTEXT-FIX-V1` is a bounded
+  recovery mission on top of Explorer stable move feedback.
+- Target state: after a local Explorer move, `Analyser ce coup` and
+  `Analyser la ligne` stay close to the Review board, with the
+  `Rapide` / `Standard` / `Precise` preset control defaulting to `Standard`.
+- Backend boundary: line analysis evaluates only the local Explorer branch,
+  capped at 12 half-moves, and remains side-effect safe: no Practice attempt,
+  no training item, no `due_at`, and no Daily Plan row.
+- UX repairs: the evaluation bar keeps a stable visual placeholder during
+  short updates, the line player uses the dark NeuroChess style, Today ->
+  Commencer hydrates `source_san` / `source_uci` when available and avoids the
+  raw `coup indisponible` fallback, and Review/Training labels have stronger
+  contrast.
+- Preserved boundaries: no formula, NeuroScore, global classification
+  threshold, Review selection, Daily Plan, `due_at`, LLM, Candidate Trainer,
+  new main tab, or Plan1/Plan2/Plan3 change.
+- Required before any human pilot: manual Review mini-check still pending;
+  human pilot remains NO-GO.
+
 ## P0
 
 ### P0. FULL-APP-EVIDENCE-QA-AUDIT-V1

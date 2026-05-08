@@ -593,8 +593,40 @@ export type ReviewExplorerMoveEvaluationResponse = {
   fen_after?: string | null;
   stable_evaluation_status: string;
   no_side_effects: boolean;
+  source_context?: string | null;
+  analysis_preset?: ReviewExplorerAnalysisPreset | string | null;
   try_move_model_version?: string | null;
   feedback?: ReviewTryMoveEvaluationResponse | null;
+};
+
+export type ReviewExplorerAnalysisPreset = "fast" | "standard" | "deep";
+
+export type ReviewExplorerLineMoveResult = {
+  move_index: number;
+  uci: string;
+  san?: string | null;
+  fen_before?: string | null;
+  fen_after?: string | null;
+  result: ReviewPracticeResult;
+  quality_id: string;
+  label: string;
+  stable_evaluation_status: string;
+  no_side_effects: boolean;
+};
+
+export type ReviewExplorerLineEvaluationResponse = {
+  status: "ok" | "illegal" | "needs_rebuild" | "error" | string;
+  line_length: number;
+  final_fen?: string | null;
+  per_move_results: ReviewExplorerLineMoveResult[];
+  final_quality: ReviewPracticeResult;
+  final_badge: string;
+  message: string;
+  no_side_effects: boolean;
+  analysis_preset?: ReviewExplorerAnalysisPreset | string | null;
+  max_line_plies?: number | null;
+  illegal_move_index?: number | null;
+  illegal_move_uci?: string | null;
 };
 
 export type ReviewPracticeAttempt = {
@@ -1611,6 +1643,7 @@ export function evaluateReviewTryMoveAttempt(payload: {
 export function evaluateReviewExplorerMove(payload: {
   fenBefore: string;
   moveUci: string;
+  analysisPreset?: ReviewExplorerAnalysisPreset | string | null;
   gameId?: number | null;
   reviewMomentId?: number | string | null;
 }): Promise<ReviewExplorerMoveEvaluationResponse> {
@@ -1619,6 +1652,27 @@ export function evaluateReviewExplorerMove(payload: {
     body: JSON.stringify({
       fen_before: payload.fenBefore,
       move_uci: payload.moveUci,
+      analysis_preset: payload.analysisPreset ?? "standard",
+      source_context: "review_explorer",
+      game_id: payload.gameId ?? null,
+      review_moment_id: payload.reviewMomentId ?? null,
+    }),
+  });
+}
+
+export function evaluateReviewExplorerLine(payload: {
+  fenStart: string;
+  movesUci: string[];
+  analysisPreset?: ReviewExplorerAnalysisPreset | string | null;
+  gameId?: number | null;
+  reviewMomentId?: number | string | null;
+}): Promise<ReviewExplorerLineEvaluationResponse> {
+  return request<ReviewExplorerLineEvaluationResponse>("/api/review/explorer/evaluate-line", {
+    method: "POST",
+    body: JSON.stringify({
+      fen_start: payload.fenStart,
+      moves_uci: payload.movesUci,
+      analysis_preset: payload.analysisPreset ?? "standard",
       source_context: "review_explorer",
       game_id: payload.gameId ?? null,
       review_moment_id: payload.reviewMomentId ?? null,

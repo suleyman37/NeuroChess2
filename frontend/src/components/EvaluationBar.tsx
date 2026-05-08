@@ -59,11 +59,11 @@ export function EvaluationBar({
     const sourceTitle = placeholder?.sourceTitle ?? "evaluation non affichee";
 
     return (
-      <div className="eval-wrap eval-disabled" aria-label="Evaluation indisponible">
+      <div className="eval-wrap eval-placeholder" aria-label="Evaluation en attente">
         <div className="eval-bar-track">
           <div className="eval-bar-black" style={{ height: "50%" }} />
           <div
-            className="eval-bar-cursor eval-bar-cursor-muted"
+            className="eval-bar-cursor"
             style={{ top: "50%" }}
           />
           <div className="eval-bar-white" style={{ height: "50%" }} />

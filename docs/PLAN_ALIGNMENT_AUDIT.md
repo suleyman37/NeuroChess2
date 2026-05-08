@@ -100,6 +100,24 @@ state. Plan3 governs execution order, not a one-shot roadmap refactor.
   branch-wide batch analysis remains a future product decision.
 - Still pending: manual Review mini-check; human pilot remains NO-GO.
 
+## 2026-05-08 Explorer Cockpit Readability / Context Fix Update
+
+- Aligned: Explorer primary actions for local branch moves are now surfaced
+  near the board instead of requiring a deep scroll into details.
+- Aligned: `Analyser ce coup` and `Analyser la ligne` use Explorer-only
+  analysis presets (`Rapide`, `Standard`, `Precise`) and keep the side-effect
+  boundary: no Practice attempt, no training item, no `due_at`, and no Daily
+  Plan row.
+- Aligned: Today -> Commencer can hydrate source move context from
+  `source_san` / `source_uci`; older items fall back to calm copy instead of
+  the raw `coup indisponible` text.
+- Aligned: the evaluation bar, line player, and important Review/Training
+  labels are more stable and readable without adding new metrics or a new mode.
+- Preserved: no formula, NeuroScore calculation, global classification
+  threshold, Review selection, Daily Plan, `due_at`, LLM, Candidate Trainer, or
+  Plan1/Plan2/Plan3 change.
+- Still pending: manual Review mini-check; human pilot remains NO-GO.
+
 | Element du plan | Attendu Plan1/Plan2 | Etat actuel dans le code | Fichiers concernes | Statut | Action recommandee | Priorite |
 |---|---|---|---|---|---|---|
 | Backend chess data | Durable games, moves, evaluations, review/practice state | Backend data layer and migrations exist | `backend/neurochess/data/*`, `backend/neurochess/models.py`, migrations | aligned | Preserve schema/version discipline | P0 |

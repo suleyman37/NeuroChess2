@@ -3336,8 +3336,127 @@ button:focus-visible {
   font-weight: 750;
 }
 
+.review-explorer-cockpit-actions {
+  background:
+    linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(112, 92, 255, 0.08)),
+    rgba(7, 10, 26, 0.94);
+  border: 1px solid rgba(0, 229, 255, 0.24);
+  border-radius: 8px;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
+  color: var(--nc-text, #f7fbff);
+  display: grid;
+  gap: 10px;
+  max-width: calc(100vw - 32px);
+  padding: 12px;
+  position: fixed;
+  bottom: 14px;
+  right: 18px;
+  z-index: 32;
+  width: min(100%, 580px);
+}
+
+.review-explorer-cockpit-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.review-explorer-cockpit-main > div:first-child {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.review-explorer-cockpit-main > div:first-child span,
+.review-explorer-analysis-preset > span {
+  color: #c8d6ee;
+  font-size: 0.75rem;
+  font-weight: 860;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.review-explorer-cockpit-main strong {
+  color: var(--nc-text, #f7fbff);
+  font-size: 1rem;
+}
+
+.review-explorer-line-result {
+  align-items: center;
+  border-top: 1px solid rgba(0, 229, 255, 0.14);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.review-explorer-line-result span,
+.review-explorer-cockpit-actions .review-exploration-result > span:last-child {
+  color: #d9e5ff;
+}
+
+.review-explorer-analysis-preset {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.review-explorer-analysis-preset button {
+  background: rgba(9, 16, 38, 0.82);
+  border: 1px solid rgba(154, 172, 204, 0.24);
+  color: #d9e5ff;
+  min-height: 34px;
+  padding: 0.42rem 0.62rem;
+}
+
+.review-explorer-analysis-preset button.active {
+  background: rgba(0, 229, 255, 0.12);
+  border-color: rgba(0, 229, 255, 0.42);
+  color: var(--nc-cyan, #00e5ff);
+}
+
+.review-explorer-cockpit-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.review-explorer-cockpit-buttons button {
+  flex: 1 1 150px;
+}
+
+@media (min-width: 900px) {
+  .review-explorer-cockpit-actions {
+    align-items: center;
+    grid-template-columns: minmax(0, 1.15fr) minmax(180px, 0.8fr) minmax(210px, 0.75fr);
+    padding: 10px 12px;
+  }
+
+  .review-explorer-cockpit-main {
+    gap: 6px;
+  }
+
+  .review-explorer-cockpit-buttons {
+    justify-content: flex-end;
+  }
+
+  .review-explorer-cockpit-buttons button {
+    flex: 0 1 auto;
+    min-height: 36px;
+    padding: 0.48rem 0.68rem;
+  }
+
+  .review-explorer-line-result {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
 .review-exploration-error {
-  color: #991b1b;
+  color: #ff9bb2;
+  font-weight: 760;
 }
 
 .review-exploration-actions {
@@ -3430,7 +3549,7 @@ button:focus-visible {
   --nc-panel-2: #0d1026;
   --nc-border: rgba(0, 229, 255, 0.18);
   --nc-text: #f7fbff;
-  --nc-muted: #8e9bc3;
+  --nc-muted: #aebed1;
   --nc-cyan: #00e5ff;
   --nc-blue: #2082ff;
   --nc-violet: #705cff;
@@ -4878,6 +4997,32 @@ button:focus-visible {
   color: #d9e5ff;
 }
 
+.review-decision-card-head > span,
+.review-decision-why span,
+.review-decision-actions > span,
+.review-decision-row > span:first-child,
+.review-practice-card .review-decision-card-head > span,
+.review-practice-card .review-decision-why span,
+.review-practice-card .review-decision-actions > span,
+.review-practice-card .review-decision-row > span:first-child,
+.review-practice-head span,
+.review-challenge-meta,
+.review-training-narrative span {
+  color: #c8d6ee;
+}
+
+.review-decision-row strong,
+.review-practice-card .review-decision-row strong,
+.review-practice-head h3,
+.review-practice-launch strong {
+  color: #f7fbff;
+}
+
+.review-decision-row p,
+.review-practice-card .review-decision-why p {
+  color: #d9e5ff;
+}
+
 .review-score-comparison {
   border-left: 3px solid var(--nc-cyan);
 }
@@ -5069,6 +5214,20 @@ button:focus-visible {
 .eval-bar-cursor {
   background: var(--nc-cyan);
   box-shadow: 0 0 18px rgba(0, 229, 255, 0.8);
+}
+
+.eval-placeholder {
+  opacity: 1;
+}
+
+.eval-placeholder .eval-bar-track {
+  border-style: solid;
+  box-shadow: 0 0 22px rgba(0, 229, 255, 0.08);
+}
+
+.eval-placeholder .eval-label span {
+  color: #d9e5ff;
+  font-weight: 760;
 }
 
 .move-button,
@@ -6410,8 +6569,12 @@ summary {
 }
 
 .review-line-player-dock .review-practice-pv-stepper {
+  background:
+    linear-gradient(135deg, rgba(0, 229, 255, 0.09), rgba(112, 92, 255, 0.07)),
+    rgba(7, 10, 26, 0.96);
   border-color: rgba(67, 231, 255, 0.42);
   box-shadow: 0 10px 26px rgba(0, 229, 255, 0.07);
+  color: #f7fbff;
   gap: 6px 10px;
   grid-template-columns: minmax(0, 1fr) auto;
   padding: 8px 10px;
@@ -6426,14 +6589,22 @@ summary {
 
 .review-line-player-dock .review-block-title span,
 .review-line-player-dock .review-practice-pv-stepper > p {
+  color: #d9e5ff;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.review-line-player-dock .review-block-title strong {
+  background: rgba(0, 229, 255, 0.12);
+  border: 1px solid rgba(0, 229, 255, 0.24);
+  color: #8ff6ff;
+}
+
 .review-line-player-dock .review-practice-pv-stepper > p {
   grid-column: 1;
   grid-row: 2;
+  font-weight: 820;
   margin: 0;
 }
 
@@ -6446,13 +6617,33 @@ summary {
 }
 
 .review-line-player-dock .warning {
+  background: rgba(249, 180, 76, 0.12);
+  border: 1px solid rgba(249, 180, 76, 0.24);
+  border-radius: 8px;
+  color: #ffe0a8;
   grid-column: 1 / -1;
+  padding: 0.45rem 0.58rem;
 }
 
 .review-line-player-dock .review-pv-line-mode button,
 .review-line-player-dock .review-action-row button {
+  background: rgba(14, 20, 45, 0.9);
+  border-color: rgba(154, 172, 204, 0.24);
+  color: #d9e5ff;
   min-height: 32px;
   padding: 0.42rem 0.58rem;
+}
+
+.review-line-player-dock .review-pv-line-mode button.active {
+  background: rgba(0, 229, 255, 0.12);
+  border-color: rgba(0, 229, 255, 0.4);
+  color: #8ff6ff;
+}
+
+.review-line-player-dock .review-pv-line-mode button:disabled,
+.review-line-player-dock .review-action-row button:disabled {
+  color: #7f8fa6;
+  opacity: 0.72;
 }
 
 .review-line-player-dock .review-action-row {

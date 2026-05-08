@@ -21,6 +21,10 @@ def enrich_annotation_with_stable_attempt_evaluation(
     annotation: dict[str, Any],
     attempt_move: str | None,
     analysis_service: AnalysisService | None,
+    *,
+    requested_time_ms: int = STABLE_ATTEMPT_EVALUATION_TIME_MS,
+    analysis_profile: str = STABLE_ATTEMPT_EVALUATION_PROFILE,
+    requested_multipv: int = STABLE_ATTEMPT_EVALUATION_MULTIPV,
 ) -> dict[str, Any]:
     """Attach a bounded stabilized eval for a legal out-of-list attempt.
 
@@ -42,7 +46,13 @@ def enrich_annotation_with_stable_attempt_evaluation(
     fen_after = board.fen()
     stable = _cached_stable_eval(analysis_service, fen_after)
     if stable is None:
-        stable = _run_bounded_stable_eval(analysis_service, fen_after)
+        stable = _run_bounded_stable_eval(
+            analysis_service,
+            fen_after,
+            requested_time_ms=requested_time_ms,
+            analysis_profile=analysis_profile,
+            requested_multipv=requested_multipv,
+        )
     if stable is None:
         return annotation
 
@@ -103,24 +113,28 @@ def _cached_stable_eval(
 def _run_bounded_stable_eval(
     analysis_service: AnalysisService,
     fen: str,
+    *,
+    requested_time_ms: int = STABLE_ATTEMPT_EVALUATION_TIME_MS,
+    analysis_profile: str = STABLE_ATTEMPT_EVALUATION_PROFILE,
+    requested_multipv: int = STABLE_ATTEMPT_EVALUATION_MULTIPV,
 ) -> dict[str, Any] | None:
     settings = {
         "purpose": "try_move_stable_attempt_evaluation",
-        "requested_time_ms": STABLE_ATTEMPT_EVALUATION_TIME_MS,
-        "requested_multipv": STABLE_ATTEMPT_EVALUATION_MULTIPV,
+        "requested_time_ms": requested_time_ms,
+        "requested_multipv": requested_multipv,
         "analysis_limit_mode": STABLE_ATTEMPT_EVALUATION_LIMIT_MODE,
-        "analysis_profile": STABLE_ATTEMPT_EVALUATION_PROFILE,
+        "analysis_profile": analysis_profile,
     }
     try:
         row = analysis_service.get_or_create_analysis(
             fen=fen,
             depth=STABLE_ATTEMPT_EVALUATION_DEPTH,
-            multipv=STABLE_ATTEMPT_EVALUATION_MULTIPV,
+            multipv=requested_multipv,
             kind="deep",
-            analysis_profile=STABLE_ATTEMPT_EVALUATION_PROFILE,
-            requested_time_ms=STABLE_ATTEMPT_EVALUATION_TIME_MS,
+            analysis_profile=analysis_profile,
+            requested_time_ms=requested_time_ms,
             requested_depth=STABLE_ATTEMPT_EVALUATION_DEPTH,
-            requested_multipv=STABLE_ATTEMPT_EVALUATION_MULTIPV,
+            requested_multipv=requested_multipv,
             analysis_limit_mode=STABLE_ATTEMPT_EVALUATION_LIMIT_MODE,
             settings_json=settings,
         )

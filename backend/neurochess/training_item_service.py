@@ -211,8 +211,8 @@ def training_item_to_practice_item(row: sqlite3.Row | dict[str, Any]) -> dict[st
         "move_number": (ply + 1) // 2 if ply > 0 else 0,
         "color": item.get("side_to_move") or "unknown",
         "side": item.get("side_to_move") or "unknown",
-        "san": None,
-        "uci": None,
+        "san": item.get("source_san") or item.get("played_san"),
+        "uci": item.get("source_uci") or item.get("played_uci"),
         "fen_before": item.get("fen"),
         "fen_after": None,
         "best_move_uci": item.get("best_move"),
@@ -308,9 +308,22 @@ class TrainingItemService:
         with closing(get_connection(self.db_path)) as connection:
             rows = connection.execute(
                 f"""
-                SELECT *
+                SELECT
+                    training_items.*,
+                    source_moves.san AS source_san,
+                    source_moves.uci AS source_uci
                 FROM training_items
-                WHERE id IN ({placeholders}) AND status = 'active'
+                LEFT JOIN moves AS source_moves
+                  ON source_moves.id = (
+                    SELECT moves.id
+                    FROM moves
+                    WHERE moves.game_id = training_items.source_game_id
+                      AND moves.ply = training_items.source_ply
+                    ORDER BY moves.id
+                    LIMIT 1
+                  )
+                WHERE training_items.id IN ({placeholders})
+                  AND training_items.status = 'active'
                 """,
                 tuple(int(item_id) for item_id in item_ids),
             ).fetchall()

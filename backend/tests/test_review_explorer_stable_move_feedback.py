@@ -109,7 +109,7 @@ class ReviewExplorerStableMoveFeedbackTests(unittest.TestCase):
     def test_explorer_evaluate_playable_move_without_practice_side_effects(self) -> None:
         response = self.client.post(
             "/api/review/explorer/evaluate-move",
-            json={"fen_before": START_FEN, "move_uci": "c2c4"},
+            json={"fen_before": START_FEN, "move_uci": "c2c4", "analysis_preset": "fast"},
         )
 
         self.assertEqual(response.status_code, 200)
@@ -117,8 +117,15 @@ class ReviewExplorerStableMoveFeedbackTests(unittest.TestCase):
         self.assertTrue(payload["legal"])
         self.assertEqual(payload["result"], "playable")
         self.assertEqual(payload["label"], "Jouable")
+        self.assertEqual(payload["analysis_preset"], "fast")
         self.assertTrue(payload["no_side_effects"])
         self.assertEqual(payload["source_context"] if "source_context" in payload else "review_explorer", "review_explorer")
+        self.assertTrue(
+            any(
+                call.get("settings_json", {}).get("analysis_preset") == "fast"
+                for call in self.analysis_service.calls
+            ),
+        )
         self.assertEqual(self._count("review_practice_attempts"), 0)
         self.assertEqual(self._count("training_items"), 0)
         self.assertEqual(self._count("daily_plan_items"), 0)
@@ -167,6 +174,96 @@ class ReviewExplorerStableMoveFeedbackTests(unittest.TestCase):
         self.assertEqual(payload["stable_evaluation_status"], "illegal")
         self.assertEqual(self.analysis_service.calls, [])
 
+    def test_explorer_evaluate_line_legal_moves_without_side_effects(self) -> None:
+        board = chess.Board(START_FEN)
+        board.push(chess.Move.from_uci("e2e4"))
+        second_move = next(iter(board.legal_moves)).uci()
+
+        response = self.client.post(
+            "/api/review/explorer/evaluate-line",
+            json={
+                "fen_start": START_FEN,
+                "moves_uci": ["e2e4", second_move],
+                "analysis_preset": "standard",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], "ok")
+        self.assertEqual(payload["line_length"], 2)
+        self.assertEqual(payload["analysis_preset"], "standard")
+        self.assertTrue(payload["no_side_effects"])
+        self.assertEqual(len(payload["per_move_results"]), 2)
+        self.assertTrue(all(result["no_side_effects"] for result in payload["per_move_results"]))
+        self.assertIn(
+            payload["final_quality"],
+            {"best", "very_good", "acceptable", "playable", "imprecise", "wrong"},
+        )
+        self.assertEqual(self._count("review_practice_attempts"), 0)
+        self.assertEqual(self._count("training_items"), 0)
+        self.assertEqual(self._count("daily_plan_items"), 0)
+
+    def test_explorer_evaluate_line_illegal_move_has_no_side_effects(self) -> None:
+        response = self.client.post(
+            "/api/review/explorer/evaluate-line",
+            json={
+                "fen_start": START_FEN,
+                "moves_uci": ["e2e4", "e2e5"],
+                "analysis_preset": "deep",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], "illegal")
+        self.assertEqual(payload["final_quality"], "illegal")
+        self.assertEqual(payload["illegal_move_index"], 2)
+        self.assertEqual(payload["illegal_move_uci"], "e2e5")
+        self.assertEqual(payload["analysis_preset"], "deep")
+        self.assertTrue(payload["no_side_effects"])
+        self.assertEqual(len(payload["per_move_results"]), 1)
+        self.assertEqual(self._count("review_practice_attempts"), 0)
+        self.assertEqual(self._count("training_items"), 0)
+        self.assertEqual(self._count("daily_plan_items"), 0)
+
+    def test_explorer_evaluate_line_stable_unavailable_is_rebuild_not_wrong(self) -> None:
+        self.analysis_service.fail_after = True
+
+        response = self.client.post(
+            "/api/review/explorer/evaluate-line",
+            json={"fen_start": START_FEN, "moves_uci": ["a2a3"]},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], "needs_rebuild")
+        self.assertEqual(payload["final_quality"], "needs_rebuild")
+        self.assertNotEqual(payload["final_quality"], "wrong")
+        self.assertEqual(
+            payload["per_move_results"][0]["stable_evaluation_status"],
+            "stable_evaluation_unavailable",
+        )
+        self.assertEqual(self._count("review_practice_attempts"), 0)
+        self.assertEqual(self._count("training_items"), 0)
+        self.assertEqual(self._count("daily_plan_items"), 0)
+
+    def test_explorer_evaluate_line_rejects_long_branch_without_side_effects(self) -> None:
+        response = self.client.post(
+            "/api/review/explorer/evaluate-line",
+            json={"fen_start": START_FEN, "moves_uci": ["g1f3"] * 13},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], "error")
+        self.assertEqual(payload["line_length"], 13)
+        self.assertEqual(payload["max_line_plies"], 12)
+        self.assertEqual(payload["final_quality"], "unknown")
+        self.assertEqual(self._count("review_practice_attempts"), 0)
+        self.assertEqual(self._count("training_items"), 0)
+        self.assertEqual(self._count("daily_plan_items"), 0)
+
     def test_frontend_explorer_feedback_copy_and_safe_endpoint_are_wired(self) -> None:
         app_source = (PROJECT_ROOT / "frontend" / "src" / "App.tsx").read_text(encoding="utf-8")
         client_source = (PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts").read_text(encoding="utf-8")
@@ -175,16 +272,28 @@ class ReviewExplorerStableMoveFeedbackTests(unittest.TestCase):
         for token in (
             "Analyser ce coup",
             "Analyser la branche",
+            "Analyser la ligne",
+            "Précision",
+            "Rapide",
+            "Standard",
+            "Précise",
             "Évaluation du coup…",
+            "Évaluation de la ligne…",
             "Exploration locale",
             "non enregistré comme exercice",
+            "Mise à jour…",
             "Tourner l'échiquier",
         ):
             self.assertIn(token, fr_source)
         self.assertIn("evaluateReviewExplorerMove", app_source)
+        self.assertIn("evaluateReviewExplorerLine", app_source)
         self.assertIn("/api/review/explorer/evaluate-move", client_source)
+        self.assertIn("/api/review/explorer/evaluate-line", client_source)
+        self.assertIn("review-explorer-cockpit-actions", app_source)
         self.assertIn("review-explorer-analyze-move", app_source)
+        self.assertIn("review-explorer-analyze-line", app_source)
         self.assertIn("review-exploration-flip-board", app_source)
+        self.assertNotIn("coup indisponible", fr_source)
         self.assertNotIn("recordReviewPracticeAttempt(", app_source.split("analyzeLatestReviewExplorationMove", 1)[1].split("async function handleMove", 1)[0])
 
     def _count(self, table: str) -> int:

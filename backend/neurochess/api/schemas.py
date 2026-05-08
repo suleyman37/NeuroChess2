@@ -137,6 +137,16 @@ class ReviewTryMoveEvaluationRequest(BaseModel):
 class ReviewExplorerEvaluateMoveRequest(BaseModel):
     fen_before: str
     move_uci: str
+    analysis_preset: str | None = "standard"
+    source_context: str | None = "review_explorer"
+    game_id: int | None = None
+    review_moment_id: int | str | None = None
+
+
+class ReviewExplorerEvaluateLineRequest(BaseModel):
+    fen_start: str
+    moves_uci: list[str]
+    analysis_preset: str | None = "standard"
     source_context: str | None = "review_explorer"
     game_id: int | None = None
     review_moment_id: int | str | None = None

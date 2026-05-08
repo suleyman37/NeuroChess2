@@ -134,6 +134,33 @@ class TrainingItemsDailyPlanTests(unittest.TestCase):
 
         self.assertEqual([item["source_ply"] for item in items], [1])
 
+    def test_daily_plan_practice_items_hydrate_source_game_move(self) -> None:
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            connection.execute(
+                """
+                INSERT INTO moves (
+                    game_id, ply, fen_before, uci, san, is_player, created_at
+                )
+                VALUES (?, 1, ?, 'e2e4', 'e4', 1, datetime('now'))
+                """,
+                (self.game_id, START_FEN),
+            )
+            connection.commit()
+
+        training_service = TrainingItemService(self.db_path)
+        items = training_service.ensure_training_items_for_game(
+            self.game_id,
+            review_payload=practice_review(self.game_id),
+        )
+
+        hydrated = training_service.get_items_by_ids([int(items[0]["id"])])
+        practice_item = training_item_to_practice_item(hydrated[0])
+
+        self.assertEqual(practice_item["source_context"], "daily_plan")
+        self.assertEqual(practice_item["san"], "e4")
+        self.assertEqual(practice_item["uci"], "e2e4")
+        self.assertNotEqual(practice_item["san"], "coup indisponible")
+
     def test_daily_plan_is_deterministic_and_uses_expected_buckets(self) -> None:
         training_service = TrainingItemService(self.db_path)
         items = training_service.ensure_training_items_for_game(

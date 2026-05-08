@@ -69,12 +69,15 @@ class FrontendCoreBoardInteractionStaticTests(unittest.TestCase):
             'data-testid="review-exploration-undo"',
             'data-testid="review-exploration-reset"',
             'data-testid="review-exploration-exit"',
-            "Exploration locale",
-            "Rien n'est enregistre comme",
             "!reviewExplorationActive",
             "reviewExplorationActive ? [] : reviewBoardArrows",
         ):
             self.assertIn(token, self.app)
+        for token in (
+            "Exploration locale",
+            "Rien n'est enregistré comme",
+        ):
+            self.assertIn(token, self.i18n)
 
         exploration_block_start = self.app.index("function handleReviewExplorationMove")
         exploration_block_end = self.app.index("async function handleMove")
