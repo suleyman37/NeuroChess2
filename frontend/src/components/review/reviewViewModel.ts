@@ -1023,59 +1023,9 @@ export function scoreAuditDetailsForPov(
   review: ReviewResponse,
   povContext: ReviewPovContext,
 ): ReviewScoreMetricView[] {
-  if (povContext.isUserPov) {
-    return [
-      {
-        label: "Score coach legacy",
-        value: review.user_headline_neurochess_score ?? review.headline_neurochess_score,
-      },
-      { label: "Score diagnostic interne", value: review.user_neuro_score },
-      {
-        label: "Écart diagnostique interne",
-        value: review.user_diagnostic_gap,
-        signed: true,
-        suffix: " pts",
-      },
-      { label: "Adversaire diagnostic interne", value: review.opponent_neuro_score },
-    ];
-  }
-  if (povContext.targetColor === "white" || povContext.targetColor === "black") {
-    const color = povContext.targetColor;
-    return [
-      {
-        label: `${reviewColorLabel(color)} score coach legacy`,
-        value: headlineScoreForReview(review, povContext),
-      },
-      {
-        label: `${reviewColorLabel(color)} diagnostic interne`,
-        value: neuroScoreForColor(review, color),
-      },
-      {
-        label: `${reviewColorLabel(color)} écart diagnostique interne`,
-        value: diagnosticGapForColor(review, color),
-        signed: true,
-        suffix: " pts",
-      },
-    ];
-  }
-  return [
-    { label: "Blancs score coach legacy", value: review.white_headline_neurochess_score },
-    { label: "Blancs diagnostic interne", value: neuroScoreForColor(review, "white") },
-    {
-      label: "Blancs écart diagnostique interne",
-      value: diagnosticGapForColor(review, "white"),
-      signed: true,
-      suffix: " pts",
-    },
-    { label: "Noirs score coach legacy", value: review.black_headline_neurochess_score },
-    { label: "Noirs diagnostic interne", value: neuroScoreForColor(review, "black") },
-    {
-      label: "Noirs écart diagnostique interne",
-      value: diagnosticGapForColor(review, "black"),
-      signed: true,
-      suffix: " pts",
-    },
-  ];
+  void review;
+  void povContext;
+  return [];
 }
 
 export function qualitativeGameLabelForPov(

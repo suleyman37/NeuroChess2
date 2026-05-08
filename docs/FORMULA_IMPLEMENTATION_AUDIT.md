@@ -11,6 +11,12 @@ the visible `NeuroScore` as a coach composite backed by
 reference precision. The high risk below is therefore resolved by changing the
 product contract, not by changing engine formulas or Lichess constants.
 
+Visibility governance note, 2026-05-08: P1.METRIC-VISIBILITY-GOVERNANCE-AUDIT-V1
+keeps that contract. The public `NeuroScore` is `coach_neuro_score_v1`, a coach
+communication score. `neuro_score_diag_v1`, `diagnostic_gap_v1`, raw
+`criticality_score_v1`, raw Stockfish WDL, and uncalibrated domain `/100`
+scores remain internal/debug/research only and must not appear in normal V1 UI.
+
 Audited sources:
 
 - `backend/neurochess/metrics/review_metrics.py`
@@ -458,9 +464,12 @@ Do not include in that mission unless explicitly requested:
 
 ### Post-audit status
 
-V5.4.MATH-ALIGN-1 resolved the public score visibility high risk by mapping the
-visible Review `NeuroScore` to Lichess-like public precision fields and moving
-headline/diagnostic gap usage into legacy/audit paths.
+V5.4.REVIEW-SCORE-UX-R1 resolved the public score visibility high risk by
+making the visible Review `NeuroScore` an explicit coach communication score and
+showing Lichess-like public precision separately as reference precision.
+P1.METRIC-VISIBILITY-GOVERNANCE-AUDIT-V1 keeps diagnostic/headline internals out
+of normal score details and adds a static guard against forbidden metric labels
+in normal frontend copy.
 
 ## 8. No-change Confirmation
 

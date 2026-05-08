@@ -88,7 +88,7 @@ export function ReviewScoreSummary({
         </div>
       )}
       <details className="review-score-details">
-        <summary>Détails techniques / audit</summary>
+        <summary>Détails du score</summary>
         <div className="review-score-grid">
           {scoreDetails.map((metric) => (
             <ReviewScoreMetric
@@ -99,18 +99,19 @@ export function ReviewScoreSummary({
               suffix={metric.suffix}
             />
           ))}
-          {scoreAuditDetails.map((metric) => (
-            <ReviewScoreMetric
-              key={metric.label}
-              label={metric.label}
-              value={metric.value}
-              signed={metric.signed}
-              suffix={metric.suffix}
-            />
-          ))}
+          {import.meta.env.DEV &&
+            scoreAuditDetails.map((metric) => (
+              <ReviewScoreMetric
+                key={metric.label}
+                label={metric.label}
+                value={metric.value}
+                signed={metric.signed}
+                suffix={metric.suffix}
+              />
+            ))}
         </div>
         <p className="review-score-note">
-          Le NeuroScore est un score coach. La précision de référence est affichée séparément ; l'écart diagnostique reste une métrique d'audit non calibrée.
+          Le NeuroScore est un score coach. La précision de référence est affichée séparément.
         </p>
       </details>
     </section>

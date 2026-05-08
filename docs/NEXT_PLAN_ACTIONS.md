@@ -61,6 +61,19 @@ python tools/plan_guard.py
 - Required before any human pilot: automated validation, browser evidence,
   manual Review mini-check, then explicit commit/push mission if requested.
 
+## Current Metric Visibility Governance Follow-Up
+
+- `P1.METRIC-VISIBILITY-GOVERNANCE-AUDIT-V1` is a bounded audit + safety patch
+  mission for metric exposure and copy only.
+- Target state: public NeuroScore is framed as a coach communication score;
+  internal/audit/research metrics remain hidden from normal UI; static tests
+  prevent forbidden metric labels and overclaiming copy from reappearing.
+- Preserved boundaries: no formula/threshold/NeuroScore calculation change, no
+  Review selection change, no Daily Plan or `due_at` semantic change, no LLM,
+  no Candidate Trainer, no Plan1/Plan2/Plan3 edits.
+- Required before any human pilot: manual Review mini-check still pending;
+  human pilot remains NO-GO.
+
 ## P0
 
 ### P0. FULL-APP-EVIDENCE-QA-AUDIT-V1

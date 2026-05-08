@@ -67,6 +67,21 @@ state. Plan3 governs execution order, not a one-shot roadmap refactor.
 - Still pending: full validation and manual Review mini-check; human pilot
   remains NO-GO.
 
+## 2026-05-08 Metric Visibility Governance Update
+
+- Aligned: `coach_neuro_score_v1` remains the public NeuroScore only as a coach
+  communication score, with reference precision shown separately.
+- Aligned: `diagnostic_gap_v1`, `neuro_score_diag_v1`, raw
+  `criticality_score_v1`, raw Stockfish WDL, uncalibrated domain `/100` scores,
+  SkillTrace mastery, ETV/FSRS/BKT/IRT/posterior values, and Evidence JSON stay
+  out of normal V1 UI.
+- Patched: legacy score details no longer return normal audit rows; diagnostic
+  internals stay API/debug/documentation only.
+- Added: static metric visibility guard and validation doc for V1 governance.
+- Preserved: no formula, NeuroScore calculation, Review selection, Daily Plan,
+  `due_at`, LLM, Candidate Trainer, or Plan1/Plan2/Plan3 change.
+- Still pending: manual Review mini-check; human pilot remains NO-GO.
+
 | Element du plan | Attendu Plan1/Plan2 | Etat actuel dans le code | Fichiers concernes | Statut | Action recommandee | Priorite |
 |---|---|---|---|---|---|---|
 | Backend chess data | Durable games, moves, evaluations, review/practice state | Backend data layer and migrations exist | `backend/neurochess/data/*`, `backend/neurochess/models.py`, migrations | aligned | Preserve schema/version discipline | P0 |

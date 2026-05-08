@@ -87,6 +87,13 @@ training selection, scoring, reporting, debug panels, or research notes.
 - Training selection may use `action` metrics even when they are not directly displayed.
 - Debug and advanced views may show `audit` metrics if they are clearly labeled.
 - Research-only metrics must not be exposed outside research documents.
+- V1 normal UI must not show raw `diagnostic_gap_v1`, `neuro_score_diag_v1`,
+  raw `criticality_score_v1`, raw Stockfish WDL, internal moment priority
+  numbers, uncalibrated domain `/100` scores, SkillTrace mastery numbers, ETV,
+  FSRS, BKT/IRT/posterior values, or raw Evidence JSON.
+- `coach_neuro_score_v1` is the only public NeuroScore contract in V1: a coach
+  communication score shown with reference precision nearby, not Elo prediction,
+  intelligence, brain, medical, or scientific measurement.
 
 ## Rules for future Codex missions
 
