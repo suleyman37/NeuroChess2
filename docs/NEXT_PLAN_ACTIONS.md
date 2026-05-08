@@ -74,6 +74,23 @@ python tools/plan_guard.py
 - Required before any human pilot: manual Review mini-check still pending;
   human pilot remains NO-GO.
 
+## Current Explorer Stable Move Feedback Follow-Up
+
+- `P1.EXPLORER-STABLE-MOVE-FEEDBACK-V1` is a bounded Explorer UX + backend
+  stable evaluation mission.
+- Target state: a new local Explorer branch move starts as `Non analysé`, can
+  be evaluated explicitly with `Analyser ce coup`, then shows stable move
+  feedback and a board glyph without becoming Practice.
+- Side-effect boundary: Explorer evaluation may use bounded position-analysis
+  cache only; it must not create `practice_attempt`, `training_item`, `due_at`,
+  or Daily Plan pollution.
+- Preserved boundaries: no formula, NeuroScore, PV5 Review classification,
+  Review moment selection, Daily Plan, `due_at`, LLM, Candidate Trainer, new
+  main tab, or Plan1/Plan2/Plan3 change.
+- Required before any human pilot: automated validation, manual Review
+  mini-check, then explicit commit/push mission if requested; human pilot
+  remains NO-GO.
+
 ## P0
 
 ### P0. FULL-APP-EVIDENCE-QA-AUDIT-V1

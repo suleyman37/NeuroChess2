@@ -3306,6 +3306,40 @@ button:focus-visible {
   font-weight: 700;
 }
 
+.review-exploration-evaluation {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.36);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+}
+
+.review-exploration-evaluation > div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.review-exploration-result {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.review-exploration-result > span:last-child {
+  color: #506176;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.review-exploration-error {
+  color: #991b1b;
+}
+
 .review-exploration-actions {
   display: flex;
   flex-wrap: wrap;

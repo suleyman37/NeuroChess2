@@ -15,6 +15,7 @@ export type MoveQualityGlyphId =
 
 export type MoveQualityContext =
   | "attempt"
+  | "exploration"
   | "historical"
   | "solution"
   | "line"
@@ -60,7 +61,7 @@ export const MOVE_QUALITY_GLYPH_REGISTRY: Record<
     label: fr.moveQuality.criticalBest.label,
     shortDescription: fr.moveQuality.criticalBest.description,
     tone: "success",
-    allowedContexts: ["attempt", "historical", "solution", "line", "summary"],
+    allowedContexts: ["attempt", "exploration", "historical", "solution", "line", "summary"],
     sourceSemantics: "Current attempt result is best, or historical category is best.",
     userVisible: true,
   },
@@ -70,7 +71,7 @@ export const MOVE_QUALITY_GLYPH_REGISTRY: Record<
     label: fr.moveQuality.excellent.label,
     shortDescription: fr.moveQuality.excellent.description,
     tone: "success",
-    allowedContexts: ["attempt", "historical", "summary"],
+    allowedContexts: ["attempt", "exploration", "historical", "summary"],
     sourceSemantics: "Current attempt result is very_good, or historical category is excellent/very_good.",
     userVisible: true,
   },
@@ -80,7 +81,7 @@ export const MOVE_QUALITY_GLYPH_REGISTRY: Record<
     label: fr.moveQuality.good.label,
     shortDescription: fr.moveQuality.good.description,
     tone: "good",
-    allowedContexts: ["attempt", "historical", "summary"],
+    allowedContexts: ["attempt", "exploration", "historical", "summary"],
     sourceSemantics: "Current attempt result is acceptable, or historical category is good.",
     userVisible: true,
   },
@@ -90,7 +91,7 @@ export const MOVE_QUALITY_GLYPH_REGISTRY: Record<
     label: fr.moveQuality.playable.label,
     shortDescription: fr.moveQuality.playable.description,
     tone: "neutral",
-    allowedContexts: ["attempt", "historical", "summary"],
+    allowedContexts: ["attempt", "exploration", "historical", "summary"],
     sourceSemantics: "Current attempt explicitly classifies as playable, or historical category is book/playable.",
     userVisible: true,
   },
@@ -100,7 +101,7 @@ export const MOVE_QUALITY_GLYPH_REGISTRY: Record<
     label: fr.moveQuality.imprecise.label,
     shortDescription: fr.moveQuality.imprecise.description,
     tone: "warning",
-    allowedContexts: ["attempt", "historical", "summary"],
+    allowedContexts: ["attempt", "exploration", "historical", "summary"],
     sourceSemantics: "Current attempt is explicitly imprecise, or historical category is inexact/to_review.",
     userVisible: true,
   },
@@ -110,7 +111,7 @@ export const MOVE_QUALITY_GLYPH_REGISTRY: Record<
     label: fr.moveQuality.wrong.label,
     shortDescription: fr.moveQuality.wrong.description,
     tone: "danger",
-    allowedContexts: ["attempt"],
+    allowedContexts: ["attempt", "exploration"],
     sourceSemantics: "Current attempt result is wrong.",
     userVisible: true,
   },
@@ -130,7 +131,7 @@ export const MOVE_QUALITY_GLYPH_REGISTRY: Record<
     label: fr.moveQuality.illegal.label,
     shortDescription: fr.moveQuality.illegal.description,
     tone: "warning",
-    allowedContexts: ["attempt"],
+    allowedContexts: ["attempt", "exploration"],
     sourceSemantics: "Current attempt result is illegal.",
     userVisible: true,
   },
@@ -140,7 +141,7 @@ export const MOVE_QUALITY_GLYPH_REGISTRY: Record<
     label: fr.moveQuality.unknown.label,
     shortDescription: fr.moveQuality.unknown.description,
     tone: "muted",
-    allowedContexts: ["attempt", "historical", "summary"],
+    allowedContexts: ["attempt", "exploration", "historical", "summary"],
     sourceSemantics: "Fallback when no safe current classification is available.",
     userVisible: true,
   },
@@ -150,7 +151,7 @@ export const MOVE_QUALITY_GLYPH_REGISTRY: Record<
     label: fr.moveQuality.rebuildNeeded.label,
     shortDescription: fr.moveQuality.rebuildNeeded.description,
     tone: "info",
-    allowedContexts: ["attempt"],
+    allowedContexts: ["attempt", "exploration"],
     sourceSemantics: "Current attempt cannot be safely classified without Review rebuild.",
     userVisible: true,
   },

@@ -1,7 +1,7 @@
 # Test Coverage Matrix
 
-Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` + `P1.I18N-STRINGS-CATALOG-V1` + `P1.REVIEW-MOMENT-SELECTION-INTELLIGENCE-V1` + `P1.METRICS-AND-ALGORITHMS-VALIDATION-HARNESS-V1`
-Date: 2026-05-05
+Mission: `P0.FULL-APP-EVIDENCE-QA-AUDIT-V1` + `P0.BROWSER-SMOKE-FLOW` + `P1.PROFILE-PRIVACY-V1` + `P1.TRAINING-ITEMS-DAILY-PLAN-V1` + `P0.CORE-FLOW-BOARD-INTERACTION-QA-REPAIR-V1` + `P0.REAL-RUNTIME-BOARD-EXPLORATION-AND-ANALYSIS-REPAIR-V1` + `P1.DEGRADED-STATES-ANTI-TILT-V1` + `P1.MOBILE-RESPONSIVE-AND-A11Y-V1` + `P0.PRACTICE-FEEDBACK-CORRECTNESS-AND-LEGACY-REVIEW-REBUILD-V1` + `P1.I18N-STRINGS-CATALOG-V1` + `P1.REVIEW-MOMENT-SELECTION-INTELLIGENCE-V1` + `P1.METRICS-AND-ALGORITHMS-VALIDATION-HARNESS-V1` + `P1.EXPLORER-STABLE-MOVE-FEEDBACK-V1`
+Date: 2026-05-08
 
 This matrix lists available automated tests, scripts, and smoke checks. It does
 not count static tests as browser or end-to-end proof.
@@ -139,6 +139,17 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
   POV conversion, Win%/win_loss units, try-move stable fallback bands, PV5
   acceptance boundaries, moment importance categories, training item safety,
   no-major state, mate edge cases, and simple V1 due-delay invariants.
+- Explorer stable move feedback backend/static suite: PASS via
+  `.venv_repair_local\Scripts\python.exe -m unittest backend.tests.test_review_explorer_stable_move_feedback`.
+  It proves the side-effect-safe Explorer evaluation endpoint for legal,
+  illegal, stable-unavailable, playable, and wrong classifications without
+  creating Practice attempts, training items, or Daily Plan rows.
+- Explorer stable move feedback browser smoke: PASS via
+  `cmd /c node scripts\browser_explorer_stable_move_feedback_smoke.mjs`.
+  It proves a new Explorer branch move starts as `Non analysé`, then renders
+  `Évaluation du coup...`, a stable quality badge, board overlay, no Practice /
+  due / Daily Plan side effects, pure board orientation toggle, and no-spoiler
+  empty Practice state.
 
 ## Matrix
 
@@ -185,6 +196,7 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
 | `backend/tests/test_metrics_algorithm_validation_harness.py` | unit/golden | Try-move/PV5 validation matrix | Golden fixture schema, legal out-of-list stable `playable`/`imprecise`/`wrong`, stable unavailable `needs_rebuild`, close PV5 accepted, far PV5 not auto-accepted, no forbidden raw metric fixture tokens | Browser UX and live Stockfish | PASS targeted in P1 validation harness mission | high | Keep fixture matrix aligned when thresholds change by explicit mission |
 | `backend/tests/test_review_moment_algorithm_golden_cases.py` | unit/golden | Review moment routing and training safety | `micro_gap`, `priority_training`, `secondary_training`, `good_decision`, `informational`, no-major state, low-impact opening gate, Practice filtering of non-training categories, simple due-delay invariants | Annotated coach corpus, explicit forced/trivial detector, persisted `positive_gain` | PASS targeted in P1 validation harness mission | high | Add corpus-backed calibration and richer forced-move validation later |
 | `backend/tests/test_metric_visibility_governance_static.py` | static | Metric visibility governance | Prevents forbidden raw/internal metric labels, research memory metrics, fake NeuroScore claims, and uncalibrated score copy in normal frontend UI; confirms internal metrics remain documented as internal/debug | Runtime payload rendering, browser screenshots | PASS targeted | high | Extend allowlist if new DEV-only debug surfaces are added |
+| `backend/tests/test_review_explorer_stable_move_feedback.py` | API/static | Review Explorer stable feedback | Side-effect-safe `/api/review/explorer/evaluate-move`, legal/illegal handling, stable fallback unavailable -> `needs_rebuild`, playable/wrong results, no Practice/training/Daily Plan writes, frontend wiring/copy | Real browser board interaction and visual overlay | PASS targeted in P1 Explorer stable feedback mission | high | Add branch-level batch evaluation only if product approves it |
 | `backend/tests/test_review_practice_items.py` | unit | Practice items | Review-to-practice item generation | Browser start Practice | PASS in full suite | high | Browser Practice start |
 | `backend/tests/test_review_practice_learning_loop.py` | unit/integration | Learning Loop V1 | Attempt fields, delay rules, due session, no-due summary | Browser due UI | PASS in full suite | high | Global daily plan/due queue |
 | `backend/tests/test_review_practice_no_engine.py` | unit/integration | Practice no-engine | Practice remains available without Stockfish calls | Browser degraded state | PASS in full suite | high | Browser no-engine practice |
@@ -222,6 +234,7 @@ centralized in `docs/mission_control/GOLDEN_FLOWS.md` and
 | `scripts/browser_review_trust_pv5_stable_classification_smoke.mjs` | browser/API smoke | Review trust PV5 / stable try-move classification | No pre-attempt overlay on app load; HTTP try-move classification proves stable out-of-list `playable`, `imprecise`, and `wrong` bands; legal out-of-list attempts are not auto-wrong; PV5 candidate `playable`/`imprecise` mappings are exercised | Full real-board playable fixture and clean-opening UI screenshot remain manual/future | added in P1 Review trust mission | high if PASS | Pair with backend unit tests for gate, timeout, DB result bands, and scheduling safety |
 | `scripts/browser_review_decision_card_quality_ribbon_smoke.mjs` | browser smoke | Review decision presentation / move quality UX | Summary historical badge and quality ribbon; Learn Decision Card with no attempt/best spoiler before correction and best row after correction; Explorer historical badge without local attempt classification; Practice current-attempt badge only after real board attempt; legend collapsed/open; mobile no horizontal overflow | Broad real-user PGN variety, manual visual taste, and full-game quality for every unreviewed move | PASS | high | Manual Review mini-check remains required before pilot |
 | `scripts/browser_review_moment_selection_intelligence_smoke.mjs` | browser smoke | Review moment selection intelligence | API category fields/summary; priority label and `Pourquoi ce moment ?`; good-decision group when fixture supports it; Practice excludes micro/good/informational items; no current-attempt or best-row spoiler before attempt; Explorer uses historical category only; mobile no overflow; raw metrics absent | The current browser fixture does not expose a micro-gap or clean/no-major state; those are covered by backend unit tests | PASS | high | Add richer browser fixture when a stable clean/micro-gap PGN is available |
+| `scripts/browser_explorer_stable_move_feedback_smoke.mjs` | browser smoke | Review Explorer stable feedback | New local branch move shows `Non analysé`, `Analyser ce coup`, in-progress copy, stable quality badge and board overlay; confirms no Practice attempt/training item/Daily Plan/due side effects; toggles board orientation; verifies no-spoiler empty Practice state | Branch-wide batch analysis and full Practice challenge no-spoiler fixture; the dedicated Practice no-spoiler smoke covers challenge mode | PASS | high | Add optional `Analyser la branche` smoke if branch batch analysis is implemented |
 | `cmd /c npm.cmd run build` | build/typecheck | Frontend compile | `tsc` and Vite production build | Runtime browser data states | PASS | high | Bundle size/perf budgets later |
 | `cmd /c npx tsc --noEmit` | typecheck | Frontend TS | TypeScript no emit | Vite/browser runtime | PASS | high | Add `typecheck` npm script |
 | `cmd /c npm.cmd run lint` | lint | Frontend style | Not available | All lint coverage | unavailable | low | Add lint script only if project wants it |

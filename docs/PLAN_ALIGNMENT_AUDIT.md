@@ -82,6 +82,24 @@ state. Plan3 governs execution order, not a one-shot roadmap refactor.
   `due_at`, LLM, Candidate Trainer, or Plan1/Plan2/Plan3 change.
 - Still pending: manual Review mini-check; human pilot remains NO-GO.
 
+## 2026-05-08 Explorer Stable Move Feedback Update
+
+- Aligned: Review Explorer can keep local branch moves separate from original
+  game moves and evaluate the latest explored move only on explicit user action.
+- Aligned: Explorer move feedback reuses backend try-move quality bands and the
+  stabilized resulting-position fallback; unavailable stable evidence remains
+  unknown-safe as `needs_rebuild`, never a default `wrong`.
+- Aligned: Explorer feedback is labeled as local exploration and is not saved as
+  Practice, training, `due_at`, or Daily Plan state.
+- Aligned: the Explorer board orientation toggle is pure frontend state and
+  does not alter analyzed-player POV or Practice orientation.
+- Preserved: no formula, NeuroScore, PV5 Review classification, Review moment
+  selection, Daily Plan, `due_at`, LLM, Candidate Trainer, raw metric exposure,
+  or Plan1/Plan2/Plan3 change.
+- Limitation: V1 supports explicit analysis of the latest local move only;
+  branch-wide batch analysis remains a future product decision.
+- Still pending: manual Review mini-check; human pilot remains NO-GO.
+
 | Element du plan | Attendu Plan1/Plan2 | Etat actuel dans le code | Fichiers concernes | Statut | Action recommandee | Priorite |
 |---|---|---|---|---|---|---|
 | Backend chess data | Durable games, moves, evaluations, review/practice state | Backend data layer and migrations exist | `backend/neurochess/data/*`, `backend/neurochess/models.py`, migrations | aligned | Preserve schema/version discipline | P0 |

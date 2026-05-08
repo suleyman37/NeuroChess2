@@ -134,6 +134,14 @@ class ReviewTryMoveEvaluationRequest(BaseModel):
     primary_tag: str | None = None
 
 
+class ReviewExplorerEvaluateMoveRequest(BaseModel):
+    fen_before: str
+    move_uci: str
+    source_context: str | None = "review_explorer"
+    game_id: int | None = None
+    review_moment_id: int | str | None = None
+
+
 class DailyPlanRequest(BaseModel):
     max_items: int | None = 6
     duration_preference: str | None = None

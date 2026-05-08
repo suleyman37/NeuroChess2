@@ -325,6 +325,7 @@ export const fr = {
   moveQuality: {
     contexts: {
       attempt: "Qualité de ta tentative",
+      exploration: "Qualité du coup exploré",
       historical: "Qualité du coup joué dans la partie",
       solution: "Qualité de la solution",
       line: "Qualité de la ligne",
@@ -374,6 +375,33 @@ export const fr = {
       label: "À recalculer",
       description: "Cette position doit être reconstruite ou réanalysée.",
     },
+  },
+  reviewExplorer: {
+    title: "Exploration locale",
+    inactiveTitle: "Tester des coups sans les enregistrer",
+    inactiveCopy:
+      "Tu peux explorer la position de Review. Aucun coup ne sera sauvegardé comme exercice.",
+    activeTitle: "Coups libres depuis cette position",
+    activeCopy: "Tu peux tester des coups. Rien n'est enregistré comme exercice.",
+    activeMessage:
+      "Exploration locale active. Ces coups ne sont pas enregistrés comme exercices.",
+    resetMessage: "Position réinitialisée. Rien n'a été enregistré.",
+    noMoveToUndo: "Aucun coup d'exploration à annuler.",
+    undoMessage: "Coup annulé. Cette exploration reste locale.",
+    illegalMove: "Ce coup n'est pas légal dans cette position.",
+    movePlayed: (move: string) =>
+      `${move} joué en exploration locale. Non analysé.`,
+    localOnly: "Exploration locale — non enregistré comme exercice.",
+    exploredMove: "Coup exploré",
+    notAnalyzed: "Non analysé",
+    analyzeMove: "Analyser ce coup",
+    analyzeBranch: "Analyser la branche",
+    analyzingMove: "Évaluation du coup…",
+    analysisFailed: "Analyse indisponible. Réessaie dans un instant.",
+    turnBoard: "Tourner l'échiquier",
+    undoMove: "Annuler le coup",
+    reset: "Réinitialiser",
+    exit: "Quitter l'exploration",
   },
   profilePrivacy: {
     title: "Profil / Paramètres",

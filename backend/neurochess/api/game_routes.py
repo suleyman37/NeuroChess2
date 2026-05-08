@@ -17,6 +17,7 @@ from neurochess.api.schemas import (
     GameStateResponse,
     PlayMoveRequest,
     ProductCapabilitiesResponse,
+    ReviewExplorerEvaluateMoveRequest,
     RecordReviewPracticeAttemptRequest,
     ReviewTryMoveEvaluationRequest,
     StartLiveAnalysisRequest,
@@ -39,6 +40,10 @@ from neurochess.opening_service import OpeningService, OpeningServiceError
 from neurochess.pgn_import_service import PgnImportService
 from neurochess.privacy_service import UserDataConfirmationError, UserDataService
 from neurochess.review_job_service import ReviewJobService
+from neurochess.review_explorer_service import (
+    ReviewExplorerEvaluationError,
+    evaluate_review_explorer_move,
+)
 from neurochess.review_practice_service import (
     ReviewPracticeService,
     ReviewPracticeServiceError,
@@ -723,6 +728,24 @@ def evaluate_review_try_move(
         if enriched is not payload:
             feedback = evaluate_try_move_attempt(move_played, enriched)
     return feedback
+
+
+@router.post("/api/review/explorer/evaluate-move")
+def evaluate_review_explorer_move_endpoint(
+    request: ReviewExplorerEvaluateMoveRequest,
+    analysis_service: AnalysisService = Depends(get_analysis_service),
+) -> Any:
+    try:
+        return evaluate_review_explorer_move(
+            fen_before=request.fen_before,
+            move_uci=request.move_uci,
+            analysis_service=analysis_service,
+            source_context=request.source_context,
+            game_id=request.game_id,
+            review_moment_id=request.review_moment_id,
+        )
+    except ReviewExplorerEvaluationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.post("/review/practice/sessions/{session_id}/abandon")

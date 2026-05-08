@@ -582,6 +582,21 @@ export type ReviewTryMoveEvaluationResponse = ReviewPracticeAttemptFeedback & {
   reason_code?: string | null;
 };
 
+export type ReviewExplorerMoveEvaluationResponse = {
+  legal: boolean;
+  result: ReviewPracticeResult;
+  quality_id: string;
+  label: string;
+  san?: string | null;
+  uci: string;
+  fen_before: string;
+  fen_after?: string | null;
+  stable_evaluation_status: string;
+  no_side_effects: boolean;
+  try_move_model_version?: string | null;
+  feedback?: ReviewTryMoveEvaluationResponse | null;
+};
+
 export type ReviewPracticeAttempt = {
   id: number;
   session_id: number;
@@ -1589,6 +1604,24 @@ export function evaluateReviewTryMoveAttempt(payload: {
       ply: payload.ply ?? null,
       win_loss: payload.winLoss ?? null,
       primary_category: payload.primaryCategory ?? null,
+    }),
+  });
+}
+
+export function evaluateReviewExplorerMove(payload: {
+  fenBefore: string;
+  moveUci: string;
+  gameId?: number | null;
+  reviewMomentId?: number | string | null;
+}): Promise<ReviewExplorerMoveEvaluationResponse> {
+  return request<ReviewExplorerMoveEvaluationResponse>("/api/review/explorer/evaluate-move", {
+    method: "POST",
+    body: JSON.stringify({
+      fen_before: payload.fenBefore,
+      move_uci: payload.moveUci,
+      source_context: "review_explorer",
+      game_id: payload.gameId ?? null,
+      review_moment_id: payload.reviewMomentId ?? null,
     }),
   });
 }

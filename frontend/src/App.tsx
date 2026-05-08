@@ -11,6 +11,7 @@ import {
   getGameHistory,
   cancelReviewJob,
   deleteUserData,
+  evaluateReviewExplorerMove,
   evaluateReviewTryMoveAttempt,
   exportUserData,
   getReviewJob,
@@ -83,6 +84,7 @@ import {
 import { ReviewPvStepper } from "./components/review/ReviewPvStepper";
 import { ReviewStepStatus } from "./components/review/ReviewStepStatus";
 import type { BoardMoveOutcomeOverlayState } from "./components/review/BoardMoveOutcomeOverlay";
+import { MoveQualityBadge } from "./components/review/MoveQualityBadge";
 import { getMoveQualityGlyphForAttemptResult } from "./components/review/moveQualityGlyphs";
 import {
   annotationIndex,
@@ -185,10 +187,18 @@ type ReviewTryMoveState = ReviewTryMoveViewState & {
   annotationIndex: number | null;
   fenBefore: string | null;
 };
+type ReviewExplorationMoveStatus = "unevaluated" | "analyzing" | "evaluated";
 type ReviewExplorationMove = {
   uci: string;
   san: string;
+  fenBefore: string;
   fen: string;
+  status: ReviewExplorationMoveStatus;
+  result: string | null;
+  label: string | null;
+  stableEvaluationStatus: string | null;
+  noSideEffects: boolean;
+  error: string | null;
 };
 type ReviewExplorationState = {
   active: true;
@@ -396,6 +406,8 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     useState<ReviewTryMoveState | null>(null);
   const [reviewExplorationState, setReviewExplorationState] =
     useState<ReviewExplorationState | null>(null);
+  const [reviewExplorationBoardOrientation, setReviewExplorationBoardOrientation] =
+    useState<"white" | "black" | null>(null);
   const [reviewPracticeState, setReviewPracticeState] =
     useState<ReviewPracticeState | null>(null);
   const [reviewPracticeHistory, setReviewPracticeHistory] = useState<
@@ -658,6 +670,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       rawBoardFen !== reviewExplorationState.baseFen
     ) {
       setReviewExplorationState(null);
+      setReviewExplorationBoardOrientation(null);
     }
   }, [
     activeTab,
@@ -1184,17 +1197,19 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     setGuidedPvIndex(null);
     setPositionMode("REVIEW");
     setViewedFen(rawBoardFen);
+    setReviewExplorationBoardOrientation(boardOrientation);
     setReviewExplorationState({
       active: true,
       baseFen: rawBoardFen,
       currentFen: rawBoardFen,
       moves: [],
-      message: "Exploration locale active. Ces coups ne sont pas enregistrés comme exercices.",
+      message: fr.reviewExplorer.activeMessage,
     });
   }
 
   function exitReviewExploration() {
     setReviewExplorationState(null);
+    setReviewExplorationBoardOrientation(null);
   }
 
   function resetReviewExploration() {
@@ -1206,7 +1221,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         ...state,
         currentFen: state.baseFen,
         moves: [],
-        message: "Position réinitialisée. Rien n'a été enregistré.",
+        message: fr.reviewExplorer.resetMessage,
       };
     });
   }
@@ -1217,7 +1232,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         return state
           ? {
               ...state,
-              message: "Aucun coup d'exploration à annuler.",
+              message: fr.reviewExplorer.noMoveToUndo,
             }
           : state;
       }
@@ -1227,7 +1242,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         ...state,
         currentFen: previousMove?.fen ?? state.baseFen,
         moves: nextMoves,
-        message: "Coup annulé. Cette exploration reste locale.",
+        message: fr.reviewExplorer.undoMessage,
       };
     });
   }
@@ -1239,6 +1254,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       }
       try {
         const board = new Chess(state.currentFen);
+        const fenBefore = board.fen();
         const move = board.move({
           from: uci.slice(0, 2),
           to: uci.slice(2, 4),
@@ -1247,27 +1263,94 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
         if (!move) {
           return {
             ...state,
-            message: "Ce coup n'est pas légal dans cette position.",
+            message: fr.reviewExplorer.illegalMove,
           };
         }
         const nextMove: ReviewExplorationMove = {
           uci,
           san: move.san,
+          fenBefore,
           fen: board.fen(),
+          status: "unevaluated",
+          result: null,
+          label: null,
+          stableEvaluationStatus: null,
+          noSideEffects: true,
+          error: null,
         };
         return {
           ...state,
           currentFen: board.fen(),
           moves: [...state.moves, nextMove],
-          message: `${move.san} joué en exploration locale. Non enregistré comme exercice.`,
+          message: fr.reviewExplorer.movePlayed(move.san),
         };
       } catch {
         return {
           ...state,
-          message: "Ce coup n'est pas légal dans cette position.",
+          message: fr.reviewExplorer.illegalMove,
         };
       }
     });
+  }
+
+  async function analyzeLatestReviewExplorationMove() {
+    const state = reviewExplorationState;
+    const latest = state?.moves[state.moves.length - 1];
+    if (!state?.active || !latest || latest.status === "analyzing") {
+      return;
+    }
+
+    setReviewExplorationState((current) =>
+      markReviewExplorationMove(
+        current,
+        latest.uci,
+        { status: "analyzing", error: null },
+        fr.reviewExplorer.analyzingMove,
+      ),
+    );
+    await new Promise((resolve) => window.setTimeout(resolve, 80));
+
+    try {
+      const response = await evaluateReviewExplorerMove({
+        fenBefore: latest.fenBefore,
+        moveUci: latest.uci,
+        gameId,
+        reviewMomentId: selectedReviewAnnotation?.ply ?? selectedReviewMovePly,
+      });
+      setReviewExplorationState((current) =>
+        markReviewExplorationMove(
+          current,
+          latest.uci,
+          {
+            status: "evaluated",
+            result: response.result,
+            label: response.label,
+            stableEvaluationStatus: response.stable_evaluation_status,
+            noSideEffects: response.no_side_effects === true,
+            error: null,
+          },
+          `${latest.san || latest.uci} : ${response.label}. ${fr.reviewExplorer.localOnly}`,
+        ),
+      );
+    } catch (err) {
+      setReviewExplorationState((current) =>
+        markReviewExplorationMove(
+          current,
+          latest.uci,
+          { status: "unevaluated", error: messageFromError(err) },
+          fr.reviewExplorer.analysisFailed,
+        ),
+      );
+    }
+  }
+
+  function toggleReviewExplorationBoardOrientation() {
+    if (!reviewExplorationActive) {
+      return;
+    }
+    setReviewExplorationBoardOrientation((current) =>
+      (current ?? boardOrientation) === "white" ? "black" : "white",
+    );
   }
 
   async function handleMove(uci: string, optimisticFen: string | null) {
@@ -4314,7 +4397,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
       !practiceMoveActive &&
       !reviewExplorationActive &&
       (isGameCompleted || positionMode !== "LIVE"));
-  const boardOrientation = resolveReviewBoardOrientation({
+  const resolvedBoardOrientation = resolveReviewBoardOrientation({
     activeTab,
     selectedReviewPov,
     review,
@@ -4323,12 +4406,17 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     selectedReviewMoment,
     selectedReviewMovePly,
   });
+  const boardOrientation =
+    reviewExplorationActive && reviewExplorationBoardOrientation
+      ? reviewExplorationBoardOrientation
+      : resolvedBoardOrientation;
   const boardMoveOutcome = buildBoardMoveOutcome({
     activeTab,
     positionMode,
     boardFen,
     reviewPracticeState,
     reviewTryMoveState,
+    reviewExplorationState,
     reviewPvLineState,
   });
   const boardTestId = reviewPracticeState?.active
@@ -4336,6 +4424,14 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
     : activeTab === "review"
       ? "review-board"
       : "game-board";
+  const latestReviewExplorationMove =
+    reviewExplorationState?.active && reviewExplorationState.moves.length > 0
+      ? reviewExplorationState.moves[reviewExplorationState.moves.length - 1]
+      : null;
+  const latestReviewExplorationCanAnalyze =
+    latestReviewExplorationMove !== null &&
+    latestReviewExplorationMove.status !== "evaluated" &&
+    latestReviewExplorationMove.status !== "analyzing";
   const reviewSquareStyles = buildReviewSquareStyles(
     positionMode,
     review,
@@ -5166,12 +5262,9 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
               {!reviewExplorationActive ? (
                 <>
                   <div>
-                    <span>Exploration locale</span>
-                    <strong>Tester des coups sans les enregistrer</strong>
-                    <p>
-                      Tu peux explorer la position de Review. Aucun coup ne sera
-                      sauvegarde comme exercice.
-                    </p>
+                    <span>{fr.reviewExplorer.title}</span>
+                    <strong>{fr.reviewExplorer.inactiveTitle}</strong>
+                    <p>{fr.reviewExplorer.inactiveCopy}</p>
                   </div>
                   <button
                     type="button"
@@ -5186,12 +5279,9 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
               ) : (
                 <>
                   <div>
-                    <span>Exploration locale</span>
-                    <strong>Coups libres depuis cette position</strong>
-                    <p>
-                      Tu peux tester des coups. Rien n'est enregistre comme
-                      exercice.
-                    </p>
+                    <span>{fr.reviewExplorer.title}</span>
+                    <strong>{fr.reviewExplorer.activeTitle}</strong>
+                    <p>{fr.reviewExplorer.activeCopy}</p>
                     <p
                       className="review-exploration-feedback"
                       data-testid="review-exploration-feedback"
@@ -5199,6 +5289,63 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                     >
                       {reviewExplorationState?.message}
                     </p>
+                    {latestReviewExplorationMove && (
+                      <div
+                        className="review-exploration-evaluation"
+                        data-testid="review-explorer-move-feedback"
+                      >
+                        <div>
+                          <span>{fr.reviewExplorer.exploredMove}</span>
+                          <strong>
+                            {latestReviewExplorationMove.san || latestReviewExplorationMove.uci}
+                          </strong>
+                        </div>
+                        {latestReviewExplorationMove.status === "evaluated" ? (
+                          <div className="review-exploration-result">
+                            <MoveQualityBadge
+                              qualityId={getMoveQualityGlyphForAttemptResult(
+                                latestReviewExplorationMove.result,
+                              )}
+                              context="exploration"
+                              size="sm"
+                              testId="review-explorer-quality-badge"
+                            />
+                            <span data-testid="review-explorer-local-only">
+                              {fr.reviewExplorer.localOnly}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="review-exploration-result">
+                            <MoveQualityBadge
+                              qualityId="unknown"
+                              context="exploration"
+                              size="sm"
+                              testId="review-explorer-unevaluated-badge"
+                            />
+                            <span data-testid="review-explorer-analysis-state">
+                              {latestReviewExplorationMove.status === "analyzing"
+                                ? fr.reviewExplorer.analyzingMove
+                                : fr.reviewExplorer.notAnalyzed}
+                            </span>
+                          </div>
+                        )}
+                        {latestReviewExplorationMove.error && (
+                          <p className="review-exploration-error">
+                            {latestReviewExplorationMove.error}
+                          </p>
+                        )}
+                        {latestReviewExplorationCanAnalyze && (
+                          <button
+                            type="button"
+                            className="primary"
+                            data-testid="review-explorer-analyze-move"
+                            onClick={() => void analyzeLatestReviewExplorationMove()}
+                          >
+                            {fr.reviewExplorer.analyzeMove}
+                          </button>
+                        )}
+                      </div>
+                    )}
                     {(reviewExplorationState?.moves.length ?? 0) > 0 && (
                       <ol
                         className="review-exploration-moves"
@@ -5219,7 +5366,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                       data-testid="review-exploration-undo"
                       onClick={undoReviewExplorationMove}
                     >
-                      Annuler le coup
+                      {fr.reviewExplorer.undoMove}
                     </button>
                     <button
                       type="button"
@@ -5227,7 +5374,15 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                       data-testid="review-exploration-reset"
                       onClick={resetReviewExploration}
                     >
-                      Reinitialiser
+                      {fr.reviewExplorer.reset}
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="review-exploration-flip-board"
+                      onClick={toggleReviewExplorationBoardOrientation}
+                    >
+                      {fr.reviewExplorer.turnBoard}
                     </button>
                     <button
                       type="button"
@@ -5235,7 +5390,7 @@ function NeuroChessApp({ onNavigateHome }: NeuroChessAppProps) {
                       data-testid="review-exploration-exit"
                       onClick={exitReviewExploration}
                     >
-                      Quitter l'exploration
+                      {fr.reviewExplorer.exit}
                     </button>
                   </div>
                 </>
@@ -6927,12 +7082,39 @@ function tryMoveFenAfter(
   }
 }
 
+function markReviewExplorationMove(
+  state: ReviewExplorationState | null,
+  moveUci: string,
+  patch: Partial<ReviewExplorationMove>,
+  message: string,
+): ReviewExplorationState | null {
+  if (!state?.active) {
+    return state;
+  }
+  const targetIndex = [...state.moves]
+    .reverse()
+    .findIndex((move) => move.uci === moveUci);
+  if (targetIndex < 0) {
+    return state;
+  }
+  const realIndex = state.moves.length - 1 - targetIndex;
+  const moves = state.moves.map((move, index) =>
+    index === realIndex ? { ...move, ...patch } : move,
+  );
+  return {
+    ...state,
+    moves,
+    message,
+  };
+}
+
 function buildBoardMoveOutcome({
   activeTab,
   positionMode,
   boardFen,
   reviewPracticeState,
   reviewTryMoveState,
+  reviewExplorationState,
   reviewPvLineState,
 }: {
   activeTab: ActiveTab;
@@ -6940,6 +7122,7 @@ function buildBoardMoveOutcome({
   boardFen: string | null;
   reviewPracticeState: ReviewPracticeState | null;
   reviewTryMoveState: ReviewTryMoveState | null;
+  reviewExplorationState: ReviewExplorationState | null;
   reviewPvLineState: ReviewPvLineState | null;
 }): BoardMoveOutcomeOverlayState | null {
   if (activeTab !== "review" || positionMode !== "REVIEW" || reviewPvLineState?.active) {
@@ -6975,6 +7158,22 @@ function buildBoardMoveOutcome({
       fenBefore: reviewTryMoveState.fenBefore,
       attemptedUci: reviewTryMoveState.attemptedUci,
       result: reviewTryMoveState.feedback.result,
+    });
+  }
+
+  const latestExplorationMove =
+    reviewExplorationState?.active && reviewExplorationState.moves.length > 0
+      ? reviewExplorationState.moves[reviewExplorationState.moves.length - 1]
+      : null;
+  if (
+    latestExplorationMove?.status === "evaluated" &&
+    latestExplorationMove.result
+  ) {
+    return boardMoveOutcomeForAttempt({
+      boardFen,
+      fenBefore: latestExplorationMove.fenBefore,
+      attemptedUci: latestExplorationMove.uci,
+      result: latestExplorationMove.result,
     });
   }
 
