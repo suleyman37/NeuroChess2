@@ -2,7 +2,16 @@ import type { Dispatch, SetStateAction } from "react";
 import { VisionBoard } from "./VisionBoard";
 import { VisionLinePlayer } from "./VisionLinePlayer";
 import { visionMoments, visionPracticeItems } from "./visionMockData";
-import { getBoardStageTone, getModeNarrativeCopy, shouldShowDecisionGuides, type VisionState } from "./visionState";
+import {
+  canShowSolutionGuidesForBoardState,
+  getBoardExperienceState,
+  getBoardExperienceTone,
+  getBoardStateCopy,
+  getModeNarrativeCopy,
+  shouldDimContextForBoardState,
+  shouldShowDecisionGuides,
+  type VisionState,
+} from "./visionState";
 
 type PracticeVisionProps = {
   state: VisionState;
@@ -14,21 +23,27 @@ export function PracticeVision({ state, setState, onBack }: PracticeVisionProps)
   const item = visionPracticeItems[state.selectedPracticeIndex] ?? visionPracticeItems[0];
   const moment = visionMoments.find((candidate) => candidate.id === item.momentId) ?? visionMoments[0];
   const phase = state.practicePhase;
-  const boardTone = getBoardStageTone({
-    surface: "practice",
-    practicePhase: phase,
-    linePlayerOpen: state.linePlayerOpen,
+  const boardExperienceState = getBoardExperienceState({
+    view: "practice",
+    practiceState: phase === "feedback_success" || phase === "feedback_wrong" ? "feedback" : phase,
+    feedbackKind: phase === "feedback_wrong" || phase === "correction" ? "miss" : phase === "feedback_success" ? "success" : "neutral",
+    noSpoiler: phase === "ready" || phase === "attempting",
   });
+  const boardTone = getBoardExperienceTone(boardExperienceState);
+  const boardStateCopy = getBoardStateCopy(boardExperienceState);
+  const dimContext = shouldDimContextForBoardState(boardExperienceState);
   const narrative = getModeNarrativeCopy({
     surface: "practice",
     practicePhase: phase,
     linePlayerOpen: state.linePlayerOpen,
   });
-  const showDecisionGuides = shouldShowDecisionGuides({
-    surface: "practice",
-    practicePhase: phase,
-    linePlayerOpen: state.linePlayerOpen,
-  });
+  const showDecisionGuides =
+    canShowSolutionGuidesForBoardState(boardExperienceState) &&
+    shouldShowDecisionGuides({
+      surface: "practice",
+      practicePhase: phase,
+      linePlayerOpen: state.linePlayerOpen,
+    });
 
   const selectItem = (index: number) =>
     setState((current) => ({
@@ -62,9 +77,10 @@ export function PracticeVision({ state, setState, onBack }: PracticeVisionProps)
       className={`v2-vision-focus v2-vision-practice-focus is-${phase}`}
       data-practice-phase={phase}
       data-stage-tone={boardTone}
+      data-board-state={boardExperienceState}
       data-testid="v2-vision-practice"
     >
-      <aside className="v2-vision-rail v2-vision-practice-queue">
+      <aside className={`v2-vision-rail v2-vision-practice-queue${dimContext ? " v2-context-dimmed" : ""}`}>
         <span className="v2-vision-kicker">File de session</span>
         <h3>Position {state.selectedPracticeIndex + 1} / {visionPracticeItems.length}</h3>
         <div className="v2-vision-session-progress" aria-hidden="true">
@@ -84,17 +100,32 @@ export function PracticeVision({ state, setState, onBack }: PracticeVisionProps)
         <p className="v2-vision-path-note">Régularité : 4 jours actifs cette semaine.</p>
       </aside>
 
-      <section className={`v2-vision-board-stage v2-vision-practice-stage is-${phase}`} data-tone={boardTone}>
+      <section
+        className={`v2-vision-board-stage v2-vision-practice-stage is-${phase}`}
+        data-tone={boardTone}
+        data-board-state={boardExperienceState}
+        data-board-tone={boardTone}
+      >
         <header className="v2-vision-board-strip">
           <button className="v2-vision-ghost" type="button" onClick={onBack}>Retour</button>
           <span>S'entraîner · {item.label} · {item.source}</span>
           <strong className={`v2-vision-score is-${moment.neuroBand}`}>{getDecisionStateLabel(moment.neuroBand)}</strong>
-          <em className="v2-vision-mode-cue" data-testid="v2-vision-practice-cue">{narrative}</em>
+          <span
+            className="v2-stage__meta"
+            data-testid="v2-vision-practice-state-meta"
+            data-state-copy={boardStateCopy.microcopy}
+            aria-label={`${boardStateCopy.label}. ${boardStateCopy.microcopy}`}
+          >
+            <span className="v2-stage__state-pill v2-vision-mode-cue" data-testid="v2-vision-practice-cue">
+              {boardStateCopy.label}
+            </span>
+          </span>
         </header>
         <VisionBoard
           moment={moment}
           interactive
           mood={boardTone}
+          experienceState={boardExperienceState}
           showGuides={showDecisionGuides}
           testId="v2-vision-practice-board"
         />
@@ -116,7 +147,7 @@ export function PracticeVision({ state, setState, onBack }: PracticeVisionProps)
         )}
       </section>
 
-      <aside className="v2-vision-card v2-vision-practice-card">
+      <aside className={`v2-vision-card v2-vision-practice-card${dimContext ? " v2-context-dimmed" : ""}`}>
         <PracticePanel phase={phase} item={item} momentSan={moment.san} narrative={narrative} />
       </aside>
     </section>

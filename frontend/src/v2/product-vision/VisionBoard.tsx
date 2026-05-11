@@ -1,16 +1,33 @@
 import type { CSSProperties } from "react";
 import { ChessBoardPanel, type BoardArrow } from "../../components/ChessBoardPanel";
 import type { VisionMoment } from "./visionMockData";
+import {
+  getBoardExperienceTone,
+  getBoardStateCopy,
+  type BoardExperienceState,
+  type BoardExperienceTone,
+} from "./visionState";
 
-export type VisionBoardMood = "calm" | "learn" | "active" | "success" | "explore";
+export type VisionBoardMood = BoardExperienceTone;
 
 type VisionBoardProps = {
   moment: VisionMoment;
   interactive?: boolean;
   mood?: VisionBoardMood;
+  experienceState?: BoardExperienceState;
   showGuides?: boolean;
   testId?: string;
 };
+
+function getDefaultExperienceState(mood: VisionBoardMood): BoardExperienceState {
+  if (mood === "learn") return "learn";
+  if (mood === "active") return "effort";
+  if (mood === "success") return "feedback-success";
+  if (mood === "miss") return "feedback-miss";
+  if (mood === "explore") return "explore";
+  if (mood === "memory") return "memory";
+  return "observe";
+}
 
 function countPieces(fen: string): number {
   const placement = fen.split(" ")[0] ?? "";
@@ -41,24 +58,38 @@ export function VisionBoard({
   moment,
   interactive = false,
   mood = "calm",
+  experienceState,
   showGuides = true,
   testId = "v2-vision-board",
 }: VisionBoardProps) {
   const arrows: BoardArrow[] = showGuides ? [moment.arrow] : [];
+  const boardState = experienceState ?? getDefaultExperienceState(mood);
+  const boardTone = getBoardExperienceTone(boardState);
+  const stateCopy = getBoardStateCopy(boardState);
 
   return (
     <div
-      className={`v2-vision-board-shell is-${mood} ${showGuides ? "has-guides" : "has-hidden-guides"}`}
+      className={`v2-vision-board-shell is-${boardTone} ${showGuides ? "has-guides" : "has-hidden-guides"}`}
       data-board-cases="64"
       data-board-kind="vision-main-board"
-      data-board-mood={mood}
+      data-board-mood={boardTone}
+      data-board-state={boardState}
+      data-board-tone={boardTone}
+      data-board-state-label={stateCopy.label}
+      data-board-state-copy={stateCopy.microcopy}
       data-piece-count={countPieces(moment.fen)}
       data-guides-visible={showGuides ? "true" : "false"}
       data-solution-visible={showGuides ? "true" : "false"}
-      data-tone={mood}
+      data-tone={boardTone}
       data-v2-stage-board="true"
       data-testid={`${testId}-shell`}
     >
+      <div className="v2-board-state-aura" aria-hidden="true" />
+      <div className="v2-board-state-breath" aria-hidden="true" />
+      <div className="v2-board-effort-silence" aria-hidden="true" />
+      <div className="v2-board-feedback-reveal" aria-hidden="true" />
+      <div className="v2-board-explore-branch-layer" aria-hidden="true" />
+      <div className="v2-board-memory-preview-layer" aria-hidden="true" />
       <ChessBoardPanel
         fen={moment.fen}
         disabled={!interactive}

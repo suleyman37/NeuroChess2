@@ -3,9 +3,11 @@ import { VisionBoard } from "./VisionBoard";
 import { VisionLinePlayer } from "./VisionLinePlayer";
 import { visionMoments } from "./visionMockData";
 import {
-  getBoardStageTone,
+  canShowSolutionGuidesForBoardState,
+  getBoardExperienceState,
+  getBoardExperienceTone,
+  getBoardStateCopy,
   getExplorerLocalSignal,
-  getModeNarrativeCopy,
   shouldShowDecisionGuides,
   type VisionState,
 } from "./visionState";
@@ -23,24 +25,20 @@ export function ExplorerVision({ state, setState, onBack }: ExplorerVisionProps)
   const analyzed = phase === "analyzed";
   const analyzing = phase === "analyzing";
   const localSignal = getExplorerLocalSignal();
-  const boardTone = getBoardStageTone({
-    surface: "explorer",
-    explorerPhase: phase,
-    explorerAnalyzed: analyzed,
-    linePlayerOpen: state.linePlayerOpen,
+  const boardExperienceState = getBoardExperienceState({
+    view: "explorer",
+    explorerState: analyzed ? "analysis" : phase === "initial" ? "empty" : "branch",
   });
-  const narrative = getModeNarrativeCopy({
-    surface: "explorer",
-    explorerPhase: phase,
-    explorerAnalyzed: analyzed,
-    linePlayerOpen: state.linePlayerOpen,
-  });
-  const showDecisionGuides = shouldShowDecisionGuides({
-    surface: "explorer",
-    explorerPhase: phase,
-    explorerAnalyzed: analyzed,
-    linePlayerOpen: state.linePlayerOpen,
-  });
+  const boardTone = getBoardExperienceTone(boardExperienceState);
+  const boardStateCopy = getBoardStateCopy(boardExperienceState);
+  const showDecisionGuides =
+    canShowSolutionGuidesForBoardState(boardExperienceState) &&
+    shouldShowDecisionGuides({
+      surface: "explorer",
+      explorerPhase: phase,
+      explorerAnalyzed: analyzed,
+      linePlayerOpen: state.linePlayerOpen,
+    });
 
   const createBranch = () =>
     setState((current) => ({
@@ -75,7 +73,12 @@ export function ExplorerVision({ state, setState, onBack }: ExplorerVisionProps)
     }));
 
   return (
-    <section className={`v2-vision-focus v2-vision-explorer-lab is-${phase}`} data-stage-tone={boardTone} data-testid="v2-vision-explorer">
+    <section
+      className={`v2-vision-focus v2-vision-explorer-lab is-${phase}`}
+      data-stage-tone={boardTone}
+      data-board-state={boardExperienceState}
+      data-testid="v2-vision-explorer"
+    >
       <aside className="v2-vision-rail v2-vision-explorer-rail">
         <span className="v2-vision-kicker">Atelier</span>
         <h3>Branche</h3>
@@ -96,17 +99,32 @@ export function ExplorerVision({ state, setState, onBack }: ExplorerVisionProps)
         )}
       </aside>
 
-      <section className={`v2-vision-board-stage v2-vision-explorer-stage is-${phase}`} data-tone={boardTone}>
+      <section
+        className={`v2-vision-board-stage v2-vision-explorer-stage is-${phase}`}
+        data-tone={boardTone}
+        data-board-state={boardExperienceState}
+        data-board-tone={boardTone}
+      >
         <header className="v2-vision-board-strip">
           <button className="v2-vision-ghost" type="button" onClick={onBack}>Retour</button>
           <span>Explorer · idée testée</span>
           <strong className="v2-vision-local-chip">{localSignal.chip}</strong>
-          <em className="v2-vision-mode-cue" data-testid="v2-vision-explorer-cue">{narrative}</em>
+          <span
+            className="v2-stage__meta"
+            data-testid="v2-vision-explorer-state-meta"
+            data-state-copy={boardStateCopy.microcopy}
+            aria-label={`${boardStateCopy.label}. ${boardStateCopy.microcopy}`}
+          >
+            <span className="v2-stage__state-pill v2-vision-mode-cue" data-testid="v2-vision-explorer-cue">
+              {boardStateCopy.label}
+            </span>
+          </span>
         </header>
         <VisionBoard
           moment={moment}
           interactive
           mood={boardTone}
+          experienceState={boardExperienceState}
           showGuides={showDecisionGuides}
           testId="v2-vision-explorer-board"
         />

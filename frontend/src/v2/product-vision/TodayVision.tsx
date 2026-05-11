@@ -68,13 +68,16 @@ export function TodayVision({ setState }: TodayVisionProps) {
           className="v2-vision-today-visual v2-stage v2-vision-story-stage"
           aria-label="Aperçu mission"
           data-testid="v2-board-stage"
-          data-tone="active"
+          data-tone="memory"
+          data-board-state="memory"
+          data-board-tone="memory"
           data-v2-stage="today-board"
           data-motion="subtle"
         >
           <div className="v2-stage__top">
             <span className="v2-stage__label">Décision du jour</span>
             <strong className="v2-stage__status">Qxb7? · Défense du roi</strong>
+            <span className="v2-board-memory-token" aria-hidden="true">Mémoire</span>
           </div>
           <div className="v2-stage__board">
             <VisionMiniBoard

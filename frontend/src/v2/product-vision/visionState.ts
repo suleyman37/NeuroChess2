@@ -78,7 +78,35 @@ export function getVisionPrimaryLabel(state: VisionState): string {
   return "Commencer";
 }
 
-export type VisionBoardStageTone = "calm" | "learn" | "active" | "success" | "explore";
+export type VisionBoardStageTone = "calm" | "learn" | "active" | "success" | "miss" | "explore" | "memory";
+
+export type BoardExperienceState =
+  | "observe"
+  | "learn"
+  | "effort"
+  | "feedback-success"
+  | "feedback-miss"
+  | "explore"
+  | "memory";
+
+export type BoardExperienceTone =
+  | "calm"
+  | "learn"
+  | "active"
+  | "success"
+  | "miss"
+  | "explore"
+  | "memory";
+
+export type BoardExperienceParams = {
+  view?: "today" | "games" | "training" | "decision-lab" | "practice" | "explorer" | "profile";
+  reviewMode?: "summary" | "learn" | "replay" | "explore";
+  practiceState?: "ready" | "attempting" | "feedback" | "correction";
+  feedbackKind?: "success" | "miss" | "neutral";
+  explorerState?: "empty" | "branch" | "analysis" | "feedback";
+  memoryPreview?: boolean;
+  noSpoiler?: boolean;
+};
 
 export type VisionDecisionGuideContext = {
   surface: "decisionLab" | "practice" | "explorer";
@@ -89,6 +117,92 @@ export type VisionDecisionGuideContext = {
   explorerAnalyzed?: boolean;
   linePlayerOpen?: boolean;
 };
+
+export function getBoardExperienceState(params: BoardExperienceParams): BoardExperienceState {
+  if (params.memoryPreview) {
+    return "memory";
+  }
+
+  if (params.view === "today") {
+    return "observe";
+  }
+
+  if (params.view === "training") {
+    return "memory";
+  }
+
+  if (params.view === "explorer" || params.reviewMode === "explore") {
+    return "explore";
+  }
+
+  if (params.view === "practice") {
+    if (params.practiceState === "feedback") {
+      return params.feedbackKind === "miss" ? "feedback-miss" : "feedback-success";
+    }
+    if (params.practiceState === "correction") {
+      return params.feedbackKind === "success" ? "feedback-success" : "feedback-miss";
+    }
+    return "effort";
+  }
+
+  if (params.view === "decision-lab") {
+    if (params.reviewMode === "learn") {
+      return "learn";
+    }
+    if (params.reviewMode === "replay") {
+      if (params.feedbackKind === "miss") {
+        return "feedback-miss";
+      }
+      if (params.feedbackKind === "success") {
+        return "feedback-success";
+      }
+      return "effort";
+    }
+    return "observe";
+  }
+
+  return "observe";
+}
+
+export function getBoardExperienceTone(state: BoardExperienceState): BoardExperienceTone {
+  if (state === "observe") return "calm";
+  if (state === "learn") return "learn";
+  if (state === "effort") return "active";
+  if (state === "feedback-success") return "success";
+  if (state === "feedback-miss") return "miss";
+  if (state === "explore") return "explore";
+  return "memory";
+}
+
+export function getBoardStateCopy(state: BoardExperienceState): { label: string; status?: string; microcopy: string } {
+  if (state === "observe") {
+    return { label: "Observation", microcopy: "Observe la décision." };
+  }
+  if (state === "learn") {
+    return { label: "Repères", microcopy: "Les indices utiles sont visibles." };
+  }
+  if (state === "effort") {
+    return { label: "À toi", microcopy: "Trouve le coup sans aide visible." };
+  }
+  if (state === "feedback-success") {
+    return { label: "Consolidé", microcopy: "La décision tient." };
+  }
+  if (state === "feedback-miss") {
+    return { label: "Correction", microcopy: "On ralentit et on corrige." };
+  }
+  if (state === "explore") {
+    return { label: "Atelier local", microcopy: "Teste une branche sans modifier l’entraînement." };
+  }
+  return { label: "Mémoire", microcopy: "Cette position reviendra." };
+}
+
+export function shouldDimContextForBoardState(state: BoardExperienceState): boolean {
+  return state === "effort" || state === "feedback-success" || state === "feedback-miss";
+}
+
+export function canShowSolutionGuidesForBoardState(state: BoardExperienceState): boolean {
+  return state !== "effort";
+}
 
 export function shouldShowDecisionGuides(context: VisionDecisionGuideContext): boolean {
   if (context.linePlayerOpen) {
@@ -120,12 +234,11 @@ export function shouldShowDecisionGuides(context: VisionDecisionGuideContext): b
 
 export function getBoardStageTone(context: VisionDecisionGuideContext): VisionBoardStageTone {
   if (context.surface === "practice") {
-    if (
-      context.practicePhase === "feedback_success" ||
-      context.practicePhase === "feedback_wrong" ||
-      context.practicePhase === "correction"
-    ) {
+    if (context.practicePhase === "feedback_success") {
       return "success";
+    }
+    if (context.practicePhase === "feedback_wrong" || context.practicePhase === "correction") {
+      return "miss";
     }
     return "active";
   }

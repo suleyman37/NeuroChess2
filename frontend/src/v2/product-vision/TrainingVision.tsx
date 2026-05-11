@@ -131,8 +131,14 @@ export function TrainingVision({ setState }: TrainingVisionProps) {
           </article>
         </section>
 
-        <aside className="v2-vision-panel v2-vision-training-preview">
+        <aside
+          className="v2-vision-panel v2-vision-training-preview"
+          data-board-state="memory"
+          data-board-tone="memory"
+          data-testid="v2-vision-training-memory-preview"
+        >
           <span className="v2-vision-kicker">Aperçu position</span>
+          <span className="v2-board-memory-token" aria-hidden="true">Mémoire</span>
           <h3>{previewMoment.san} · {visionPracticeItems[0].type}</h3>
           <VisionMiniBoard
             fen={previewMoment.fen}

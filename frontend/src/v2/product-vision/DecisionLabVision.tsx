@@ -3,9 +3,14 @@ import { VisionBoard, type VisionBoardMood } from "./VisionBoard";
 import { VisionLinePlayer } from "./VisionLinePlayer";
 import { visionMoments, type VisionDecisionMode, type VisionMoment } from "./visionMockData";
 import {
+  canShowSolutionGuidesForBoardState,
+  getBoardExperienceState,
+  getBoardExperienceTone,
   getBoardStageTone,
+  getBoardStateCopy,
   getExplorerLocalSignal,
   getModeNarrativeCopy,
+  shouldDimContextForBoardState,
   shouldShowDecisionGuides,
   type VisionState,
 } from "./visionState";
@@ -73,6 +78,16 @@ export function DecisionLabVision({ state, setState, onBack }: DecisionLabVision
     explorerAnalyzed: state.explorerAnalyzed,
     linePlayerOpen: state.linePlayerOpen,
   });
+  const boardExperienceState = getBoardExperienceState({
+    view: "decision-lab",
+    reviewMode: state.decisionMode,
+    feedbackKind: state.decisionMode === "replay" && state.replayPhase === "feedback" ? "success" : "neutral",
+    explorerState: state.explorerAnalyzed ? "analysis" : "empty",
+    noSpoiler: state.decisionMode === "replay" && state.replayPhase !== "feedback",
+  });
+  const boardExperienceTone = getBoardExperienceTone(boardExperienceState);
+  const boardStateCopy = getBoardStateCopy(boardExperienceState);
+  const dimContext = shouldDimContextForBoardState(boardExperienceState);
   const modeNarrative = getModeNarrativeCopy({
     surface: "decisionLab",
     decisionMode: state.decisionMode,
@@ -80,13 +95,15 @@ export function DecisionLabVision({ state, setState, onBack }: DecisionLabVision
     explorerAnalyzed: state.explorerAnalyzed,
     linePlayerOpen: state.linePlayerOpen,
   });
-  const showDecisionGuides = shouldShowDecisionGuides({
-    surface: "decisionLab",
-    decisionMode: state.decisionMode,
-    replayPhase: state.replayPhase,
-    explorerAnalyzed: state.explorerAnalyzed,
-    linePlayerOpen: state.linePlayerOpen,
-  });
+  const showDecisionGuides =
+    canShowSolutionGuidesForBoardState(boardExperienceState) &&
+    shouldShowDecisionGuides({
+      surface: "decisionLab",
+      decisionMode: state.decisionMode,
+      replayPhase: state.replayPhase,
+      explorerAnalyzed: state.explorerAnalyzed,
+      linePlayerOpen: state.linePlayerOpen,
+    });
 
   const selectMoment = (momentId: string) =>
     setState((current) => ({
@@ -135,10 +152,14 @@ export function DecisionLabVision({ state, setState, onBack }: DecisionLabVision
     <section
       className={`v2-vision-lab is-${state.decisionMode} v2-vision-mode-signature`}
       data-active-mode={state.decisionMode}
-      data-stage-tone={boardTone}
+      data-stage-tone={boardExperienceTone}
+      data-board-state={boardExperienceState}
       data-testid="v2-vision-decision-lab"
     >
-      <aside className={`v2-vision-rail v2-vision-decision-path is-${state.decisionMode}`} data-testid="v2-vision-lab-left">
+      <aside
+        className={`v2-vision-rail v2-vision-decision-path is-${state.decisionMode}${dimContext ? " v2-context-dimmed" : ""}`}
+        data-testid="v2-vision-lab-left"
+      >
         <DecisionPath
           mode={state.decisionMode}
           selectedMoment={selectedMoment}
@@ -154,7 +175,9 @@ export function DecisionLabVision({ state, setState, onBack }: DecisionLabVision
       <section
         className={`v2-vision-board-stage v2-vision-decision-board-stage is-${state.decisionMode}`}
         data-board-stage-mode={state.decisionMode}
-        data-tone={boardTone}
+        data-tone={boardExperienceTone}
+        data-board-state={boardExperienceState}
+        data-board-tone={boardExperienceTone}
         data-testid="v2-vision-board-stage"
       >
         <header className="v2-vision-board-strip v2-vision-decision-strip">
@@ -165,14 +188,24 @@ export function DecisionLabVision({ state, setState, onBack }: DecisionLabVision
           <strong className={`v2-vision-score is-${selectedMoment.neuroBand}`}>
             {getDecisionStateLabel(selectedMoment)}
           </strong>
-          <em className="v2-vision-mode-cue" data-testid="v2-vision-mode-cue">{modeNarrative}</em>
+          <span
+            className="v2-stage__meta"
+            data-testid="v2-vision-board-state-meta"
+            data-state-copy={boardStateCopy.microcopy}
+            aria-label={`${boardStateCopy.label}. ${boardStateCopy.microcopy}`}
+          >
+            <span className="v2-stage__state-pill v2-vision-mode-cue" data-testid="v2-vision-mode-cue">
+              {boardStateCopy.label}
+            </span>
+          </span>
         </header>
 
         <div className="v2-vision-board-stage-shell">
           <VisionBoard
             moment={selectedMoment}
             interactive={state.decisionMode === "replay" || state.decisionMode === "explore"}
-            mood={boardTone as VisionBoardMood}
+            mood={boardExperienceTone as VisionBoardMood}
+            experienceState={boardExperienceState}
             showGuides={showDecisionGuides}
             testId="v2-vision-lab-board"
           />
@@ -195,7 +228,10 @@ export function DecisionLabVision({ state, setState, onBack }: DecisionLabVision
         )}
       </section>
 
-      <aside className={`v2-vision-card v2-vision-decision-card is-${state.decisionMode}`} data-testid="v2-vision-decision-card">
+      <aside
+        className={`v2-vision-card v2-vision-decision-card is-${state.decisionMode}${dimContext ? " v2-context-dimmed" : ""}`}
+        data-testid="v2-vision-decision-card"
+      >
         <nav className="v2-vision-mode-tabs v2-vision-mode-segmented" aria-label="Modes Decision Lab">
           {modeLabels.map((item) => (
             <button
