@@ -113,6 +113,8 @@ import {
   type ReviewUiStatus,
   type ReviewUiState,
 } from "./reviewState";
+import { DecisionLabPreview } from "./v2/review-lab/DecisionLabPreview";
+import { V2VisionApp } from "./v2/product-vision/V2VisionApp";
 
 type BusyState = "idle" | "new-game" | "move" | "finish" | "load-game";
 type PositionMode = "LIVE" | "HISTORICAL" | "REVIEW";
@@ -351,20 +353,48 @@ const HISTORY_SCOPE_FILTERS: Array<{ scope: HistoryScope; label: string }> = [
   { scope: "all", label: "Toutes" },
 ];
 
+function isDecisionLabDevRoute(): boolean {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return false;
+  }
+  const params = new URLSearchParams(window.location.search);
+  return window.location.hash === "#/v2-review-lab" || params.get("v2ReviewLab") === "1";
+}
+
+function isV2VisionDevRoute(): boolean {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return false;
+  }
+  const params = new URLSearchParams(window.location.search);
+  return window.location.hash === "#/v2-vision" || params.get("v2Vision") === "1";
+}
+
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<NeuroChessRoute>(() =>
     normalizeRoute(readCurrentPath()),
+  );
+  const [showDecisionLabPreview, setShowDecisionLabPreview] = useState(() =>
+    isDecisionLabDevRoute(),
+  );
+  const [showV2VisionPreview, setShowV2VisionPreview] = useState(() =>
+    isV2VisionDevRoute(),
   );
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return undefined;
     }
-    const handlePopState = () => {
+    const handleRouteChange = () => {
       setCurrentRoute(normalizeRoute(window.location.pathname));
+      setShowDecisionLabPreview(isDecisionLabDevRoute());
+      setShowV2VisionPreview(isV2VisionDevRoute());
     };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    window.addEventListener("popstate", handleRouteChange);
+    window.addEventListener("hashchange", handleRouteChange);
+    return () => {
+      window.removeEventListener("popstate", handleRouteChange);
+      window.removeEventListener("hashchange", handleRouteChange);
+    };
   }, []);
 
   const navigateTo = (route: NeuroChessRoute) => {
@@ -376,6 +406,34 @@ export default function App() {
     }
     setCurrentRoute(route);
   };
+
+  if (showDecisionLabPreview) {
+    return (
+      <DecisionLabPreview
+        onExit={() => {
+          if (typeof window !== "undefined") {
+            window.history.pushState({ neurochessRoute: "/app" }, "", "/app");
+            setCurrentRoute("/app");
+          }
+          setShowDecisionLabPreview(false);
+        }}
+      />
+    );
+  }
+
+  if (showV2VisionPreview) {
+    return (
+      <V2VisionApp
+        onExit={() => {
+          if (typeof window !== "undefined") {
+            window.history.pushState({ neurochessRoute: "/app" }, "", "/app");
+            setCurrentRoute("/app");
+          }
+          setShowV2VisionPreview(false);
+        }}
+      />
+    );
+  }
 
   if (currentRoute === "/app") {
     return <NeuroChessApp onNavigateHome={() => navigateTo("/")} />;
