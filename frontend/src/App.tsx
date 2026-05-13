@@ -115,6 +115,7 @@ import {
 } from "./reviewState";
 import { DecisionLabPreview } from "./v2/review-lab/DecisionLabPreview";
 import { V2VisionApp } from "./v2/product-vision/V2VisionApp";
+import { RexApp } from "./rex/RexApp";
 
 type BusyState = "idle" | "new-game" | "move" | "finish" | "load-game";
 type PositionMode = "LIVE" | "HISTORICAL" | "REVIEW";
@@ -369,6 +370,14 @@ function isV2VisionDevRoute(): boolean {
   return window.location.hash === "#/v2-vision" || params.get("v2Vision") === "1";
 }
 
+function isRexDevRoute(): boolean {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return false;
+  }
+  const params = new URLSearchParams(window.location.search);
+  return window.location.pathname === "/app" && params.get("rex") === "1";
+}
+
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<NeuroChessRoute>(() =>
     normalizeRoute(readCurrentPath()),
@@ -379,6 +388,7 @@ export default function App() {
   const [showV2VisionPreview, setShowV2VisionPreview] = useState(() =>
     isV2VisionDevRoute(),
   );
+  const [showRexPreview, setShowRexPreview] = useState(() => isRexDevRoute());
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -388,6 +398,7 @@ export default function App() {
       setCurrentRoute(normalizeRoute(window.location.pathname));
       setShowDecisionLabPreview(isDecisionLabDevRoute());
       setShowV2VisionPreview(isV2VisionDevRoute());
+      setShowRexPreview(isRexDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -433,6 +444,10 @@ export default function App() {
         }}
       />
     );
+  }
+
+  if (showRexPreview) {
+    return <RexApp />;
   }
 
   if (currentRoute === "/app") {

@@ -1,0 +1,331 @@
+.rex-shell {
+  min-height: 100vh;
+  color: #f6f7fb;
+  background:
+    radial-gradient(circle at 16% 10%, rgba(37, 211, 162, 0.18), transparent 34rem),
+    radial-gradient(circle at 84% 18%, rgba(112, 92, 255, 0.16), transparent 30rem),
+    linear-gradient(135deg, #07090f 0%, #111827 52%, #09120f 100%);
+  padding: 24px clamp(24px, 4vw, 56px) 32px;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.rex-shell *,
+.rex-shell *::before,
+.rex-shell *::after {
+  box-sizing: border-box;
+}
+
+.rex-shell__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+  gap: 20px;
+  align-items: end;
+  max-width: 1180px;
+  margin: 0 auto 16px;
+}
+
+.rex-shell__kicker,
+.rex-eyebrow {
+  margin: 14px 0 8px;
+  color: #8ee9d2;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.rex-shell__header h1,
+.rex-surface__hero h1 {
+  margin: 0;
+  max-width: 760px;
+  color: #ffffff;
+  font-weight: 780;
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+.rex-shell__header h1 {
+  font-size: clamp(1.9rem, 3.2vw, 3.4rem);
+}
+
+.rex-surface__hero h1 {
+  font-size: clamp(1.9rem, 2.8vw, 3.1rem);
+}
+
+.rex-shell__header p,
+.rex-surface__promise,
+.rex-empty-state p,
+.rex-surface-card p,
+.rex-metric-placeholder__note {
+  color: #c7d2de;
+  line-height: 1.55;
+}
+
+.rex-shell__header p {
+  max-width: 720px;
+  margin: 12px 0 0;
+  font-size: 1rem;
+}
+
+.rex-shell__doctrine {
+  border: 1px solid rgba(142, 233, 210, 0.22);
+  border-radius: 8px;
+  padding: 18px;
+  background: rgba(10, 18, 23, 0.72);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.rex-shell__doctrine strong,
+.rex-shell__doctrine span {
+  display: block;
+}
+
+.rex-shell__doctrine strong {
+  color: #f9fbff;
+  font-size: 1rem;
+}
+
+.rex-shell__doctrine span {
+  margin-top: 8px;
+  color: #9fb0bd;
+  font-size: 0.92rem;
+}
+
+.rex-prototype-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 0 12px;
+  color: #dffbf3;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.rex-prototype-badge.compact {
+  min-height: 24px;
+  padding-inline: 10px;
+  font-size: 0.72rem;
+}
+
+.rex-nav {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  max-width: 1180px;
+  margin: 0 auto 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 8px;
+  background: rgba(6, 10, 16, 0.62);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.24);
+}
+
+.rex-nav__item {
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #aebccb;
+  background: transparent;
+  font: inherit;
+  font-weight: 760;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.rex-nav__item:hover,
+.rex-nav__item:focus-visible {
+  color: #ffffff;
+  border-color: rgba(142, 233, 210, 0.3);
+  background: rgba(255, 255, 255, 0.06);
+  outline: none;
+}
+
+.rex-nav__item:focus-visible {
+  box-shadow: 0 0 0 3px rgba(52, 230, 161, 0.22);
+}
+
+.rex-nav__item.active {
+  color: #06120f;
+  background: linear-gradient(135deg, #8ee9d2, #d6f7a4);
+  box-shadow: 0 12px 32px rgba(52, 230, 161, 0.22);
+}
+
+.rex-nav__item.active:hover {
+  transform: translateY(-1px);
+}
+
+.rex-shell__content {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.rex-surface {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 8px;
+  padding: clamp(20px, 2.6vw, 30px);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+    rgba(6, 9, 14, 0.76);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+.rex-surface__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 260px);
+  gap: 24px;
+  align-items: end;
+}
+
+.rex-surface__promise {
+  max-width: 760px;
+  margin: 12px 0 0;
+  font-size: 1.02rem;
+}
+
+.rex-primary-cta {
+  min-height: 48px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 18px;
+  color: #07110f;
+  background: linear-gradient(135deg, #f5f7ff, #9df0df);
+  font: inherit;
+  font-weight: 800;
+  cursor: default;
+  box-shadow: 0 18px 38px rgba(52, 230, 161, 0.2);
+}
+
+.rex-primary-cta::after {
+  content: "prototype";
+  display: inline-flex;
+  margin-left: 10px;
+  border-radius: 999px;
+  padding: 3px 8px;
+  color: #23413a;
+  background: rgba(7, 17, 15, 0.1);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.rex-surface__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.84fr);
+  gap: 16px;
+}
+
+.rex-empty-state,
+.rex-metric-placeholder,
+.rex-surface-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.rex-empty-state {
+  padding: 18px;
+}
+
+.rex-empty-state h2,
+.rex-surface-card h3 {
+  margin: 0;
+  color: #ffffff;
+  letter-spacing: 0;
+}
+
+.rex-empty-state p,
+.rex-surface-card p {
+  margin: 10px 0 0;
+}
+
+.rex-metric-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.rex-metric-placeholder {
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+}
+
+.rex-metric-placeholder__label {
+  color: #93a4b5;
+  font-size: 0.78rem;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.rex-metric-placeholder strong {
+  color: #ffffff;
+  font-size: 1.12rem;
+}
+
+.rex-metric-placeholder__note {
+  font-size: 0.85rem;
+}
+
+.rex-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.rex-surface-card {
+  min-height: 132px;
+  padding: 16px;
+}
+
+.rex-surface-card__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  padding: 0 9px;
+  color: #baf7e5;
+  background: rgba(52, 230, 161, 0.12);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .rex-shell {
+    padding: 20px 14px 28px;
+  }
+
+  .rex-shell__header,
+  .rex-surface__hero,
+  .rex-surface__body,
+  .rex-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rex-nav {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rex-nav__item {
+    transition: none;
+  }
+}
