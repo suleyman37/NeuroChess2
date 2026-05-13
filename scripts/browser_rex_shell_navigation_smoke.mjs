@@ -8,42 +8,42 @@ import {
   normalizeText,
 } from "./browser_test_helpers.mjs";
 
-const MISSION = "R1D.REX-SHELL-AURA-RESTRAINT-AND-PREMIUM-CONTRAST-PASS-V1";
+const MISSION = "R1G.REX-HYBRID-ART-DIRECTION-APPLICATION-AND-VISUAL-QA-V2";
 const QA_ROOT = path.join(
   process.env.USERPROFILE ?? "C:\\Users\\bahij",
   "OneDrive",
   "Desktop",
   "NeuroChess_QA_Artifacts",
-  "R1D_REX_SHELL_AURA_RESTRAINT_AND_PREMIUM_CONTRAST_PASS_V1",
+  "R1G_HYBRID_ART_DIRECTION_APPLICATION_AND_VISUAL_QA_V2",
 );
 const SCREENSHOT_DIR = path.join(QA_ROOT, "screenshots");
 const EVIDENCE_DIR = path.join(QA_ROOT, "browser_evidence");
 
 const SURFACES = [
-  { id: "qg", navTestId: "rex-nav-qg", surfaceTestId: "rex-surface-qg", screenshot: "rex_qg_r1d.png" },
+  { id: "qg", navTestId: "rex-nav-qg", surfaceTestId: "rex-surface-qg", screenshot: "rex_qg_r1g.png" },
   {
     id: "parties",
     navTestId: "rex-nav-parties",
     surfaceTestId: "rex-surface-parties",
-    screenshot: "rex_parties_r1d.png",
+    screenshot: "rex_parties_r1g.png",
   },
   {
     id: "forge",
     navTestId: "rex-nav-forge",
     surfaceTestId: "rex-surface-forge",
-    screenshot: "rex_forge_r1d.png",
+    screenshot: "rex_forge_r1g.png",
   },
   {
     id: "arene",
     navTestId: "rex-nav-arene",
     surfaceTestId: "rex-surface-arene",
-    screenshot: "rex_arene_r1d.png",
+    screenshot: "rex_arene_r1g.png",
   },
   {
     id: "profil",
     navTestId: "rex-nav-profil",
     surfaceTestId: "rex-surface-profil",
-    screenshot: "rex_profil_r1d.png",
+    screenshot: "rex_profil_r1g.png",
   },
 ];
 
@@ -167,11 +167,11 @@ async function main() {
       await assertForbiddenTextAbsent();
       await captureScreenshot(surface.screenshot);
       if (surface.id === "qg") {
-        await captureScreenshot("rex_motion_qg_1.png");
+        await captureScreenshot("rex_qg_r1g_motion_1.png");
         await delay(2200);
-        await captureScreenshot("rex_motion_qg_2.png");
+        await captureScreenshot("rex_qg_r1g_motion_2.png");
         await delay(2200);
-        await captureScreenshot("rex_motion_qg_3.png");
+        await captureScreenshot("rex_qg_r1g_motion_3.png");
       }
     }
 

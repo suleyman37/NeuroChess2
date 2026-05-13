@@ -883,3 +883,509 @@
     display: none;
   }
 }
+
+/* R1G hybrid art direction: tactical structure, constellation identity, controlled RPG motivation. */
+.rex-shell {
+  --rex-graphite: #050812;
+  --rex-panel-deep: rgba(4, 7, 13, 0.86);
+  background:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--rex-accent) 13%, transparent), transparent 30rem),
+    linear-gradient(90deg, rgba(128, 178, 210, 0.045) 1px, transparent 1px) 0 0 / 84px 84px,
+    linear-gradient(rgba(128, 178, 210, 0.035) 1px, transparent 1px) 0 0 / 84px 84px,
+    linear-gradient(135deg, #03050b 0%, #08111d 48%, #040812 100%);
+}
+
+.rex-shell__header,
+.rex-nav,
+.rex-shell__content {
+  max-width: 1280px;
+}
+
+.rex-shell__header {
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 340px);
+}
+
+.rex-shell__doctrine {
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--rex-accent) 9%, transparent), transparent),
+    rgba(5, 9, 16, 0.78);
+}
+
+.rex-nav {
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    rgba(4, 7, 13, 0.78);
+}
+
+.rex-nav::before {
+  border-radius: 10px;
+}
+
+.rex-surface {
+  gap: 18px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--surface-accent) 9%, transparent), transparent 24rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012)),
+    rgba(4, 7, 13, 0.94);
+}
+
+.rex-surface::before {
+  inset: -22% 8% 70% 8%;
+  opacity: 0.18;
+  filter: blur(42px);
+}
+
+.rex-surface::after {
+  opacity: 0.18;
+}
+
+.rex-surface__hero {
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 250px);
+}
+
+.rex-signal-row {
+  gap: 7px;
+}
+
+.rex-signal-pill {
+  border-color: color-mix(in srgb, var(--surface-line) 76%, rgba(255, 255, 255, 0.08));
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.rex-surface__instrument {
+  display: grid;
+  grid-template-columns: minmax(0, 1.52fr) minmax(260px, 0.58fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.rex-artifact,
+.rex-instrument-brief {
+  border: 1px solid rgba(255, 255, 255, 0.105);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    var(--rex-panel-deep);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.rex-artifact {
+  position: relative;
+  overflow: hidden;
+  min-height: 340px;
+  padding: 18px;
+  border-color: color-mix(in srgb, var(--surface-line) 72%, rgba(255, 255, 255, 0.08));
+}
+
+.rex-artifact::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.032) 1px, transparent 1px) 0 0 / 42px 42px,
+    linear-gradient(rgba(255, 255, 255, 0.026) 1px, transparent 1px) 0 0 / 42px 42px;
+  mask-image: radial-gradient(circle at 50% 42%, black, transparent 82%);
+}
+
+.rex-artifact::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 45% 24%, color-mix(in srgb, var(--surface-accent) 13%, transparent), transparent 38%);
+  opacity: 0.8;
+}
+
+.rex-artifact > * {
+  position: relative;
+  z-index: 1;
+}
+
+.rex-artifact__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  color: #dce9f7;
+}
+
+.rex-artifact__header span,
+.rex-command-card__label {
+  color: var(--surface-accent);
+  font-size: 0.73rem;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.rex-artifact__header strong {
+  color: rgba(234, 244, 255, 0.74);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.rex-mission-core {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  min-height: 150px;
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid var(--surface-line);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 15% 50%, color-mix(in srgb, var(--surface-accent) 14%, transparent), transparent 45%),
+    rgba(3, 7, 12, 0.74);
+}
+
+.rex-mission-core__orb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 138px;
+  height: 138px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(245, 255, 250, 0.18) 0 24%, transparent 25%),
+    conic-gradient(from 120deg, var(--surface-accent), transparent 34%, var(--surface-strong) 62%, transparent 80%, var(--surface-accent));
+  box-shadow: 0 0 34px color-mix(in srgb, var(--surface-accent) 22%, transparent);
+  animation: rex-mission-core-breathe 10s ease-in-out infinite;
+}
+
+.rex-mission-core__orb span {
+  width: 78px;
+  height: 78px;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.48), transparent 24%),
+    rgba(4, 8, 14, 0.88);
+}
+
+.rex-mission-core__copy p,
+.rex-constellation .node-label,
+.rex-rank-totem span,
+.rex-habit-signal span,
+.rex-truth-chain__verdict span {
+  margin: 0 0 7px;
+  color: var(--surface-accent);
+  font-size: 0.75rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.rex-mission-core__copy h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.55rem, 2.5vw, 2.25rem);
+  line-height: 1.08;
+}
+
+.rex-mission-core__copy span {
+  display: block;
+  margin-top: 10px;
+  color: #c7d2de;
+  line-height: 1.5;
+}
+
+.rex-artifact .rex-flow-rail {
+  min-height: 118px;
+}
+
+.rex-artifact .rex-flow-rail li {
+  min-height: 104px;
+  border-color: rgba(255, 255, 255, 0.085);
+  background: rgba(255, 255, 255, 0.038);
+}
+
+.rex-truth-chain__verdict {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--surface-line) 75%, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  background: rgba(2, 8, 15, 0.72);
+}
+
+.rex-truth-chain__verdict strong {
+  color: #f7fbff;
+  font-size: 1.02rem;
+}
+
+.rex-forge-core {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 120px minmax(120px, 1fr);
+  gap: 14px;
+  align-items: center;
+  min-height: 146px;
+  margin-bottom: 18px;
+}
+
+.rex-forge-core__anvil {
+  position: relative;
+  height: 98px;
+  border: 1px solid rgba(255, 226, 161, 0.22);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 218, 138, 0.24), transparent 38%),
+    rgba(9, 7, 4, 0.72);
+  box-shadow: 0 0 30px rgba(217, 168, 74, 0.14);
+}
+
+.rex-forge-core__anvil span {
+  position: absolute;
+  left: 26px;
+  right: 26px;
+  top: 28px;
+  height: 36px;
+  border-radius: 8px 8px 16px 16px;
+  background: linear-gradient(180deg, #f0c977, #7e4d25);
+  opacity: 0.72;
+  animation: rex-forge-core-heat 7s ease-in-out infinite;
+}
+
+.rex-transfer-lanes {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.rex-transfer-lane {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr) 150px;
+  gap: 12px;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.032);
+}
+
+.rex-transfer-lane span {
+  color: #ffffff;
+  font-weight: 850;
+}
+
+.rex-transfer-lane i {
+  position: relative;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.rex-transfer-lane i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 42%;
+  background: linear-gradient(90deg, transparent, var(--surface-accent), transparent);
+  animation: rex-transfer-lane-scan 8s ease-in-out infinite;
+}
+
+.rex-transfer-lane strong {
+  color: rgba(237, 244, 255, 0.76);
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.rex-progression-map {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(230px, 0.95fr) minmax(190px, 0.72fr);
+  gap: 14px;
+  min-height: 180px;
+  margin-bottom: 18px;
+}
+
+.rex-artifact--profile .rex-constellation {
+  width: 100%;
+  height: 176px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(200, 168, 255, 0.16), transparent 46%),
+    rgba(4, 6, 14, 0.72);
+}
+
+.rex-artifact--profile .rex-constellation .node-main {
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+}
+
+.rex-artifact--profile .rex-constellation .node-a {
+  left: 18%;
+  top: 28%;
+}
+
+.rex-artifact--profile .rex-constellation .node-b {
+  right: 18%;
+  top: 22%;
+}
+
+.rex-artifact--profile .rex-constellation .node-c {
+  left: 22%;
+  bottom: 20%;
+}
+
+.rex-artifact--profile .rex-constellation .node-d {
+  right: 20%;
+  bottom: 18%;
+}
+
+.rex-rank-totem,
+.rex-habit-signal {
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.rex-rank-totem {
+  align-self: start;
+}
+
+.rex-rank-totem strong,
+.rex-habit-signal strong {
+  display: block;
+  color: #ffffff;
+}
+
+.rex-rank-totem em {
+  display: inline-flex;
+  margin-top: 9px;
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: #07110f;
+  background: linear-gradient(135deg, var(--surface-accent), var(--surface-strong));
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.rex-habit-signal {
+  align-self: end;
+  grid-column: 2;
+}
+
+.rex-instrument-brief {
+  display: grid;
+  align-content: center;
+  padding: 20px;
+  border-color: color-mix(in srgb, var(--surface-line) 60%, rgba(255, 255, 255, 0.08));
+}
+
+.rex-instrument-brief h2 {
+  margin: 10px 0 0;
+  color: #ffffff;
+  font-size: 1.28rem;
+  line-height: 1.16;
+}
+
+.rex-instrument-brief p {
+  margin: 12px 0 0;
+  color: #c7d2de;
+  line-height: 1.5;
+}
+
+.rex-surface__support {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  gap: 14px;
+  opacity: 0.92;
+}
+
+.rex-metric-grid {
+  grid-template-columns: 1fr;
+}
+
+.rex-metric-placeholder {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.026);
+}
+
+.rex-card-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.rex-surface-card {
+  min-height: 112px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: none;
+}
+
+.rex-surface-card__status {
+  background: transparent;
+  padding: 0;
+  margin-bottom: 10px;
+}
+
+@keyframes rex-mission-core-breathe {
+  0%,
+  100% {
+    transform: scale(0.985);
+    opacity: 0.84;
+  }
+  50% {
+    transform: scale(1.018);
+    opacity: 1;
+  }
+}
+
+@keyframes rex-forge-core-heat {
+  0%,
+  100% {
+    opacity: 0.58;
+    box-shadow: 0 0 12px rgba(217, 168, 74, 0.14);
+  }
+  50% {
+    opacity: 0.86;
+    box-shadow: 0 0 24px rgba(217, 168, 74, 0.24);
+  }
+}
+
+@keyframes rex-transfer-lane-scan {
+  0%,
+  24% {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  42%,
+  76% {
+    opacity: 0.78;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(260%);
+  }
+}
+
+@media (max-width: 900px) {
+  .rex-surface__instrument,
+  .rex-surface__support,
+  .rex-forge-core,
+  .rex-progression-map {
+    grid-template-columns: 1fr;
+  }
+
+  .rex-habit-signal {
+    grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rex-mission-core__orb,
+  .rex-forge-core__anvil span,
+  .rex-transfer-lane i::after {
+    animation: none;
+  }
+}
