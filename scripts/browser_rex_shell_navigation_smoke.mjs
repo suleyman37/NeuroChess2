@@ -4,45 +4,46 @@ import path from "node:path";
 import {
   BrowserSmokeHarness,
   createEvidence,
+  delay,
   normalizeText,
 } from "./browser_test_helpers.mjs";
 
-const MISSION = "R1.GREENFIELD-FRONTEND-SHELL-5-SURFACES-DEV-ROUTE-V1";
+const MISSION = "R1D.REX-SHELL-AURA-RESTRAINT-AND-PREMIUM-CONTRAST-PASS-V1";
 const QA_ROOT = path.join(
   process.env.USERPROFILE ?? "C:\\Users\\bahij",
   "OneDrive",
   "Desktop",
   "NeuroChess_QA_Artifacts",
-  "R1_GREENFIELD_FRONTEND_SHELL_5_SURFACES_DEV_ROUTE_V1",
+  "R1D_REX_SHELL_AURA_RESTRAINT_AND_PREMIUM_CONTRAST_PASS_V1",
 );
 const SCREENSHOT_DIR = path.join(QA_ROOT, "screenshots");
 const EVIDENCE_DIR = path.join(QA_ROOT, "browser_evidence");
 
 const SURFACES = [
-  { id: "qg", navTestId: "rex-nav-qg", surfaceTestId: "rex-surface-qg", screenshot: "rex_qg.png" },
+  { id: "qg", navTestId: "rex-nav-qg", surfaceTestId: "rex-surface-qg", screenshot: "rex_qg_r1d.png" },
   {
     id: "parties",
     navTestId: "rex-nav-parties",
     surfaceTestId: "rex-surface-parties",
-    screenshot: "rex_parties.png",
+    screenshot: "rex_parties_r1d.png",
   },
   {
     id: "forge",
     navTestId: "rex-nav-forge",
     surfaceTestId: "rex-surface-forge",
-    screenshot: "rex_forge.png",
+    screenshot: "rex_forge_r1d.png",
   },
   {
     id: "arene",
     navTestId: "rex-nav-arene",
     surfaceTestId: "rex-surface-arene",
-    screenshot: "rex_arene.png",
+    screenshot: "rex_arene_r1d.png",
   },
   {
     id: "profil",
     navTestId: "rex-nav-profil",
     surfaceTestId: "rex-surface-profil",
-    screenshot: "rex_profil.png",
+    screenshot: "rex_profil_r1d.png",
   },
 ];
 
@@ -165,6 +166,13 @@ async function main() {
       await assertOnlySurfaceVisible(`surface_${surface.id}_only_visible`, surface.surfaceTestId);
       await assertForbiddenTextAbsent();
       await captureScreenshot(surface.screenshot);
+      if (surface.id === "qg") {
+        await captureScreenshot("rex_motion_qg_1.png");
+        await delay(2200);
+        await captureScreenshot("rex_motion_qg_2.png");
+        await delay(2200);
+        await captureScreenshot("rex_motion_qg_3.png");
+      }
     }
 
     await harness.browserClient.send("Page.navigate", { url: `${harness.frontendBaseUrl}/app` });

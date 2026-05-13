@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { REX_SURFACE_IDS, type RexSurfaceId } from "./rexTypes";
 import { rexSurfaceCopies } from "./rexCopy";
 
@@ -15,8 +16,17 @@ const navTestIds: Record<RexSurfaceId, string> = {
 };
 
 export function RexNav({ activeSurface, onSelectSurface }: RexNavProps) {
+  const activeIndex = REX_SURFACE_IDS.indexOf(activeSurface);
+  const navStyle = { "--rex-active-index": activeIndex } as CSSProperties;
+
   return (
-    <nav className="rex-nav" data-testid="rex-nav" aria-label="Navigation REX">
+    <nav
+      className="rex-nav"
+      data-testid="rex-nav"
+      aria-label="Navigation REX"
+      data-active-surface={activeSurface}
+      style={navStyle}
+    >
       {REX_SURFACE_IDS.map((surfaceId) => {
         const copy = rexSurfaceCopies[surfaceId];
         const isActive = surfaceId === activeSurface;

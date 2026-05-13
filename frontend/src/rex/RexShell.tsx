@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { RexPrototypeBadge } from "./components/RexPrototypeBadge";
 import { RexNav } from "./RexNav";
+import { rexSurfaceCopies } from "./rexCopy";
 import type { RexSurfaceId } from "./rexTypes";
 import { ArenaSurface } from "./surfaces/ArenaSurface";
 import { ForgeSurface } from "./surfaces/ForgeSurface";
@@ -27,22 +28,23 @@ function renderSurface(surface: RexSurfaceId) {
 
 export function RexShell() {
   const [activeSurface, setActiveSurface] = useState<RexSurfaceId>("qg");
+  const activeTone = rexSurfaceCopies[activeSurface].tone;
 
   return (
-    <main className="rex-shell" data-testid="rex-shell">
+    <main className="rex-shell" data-testid="rex-shell" data-active-tone={activeTone}>
       <header className="rex-shell__header">
         <div>
           <RexPrototypeBadge compact />
           <p className="rex-shell__kicker">NeuroChess REX</p>
-          <h1>Shell de refondation</h1>
+          <h1>Command Center</h1>
           <p>
-            Cinq surfaces pour prouver la nouvelle structure produit, sans vraie metrique et sans
-            logique backend nouvelle.
+            Cinq surfaces pour tester le futur RPG de progression échiquéenne, sans vraie
+            métrique et sans logique backend nouvelle.
           </p>
         </div>
         <div className="rex-shell__doctrine" aria-label="Doctrine REX">
-          <strong>Decision dure, joueur respecte.</strong>
-          <span>Le systeme juge la decision, pas le joueur.</span>
+          <strong>Décision jugée franchement. Joueur respecté.</strong>
+          <span>Le système juge la décision, pas le joueur.</span>
         </div>
       </header>
 
