@@ -1,10 +1,13 @@
 import type { RexSurfaceCopy } from "../rexTypes";
+import type { RexTruthChainStatuses } from "../data/rexPartiesTypes";
 import { RexConstellationPreview } from "./RexConstellationPreview";
 import { RexFlowRail } from "./RexFlowRail";
 import { RexProgressRing } from "./RexProgressRing";
 
 type RexArtifactStageProps = {
   copy: RexSurfaceCopy;
+  truthChain?: RexTruthChainStatuses;
+  truthChainNotes?: string[];
 };
 
 function MissionCore({ copy }: RexArtifactStageProps) {
@@ -29,17 +32,26 @@ function MissionCore({ copy }: RexArtifactStageProps) {
   );
 }
 
-function TruthChain({ copy }: RexArtifactStageProps) {
+function TruthChain({ copy, truthChain, truthChainNotes }: RexArtifactStageProps) {
+  const statuses = truthChain
+    ? [truthChain.pgn, truthChain.analysis, truthChain.criticalMoment, truthChain.exercise]
+    : undefined;
+  const hasRealPgn = truthChain?.pgn === "available";
+
   return (
     <div className="rex-artifact rex-artifact--truth" data-testid="rex-artifact-truth-chain">
       <div className="rex-artifact__header">
         <span>Truth Chain</span>
         <strong>PGN vers decision entrainable</strong>
       </div>
-      <RexFlowRail steps={copy.flow} />
+      <RexFlowRail steps={copy.flow} statuses={statuses} statusNotes={truthChainNotes} />
       <div className="rex-truth-chain__verdict">
-        <span>Exemple sur</span>
-        <strong>Ce coup peut etre mauvais ; le joueur reste respecte.</strong>
+        <span>{hasRealPgn ? "Donnees reelles detectees" : "Lecture seule"}</span>
+        <strong>
+          {hasRealPgn
+            ? "La décision peut être jugée ; aucune action backend n'est déclenchée."
+            : "La chaîne tente une lecture des parties, sans écriture ni analyse."}
+        </strong>
       </div>
     </div>
   );
@@ -109,10 +121,10 @@ function ProgressionMap({ copy }: RexArtifactStageProps) {
   );
 }
 
-export function RexArtifactStage({ copy }: RexArtifactStageProps) {
+export function RexArtifactStage({ copy, truthChain, truthChainNotes }: RexArtifactStageProps) {
   switch (copy.id) {
     case "parties":
-      return <TruthChain copy={copy} />;
+      return <TruthChain copy={copy} truthChain={truthChain} truthChainNotes={truthChainNotes} />;
     case "forge":
       return <ForgeCore copy={copy} />;
     case "arene":
@@ -124,4 +136,3 @@ export function RexArtifactStage({ copy }: RexArtifactStageProps) {
       return <MissionCore copy={copy} />;
   }
 }
-

@@ -70,7 +70,7 @@ export const rexSurfaceCopies: Record<RexSurfaceId, RexSurfaceCopy> = {
       { label: "Review", value: "Future" },
       { label: "Sortie", value: "À classifier" },
     ],
-    flow: ["PGN", "Analyse", "Moment critique", "Exercice"],
+    flow: ["PGN", "Analyse", "Décision", "Exercice"],
     metrics: [
       { label: "Import PGN", value: "À venir", note: "Entrée utilisateur future." },
       { label: "Moments critiques", value: "Prototype", note: "Pas de moteur appelé." },

@@ -444,6 +444,20 @@
   box-shadow: 0 12px 26px var(--surface-soft);
 }
 
+.rex-cta-stack {
+  display: grid;
+  justify-items: end;
+  gap: 0.45rem;
+}
+
+.rex-cta-note {
+  max-width: 13rem;
+  color: rgba(216, 229, 241, 0.62);
+  font-size: 0.74rem;
+  line-height: 1.35;
+  text-align: right;
+}
+
 .rex-primary-cta::before {
   content: "";
   position: absolute;
@@ -594,6 +608,38 @@
   background: linear-gradient(135deg, var(--surface-accent), var(--surface-strong));
   font-size: 0.78rem;
   font-weight: 900;
+}
+
+.rex-flow-rail__step {
+  color: rgba(246, 250, 255, 0.95);
+}
+
+.rex-flow-rail__status {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 0.35rem;
+  padding: 0.22rem 0.42rem;
+  border: 1px solid rgba(184, 211, 255, 0.14);
+  border-radius: 999px;
+  color: rgba(213, 225, 238, 0.68);
+  font-size: 0.64rem;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: normal;
+}
+
+.rex-flow-rail li[data-rex-step-status="available"] .rex-flow-rail__status {
+  border-color: rgba(99, 217, 231, 0.34);
+  color: rgba(155, 242, 244, 0.9);
+}
+
+.rex-flow-rail li[data-rex-step-status="pending"] .rex-flow-rail__status {
+  border-color: rgba(245, 196, 111, 0.32);
+  color: rgba(250, 216, 157, 0.9);
+}
+
+.rex-flow-rail li[data-rex-step-status="unavailable"] .rex-flow-rail__status {
+  color: rgba(207, 216, 226, 0.56);
 }
 
 .rex-visual--rings {
@@ -1327,6 +1373,148 @@
   background: transparent;
   padding: 0;
   margin-bottom: 10px;
+}
+
+.rex-parties-readonly {
+  overflow: hidden;
+}
+
+.rex-parties-readonly[data-backend-status="ready"] {
+  border-color: rgba(105, 228, 239, 0.24);
+}
+
+.rex-parties-readonly[data-backend-status="unavailable"] {
+  border-color: rgba(245, 196, 111, 0.22);
+}
+
+.rex-readonly-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 0.75rem;
+}
+
+.rex-readonly-pill-row span {
+  border: 1px solid rgba(181, 230, 225, 0.16);
+  border-radius: 999px;
+  padding: 0.38rem 0.58rem;
+  color: rgba(222, 238, 238, 0.78);
+  background: rgba(8, 20, 24, 0.38);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rex-parties-latest {
+  border: 1px solid rgba(204, 222, 242, 0.11);
+  border-radius: 10px;
+  padding: 0.78rem;
+  background: rgba(5, 12, 18, 0.34);
+}
+
+.rex-parties-latest span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: rgba(217, 229, 240, 0.58);
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rex-parties-latest strong {
+  color: rgba(242, 248, 255, 0.92);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.rex-parties-readonly__technical {
+  margin-top: 0.9rem;
+  border-top: 1px solid rgba(204, 222, 242, 0.1);
+  padding-top: 0.75rem;
+}
+
+.rex-parties-readonly__technical summary {
+  cursor: default;
+  color: rgba(214, 229, 242, 0.62);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rex-parties-readonly__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 1rem 0;
+}
+
+.rex-parties-readonly__facts div {
+  min-width: 0;
+  border: 1px solid rgba(204, 222, 242, 0.11);
+  border-radius: 8px;
+  padding: 0.72rem;
+  background: rgba(5, 12, 18, 0.38);
+}
+
+.rex-parties-readonly__facts span,
+.rex-parties-readonly__evidence span {
+  display: block;
+  margin-bottom: 0.32rem;
+  color: rgba(217, 229, 240, 0.58);
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rex-parties-readonly__facts strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: rgba(242, 248, 255, 0.92);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.rex-parties-readonly__evidence {
+  border-top: 1px solid rgba(204, 222, 242, 0.1);
+  padding-top: 0.8rem;
+}
+
+.rex-parties-readonly__evidence ul,
+.rex-parties-readonly__limits {
+  display: grid;
+  gap: 0.38rem;
+  margin: 0.45rem 0 0;
+  padding: 0;
+  color: rgba(218, 230, 241, 0.68);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  list-style: none;
+}
+
+.rex-parties-readonly__evidence li,
+.rex-parties-readonly__limits li {
+  position: relative;
+  padding-left: 0.85rem;
+}
+
+.rex-parties-readonly__evidence li::before,
+.rex-parties-readonly__limits li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-accent);
+}
+
+.rex-parties-readonly__limits {
+  margin-top: 0.75rem;
 }
 
 @keyframes rex-mission-core-breathe {
