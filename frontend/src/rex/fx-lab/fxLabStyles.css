@@ -1,0 +1,750 @@
+.rex-fx-lab {
+  --fx-accent: #78e8ff;
+  --fx-accent-2: #9ff0d8;
+  --fx-wash: rgba(66, 202, 255, 0.14);
+  --fx-panel: rgba(4, 9, 17, 0.86);
+  --fx-border: rgba(190, 226, 255, 0.16);
+  position: relative;
+  box-sizing: border-box;
+  min-height: 100vh;
+  overflow-x: clip;
+  padding: 28px;
+  color: #f1f8ff;
+  background:
+    radial-gradient(circle at 18% 18%, var(--fx-wash), transparent 34%),
+    radial-gradient(circle at 84% 16%, rgba(163, 116, 255, 0.08), transparent 32%),
+    linear-gradient(135deg, #03060c, #07111e 48%, #03050a);
+}
+
+.rex-fx-lab *,
+.rex-fx-lab *::before,
+.rex-fx-lab *::after {
+  box-sizing: border-box;
+}
+
+.rex-fx-lab[data-effect="aurora"] {
+  --fx-accent: #a98cff;
+  --fx-accent-2: #58eac8;
+  --fx-wash: rgba(138, 112, 255, 0.16);
+}
+
+.rex-fx-lab[data-effect="wind-lanes"] {
+  --fx-accent: #f08f8a;
+  --fx-accent-2: #efbc70;
+  --fx-wash: rgba(225, 105, 112, 0.13);
+}
+
+.rex-fx-lab__aura {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 22%, color-mix(in srgb, var(--fx-accent) 16%, transparent), transparent 24%),
+    radial-gradient(circle at 70% 76%, color-mix(in srgb, var(--fx-accent-2) 13%, transparent), transparent 28%);
+  filter: blur(32px);
+  opacity: 0.62;
+  animation: rexFxLabAura 18s ease-in-out infinite alternate;
+}
+
+.rex-fx-lab__header,
+.rex-fx-lab-nav,
+.rex-fx-lab__stage {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 1420px);
+  max-width: 1420px;
+  margin-inline: auto;
+}
+
+.rex-fx-lab__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.rex-fx-lab__eyebrow,
+.rex-fx-lab__contract,
+.rex-fx-lab__brief p,
+.rex-fx-panel__topbar,
+.rex-fx-lab-nav__button small,
+.rex-fx-lab__brief dt {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.rex-fx-lab__eyebrow {
+  margin: 0 0 8px;
+  color: var(--fx-accent);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.rex-fx-lab h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2.35rem, 5vw, 4.9rem);
+  line-height: 0.94;
+}
+
+.rex-fx-lab__lead {
+  max-width: 760px;
+  margin: 14px 0 0;
+  color: rgba(222, 234, 247, 0.74);
+  font-size: 1.02rem;
+  line-height: 1.58;
+}
+
+.rex-fx-lab__contract {
+  display: grid;
+  gap: 8px;
+  min-width: 260px;
+  padding: 16px;
+  border: 1px solid var(--fx-border);
+  border-radius: 18px;
+  background: rgba(7, 11, 19, 0.72);
+  color: rgba(231, 241, 255, 0.78);
+  font-size: 0.68rem;
+}
+
+.rex-fx-lab-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.rex-fx-lab-nav__button {
+  position: relative;
+  overflow: hidden;
+  min-height: 82px;
+  border: 1px solid var(--fx-border);
+  border-radius: 20px;
+  padding: 16px 18px;
+  color: rgba(232, 242, 255, 0.8);
+  text-align: left;
+  background: rgba(7, 12, 21, 0.72);
+  cursor: pointer;
+  transition:
+    border-color 220ms ease,
+    background 220ms ease,
+    color 220ms ease,
+    transform 220ms ease;
+}
+
+.rex-fx-lab-nav__button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--fx-accent) 18%, transparent), transparent);
+  opacity: 0;
+  transform: translateX(-50%);
+  transition:
+    opacity 260ms ease,
+    transform 520ms ease;
+}
+
+.rex-fx-lab-nav__button[data-state="active"] {
+  border-color: color-mix(in srgb, var(--fx-accent) 48%, rgba(255, 255, 255, 0.1));
+  color: #f6fbff;
+  background:
+    radial-gradient(circle at 18% 10%, color-mix(in srgb, var(--fx-accent) 16%, transparent), transparent 42%),
+    rgba(8, 13, 22, 0.9);
+}
+
+.rex-fx-lab-nav__button[data-state="active"]::before {
+  opacity: 1;
+  transform: translateX(48%);
+}
+
+.rex-fx-lab-nav__button:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--fx-accent) 36%, rgba(255, 255, 255, 0.1));
+}
+
+.rex-fx-lab-nav__button span,
+.rex-fx-lab-nav__button small {
+  position: relative;
+  display: block;
+}
+
+.rex-fx-lab-nav__button span {
+  font-weight: 900;
+}
+
+.rex-fx-lab-nav__button small {
+  margin-top: 7px;
+  color: rgba(215, 228, 245, 0.62);
+  font-size: 0.68rem;
+}
+
+.rex-fx-lab__stage {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.56fr) minmax(580px, 1.44fr);
+  gap: 16px;
+}
+
+.rex-fx-lab__brief,
+.rex-fx-preview {
+  border: 1px solid var(--fx-border);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.014)),
+    var(--fx-panel);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 26px 70px rgba(0, 0, 0, 0.36);
+}
+
+.rex-fx-lab__brief {
+  padding: 22px;
+}
+
+.rex-fx-lab__brief p {
+  margin: 0 0 12px;
+  color: var(--fx-accent);
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.rex-fx-lab__brief h2 {
+  margin: 0 0 18px;
+  color: #ffffff;
+  font-size: 1.8rem;
+  line-height: 1.05;
+}
+
+.rex-fx-lab__brief dl,
+.rex-fx-lab__brief div {
+  display: grid;
+  gap: 10px;
+}
+
+.rex-fx-lab__brief dl {
+  margin: 0;
+}
+
+.rex-fx-lab__brief div {
+  padding: 12px;
+  border: 1px solid rgba(190, 226, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.024);
+}
+
+.rex-fx-lab__brief dt {
+  color: rgba(211, 230, 247, 0.58);
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.rex-fx-lab__brief dd {
+  margin: 0;
+  color: rgba(234, 244, 255, 0.82);
+  line-height: 1.45;
+}
+
+.rex-fx-preview {
+  min-height: 560px;
+  overflow: hidden;
+  padding: 12px;
+}
+
+.rex-fx-panel {
+  position: relative;
+  min-height: 536px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #050912;
+}
+
+.rex-fx-panel__topbar {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 0;
+  color: rgba(225, 238, 255, 0.68);
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.rex-fx-panel__topbar em {
+  color: var(--fx-accent);
+  font-style: normal;
+}
+
+.rex-fx-panel--vortex {
+  background:
+    radial-gradient(circle at 26% 44%, rgba(84, 225, 255, 0.14), transparent 26%),
+    radial-gradient(circle at 70% 46%, rgba(122, 255, 225, 0.1), transparent 24%),
+    linear-gradient(135deg, #030812, #07131e 54%, #02050b);
+}
+
+.rex-vortex-source {
+  position: absolute;
+  left: 36px;
+  top: 166px;
+  z-index: 3;
+  display: grid;
+  gap: 8px;
+  width: 220px;
+  padding: 18px;
+  border: 1px solid rgba(117, 232, 255, 0.18);
+  border-radius: 22px;
+  background: rgba(2, 9, 17, 0.78);
+}
+
+.rex-vortex-source span,
+.rex-vortex-source em,
+.rex-vortex-steps span,
+.rex-aurora-node span,
+.rex-aurora-node strong,
+.rex-wind-lane span,
+.rex-wind-lane strong,
+.rex-wind-proof span {
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.rex-vortex-source span,
+.rex-aurora-node span,
+.rex-wind-lane span {
+  color: var(--fx-accent);
+}
+
+.rex-vortex-source strong {
+  color: #ffffff;
+  font-size: 1.28rem;
+  line-height: 1.08;
+}
+
+.rex-vortex-source em {
+  color: rgba(196, 238, 247, 0.86);
+  font-style: normal;
+}
+
+.rex-vortex-field {
+  position: absolute;
+  inset: 88px 42px 82px 42px;
+  z-index: 1;
+}
+
+.rex-vortex-curve {
+  fill: none;
+  stroke: url("#rex-vortex-line");
+  stroke-width: 1.4;
+  stroke-dasharray: 10 13;
+  filter: drop-shadow(0 0 10px rgba(120, 232, 255, 0.42));
+  animation: rexFxVortexFlow 8s ease-in-out infinite;
+}
+
+.rex-vortex-curve--b {
+  animation-delay: -2.5s;
+  opacity: 0.72;
+}
+
+.rex-vortex-curve--c {
+  animation-delay: -4s;
+  opacity: 0.58;
+}
+
+.rex-vortex-core {
+  position: absolute;
+  left: 51%;
+  top: 49%;
+  z-index: 3;
+  width: 118px;
+  height: 118px;
+  border: 1px solid rgba(126, 237, 255, 0.2);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(224, 255, 255, 0.32) 0 9%, transparent 10%),
+    conic-gradient(from 120deg, transparent, rgba(126, 237, 255, 0.46), transparent 54%, rgba(160, 255, 224, 0.36), transparent);
+  transform: translate(-50%, -50%);
+  animation: rexFxVortexCore 9s linear infinite;
+}
+
+.rex-vortex-core span {
+  position: absolute;
+  inset: 36px;
+  border-radius: 999px;
+  background: rgba(2, 8, 15, 0.86);
+}
+
+.rex-vortex-particles i {
+  --particle-index: 0;
+  position: absolute;
+  left: calc(26% + (var(--particle-index) % 6) * 8%);
+  top: calc(28% + (var(--particle-index) % 5) * 8%);
+  z-index: 2;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(187, 248, 255, 0.86);
+  box-shadow: 0 0 12px rgba(119, 232, 255, 0.68);
+  animation: rexFxParticle 6.5s ease-in-out infinite;
+  animation-delay: calc(var(--particle-index) * -0.32s);
+}
+
+.rex-vortex-steps {
+  position: absolute;
+  right: 36px;
+  top: 168px;
+  z-index: 3;
+  display: grid;
+  gap: 12px;
+  width: 190px;
+}
+
+.rex-vortex-steps span {
+  padding: 12px 14px;
+  border: 1px solid rgba(117, 232, 255, 0.16);
+  border-radius: 999px;
+  color: rgba(234, 248, 255, 0.86);
+  background: rgba(3, 11, 19, 0.72);
+}
+
+.rex-fx-panel--aurora {
+  background:
+    radial-gradient(circle at 54% 45%, rgba(159, 115, 255, 0.16), transparent 36%),
+    radial-gradient(circle at 78% 72%, rgba(69, 214, 255, 0.12), transparent 28%),
+    linear-gradient(140deg, #050513, #0a0a1f 54%, #03040b);
+}
+
+.rex-aurora-bands {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.8;
+}
+
+.rex-aurora-bands i {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  height: 112px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, transparent, rgba(130, 255, 220, 0.18), rgba(159, 115, 255, 0.2), transparent);
+  filter: blur(14px);
+  transform: rotate(-8deg);
+  animation: rexFxAurora 13s ease-in-out infinite alternate;
+}
+
+.rex-aurora-bands i:nth-child(1) {
+  top: 112px;
+}
+
+.rex-aurora-bands i:nth-child(2) {
+  top: 186px;
+  animation-delay: -4s;
+  opacity: 0.72;
+}
+
+.rex-aurora-bands i:nth-child(3) {
+  top: 258px;
+  animation-delay: -7s;
+  opacity: 0.5;
+}
+
+.rex-aurora-map {
+  position: absolute;
+  inset: 78px 34px 72px;
+  z-index: 1;
+}
+
+.rex-aurora-link {
+  fill: none;
+  stroke: rgba(150, 215, 255, 0.36);
+  stroke-width: 1.1;
+  stroke-dasharray: 6 9;
+  animation: rexFxAuroraLink 8.8s ease-in-out infinite;
+}
+
+.rex-aurora-link--main {
+  stroke: rgba(160, 255, 222, 0.62);
+}
+
+.rex-aurora-node {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  min-width: 118px;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid rgba(190, 226, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(5, 8, 20, 0.78);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--fx-accent) 14%, transparent);
+  animation: rexFxNodeDrift 7.2s ease-in-out infinite alternate;
+}
+
+.rex-aurora-node strong {
+  color: rgba(159, 255, 214, 0.86);
+}
+
+.rex-aurora-node--root {
+  left: 43%;
+  top: 42%;
+}
+
+.rex-aurora-node--najdorf {
+  left: 18%;
+  top: 30%;
+  border-color: rgba(160, 255, 222, 0.28);
+}
+
+.rex-aurora-node--branch-a {
+  right: 14%;
+  top: 31%;
+}
+
+.rex-aurora-node--branch-b {
+  left: 20%;
+  bottom: 22%;
+  opacity: 0.72;
+}
+
+.rex-aurora-node--branch-c {
+  right: 12%;
+  bottom: 28%;
+  opacity: 0.78;
+}
+
+.rex-fx-panel--wind {
+  background:
+    radial-gradient(circle at 18% 26%, rgba(240, 143, 138, 0.13), transparent 30%),
+    radial-gradient(circle at 88% 66%, rgba(239, 188, 112, 0.13), transparent 28%),
+    linear-gradient(140deg, #080608, #110d12 54%, #050506);
+}
+
+.rex-wind-field {
+  position: absolute;
+  inset: 0;
+  opacity: 0.82;
+}
+
+.rex-wind-field i {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 222, 205, 0.42), transparent);
+  animation: rexFxWind 6.2s ease-in-out infinite;
+}
+
+.rex-wind-field i:nth-child(1) {
+  top: 28%;
+}
+
+.rex-wind-field i:nth-child(2) {
+  top: 43%;
+  animation-delay: -1.8s;
+}
+
+.rex-wind-field i:nth-child(3) {
+  top: 58%;
+  animation-delay: -3.2s;
+}
+
+.rex-wind-field i:nth-child(4) {
+  top: 73%;
+  animation-delay: -4.8s;
+}
+
+.rex-wind-lanes {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 18px;
+  margin: 112px 38px 0;
+}
+
+.rex-wind-lane {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) 142px;
+  gap: 16px;
+  align-items: center;
+  min-height: 74px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 210, 190, 0.14);
+  border-radius: 999px;
+  background: rgba(9, 7, 9, 0.72);
+}
+
+.rex-wind-lane[data-lane-state="target"] {
+  border-color: rgba(239, 188, 112, 0.34);
+}
+
+.rex-wind-lane span {
+  color: #ffffff;
+}
+
+.rex-wind-lane strong {
+  color: rgba(244, 231, 220, 0.7);
+  text-align: right;
+}
+
+.rex-wind-lane__track {
+  position: relative;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.rex-wind-lane__track i {
+  position: absolute;
+  inset: 0;
+  width: 30%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, var(--fx-accent), var(--fx-accent-2), transparent);
+  animation: rexFxLaneFlow 5.5s ease-in-out infinite;
+}
+
+.rex-wind-proof {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin: 34px 38px 0;
+}
+
+.rex-wind-proof span {
+  color: rgba(245, 238, 232, 0.72);
+}
+
+.rex-wind-proof i {
+  height: 1px;
+  background: rgba(255, 221, 204, 0.18);
+}
+
+@keyframes rexFxLabAura {
+  from {
+    transform: translate3d(-1.4%, -1%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(1.6%, 1.2%, 0) scale(1.03);
+  }
+}
+
+@keyframes rexFxVortexFlow {
+  0%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.42;
+  }
+  50% {
+    stroke-dashoffset: -42;
+    opacity: 0.92;
+  }
+}
+
+@keyframes rexFxVortexCore {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes rexFxParticle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translate3d(-8px, 0, 0) scale(0.82);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate3d(18px, -9px, 0) scale(1);
+  }
+}
+
+@keyframes rexFxAurora {
+  from {
+    transform: translateX(-2%) rotate(-8deg);
+  }
+  to {
+    transform: translateX(2%) rotate(-6deg);
+  }
+}
+
+@keyframes rexFxAuroraLink {
+  0%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.34;
+  }
+  50% {
+    stroke-dashoffset: -18;
+    opacity: 0.72;
+  }
+}
+
+@keyframes rexFxNodeDrift {
+  from {
+    transform: translateY(-1px);
+  }
+  to {
+    transform: translateY(1.6px);
+  }
+}
+
+@keyframes rexFxWind {
+  0% {
+    transform: translateX(-12%) skewX(-14deg);
+    opacity: 0;
+  }
+  34%,
+  72% {
+    opacity: 0.72;
+  }
+  100% {
+    transform: translateX(12%) skewX(-14deg);
+    opacity: 0;
+  }
+}
+
+@keyframes rexFxLaneFlow {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(330%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rex-fx-lab *,
+  .rex-fx-lab *::before,
+  .rex-fx-lab *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .rex-fx-lab__header,
+  .rex-fx-lab__stage,
+  .rex-fx-lab-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .rex-fx-lab__header {
+    display: grid;
+  }
+
+  .rex-wind-lane,
+  .rex-wind-proof {
+    grid-template-columns: 1fr;
+    border-radius: 22px;
+  }
+
+  .rex-wind-lane strong {
+    text-align: left;
+  }
+}
