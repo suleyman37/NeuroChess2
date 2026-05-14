@@ -1,14 +1,26 @@
 import { useEffect, useState } from "react";
-import { getGameHistory, getGameMoves, type GameHistoryItem, type GameMoveHistory } from "../../api/client";
+import {
+  getGameHistory,
+  getGameMoves,
+  getTruthChainMoments,
+  type GameHistoryItem,
+  type GameMoveHistory,
+  type TruthChainMomentReadOnly,
+  type TruthChainMomentsReadOnlyResponse,
+} from "../../api/client";
 import {
   REX_PARTIES_HISTORY_ROUTE,
   REX_PARTIES_MOVES_ROUTE,
+  REX_PARTIES_TRUTH_CHAIN_MOMENTS_ROUTE,
   type RexPartiesSnapshot,
   type RexTruthChainGame,
+  type RexTruthChainMomentKind,
   type RexTruthChainMoment,
+  type RexTruthChainMomentSource,
   type RexTruthChainSnapshot,
   type RexTruthChainStepStatus,
   type RexTruthChainStatuses,
+  type RexTruthChainVisualSeverity,
 } from "./rexPartiesTypes";
 
 const HISTORY_LIMIT = 50;
@@ -104,6 +116,10 @@ function actualMovesRoute(gameId: number | string): string {
   return `GET /games/${gameId}/moves`;
 }
 
+function actualTruthChainMomentsRoute(gameId: number | string): string {
+  return `GET /games/${gameId}/truth-chain/moments`;
+}
+
 function truthChainGameFromHistory(item: GameHistoryItem): RexTruthChainGame {
   return {
     id: String(item.game_id),
@@ -119,6 +135,25 @@ function truthChainGameFromHistory(item: GameHistoryItem): RexTruthChainGame {
   };
 }
 
+function truthChainGameFromMomentsResponse(
+  latest: GameHistoryItem,
+  response: TruthChainMomentsReadOnlyResponse,
+): RexTruthChainGame {
+  const game = response.game ?? {};
+  return {
+    id: playerName(game.id) ?? String(latest.game_id),
+    white: playerName(game.white) ?? playerName(latest.white_name),
+    black: playerName(game.black) ?? playerName(latest.black_name),
+    result: playerName(game.result) ?? playerName(latest.result),
+    openingName: playerName(game.openingName) ?? playerName(latest.opening_name),
+    eco: playerName(game.eco) ?? playerName(latest.eco_code),
+    userColor: userColor(latest.user_color),
+    importedAt: playerName(latest.date_played),
+    moveCount: Number.isFinite(game.moveCount) ? Number(game.moveCount) : latest.move_count,
+    reviewStatus: playerName(game.reviewStatus) ?? reviewLabel(latest),
+  };
+}
+
 function buildReadOnlyProof(): RexTruthChainSnapshot["readOnlyProof"] {
   return {
     methodsObserved: ["GET"],
@@ -127,6 +162,54 @@ function buildReadOnlyProof(): RexTruthChainSnapshot["readOnlyProof"] {
     trainingItemsCreated: false,
     dueAtTouched: false,
   };
+}
+
+function buildReadOnlyProofFromMomentsResponse(
+  response: TruthChainMomentsReadOnlyResponse,
+): RexTruthChainSnapshot["readOnlyProof"] {
+  const proof = response.readOnlyProof;
+  return {
+    methodsObserved: Array.isArray(proof?.methodsAllowed) ? proof.methodsAllowed.map(String) : ["GET"],
+    writesObserved: proof?.writesPerformed === true,
+    dailyPlanTouched: proof?.dailyPlanTouched === true,
+    trainingItemsCreated: proof?.trainingItemsCreated === true,
+    dueAtTouched: proof?.dueAtTouched === true,
+  };
+}
+
+function validSeverity(value: unknown): RexTruthChainVisualSeverity {
+  return value === "low" ||
+    value === "medium" ||
+    value === "high" ||
+    value === "critical" ||
+    value === "positive" ||
+    value === "unknown"
+    ? value
+    : "unknown";
+}
+
+function validMomentKind(value: unknown): RexTruthChainMomentKind {
+  return value === "tactical" ||
+    value === "strategic" ||
+    value === "opening_exit" ||
+    value === "conversion" ||
+    value === "defense" ||
+    value === "unknown"
+    ? value
+    : "unknown";
+}
+
+function mapMomentSource(value: unknown): RexTruthChainMomentSource {
+  if (value === "persisted_review_moment") {
+    return "review_moment";
+  }
+  if (value === "persisted_training_item") {
+    return "training_item";
+  }
+  if (value === "persisted_review_summary") {
+    return "review_moment";
+  }
+  return "unknown";
 }
 
 function buildMovesOnlyMoments(
@@ -167,9 +250,71 @@ function buildMovesOnlyMoments(
     });
 }
 
+function buildPersistedReviewMoments(
+  latest: GameHistoryItem,
+  response: TruthChainMomentsReadOnlyResponse,
+): RexTruthChainMoment[] {
+  return (Array.isArray(response.moments) ? response.moments : [])
+    .slice(0, TRUTH_CHAIN_MAX_MOMENTS)
+    .map((moment: TruthChainMomentReadOnly, index) => {
+      const ply = Number(moment.ply);
+      const moveNumber = Number(moment.moveNumber);
+      const source = mapMomentSource(moment.source);
+      return {
+        id: playerName(moment.id) ?? `${latest.game_id}:review:${index + 1}`,
+        gameId: playerName(moment.gameId) ?? String(latest.game_id),
+        ply: Number.isFinite(ply) ? ply : index + 1,
+        moveNumber: Number.isFinite(moveNumber)
+          ? moveNumber
+          : Number.isFinite(ply)
+            ? moveNumberFromPly(ply)
+            : undefined,
+        sideToMove: Number.isFinite(ply) ? (ply % 2 === 0 ? "black" : "white") : undefined,
+        san: playerName(moment.san),
+        uci: playerName(moment.uci),
+        fenBefore: playerName(moment.fenBefore),
+        fenAfter: playerName(moment.fenAfter),
+        label: playerName(moment.label) ?? "Review moment",
+        visualSeverity: validSeverity(moment.visualSeverity),
+        momentKind: validMomentKind(moment.momentKind),
+        reviewAvailable: moment.reviewAvailable === true,
+        exerciseAvailable: moment.exerciseAvailable === true,
+        source,
+        limitations: Array.isArray(moment.limitations)
+          ? moment.limitations.map(String)
+          : source === "unknown"
+            ? ["Source moment non reconnue."]
+            : [],
+      };
+    });
+}
+
+function buildPersistedTruthChainSnapshot(
+  latest: GameHistoryItem,
+  response: TruthChainMomentsReadOnlyResponse,
+): RexTruthChainSnapshot {
+  const game = truthChainGameFromMomentsResponse(latest, response);
+  const moments = buildPersistedReviewMoments(latest, response);
+  return {
+    backendStatus: moments.length > 0 ? "ready" : "empty",
+    game,
+    moments,
+    limitations: [
+      ...(Array.isArray(response.limitations) ? response.limitations.map(String) : []),
+      moments.length > 0
+        ? `Moments Review persistes lus via ${actualTruthChainMomentsRoute(latest.game_id)}.`
+        : "Aucun moment Review persiste : fallback moves-only conserve.",
+      "GET /games/{game_id}/review non appele : route unsafe pour REX.",
+    ],
+    routesUsed: [REX_PARTIES_HISTORY_ROUTE, actualTruthChainMomentsRoute(latest.game_id)],
+    readOnlyProof: buildReadOnlyProofFromMomentsResponse(response),
+  };
+}
+
 function buildTruthChainSnapshot(
   latest: GameHistoryItem,
   moveHistory?: GameMoveHistory,
+  extraLimitations: string[] = [],
 ): RexTruthChainSnapshot {
   const game = truthChainGameFromHistory(latest);
   const routesUsed = [REX_PARTIES_HISTORY_ROUTE, actualMovesRoute(latest.game_id)];
@@ -183,6 +328,7 @@ function buildTruthChainSnapshot(
         "Route moves indisponible ou non interceptee dans cet environnement.",
         "Aucun moment critique invente.",
         "GET /games/{game_id}/review non appele : risque de creation training item.",
+        ...extraLimitations,
       ],
       routesUsed,
       readOnlyProof: buildReadOnlyProof(),
@@ -199,6 +345,7 @@ function buildTruthChainSnapshot(
       "Mode moves-only : ces noeuds ne sont pas des moments critiques detectes.",
       "GET /games/{game_id}/review non appele : risque de creation training item.",
       "Aucun exercice ni planning cree.",
+      ...extraLimitations,
     ],
     routesUsed,
     readOnlyProof: buildReadOnlyProof(),
@@ -275,27 +422,65 @@ export function useRexPartiesSnapshot() {
           return;
         }
 
+        const truthChainLimitations: string[] = [];
+        try {
+          const truthChainResponse = await getTruthChainMoments(latest.game_id);
+          if (cancelled) {
+            return;
+          }
+          const truthChainSnapshot = buildPersistedTruthChainSnapshot(latest, truthChainResponse);
+          if (truthChainSnapshot.moments.length > 0) {
+            setSnapshot({
+              ...nextSnapshot,
+              truthChainSnapshot,
+              routesUsed: Array.from(new Set([...nextSnapshot.routesUsed, ...truthChainSnapshot.routesUsed])),
+              limitations: Array.from(new Set([...nextSnapshot.limitations, ...truthChainSnapshot.limitations])),
+            });
+            return;
+          }
+          truthChainLimitations.push(...truthChainSnapshot.limitations);
+        } catch {
+          if (cancelled) {
+            return;
+          }
+          truthChainLimitations.push(
+            "Route Truth Chain moments indisponible : fallback moves-only conserve.",
+          );
+        }
+
         try {
           const moveHistory = await getGameMoves(latest.game_id);
           if (cancelled) {
             return;
           }
-          const truthChainSnapshot = buildTruthChainSnapshot(latest, moveHistory);
+          const truthChainSnapshot = buildTruthChainSnapshot(latest, moveHistory, truthChainLimitations);
           setSnapshot({
             ...nextSnapshot,
             truthChainSnapshot,
-            routesUsed: Array.from(new Set([...nextSnapshot.routesUsed, ...truthChainSnapshot.routesUsed])),
+            routesUsed: Array.from(
+              new Set([
+                ...nextSnapshot.routesUsed,
+                actualTruthChainMomentsRoute(latest.game_id),
+                ...truthChainSnapshot.routesUsed,
+              ]),
+            ),
             limitations: Array.from(new Set([...nextSnapshot.limitations, ...truthChainSnapshot.limitations])),
           });
         } catch {
           if (cancelled) {
             return;
           }
-          const truthChainSnapshot = buildTruthChainSnapshot(latest);
+          const truthChainSnapshot = buildTruthChainSnapshot(latest, undefined, truthChainLimitations);
           setSnapshot({
             ...nextSnapshot,
             truthChainSnapshot,
-            routesUsed: Array.from(new Set([...nextSnapshot.routesUsed, REX_PARTIES_MOVES_ROUTE])),
+            routesUsed: Array.from(
+              new Set([
+                ...nextSnapshot.routesUsed,
+                actualTruthChainMomentsRoute(latest.game_id),
+                REX_PARTIES_MOVES_ROUTE,
+              ]),
+            ),
             limitations: Array.from(new Set([...nextSnapshot.limitations, ...truthChainSnapshot.limitations])),
           });
         }

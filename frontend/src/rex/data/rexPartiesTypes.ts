@@ -104,10 +104,13 @@ export type RexPartiesSnapshot = {
 
 export const REX_PARTIES_HISTORY_ROUTE = "GET /games/history?limit=50&offset=0&scope=mine";
 export const REX_PARTIES_MOVES_ROUTE = "GET /games/{game_id}/moves";
+export const REX_PARTIES_TRUTH_CHAIN_MOMENTS_ROUTE = "GET /games/{game_id}/truth-chain/moments";
 
 export const REX_PARTIES_ROUTE_SOURCES = [
   "frontend/src/api/client.ts:getGameHistory",
   "frontend/src/api/client.ts:getGameMoves",
+  "frontend/src/api/client.ts:getTruthChainMoments",
   "backend/neurochess/api/game_routes.py:@router.get(\"/games/history\")",
   "backend/neurochess/api/game_routes.py:@router.get(\"/games/{game_id}/moves\")",
+  "backend/neurochess/api/game_routes.py:@router.get(\"/games/{game_id}/truth-chain/moments\")",
 ];

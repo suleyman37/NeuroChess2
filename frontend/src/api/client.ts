@@ -133,6 +133,73 @@ export type GameMoveHistory = {
   moves: GameMoveHistoryItem[];
 };
 
+export type TruthChainMomentVisualSeverity =
+  | "positive"
+  | "low"
+  | "medium"
+  | "high"
+  | "critical"
+  | "unknown"
+  | string;
+
+export type TruthChainMomentKind =
+  | "tactical"
+  | "strategic"
+  | "opening_exit"
+  | "conversion"
+  | "defense"
+  | "unknown"
+  | string;
+
+export type TruthChainMomentSource =
+  | "persisted_review_moment"
+  | "persisted_training_item"
+  | "persisted_review_summary"
+  | "none"
+  | string;
+
+export type TruthChainMomentReadOnly = {
+  id: string;
+  gameId: string;
+  ply: number;
+  moveNumber?: number;
+  san?: string | null;
+  uci?: string | null;
+  fenBefore?: string | null;
+  fenAfter?: string | null;
+  label: string;
+  momentKind: TruthChainMomentKind;
+  visualSeverity: TruthChainMomentVisualSeverity;
+  reviewAvailable: boolean;
+  exerciseAvailable: boolean;
+  source: TruthChainMomentSource;
+  limitations: string[];
+};
+
+export type TruthChainMomentsReadOnlyResponse = {
+  game: {
+    id: string;
+    white?: string | null;
+    black?: string | null;
+    result?: string | null;
+    openingName?: string | null;
+    eco?: string | null;
+    moveCount?: number | null;
+    reviewStatus?: string | null;
+  };
+  moments: TruthChainMomentReadOnly[];
+  limitations: string[];
+  readOnlyProof: {
+    route: string;
+    methodsAllowed: ["GET"] | string[];
+    writesPerformed: boolean;
+    trainingItemsCreated: boolean;
+    dailyPlanTouched: boolean;
+    dueAtTouched: boolean;
+    engineInvoked: boolean;
+  };
+};
+
 export type PlayedMove = {
   ply: number;
   fen_before: string;
@@ -1436,6 +1503,12 @@ export function finishGame(gameId: number): Promise<GameState> {
 
 export function getGameMoves(gameId: number): Promise<GameMoveHistory> {
   return request<GameMoveHistory>(`/games/${gameId}/moves`);
+}
+
+export function getTruthChainMoments(
+  gameId: number | string,
+): Promise<TruthChainMomentsReadOnlyResponse> {
+  return request<TruthChainMomentsReadOnlyResponse>(`/games/${gameId}/truth-chain/moments`);
 }
 
 export function getGame(gameId: number): Promise<GameState> {

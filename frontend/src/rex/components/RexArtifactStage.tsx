@@ -76,6 +76,12 @@ function momentStatus(moment: RexTruthChainMoment): string {
   if (moment.exerciseAvailable) {
     return "Exercice";
   }
+  if (moment.source === "review_moment" || moment.source === "training_item") {
+    return moment.reviewAvailable ? "Review lue" : "Moment lu";
+  }
+  if (moment.source === "moves_only") {
+    return "Coup lu";
+  }
   if (moment.reviewAvailable) {
     return "Statut lu";
   }
@@ -89,6 +95,10 @@ function momentSeverityLabel(moment: RexTruthChainMoment): string {
   return moment.visualSeverity;
 }
 
+function hasPersistedReviewMoments(moments: RexTruthChainMoment[]): boolean {
+  return moments.some((moment) => moment.source === "review_moment" || moment.source === "training_item");
+}
+
 function TruthChainRealMovesStory({
   chain,
   snapshot,
@@ -100,25 +110,39 @@ function TruthChainRealMovesStory({
   const moments = chain.moments.slice(0, 5);
   const [selectedMomentId, setSelectedMomentId] = useState<string | undefined>();
   const selected = moments.find((moment) => moment.id === selectedMomentId) ?? moments[0];
+  const hasPersistedMoments = hasPersistedReviewMoments(moments);
+  const sourceLabel = hasPersistedMoments ? "MOMENTS REVIEW" : "MOVES-ONLY";
+  const sourceChip = hasPersistedMoments ? "Review moments" : "Moves-only";
+  const statusChip = hasPersistedMoments ? "Review lue" : "Statut lu";
+  const countLabel = hasPersistedMoments ? `${moments.length} moments` : `${moments.length} coups`;
+  const railLabel = hasPersistedMoments
+    ? "Moments Review lus depuis la route Truth Chain"
+    : "Cinq coups lus sans detection critique";
 
   if (!latest || moments.length === 0) {
     return null;
   }
 
   return (
-    <div className="rex-real-chain" data-testid="rex-truth-chain-real" data-selected-node={selected.id}>
+    <div
+      className="rex-real-chain"
+      data-testid="rex-truth-chain-real"
+      data-selected-node={selected.id}
+      data-chain-source={hasPersistedMoments ? "moments-review" : "moves-only"}
+    >
       <div className="rex-real-chain__source">
-        <span>Partie lue</span>
+        <span>{sourceLabel}</span>
         <strong>{truthChainPlayers(chain, latest)}</strong>
         <em>{truthChainGameLine(chain, latest)}</em>
         <div className="rex-real-chain__chips" aria-label="Preuves read-only">
-          <span>PGN</span>
-          <span>{moments.length} coups</span>
+          <span>{sourceChip}</span>
+          <span>{countLabel}</span>
+          <span>{statusChip}</span>
           <span>GET only</span>
         </div>
       </div>
 
-      <ol className="rex-real-chain__rail" aria-label="Cinq coups lus sans detection critique">
+      <ol className="rex-real-chain__rail" aria-label={railLabel}>
         {moments.map((moment) => {
           const isSelected = selected.id === moment.id;
           return (
@@ -128,6 +152,7 @@ function TruthChainRealMovesStory({
                 data-testid="rex-truth-chain-node"
                 data-selected={isSelected ? "true" : "false"}
                 data-severity={moment.visualSeverity}
+                data-chain-source={hasPersistedMoments ? "moments-review" : "moves-only"}
                 onClick={() => setSelectedMomentId(moment.id)}
                 onFocus={() => setSelectedMomentId(moment.id)}
                 onMouseEnter={() => setSelectedMomentId(moment.id)}
@@ -152,7 +177,7 @@ function TruthChainRealMovesStory({
             <span>Read-only</span>
             <span>No write</span>
             <span>No analyse</span>
-            <span>Source moves</span>
+            <span>{hasPersistedMoments ? "Source Review" : "Source moves"}</span>
           </div>
         </div>
       </div>

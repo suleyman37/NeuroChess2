@@ -54,6 +54,7 @@ function RexPartiesReadOnlyPanel({ snapshot }: { snapshot: RexPartiesSnapshot })
   const latest = snapshot.latestGame;
   const routeText = snapshot.routesUsed.join(", ");
   const basePath = routeText.includes("/games/history") ? "API_BASE_URL + /games/history" : "API_BASE_URL";
+  const readOnlyPills = backendStatusPills(snapshot);
 
   return (
     <aside
@@ -67,9 +68,9 @@ function RexPartiesReadOnlyPanel({ snapshot }: { snapshot: RexPartiesSnapshot })
       <p>{backendStatusBody(snapshot)}</p>
 
       <div className="rex-readonly-pill-row" aria-label="Garanties read-only">
-        <span>Lecture seule</span>
-        <span>Aucune ecriture</span>
-        <span>Aucun effet planning</span>
+        {readOnlyPills.map((pill) => (
+          <span key={pill}>{pill}</span>
+        ))}
       </div>
 
       <div className="rex-parties-latest">
@@ -116,6 +117,16 @@ function RexPartiesReadOnlyPanel({ snapshot }: { snapshot: RexPartiesSnapshot })
   );
 }
 
+function hasPersistedTruthMoments(snapshot: RexPartiesSnapshot): boolean {
+  return snapshot.truthChainSnapshot?.moments.some(
+    (moment) => moment.source === "review_moment" || moment.source === "training_item",
+  ) === true;
+}
+
+function hasMovesOnlyTruthMoments(snapshot: RexPartiesSnapshot): boolean {
+  return snapshot.truthChainSnapshot?.moments.some((moment) => moment.source === "moves_only") === true;
+}
+
 function backendStatusLabel(snapshot: RexPartiesSnapshot): string {
   if (snapshot.backendStatus === "loading") {
     return "Chargement des parties...";
@@ -126,7 +137,13 @@ function backendStatusLabel(snapshot: RexPartiesSnapshot): string {
   if (snapshot.backendStatus === "empty") {
     return "Aucune partie réelle trouvée";
   }
-  return "Données réelles détectées";
+  if (hasPersistedTruthMoments(snapshot)) {
+    return "Moments Review lus";
+  }
+  if (hasMovesOnlyTruthMoments(snapshot)) {
+    return "Historique lu · moments absents";
+  }
+  return "Historique lu · Truth Chain en attente";
 }
 
 function backendStatusBody(snapshot: RexPartiesSnapshot): string {
@@ -134,12 +151,28 @@ function backendStatusBody(snapshot: RexPartiesSnapshot): string {
     return "La Truth Chain interroge l'historique existant sans lancer d'analyse.";
   }
   if (snapshot.backendStatus === "unavailable") {
-    return "Le shell reste en mode prototype. Aucune analyse, aucun import, aucun Daily Plan.";
+    return "Le shell reste lisible en mode prototype.";
   }
   if (snapshot.backendStatus === "empty") {
     return "Le CTA reste un repère de navigation : l'import REX n'est pas branché dans R2B.";
   }
+  if (hasPersistedTruthMoments(snapshot)) {
+    return "La chaîne utilise des moments persistés en lecture seule.";
+  }
+  if (hasMovesOnlyTruthMoments(snapshot)) {
+    return "Les coups/FEN sont lus, mais aucun moment Review persisté n’est disponible.";
+  }
   return "Les parties viennent de l'historique existant. L'exercice reste à brancher plus tard.";
+}
+
+function backendStatusPills(snapshot: RexPartiesSnapshot): string[] {
+  if (hasPersistedTruthMoments(snapshot)) {
+    return ["Review moments", "Lecture seule", "Aucun write"];
+  }
+  if (hasMovesOnlyTruthMoments(snapshot)) {
+    return ["Moves-only", "Lecture seule", "Gravité non branchée"];
+  }
+  return ["Lecture seule", "Aucun write", "Aucun planning"];
 }
 
 function latestGameLabel(game: NonNullable<RexPartiesSnapshot["latestGame"]>): string {

@@ -1479,6 +1479,21 @@
   border-color: color-mix(in srgb, var(--surface-accent) 30%, rgba(255, 255, 255, 0.08));
 }
 
+.rex-real-chain[data-chain-source="moments-review"] .rex-real-chain__source {
+  border-color: color-mix(in srgb, var(--surface-accent) 54%, rgba(255, 255, 255, 0.16));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 16px 42px color-mix(in srgb, var(--surface-accent) 12%, transparent);
+}
+
+.rex-real-chain[data-chain-source="moves-only"] .rex-real-chain__source {
+  border-style: dashed;
+  border-color: rgba(185, 213, 224, 0.2);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.036), rgba(255, 255, 255, 0.01)),
+    rgba(2, 8, 15, 0.68);
+}
+
 .rex-real-chain__source::after {
   content: "";
   position: absolute;
@@ -1607,6 +1622,26 @@
   box-shadow: 0 0 22px color-mix(in srgb, var(--surface-accent) 24%, transparent);
 }
 
+.rex-real-chain__node[data-chain-source="moments-review"]::before {
+  width: 28px;
+  height: 28px;
+  border-color: color-mix(in srgb, var(--surface-accent) 72%, rgba(255, 255, 255, 0.18));
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.82) 0 12%, color-mix(in srgb, var(--surface-accent) 44%, transparent) 13% 48%, transparent 49%),
+    #061019;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--surface-accent) 8%, transparent),
+    0 0 30px color-mix(in srgb, var(--surface-accent) 32%, transparent);
+}
+
+.rex-real-chain__node[data-chain-source="moves-only"]::before {
+  border-color: rgba(179, 211, 224, 0.34);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(175, 205, 216, 0.14), transparent 50%),
+    #061019;
+  box-shadow: none;
+}
+
 .rex-real-chain__node[data-selected="true"]::before,
 .rex-real-chain__node:focus-visible::before {
   background:
@@ -1640,6 +1675,14 @@
 
 .rex-real-chain__node[data-severity="unknown"] em {
   color: rgba(201, 221, 236, 0.58);
+}
+
+.rex-real-chain__node[data-chain-source="moments-review"] em {
+  color: rgba(224, 246, 255, 0.74);
+}
+
+.rex-real-chain__node[data-chain-source="moves-only"] em {
+  color: rgba(196, 213, 224, 0.58);
 }
 
 .rex-position-lens {
