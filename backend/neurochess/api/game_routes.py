@@ -55,6 +55,10 @@ from neurochess.review_try_move_stabilization import (
     enrich_annotation_with_stable_attempt_evaluation,
 )
 from neurochess.training_item_service import TrainingItemService
+from neurochess.review_moments_readonly_service import (
+    ReviewMomentsReadOnlyNotFoundError,
+    ReviewMomentsReadOnlyService,
+)
 
 
 ACTIVE_SESSIONS: dict[int, GameSession] = {}
@@ -143,6 +147,12 @@ def get_training_item_service(
     repository: Repository = Depends(get_repository),
 ) -> TrainingItemService:
     return TrainingItemService(repository.db_path)
+
+
+def get_review_moments_readonly_service(
+    repository: Repository = Depends(get_repository),
+) -> ReviewMomentsReadOnlyService:
+    return ReviewMomentsReadOnlyService(repository.db_path)
 
 
 def get_daily_plan_service(
@@ -560,6 +570,17 @@ def get_game_review(
         if exc.payload is not None:
             return JSONResponse(status_code=exc.status_code, content=exc.payload)
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+
+@router.get("/games/{game_id}/truth-chain/moments")
+def get_truth_chain_moments(
+    game_id: int,
+    service: ReviewMomentsReadOnlyService = Depends(get_review_moments_readonly_service),
+) -> dict[str, Any]:
+    try:
+        return service.get_truth_chain_moments(game_id)
+    except ReviewMomentsReadOnlyNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @router.post("/games/{game_id}/review/rebuild-metrics")
