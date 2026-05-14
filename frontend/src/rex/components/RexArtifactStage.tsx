@@ -1,5 +1,5 @@
 import type { RexSurfaceCopy } from "../rexTypes";
-import type { RexTruthChainStatuses } from "../data/rexPartiesTypes";
+import type { RexPartiesSnapshot, RexTruthChainStatuses } from "../data/rexPartiesTypes";
 import { RexConstellationPreview } from "./RexConstellationPreview";
 import { RexFlowRail } from "./RexFlowRail";
 import { RexProgressRing } from "./RexProgressRing";
@@ -8,6 +8,7 @@ type RexArtifactStageProps = {
   copy: RexSurfaceCopy;
   truthChain?: RexTruthChainStatuses;
   truthChainNotes?: string[];
+  partiesSnapshot?: RexPartiesSnapshot;
 };
 
 function MissionCore({ copy }: RexArtifactStageProps) {
@@ -32,25 +33,108 @@ function MissionCore({ copy }: RexArtifactStageProps) {
   );
 }
 
-function TruthChain({ copy, truthChain, truthChainNotes }: RexArtifactStageProps) {
+type RexLatestGame = NonNullable<RexPartiesSnapshot["latestGame"]>;
+
+function gamePlayers(game: RexLatestGame): string {
+  const players = [game.white, game.black].filter(Boolean).join(" vs ");
+  return players || `Partie ${game.id}`;
+}
+
+function gameLine(game: RexLatestGame): string {
+  return [game.result, game.openingName].filter(Boolean).join(" - ") || "Resultat non disponible";
+}
+
+function TruthChainLoadedStory({ snapshot }: { snapshot: RexPartiesSnapshot }) {
+  const latest = snapshot.latestGame;
+  if (!latest) {
+    return null;
+  }
+
+  const reviewReady = latest.reviewStatus === "ready";
+  const trainingAvailable = latest.trainingAvailable === true;
+  const openingName = latest.openingName ?? "Ouverture non disponible";
+  const transformSteps = [
+    {
+      label: "Analyse",
+      status: snapshot.truthChain.analysis === "available" ? "Statut lu" : "Non disponible",
+      state: snapshot.truthChain.analysis,
+    },
+    {
+      label: "Decision",
+      status: reviewReady ? "Review prete" : "En attente",
+      state: reviewReady ? "available" : "pending",
+    },
+    {
+      label: "Exercice",
+      status: trainingAvailable ? "Lu" : "A brancher",
+      state: trainingAvailable ? "available" : "unavailable",
+    },
+  ];
+
+  return (
+    <div className="rex-truth-chain__loaded-story" data-testid="rex-parties-loaded-story">
+      <div className="rex-truth-chain__raw-game">
+        <span>Matiere brute</span>
+        <strong>{gamePlayers(latest)}</strong>
+        <em>{gameLine(latest)}</em>
+        <div className="rex-truth-chain__source-chips" aria-label="Preuves source">
+          <span>PGN lu</span>
+          <span>{snapshot.totalGames} parties</span>
+          <span>0 write</span>
+        </div>
+      </div>
+
+      <div className="rex-truth-chain__transform" aria-label="Transformation PGN vers entrainement read-only">
+        <div className="rex-truth-chain__transform-line" aria-hidden="true" />
+        {transformSteps.map((step, index) => (
+          <div className="rex-truth-chain__node" data-node-status={step.state} key={step.label}>
+            <span>{step.label}</span>
+            <strong>{step.status}</strong>
+            <i aria-hidden="true">{index + 2}</i>
+          </div>
+        ))}
+      </div>
+
+      <div className="rex-truth-chain__opening-signal">
+        <span>Ouverture detectee</span>
+        <strong>{openingName}</strong>
+        <em>Plan post-ouverture plus tard</em>
+      </div>
+
+      <div className="rex-truth-chain__readonly-strip" aria-label="Contrat read-only Parties">
+        <span>Lecture seule</span>
+        <span>Aucun write</span>
+        <span>Aucun effet planning</span>
+      </div>
+    </div>
+  );
+}
+
+function TruthChain({ copy, truthChain, truthChainNotes, partiesSnapshot }: RexArtifactStageProps) {
   const statuses = truthChain
     ? [truthChain.pgn, truthChain.analysis, truthChain.criticalMoment, truthChain.exercise]
     : undefined;
   const hasRealPgn = truthChain?.pgn === "available";
+  const isLoaded = partiesSnapshot?.backendStatus === "ready";
 
   return (
-    <div className="rex-artifact rex-artifact--truth" data-testid="rex-artifact-truth-chain">
+    <div
+      className="rex-artifact rex-artifact--truth"
+      data-testid="rex-artifact-truth-chain"
+      data-truth-state={isLoaded ? "loaded" : hasRealPgn ? "partial" : "fallback"}
+    >
       <div className="rex-artifact__header">
         <span>Truth Chain</span>
         <strong>PGN vers decision entrainable</strong>
       </div>
+      {isLoaded ? <TruthChainLoadedStory snapshot={partiesSnapshot} /> : null}
       <RexFlowRail steps={copy.flow} statuses={statuses} statusNotes={truthChainNotes} />
       <div className="rex-truth-chain__verdict">
         <span>{hasRealPgn ? "Donnees reelles detectees" : "Lecture seule"}</span>
         <strong>
           {hasRealPgn
-            ? "La décision peut être jugée ; aucune action backend n'est déclenchée."
-            : "La chaîne tente une lecture des parties, sans écriture ni analyse."}
+            ? "Decision lue, joueur respecte, aucune action backend."
+            : "Lecture sans ecriture ni analyse."}
         </strong>
       </div>
     </div>
@@ -121,10 +205,17 @@ function ProgressionMap({ copy }: RexArtifactStageProps) {
   );
 }
 
-export function RexArtifactStage({ copy, truthChain, truthChainNotes }: RexArtifactStageProps) {
+export function RexArtifactStage({ copy, truthChain, truthChainNotes, partiesSnapshot }: RexArtifactStageProps) {
   switch (copy.id) {
     case "parties":
-      return <TruthChain copy={copy} truthChain={truthChain} truthChainNotes={truthChainNotes} />;
+      return (
+        <TruthChain
+          copy={copy}
+          truthChain={truthChain}
+          truthChainNotes={truthChainNotes}
+          partiesSnapshot={partiesSnapshot}
+        />
+      );
     case "forge":
       return <ForgeCore copy={copy} />;
     case "arene":

@@ -25,7 +25,12 @@ export function PartiesSurface() {
       <RexSurfaceHero copy={copy} ctaNote="Import REX non branché dans cette mission." />
 
       <div className="rex-surface__instrument">
-        <RexArtifactStage copy={copy} truthChain={snapshot.truthChain} truthChainNotes={truthChainNotes} />
+        <RexArtifactStage
+          copy={copy}
+          truthChain={snapshot.truthChain}
+          truthChainNotes={truthChainNotes}
+          partiesSnapshot={snapshot}
+        />
         <RexPartiesReadOnlyPanel snapshot={snapshot} />
       </div>
 
@@ -227,15 +232,17 @@ function buildCards(snapshot: RexPartiesSnapshot): RexPreviewCard[] {
 
   return [
     {
-      title: "Derniere partie",
-      body: latest ? latestGameLabel(latest) : "En attente de donnees d'historique.",
-      status: snapshot.backendStatus === "loading" ? "Loading" : "Reel",
+      title: "Ouverture detectee",
+      body: latest?.openingName
+        ? `${latest.openingName} devient un signal de lecture, pas encore une Forge.`
+        : "Ouverture non disponible dans l'historique.",
+      status: latest?.openingName ? "Signal" : "Limite",
     },
     {
-      title: "Review franche",
+      title: "Review lue",
       body:
         latest?.reviewStatus === "ready"
-          ? "Review prete dans l'historique. Aucun payload Review direct n'est appele ici."
+          ? "Review prete dans l'historique. La decision devient visible sans appel Review direct."
           : "Review non disponible ou non prete dans l'historique.",
       status: latest?.reviewStatus === "ready" ? "Prete" : "A brancher",
     },

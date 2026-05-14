@@ -1164,6 +1164,295 @@
   font-size: 1.02rem;
 }
 
+.rex-artifact--truth[data-truth-state="loaded"] {
+  min-height: 500px;
+}
+
+.rex-artifact--truth[data-truth-state="loaded"]::after {
+  background:
+    radial-gradient(circle at 16% 28%, color-mix(in srgb, var(--surface-accent) 21%, transparent), transparent 34%),
+    linear-gradient(135deg, rgba(74, 220, 244, 0.055), transparent 52%);
+  opacity: 0.7;
+}
+
+.rex-artifact--truth[data-truth-state="loaded"] .rex-flow-rail {
+  margin-top: 14px;
+  margin-bottom: 0;
+  min-height: 76px;
+}
+
+.rex-artifact--truth[data-truth-state="loaded"] .rex-flow-rail li {
+  min-height: 72px;
+  gap: 5px;
+  padding: 10px;
+  border-radius: 14px;
+}
+
+.rex-artifact--truth[data-truth-state="loaded"] .rex-flow-rail__index {
+  width: 22px;
+  height: 22px;
+  font-size: 0.72rem;
+}
+
+.rex-artifact--truth[data-truth-state="loaded"] .rex-flow-rail__step {
+  font-size: 0.82rem;
+}
+
+.rex-artifact--truth[data-truth-state="loaded"] .rex-flow-rail__status {
+  margin-top: 0;
+  font-size: 0.66rem;
+}
+
+.rex-artifact--truth[data-truth-state="loaded"] .rex-flow-rail li[data-rex-step-status="available"] {
+  border-color: color-mix(in srgb, var(--surface-accent) 38%, rgba(255, 255, 255, 0.08));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-accent) 9%, transparent), rgba(255, 255, 255, 0.025)),
+    rgba(3, 9, 16, 0.76);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.rex-artifact--truth[data-truth-state="loaded"] .rex-flow-rail li[data-rex-step-status="unavailable"] {
+  opacity: 0.78;
+  background: rgba(255, 255, 255, 0.024);
+}
+
+.rex-artifact--truth[data-truth-state="loaded"] .rex-truth-chain__verdict {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.75rem;
+  align-items: center;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(2, 8, 15, 0.54);
+}
+
+.rex-artifact--truth[data-truth-state="loaded"] .rex-truth-chain__verdict span {
+  margin: 0;
+}
+
+.rex-artifact--truth[data-truth-state="loaded"] .rex-truth-chain__verdict strong {
+  font-size: 0.86rem;
+}
+
+.rex-truth-chain__loaded-story {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.78fr) minmax(320px, 1fr);
+  gap: 14px;
+  margin-top: 0;
+}
+
+.rex-truth-chain__raw-game,
+.rex-truth-chain__opening-signal,
+.rex-truth-chain__readonly-strip {
+  border: 1px solid rgba(187, 230, 248, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.014)),
+    rgba(2, 8, 15, 0.74);
+}
+
+.rex-truth-chain__raw-game {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  align-content: center;
+  min-height: 238px;
+  padding: 20px;
+  border-radius: 22px;
+  border-color: color-mix(in srgb, var(--surface-accent) 32%, rgba(255, 255, 255, 0.08));
+  background:
+    radial-gradient(circle at 22% 26%, color-mix(in srgb, var(--surface-accent) 18%, transparent), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.052), rgba(255, 255, 255, 0.015)),
+    rgba(2, 8, 15, 0.84);
+}
+
+.rex-truth-chain__raw-game::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--surface-accent), rgba(255, 255, 255, 0.86), transparent);
+  opacity: 0;
+  transform: translateX(-70%);
+  animation: rex-truth-chain-scan 7.2s ease-in-out infinite;
+}
+
+.rex-truth-chain__raw-game span,
+.rex-truth-chain__opening-signal span,
+.rex-truth-chain__node span,
+.rex-truth-chain__readonly-strip span {
+  color: var(--surface-accent);
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.rex-truth-chain__raw-game strong {
+  display: block;
+  margin-top: 0.52rem;
+  color: #ffffff;
+  font-size: clamp(1.7rem, 2.6vw, 2.55rem);
+  line-height: 1.08;
+}
+
+.rex-truth-chain__raw-game em {
+  margin-top: 0.6rem;
+  color: rgba(192, 235, 247, 0.92);
+  font-style: normal;
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.rex-truth-chain__source-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.44rem;
+  margin-top: 1rem;
+}
+
+.rex-truth-chain__source-chips span {
+  white-space: nowrap;
+  padding: 0.34rem 0.58rem;
+  border: 1px solid rgba(181, 230, 225, 0.14);
+  border-radius: 999px;
+  color: rgba(229, 246, 247, 0.82);
+  background: rgba(6, 20, 28, 0.48);
+}
+
+.rex-truth-chain__transform {
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: 14px;
+  min-height: 238px;
+  padding: 14px 10px 14px 34px;
+}
+
+.rex-truth-chain__transform-line {
+  position: absolute;
+  left: 17px;
+  top: 30px;
+  bottom: 30px;
+  width: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.rex-truth-chain__transform-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent, var(--surface-accent), rgba(255, 255, 255, 0.8), transparent);
+  transform: translateY(-78%);
+  animation: rex-truth-chain-flow 6.8s ease-in-out infinite;
+}
+
+.rex-truth-chain__node {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(84px, 0.38fr) minmax(0, 1fr) 30px;
+  gap: 10px;
+  align-items: center;
+  min-height: 54px;
+  padding: 0 10px 0 14px;
+  border: 1px solid rgba(187, 230, 248, 0.12);
+  border-radius: 999px;
+  background: rgba(2, 8, 15, 0.72);
+}
+
+.rex-truth-chain__node::before {
+  content: "";
+  position: absolute;
+  left: -23px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--surface-accent);
+  border-radius: 999px;
+  background: #071019;
+  transform: translateY(-50%);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--surface-accent) 36%, transparent);
+}
+
+.rex-truth-chain__node[data-node-status="available"] {
+  border-color: color-mix(in srgb, var(--surface-accent) 38%, rgba(255, 255, 255, 0.08));
+}
+
+.rex-truth-chain__node[data-node-status="available"]::before {
+  background: var(--surface-accent);
+}
+
+.rex-truth-chain__node[data-node-status="pending"] {
+  border-color: rgba(245, 196, 111, 0.28);
+}
+
+.rex-truth-chain__node[data-node-status="unavailable"] {
+  opacity: 0.68;
+}
+
+.rex-truth-chain__node strong {
+  color: rgba(248, 252, 255, 0.94);
+  font-size: 0.92rem;
+}
+
+.rex-truth-chain__node i {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(181, 230, 225, 0.14);
+  border-radius: 999px;
+  color: rgba(224, 242, 245, 0.68);
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.rex-truth-chain__opening-signal {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(126px, 0.24fr) minmax(0, 1fr) max-content;
+  gap: 10px 16px;
+  align-items: center;
+  padding: 11px 14px;
+  border-radius: 999px;
+}
+
+.rex-truth-chain__opening-signal strong {
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.rex-truth-chain__opening-signal em {
+  color: rgba(218, 231, 242, 0.62);
+  font-style: normal;
+  font-size: 0.78rem;
+  font-weight: 780;
+}
+
+.rex-truth-chain__readonly-strip {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  padding: 10px;
+  border-radius: 999px;
+  background: rgba(2, 8, 15, 0.58);
+}
+
+.rex-truth-chain__readonly-strip span {
+  padding: 0.28rem 0.52rem;
+  border: 1px solid rgba(181, 230, 225, 0.13);
+  border-radius: 999px;
+  color: rgba(224, 239, 241, 0.72);
+  background: rgba(8, 20, 24, 0.34);
+}
+
 .rex-forge-core {
   display: grid;
   grid-template-columns: minmax(120px, 1fr) 120px minmax(120px, 1fr);
@@ -1557,23 +1846,63 @@
   }
 }
 
+@keyframes rex-truth-chain-scan {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translateX(-72%);
+  }
+  38%,
+  66% {
+    opacity: 0.62;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(72%);
+  }
+}
+
+@keyframes rex-truth-chain-flow {
+  0%,
+  20% {
+    opacity: 0;
+    transform: translateY(-78%);
+  }
+  45%,
+  70% {
+    opacity: 0.64;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(78%);
+  }
+}
+
 @media (max-width: 900px) {
   .rex-surface__instrument,
   .rex-surface__support,
   .rex-forge-core,
-  .rex-progression-map {
+  .rex-progression-map,
+  .rex-truth-chain__loaded-story,
+  .rex-truth-chain__opening-signal {
     grid-template-columns: 1fr;
   }
 
   .rex-habit-signal {
     grid-column: auto;
   }
+
+  .rex-truth-chain__transform {
+    padding-left: 34px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .rex-mission-core__orb,
   .rex-forge-core__anvil span,
-  .rex-transfer-lane i::after {
+  .rex-transfer-lane i::after,
+  .rex-truth-chain__raw-game::after,
+  .rex-truth-chain__transform-line::after {
     animation: none;
   }
 }

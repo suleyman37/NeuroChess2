@@ -7,13 +7,13 @@ import {
   normalizeText,
 } from "./browser_test_helpers.mjs";
 
-const MISSION = "R2C.PARTIES-LOADED-STATE-FIXTURE-PROOF-READONLY-V1";
+const MISSION = "R2E1.TRUTH-CHAIN-INSTRUMENTIZATION-AND-VISUAL-EXPLANATION-PASS-V1";
 const QA_ROOT = path.join(
   process.env.USERPROFILE ?? "C:\\Users\\bahij",
   "OneDrive",
   "Desktop",
   "NeuroChess_QA_Artifacts",
-  "R2C_PARTIES_LOADED_STATE_FIXTURE_PROOF_READONLY_V1",
+  "R2E1_TRUTH_CHAIN_INSTRUMENTIZATION_AND_VISUAL_EXPLANATION_PASS_V1",
 );
 const SCREENSHOT_DIR = path.join(QA_ROOT, "screenshots");
 const EVIDENCE_DIR = path.join(QA_ROOT, "browser_evidence");
@@ -44,7 +44,7 @@ mkdirSync(SCREENSHOT_DIR, { recursive: true });
 mkdirSync(EVIDENCE_DIR, { recursive: true });
 
 const evidence = createEvidence(MISSION, "browser_rex_parties_loaded_fixture_smoke.json");
-evidence.strategy = "REX Parties loaded state via browser network fixture, GET-only, no backend writes";
+evidence.strategy = "REX Parties loaded Truth Chain instrumentization via browser network fixture, GET-only, no backend writes";
 evidence.output_path = path.join(EVIDENCE_DIR, "browser_rex_parties_loaded_fixture_smoke.json");
 evidence.screenshots = [];
 evidence.network_calls = [];
@@ -300,12 +300,21 @@ async function assertLoadedState() {
         statuses[3]?.status === "unavailable" &&
         text.includes("clubrival") &&
         text.includes("sicilian defense: najdorf") &&
+        text.includes("matiere brute") &&
+        text.includes("pgn lu") &&
+        text.includes("ouverture detectee") &&
+        text.includes("review prete") &&
+        text.includes("a brancher") &&
+        text.includes("plan post-ouverture") &&
         text.includes("lecture seule") &&
         text.includes("aucune"),
       backendStatus: panel?.getAttribute("data-backend-status"),
       statuses,
       hasClubRival: text.includes("clubrival"),
       hasNajdorf: text.includes("sicilian defense: najdorf"),
+      hasRawMatter: text.includes("matiere brute"),
+      hasOpeningSignal: text.includes("ouverture detectee"),
+      hasReviewProof: text.includes("review prete"),
       hasReadOnly: text.includes("lecture seule"),
       text: text.slice(0, 900),
     };
@@ -366,10 +375,10 @@ async function main() {
     await assertLoadedState();
     await assertForbiddenTextAbsent("rex_parties_loaded_forbidden_text_absent");
     await assertReadOnlyNetwork("rex_parties_loaded_get_only_network");
-    await captureScreenshot("rex_parties_r2c_loaded_fixture.png");
+    await captureScreenshot("rex_parties_r2e1_loaded_instrument.png");
 
     await assertDegradedStillOk();
-    await captureScreenshot("rex_parties_r2c_degraded_still_ok.png");
+    await captureScreenshot("rex_parties_r2e1_degraded_still_ok.png");
 
     await assertForbiddenTextAbsent("rex_parties_degraded_forbidden_text_absent");
     await assertReadOnlyNetwork("rex_parties_degraded_get_only_network");
