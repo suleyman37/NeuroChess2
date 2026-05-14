@@ -1,7 +1,14 @@
+import { useState } from "react";
 import type { RexSurfaceCopy } from "../rexTypes";
-import type { RexPartiesSnapshot, RexTruthChainStatuses } from "../data/rexPartiesTypes";
+import type {
+  RexPartiesSnapshot,
+  RexTruthChainMoment,
+  RexTruthChainSnapshot,
+  RexTruthChainStatuses,
+} from "../data/rexPartiesTypes";
 import { RexConstellationPreview } from "./RexConstellationPreview";
 import { RexFlowRail } from "./RexFlowRail";
+import { RexMiniBoard } from "./RexMiniBoard";
 import { RexProgressRing } from "./RexProgressRing";
 
 type RexArtifactStageProps = {
@@ -44,10 +51,131 @@ function gameLine(game: RexLatestGame): string {
   return [game.result, game.openingName].filter(Boolean).join(" - ") || "Resultat non disponible";
 }
 
+function truthChainPlayers(chain: RexTruthChainSnapshot, latest: RexLatestGame): string {
+  const game = chain.game;
+  const players = [game?.white ?? latest.white, game?.black ?? latest.black].filter(Boolean).join(" vs ");
+  return players || `Partie ${game?.id ?? latest.id}`;
+}
+
+function truthChainGameLine(chain: RexTruthChainSnapshot, latest: RexLatestGame): string {
+  const game = chain.game;
+  return [game?.result ?? latest.result, game?.openingName ?? latest.openingName, game?.eco]
+    .filter(Boolean)
+    .join(" - ") || "Resultat non disponible";
+}
+
+function momentCompactLabel(moment: RexTruthChainMoment): string {
+  const move = moment.san ?? moment.uci ?? "coup";
+  if (moment.moveNumber) {
+    return moment.sideToMove === "black" ? `${moment.moveNumber}...${move}` : `${moment.moveNumber}.${move}`;
+  }
+  return `Ply ${moment.ply}`;
+}
+
+function momentStatus(moment: RexTruthChainMoment): string {
+  if (moment.exerciseAvailable) {
+    return "Exercice";
+  }
+  if (moment.reviewAvailable) {
+    return "Statut lu";
+  }
+  return "Lu";
+}
+
+function momentSeverityLabel(moment: RexTruthChainMoment): string {
+  if (moment.visualSeverity === "unknown") {
+    return "Gravite a brancher";
+  }
+  return moment.visualSeverity;
+}
+
+function TruthChainRealMovesStory({
+  chain,
+  snapshot,
+}: {
+  chain: RexTruthChainSnapshot;
+  snapshot: RexPartiesSnapshot;
+}) {
+  const latest = snapshot.latestGame;
+  const moments = chain.moments.slice(0, 5);
+  const [selectedMomentId, setSelectedMomentId] = useState<string | undefined>();
+  const selected = moments.find((moment) => moment.id === selectedMomentId) ?? moments[0];
+
+  if (!latest || moments.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="rex-real-chain" data-testid="rex-truth-chain-real" data-selected-node={selected.id}>
+      <div className="rex-real-chain__source">
+        <span>Partie lue</span>
+        <strong>{truthChainPlayers(chain, latest)}</strong>
+        <em>{truthChainGameLine(chain, latest)}</em>
+        <div className="rex-real-chain__chips" aria-label="Preuves read-only">
+          <span>PGN</span>
+          <span>{moments.length} coups</span>
+          <span>GET only</span>
+        </div>
+      </div>
+
+      <ol className="rex-real-chain__rail" aria-label="Cinq coups lus sans detection critique">
+        {moments.map((moment) => {
+          const isSelected = selected.id === moment.id;
+          return (
+            <li key={moment.id}>
+              <button
+                className="rex-real-chain__node"
+                data-testid="rex-truth-chain-node"
+                data-selected={isSelected ? "true" : "false"}
+                data-severity={moment.visualSeverity}
+                onClick={() => setSelectedMomentId(moment.id)}
+                onFocus={() => setSelectedMomentId(moment.id)}
+                onMouseEnter={() => setSelectedMomentId(moment.id)}
+                type="button"
+              >
+                <strong>{momentCompactLabel(moment)}</strong>
+                <em>{momentStatus(moment)}</em>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="rex-position-lens" data-testid="rex-position-lens">
+        <RexMiniBoard fen={selected.fenBefore} label={`Position lue avant ${momentCompactLabel(selected)}`} />
+        <div className="rex-real-chain__focus-copy">
+          <span>Position lue</span>
+          <strong>{momentCompactLabel(selected)}</strong>
+          <em>{selected.uci ? `UCI ${selected.uci}` : "UCI non disponible"}</em>
+          <div className="rex-real-chain__chips" aria-label="Statuts du coup selectionne">
+            <span>{momentSeverityLabel(selected)}</span>
+            <span>Read-only</span>
+            <span>No write</span>
+            <span>No analyse</span>
+            <span>Source moves</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="rex-real-chain__proof" aria-label="Contrat read-only R2H">
+        <span>Lecture seule</span>
+        <span>Aucun write</span>
+        <span>Aucun planning</span>
+        <span>Review non appelee</span>
+      </div>
+    </div>
+  );
+}
+
 function TruthChainLoadedStory({ snapshot }: { snapshot: RexPartiesSnapshot }) {
   const latest = snapshot.latestGame;
   if (!latest) {
     return null;
+  }
+
+  const realChain = snapshot.truthChainSnapshot;
+  if (realChain && realChain.moments.length > 0) {
+    return <TruthChainRealMovesStory chain={realChain} snapshot={snapshot} />;
   }
 
   const reviewReady = latest.reviewStatus === "ready";
