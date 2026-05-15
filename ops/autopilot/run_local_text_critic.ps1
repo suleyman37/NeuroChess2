@@ -2,13 +2,40 @@ param(
   [string]$Cwd,
   [string]$RunDir,
   [string]$TaskJson,
-  [string]$Model = "gpt-oss:20b"
+  [string]$Model = "gpt-oss:20b",
+  [string]$WorkerName = "gpu_worker",
+  [switch]$NoRemote
 )
 
 . "$PSScriptRoot\lib.ps1"
 
 if (-not $Cwd) { $Cwd = Get-AutopilotRepoRoot }
 if (-not $RunDir) { $RunDir = New-AutopilotRunDir -Name "text_critic" }
+
+function Test-RemoteWorkerConfigured {
+  param([string]$Name)
+  $repoRoot = Get-AutopilotRepoRoot
+  $workersPath = Join-Path $repoRoot "ops\autopilot\workers.yaml"
+  if (-not (Test-Path $workersPath)) { return $false }
+
+  $inTarget = $false
+  foreach ($line in Get-Content -LiteralPath $workersPath) {
+    if ($line -match "^\s{2}([A-Za-z0-9_-]+):\s*$") {
+      $inTarget = ($matches[1] -eq $Name)
+      continue
+    }
+    if ($inTarget -and $line -match "^\s{4}ollama_url:\s*(.*?)\s*$") {
+      $url = $matches[1].Trim()
+      return ($url -and $url -notmatch "CHANGE_ME")
+    }
+  }
+  return $false
+}
+
+if (-not $NoRemote -and (Test-RemoteWorkerConfigured -Name $WorkerName)) {
+  & "$PSScriptRoot\run_remote_text_critic.ps1" -Cwd $Cwd -RunDir $RunDir -TaskJson $TaskJson -WorkerName $WorkerName
+  exit $LASTEXITCODE
+}
 
 $result = [ordered]@{
   verdict = "pass"

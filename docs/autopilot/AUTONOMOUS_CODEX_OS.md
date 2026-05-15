@@ -13,6 +13,7 @@ message relay.
 - Worktrees: `C:\Users\suley\Documents\Dev\NeuroChess2_worktrees`
 - Logs: `C:\Users\suley\Documents\Dev\NeuroChess_QA_Artifacts\autopilot`
 - Runner: Windows Scheduled Task `NeuroChessCodexAutopilot`
+- Optional distributed worker registry: `ops/autopilot/workers.yaml`
 
 ## Cycle
 
@@ -21,7 +22,7 @@ message relay.
 3. Create a worktree.
 4. Execute the task.
 5. Run deterministic checks.
-6. Run local critics if available and required.
+6. Run local or remote critics if available and required.
 7. Promote or quarantine based on policy.
 8. Write report.
 9. Exit.
@@ -42,3 +43,19 @@ Local models are judges only. If Ollama or the requested models are unavailable,
 the queue continues for docs/tooling with deterministic checks and records
 `critic_unavailable`. UI/backend tasks can be quarantined when policy requires a
 critic.
+
+## Two-PC Critic Mode
+
+PC1 remains the executor and the only machine allowed to commit or push.
+PC2 can be registered as `gpu_worker` for Ollama text and vision criticism.
+
+The remote worker path is intentionally narrow:
+
+- PC1 sends diff/log/screenshot context.
+- PC2 returns strict JSON critic results.
+- PC2 does not modify the repo.
+- PC2 does not run the scheduler.
+- PC2 does not configure a GitHub self-hosted runner.
+
+If PC2 is unavailable, AgentOS records `critic_unavailable` and continues only
+where policy allows deterministic checks to be sufficient.

@@ -49,3 +49,30 @@ forbidden_stage_paths:
 github_runner:
   allow_self_hosted_on_public_repo: false
   primary_scheduler: windows_scheduled_task
+
+distributed_workers:
+  enabled: true
+  primary_executor: main
+  critic_worker: gpu_worker
+  worker_config: ops/autopilot/workers.yaml
+  remote_critics:
+    text:
+      prefer_remote_when_registered: true
+      unavailable_verdict: critic_unavailable
+      blocks_docs_tooling: false
+      blocks_frontend_readonly: false
+    vision:
+      prefer_remote_when_registered: true
+      unavailable_verdict: critic_unavailable
+      blocks_docs_tooling: false
+      blocks_frontend_readonly: false
+  worker_guardrails:
+    can_modify_repo: false
+    can_commit: false
+    can_push: false
+    runs_scheduler: false
+    no_github_self_hosted_runner: true
+    ollama_network_scope: lan_only
+  promotion_authority:
+    road_to_v2_push_allowed_from: main
+    gpu_worker_push_allowed: false

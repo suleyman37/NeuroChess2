@@ -4,6 +4,24 @@ text_critic_primary:
   purpose: local text judge for diffs, logs, scope, and forbidden changes
   availability: not_pulled
   install_status: ollama_installed_path_pending_or_available
+  candidates:
+    - gpt-oss:20b
+    - qwen2.5-coder:14b
+    - qwen2.5-coder:7b
+    - llama3.1:8b
+
+text_critic_remote:
+  provider: ollama_http
+  worker: gpu_worker
+  endpoint_from: ops/autopilot/workers.yaml
+  purpose: distributed GPU text judge for diffs, logs, scope, and forbidden changes
+  availability: worker_unregistered
+  install_status: pc2_bootstrap_pending
+  candidates:
+    - qwen2.5-coder:14b
+    - qwen2.5-coder:7b
+    - llama3.1:8b
+    - gpt-oss:20b
 
 text_critic_fallback:
   provider: deterministic
@@ -18,10 +36,27 @@ vision_critic_primary:
   purpose: local screenshot judge for UI regressions
   availability: not_pulled
   install_status: ollama_installed_path_pending_or_available
+  candidates:
+    - qwen2.5vl:7b
+    - llava:7b
+
+vision_critic_remote:
+  provider: ollama_http
+  worker: gpu_worker
+  endpoint_from: ops/autopilot/workers.yaml
+  purpose: distributed GPU screenshot judge for layout, copy, and visual regressions
+  availability: worker_unregistered
+  install_status: pc2_bootstrap_pending
+  candidates:
+    - qwen2.5vl:7b
+    - llava:7b
 
 availability:
   codex_cli: available_via_cmd
   ollama: installed_by_bootstrap_if_path_resolves
+  remote_gpu_worker: configured_after_register_worker_endpoint
   notes:
     - Models are judges only, not primary executors.
     - Missing models must degrade to critic_unavailable, not crash the queue.
+    - Remote worker critics are optional gates until workers.yaml points to a real LAN endpoint.
+    - PC2 workers must never commit, push, or run product missions.

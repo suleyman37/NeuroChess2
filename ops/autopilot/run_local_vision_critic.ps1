@@ -2,12 +2,39 @@ param(
   [string]$ScreenshotDir,
   [string]$RunDir,
   [string]$Brief = "",
-  [string]$Model = "qwen2.5vl:7b"
+  [string]$Model = "qwen2.5vl:7b",
+  [string]$WorkerName = "gpu_worker",
+  [switch]$NoRemote
 )
 
 . "$PSScriptRoot\lib.ps1"
 
 if (-not $RunDir) { $RunDir = New-AutopilotRunDir -Name "vision_critic" }
+
+function Test-RemoteWorkerConfigured {
+  param([string]$Name)
+  $repoRoot = Get-AutopilotRepoRoot
+  $workersPath = Join-Path $repoRoot "ops\autopilot\workers.yaml"
+  if (-not (Test-Path $workersPath)) { return $false }
+
+  $inTarget = $false
+  foreach ($line in Get-Content -LiteralPath $workersPath) {
+    if ($line -match "^\s{2}([A-Za-z0-9_-]+):\s*$") {
+      $inTarget = ($matches[1] -eq $Name)
+      continue
+    }
+    if ($inTarget -and $line -match "^\s{4}ollama_url:\s*(.*?)\s*$") {
+      $url = $matches[1].Trim()
+      return ($url -and $url -notmatch "CHANGE_ME")
+    }
+  }
+  return $false
+}
+
+if (-not $NoRemote -and (Test-RemoteWorkerConfigured -Name $WorkerName)) {
+  & "$PSScriptRoot\run_remote_vision_critic.ps1" -ScreenshotsDir $ScreenshotDir -Brief $Brief -RunDir $RunDir -WorkerName $WorkerName
+  exit $LASTEXITCODE
+}
 
 $screenshots = @()
 if ($ScreenshotDir -and (Test-Path $ScreenshotDir)) {

@@ -1,0 +1,25 @@
+workers:
+  main:
+    role: executor
+    repo_path: C:\Users\suley\Documents\Dev\NeuroChess2_clean
+    can_modify_repo: true
+    can_commit: true
+    can_push: true
+    runs_scheduler: true
+  gpu_worker:
+    role: critic_worker
+    host: CHANGE_ME_TO_PC2_HOSTNAME_OR_IP
+    ollama_url: http://CHANGE_ME_TO_PC2_HOSTNAME_OR_IP:11434
+    can_push: false
+    can_commit: false
+    can_modify_repo: false
+    runs_scheduler: false
+    runs_ollama: true
+    serves_text_critic: true
+    serves_vision_critic: true
+    text_critic_enabled: true
+    vision_critic_enabled: true
+    notes:
+      - PC2 is a critic worker only.
+      - Do not commit or push from PC2.
+      - Keep Ollama LAN-only and firewall-restricted.
