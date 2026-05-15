@@ -1,0 +1,11 @@
+<NC_SUPERVISOR_RESPONSE nonce="TEST_NONCE_REQUEST_MORE">
+<VERDICT>REQUEST_MORE</VERDICT>
+<REQUEST_MORE>
+needed_items:
+- changed_files
+- whole_repo_zip
+reason:
+This asks for an unknown evidence item and must be rejected.
+</REQUEST_MORE>
+<NC_DONE nonce="TEST_NONCE_REQUEST_MORE">DONE</NC_DONE>
+</NC_SUPERVISOR_RESPONSE>

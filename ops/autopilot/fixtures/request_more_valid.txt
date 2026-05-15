@@ -1,0 +1,12 @@
+<NC_SUPERVISOR_RESPONSE nonce="TEST_NONCE_REQUEST_MORE">
+<VERDICT>REQUEST_MORE</VERDICT>
+<REQUEST_MORE>
+needed_items:
+- changed_files
+- diff_stat
+- diff_excerpt
+reason:
+Need concise targeted evidence to verify the scope before issuing one micro-prompt.
+</REQUEST_MORE>
+<NC_DONE nonce="TEST_NONCE_REQUEST_MORE">DONE</NC_DONE>
+</NC_SUPERVISOR_RESPONSE>
