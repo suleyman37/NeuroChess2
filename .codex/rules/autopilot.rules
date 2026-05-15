@@ -1,0 +1,16 @@
+# NeuroChess Autopilot Rules
+
+- Execute at most one queue item per run.
+- Use a dedicated worktree for each task unless the task is a local dry run.
+- Promotion requires:
+  - branch `road-to-V2` up to date before applying changes;
+  - no staged files before task execution;
+  - changed files inside `allowed_paths`;
+  - no files inside `forbidden_paths`;
+  - deterministic checks pass;
+  - local critic pass or documented degraded mode allowed by policy.
+- `docs_tooling` may auto-commit and auto-push to `road-to-V2`.
+- `frontend_readonly` may auto-commit and auto-push only with build/typecheck,
+  relevant REX smokes, and critic or deterministic visual proof.
+- `backend_readonly` may auto-commit and auto-push only with anti-mutation proof.
+- `write_sensitive` must quarantine to `autopilot/<task-id>` during bootstrap.

@@ -1,0 +1,27 @@
+text_critic_primary:
+  provider: ollama
+  model: gpt-oss:20b
+  purpose: local text judge for diffs, logs, scope, and forbidden changes
+  availability: not_pulled
+  install_status: ollama_installed_path_pending_or_available
+
+text_critic_fallback:
+  provider: deterministic
+  model: checks_only
+  purpose: continue docs/tooling when local model is missing
+  availability: available
+  install_status: built_in
+
+vision_critic_primary:
+  provider: ollama
+  model: qwen2.5vl:7b
+  purpose: local screenshot judge for UI regressions
+  availability: not_pulled
+  install_status: ollama_installed_path_pending_or_available
+
+availability:
+  codex_cli: available_via_cmd
+  ollama: installed_by_bootstrap_if_path_resolves
+  notes:
+    - Models are judges only, not primary executors.
+    - Missing models must degrade to critic_unavailable, not crash the queue.

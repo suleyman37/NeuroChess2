@@ -1,0 +1,107 @@
+schema_version: autopilot_queue_v1
+base_branch: road-to-V2
+artifact_root: C:\Users\suley\Documents\Dev\NeuroChess_QA_Artifacts\autopilot
+worktree_root: C:\Users\suley\Documents\Dev\NeuroChess2_worktrees
+
+items:
+  - id: A0_AGENTOS_BOOTSTRAP
+    title: Add NeuroChess AgentOS autopilot bootstrap
+    type: docs_tooling
+    risk_tier: docs_tooling
+    allowed_paths: AGENTS.md,.agent/**,.agents/skills/**,.codex/**,ops/autopilot/**,docs/autopilot/**
+    forbidden_paths: backend/**,frontend/**,plan/**,package.json,package-lock.json,App.tsx,qa_artifacts/**,.venv/**,.serena/project.yml
+    depends_on: none
+    checks_profile: docs_only
+    local_text_critic: optional
+    local_vision_critic: false
+    promotion_target: road-to-V2
+    prompt_file_or_inline: ops/autopilot/prompts/A0_AGENTOS_BOOTSTRAP.md
+    status: completed
+    last_attempt: null
+    attempts: 0
+    notes: bootstrap is created by the current controlled mission
+
+  - id: A0_LOCAL_STACK_CONFIG
+    title: Configure local Codex and Ollama judge stack
+    type: local_stack
+    risk_tier: docs_tooling
+    allowed_paths: ops/autopilot/**,docs/autopilot/**
+    forbidden_paths: backend/**,frontend/**,plan/**,package.json,package-lock.json,App.tsx
+    depends_on: A0_AGENTOS_BOOTSTRAP
+    checks_profile: docs_only
+    local_text_critic: false
+    local_vision_critic: false
+    promotion_target: external_state_only
+    prompt_file_or_inline: ops/autopilot/prompts/A0_LOCAL_STACK_CONFIG.md
+    status: completed
+    last_attempt: null
+    attempts: 0
+    notes: runtime availability is reported under external QA artifacts
+
+  - id: A0_HARNESS_DRYRUN
+    title: Run one-task autopilot harness dry run
+    type: autopilot_dryrun
+    risk_tier: docs_tooling
+    allowed_paths: none
+    forbidden_paths: backend/**,frontend/**,plan/**,package.json,package-lock.json,App.tsx
+    depends_on: A0_LOCAL_STACK_CONFIG
+    checks_profile: docs_only
+    local_text_critic: optional
+    local_vision_critic: false
+    promotion_target: external_state_only
+    prompt_file_or_inline: dryrun
+    status: ready
+    last_attempt: null
+    attempts: 0
+    notes: proves worktree, checks, critic degradation, report writing
+
+  - id: R3G_PRACTICE_BOUNDARY_READONLY_CONTRACT
+    title: Add R3G practice boundary read-only contract
+    type: docs_contract
+    risk_tier: docs_tooling
+    allowed_paths: docs/rebuild/19_R3G_PRACTICE_BOUNDARY_READONLY_CONTRACT_REX.md
+    forbidden_paths: backend/**,frontend/**,plan/**,package.json,package-lock.json,App.tsx
+    depends_on: A0_HARNESS_DRYRUN
+    checks_profile: docs_only
+    local_text_critic: optional
+    local_vision_critic: false
+    promotion_target: road-to-V2
+    prompt_file_or_inline: ops/autopilot/prompts/R3G_PRACTICE_BOUNDARY_READONLY_CONTRACT.md
+    status: ready
+    last_attempt: null
+    attempts: 0
+    notes: first product item after bootstrap
+
+  - id: R3G_REVIEW_AND_PUSH
+    title: Review and promote R3G contract
+    type: docs_review
+    risk_tier: docs_tooling
+    allowed_paths: docs/rebuild/19_R3G_PRACTICE_BOUNDARY_READONLY_CONTRACT_REX.md
+    forbidden_paths: backend/**,frontend/**,plan/**,package.json,package-lock.json,App.tsx
+    depends_on: R3G_PRACTICE_BOUNDARY_READONLY_CONTRACT
+    checks_profile: docs_only
+    local_text_critic: optional
+    local_vision_critic: false
+    promotion_target: road-to-V2
+    prompt_file_or_inline: review R3G doc and promote if clean
+    status: queued
+    last_attempt: null
+    attempts: 0
+    notes: kept as an explicit queue checkpoint for future cycles
+
+  - id: NEXT_STAGE_PLACEHOLDER_FROM_R3G
+    title: Decide next stage from R3G
+    type: stage_placeholder
+    risk_tier: docs_tooling
+    allowed_paths: docs/rebuild/**
+    forbidden_paths: backend/**,frontend/**,plan/**,package.json,package-lock.json,App.tsx
+    depends_on: R3G_REVIEW_AND_PUSH
+    checks_profile: docs_only
+    local_text_critic: optional
+    local_vision_critic: false
+    promotion_target: road-to-V2
+    prompt_file_or_inline: derive next queue item from R3G decision
+    status: queued
+    last_attempt: null
+    attempts: 0
+    notes: placeholder is intentionally non-product until R3G is read

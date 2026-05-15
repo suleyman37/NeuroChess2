@@ -1,0 +1,51 @@
+risk_tiers:
+  docs_tooling:
+    auto_promote: true
+    checks_required:
+      - git_diff_check
+      - plan_guard_when_docs_rebuild_touched
+    critic_required: false
+    target: road-to-V2
+
+  frontend_readonly:
+    auto_promote: true
+    checks_required:
+      - git_diff_check
+      - frontend_build
+      - tsc
+      - relevant_rex_smokes
+    critic_required: true
+    target: road-to-V2
+
+  backend_readonly:
+    auto_promote: true
+    checks_required:
+      - git_diff_check
+      - targeted_backend_tests
+      - anti_mutation_proof
+    critic_required: true
+    target: road-to-V2
+
+  write_sensitive:
+    auto_promote: false
+    quarantine_branch_prefix: autopilot/
+    checks_required:
+      - full_sensitive
+      - db_snapshot_before_after
+      - route_audit
+    critic_required: true
+
+circuit_breaker:
+  consecutive_task_failures: 3
+  same_task_failures: 3
+  action: mark_degraded_and_write_incident
+
+forbidden_stage_paths:
+  - .serena/project.yml
+  - .venv/
+  - qa_artifacts/
+  - backend/neurochess/data/openings_book.json
+
+github_runner:
+  allow_self_hosted_on_public_repo: false
+  primary_scheduler: windows_scheduled_task

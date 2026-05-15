@@ -1,0 +1,27 @@
+# NeuroChess repo-local Codex defaults for AgentOS runs.
+
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+model = "gpt-5.2"
+reasoning_effort = "medium"
+
+[workspace]
+root = "C:\\Users\\suley\\Documents\\Dev\\NeuroChess2_clean"
+artifact_root = "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot"
+worktree_root = "C:\\Users\\suley\\Documents\\Dev\\NeuroChess2_worktrees"
+
+[git]
+base_branch = "road-to-V2"
+forbid_add_all = true
+forbidden_stage_paths = [
+  ".serena/project.yml",
+  ".venv/",
+  "qa_artifacts/",
+  "backend/neurochess/data/openings_book.json",
+]
+
+[autopilot]
+queue = "ops/autopilot/queue.yaml"
+policies = "ops/autopilot/policies.yaml"
+one_task_per_run = true
+circuit_breaker_consecutive_failures = 3

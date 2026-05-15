@@ -1,0 +1,10 @@
+# NeuroChess Default Rules
+
+- Read `AGENTS.md` and `.agent/PLANS.md` before automated work.
+- Keep every mission scoped to one controlled diff.
+- Do not modify product code during docs/tooling missions.
+- Do not expose forbidden V1 metrics or science claims.
+- Use explicit `git add <path>` only.
+- Write logs and screenshots outside the repo.
+- Stop or quarantine on path violations, staged surprises, write methods in
+  read-only tasks, or unreviewed backend side effects.

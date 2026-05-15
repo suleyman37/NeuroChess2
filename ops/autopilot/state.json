@@ -1,0 +1,13 @@
+{
+  "schema_version": "autopilot_state_v1",
+  "repo": "NeuroChess2_clean",
+  "base_branch": "road-to-V2",
+  "last_bootstrap_commit_expected": "3c6aa5a",
+  "runtime_state_location": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\runtime_state.json",
+  "queue_status": "armed",
+  "degraded": false,
+  "notes": [
+    "Version-controlled state is bootstrap state only.",
+    "Per-run mutable state is external to avoid dirtying the repo."
+  ]
+}

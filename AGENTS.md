@@ -183,3 +183,24 @@ A task is not done until:
 - If corruption or wrong direction appears, inspect `git status`, `git diff`,
   and `git reflog`, then choose targeted restore/reset/reflog recovery with
   human approval.
+
+## NeuroChess AgentOS Autopilot
+
+The repo-native autopilot lives in `ops/autopilot/` and is governed by
+`.agent/PLANS.md`, `.codex/rules/`, and the skills in `.agents/skills/`.
+
+Autopilot rules:
+
+- One queue item per run.
+- One controlled diff per queue item.
+- Use Git worktrees under `C:\Users\suley\Documents\Dev\NeuroChess2_worktrees`.
+- Write run logs and QA artifacts under
+  `C:\Users\suley\Documents\Dev\NeuroChess_QA_Artifacts\autopilot`.
+- Never use `git add -A`.
+- Never stage `.serena/project.yml`, `.venv/`, `qa_artifacts/`, or
+  `backend/neurochess/data/openings_book.json`.
+- Public GitHub repositories must not register self-hosted runners by default.
+  Use the Windows scheduler as the primary automation mechanism unless a private
+  repo or private mirror is proven.
+- `write_sensitive` tasks are quarantined to `autopilot/<task-id>` and are not
+  promoted directly to `road-to-V2` during bootstrap.

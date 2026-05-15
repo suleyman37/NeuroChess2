@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "purpose": "NeuroChess AgentOS guard hooks",
+  "hooks": [
+    {
+      "name": "autopilot-preflight",
+      "event": "before_run",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ops/autopilot/run_checks.ps1 -Profile docs_only -PreflightOnly",
+      "description": "Records git diff hygiene before an automated run."
+    },
+    {
+      "name": "forbidden-path-guard",
+      "event": "before_commit",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ops/autopilot/run_checks.ps1 -Profile path_guard",
+      "description": "Blocks commits that include forbidden local or generated paths."
+    },
+    {
+      "name": "autopilot-report",
+      "event": "after_run",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File ops/autopilot/write_report.ps1",
+      "description": "Writes machine-readable run summary to the external QA artifact root."
+    }
+  ]
+}
