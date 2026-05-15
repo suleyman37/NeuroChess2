@@ -1,6 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { createRequire } from "node:module";
+
+const requireFromHere = createRequire(import.meta.url);
 
 function parseArgs(argv) {
   const args = {};
@@ -51,6 +54,33 @@ async function getLatestAssistantText(page) {
   return (fallback || "").trim();
 }
 
+async function loadPlaywright() {
+  try {
+    return await import("playwright");
+  } catch {
+    // ESM package resolution does not honor NODE_PATH reliably. Keep this
+    // bridge repo-local-dependency-free by accepting an explicit runtime module
+    // path through NODE_PATH for smoke tests and local automation.
+  }
+
+  try {
+    return requireFromHere("playwright");
+  } catch {
+    // Continue to explicit NODE_PATH probing below.
+  }
+
+  const searchPaths = (process.env.NODE_PATH || "").split(path.delimiter).filter(Boolean);
+  for (const moduleRoot of searchPaths) {
+    try {
+      return requireFromHere(path.join(moduleRoot, "playwright"));
+    } catch {
+      // Try the next NODE_PATH entry.
+    }
+  }
+
+  throw new Error("Cannot load Playwright. Set NODE_PATH to a node_modules directory containing playwright.");
+}
+
 async function findComposer(page) {
   const selectors = [
     'textarea',
@@ -84,7 +114,7 @@ async function main() {
 
   let playwright;
   try {
-    playwright = await import("playwright");
+    playwright = await loadPlaywright();
   } catch (error) {
     write(path.join(outDir, "bridge_error.md"), `Playwright unavailable: ${error.message}`);
     process.exit(1);
@@ -116,7 +146,11 @@ async function main() {
   write(path.join(outDir, "supervisor_request.md"), request);
 
   const profile = bridgeConfig.chrome_profile_path || path.join(process.env.USERPROFILE || process.cwd(), "Documents", "Dev", "ChatGPTSupervisorChromeProfile");
-  const browser = await playwright.chromium.launchPersistentContext(profile, { headless: false });
+  const launchOptions = {
+    headless: false,
+    channel: bridgeConfig.chrome_channel || "chrome"
+  };
+  const browser = await playwright.chromium.launchPersistentContext(profile, launchOptions);
   const page = await browser.newPage();
   await page.goto(bridgeConfig.chatgpt_url || "https://chatgpt.com/", { waitUntil: "domcontentloaded" });
 
