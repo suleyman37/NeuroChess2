@@ -1,6 +1,7 @@
 param(
   [switch]$DryRun,
   [switch]$Live,
+  [switch]$CloseProfileProcesses,
   [string]$Fixture = "",
   [string]$EvidencePackPath = "",
   [string]$MissionId = "SUPERVISOR_BRIDGE_DRY_RUN"
@@ -81,6 +82,31 @@ if ($DryRun) {
 }
 
 $bridgeScript = Join-Path $PSScriptRoot "browser\chatgpt_bridge.mjs"
+
+$profilePath = if ($config.chatgpt_web_bridge.chrome_profile_path) {
+  [string]$config.chatgpt_web_bridge.chrome_profile_path
+} else {
+  "C:\Users\suley\Documents\Dev\ChatGPTSupervisorChromeProfile"
+}
+
+if ($CloseProfileProcesses) {
+  $cleanupJson = & "$PSScriptRoot\close_chatgpt_profile_processes.ps1" -ProfilePath $profilePath -ForceClose -OutDir $runDir
+  $summary.profile_cleanup = ($cleanupJson | ConvertFrom-Json)
+} else {
+  $lockJson = & "$PSScriptRoot\check_chrome_profile_lock.ps1" -ProfilePath $profilePath -OutDir $runDir -JsonOnly
+  $lock = $lockJson | ConvertFrom-Json
+  $summary.profile_lock = $lock
+  if ($lock.locked) {
+    $summary.status = "fail"
+    $summary.reason = "CHATGPT_CHROME_PROFILE_LOCKED"
+    $summary.browser_called = $false
+    $summary.instructions = "Close the dedicated Chrome profile window or run: powershell -ExecutionPolicy Bypass -File ops/autopilot/close_chatgpt_profile_processes.ps1 -ForceClose"
+    $summary | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $runDir "ask_chatgpt_web_summary.json") -Encoding UTF8
+    $summary | ConvertTo-Json -Depth 12
+    exit 1
+  }
+}
+
 $summary.browser_called = $true
 node $bridgeScript --live --config "$configPath" --evidence "$EvidencePackPath" --nonce "$nonce" --out "$runDir"
 $bridgeCode = $LASTEXITCODE

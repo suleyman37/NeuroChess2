@@ -32,6 +32,12 @@ function readMaybe(file) {
   return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
 }
 
+function profileLockFiles(profilePath) {
+  return ["SingletonLock", "SingletonCookie", "SingletonSocket"]
+    .map((name) => path.join(profilePath, name))
+    .filter((file) => fs.existsSync(file));
+}
+
 function validateDone(text, nonce) {
   const trimmed = text.trim();
   const done = `<NC_DONE nonce="${nonce}">DONE</NC_DONE>`;
@@ -146,6 +152,15 @@ async function main() {
   write(path.join(outDir, "supervisor_request.md"), request);
 
   const profile = bridgeConfig.chrome_profile_path || path.join(process.env.USERPROFILE || process.cwd(), "Documents", "Dev", "ChatGPTSupervisorChromeProfile");
+  const lockFiles = profileLockFiles(profile);
+  if (lockFiles.length > 0) {
+    write(path.join(outDir, "chrome_profile_lock_files.json"), JSON.stringify({
+      profile,
+      lockFiles,
+      note: "Lock files are reported only. Process-level lock checks are done by ask_chatgpt_web.ps1 before this bridge launches."
+    }, null, 2));
+  }
+
   const launchOptions = {
     headless: false,
     channel: bridgeConfig.chrome_channel || "chrome"

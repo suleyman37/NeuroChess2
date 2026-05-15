@@ -9,7 +9,10 @@
     "max_wait_seconds": 900,
     "format_repair_attempts": 1,
     "max_autonomous_steps": 3,
-    "live_send_requires_flag": true
+    "live_send_requires_flag": true,
+    "chrome_channel": "chrome",
+    "profile_lock_preflight": true,
+    "close_profile_processes_requires_flag": true
   },
   "micro_prompt_limits": {
     "default_max_files": 3,
