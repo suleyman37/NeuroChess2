@@ -54,8 +54,12 @@ function Invoke-AutopilotLogged {
   "### $Command" | Out-File -Encoding utf8 -FilePath $LogPath
   Push-Location $Cwd
   try {
-    cmd /c $Command 2>&1 | Tee-Object -Append -FilePath $LogPath
-    return $LASTEXITCODE
+    $output = cmd /c $Command 2>&1
+    $exitCode = $LASTEXITCODE
+    if ($output) {
+      $output | Tee-Object -Append -FilePath $LogPath | Out-Null
+    }
+    return [int]$exitCode
   } finally {
     Pop-Location
   }
