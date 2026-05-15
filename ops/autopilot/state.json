@@ -7,6 +7,10 @@
   "runtime_state_location": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\runtime_state.json",
   "queue_status": "armed",
   "degraded": false,
+  "last_successful_micro_loop": "A2_R3H",
+  "last_successful_commit": "fe71b38",
+  "recommended_next_automation_mission": "A4_SUPERVISOR_DIGEST_REQUEST_MORE_AND_RETRO_EVERY_5",
+  "product_checkpoint": "R3H complete, R3I not started",
   "chatgpt_web_bridge": {
     "enabled": false,
     "mode": "dry_run",
