@@ -1,0 +1,63 @@
+schema_version: A5B
+base_branch: road-to-V2
+enabled: false
+promotion_mode: ephemeral_branch_then_ff_only
+
+branch_naming:
+  normal_prefix: auto/
+  quarantine_prefix: quarantine/
+  pattern: "<prefix><risk-tier>-<work-type>-<mission-id>-<timestamp>"
+  timestamp_format: yyyyMMdd-HHmmss
+  lowercase: true
+  sanitize_regex: "[^a-z0-9-]+"
+
+protected_branches:
+  - road-to-V2
+  - main
+  - master
+
+forbidden_task_branch_names:
+  - road-to-V2
+  - origin/road-to-V2
+
+promotion:
+  fast_forward_only: true
+  merge_commits_allowed: false
+  force_push_allowed: false
+  git_add_all_allowed: false
+  require_clean_checks: true
+  require_allowed_paths_report: true
+  require_archive_before_cleanup: true
+
+risk_tiers:
+  green:
+    branch_prefix: auto/
+    auto_promote_allowed: true
+    required_checks:
+      - git_diff_check
+  blue:
+    branch_prefix: auto/
+    auto_promote_allowed: true
+    required_checks:
+      - git_diff_check
+      - local_critic
+  amber:
+    branch_prefix: auto/
+    auto_promote_allowed: true
+    required_checks:
+      - git_diff_check
+      - anti_mutation_evidence_when_backend_readonly
+      - local_critic
+  red:
+    branch_prefix: quarantine/
+    auto_promote_allowed: false
+    required_checks:
+      - full_evidence_pack
+      - supervisor_gate
+
+garbage_collection:
+  dry_run_default: true
+  promoted_green_blue_delete_after_archive: true
+  failed_green_docs_artifact_retention_days: 7
+  failed_blue_amber_artifact_retention_days: 14
+  quarantine_red_retention_days: 30

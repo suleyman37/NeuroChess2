@@ -1,0 +1,14 @@
+schema_version: A5B
+base_branch: road-to-V2
+enabled: false
+promotion:
+  fast_forward_only: true
+  merge_commits_allowed: false
+  force_push_allowed: false
+protected_branches:
+  - road-to-V2
+  - main
+  - master
+red_tier:
+  branch_prefix: quarantine/
+  auto_promote_allowed: false

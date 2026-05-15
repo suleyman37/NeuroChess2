@@ -1,0 +1,12 @@
+{
+  "schema_version": "A5B_ephemeral_branch_manifest",
+  "mission_id": "A5B_EXAMPLE",
+  "risk_tier": "green",
+  "work_type": "docs",
+  "base_branch": "road-to-V2",
+  "branch_name": "auto/green-docs-a5b-example-20260516-013000",
+  "base_head": "bc988fc",
+  "created_at": "2026-05-16T01:30:00Z",
+  "dry_run": true,
+  "status": "prepared"
+}
