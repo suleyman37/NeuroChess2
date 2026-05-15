@@ -13,9 +13,17 @@ function parseArgs(argv) {
       const name = key.slice(2);
       const next = argv[i + 1];
       if (!next || next.startsWith("--")) {
-        args[name] = true;
+        if (Object.hasOwn(args, name)) {
+          args[name] = Array.isArray(args[name]) ? [...args[name], true] : [args[name], true];
+        } else {
+          args[name] = true;
+        }
       } else {
-        args[name] = next;
+        if (Object.hasOwn(args, name)) {
+          args[name] = Array.isArray(args[name]) ? [...args[name], next] : [args[name], next];
+        } else {
+          args[name] = next;
+        }
         i += 1;
       }
     }
@@ -30,6 +38,15 @@ function write(file, text) {
 
 function readMaybe(file) {
   return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+}
+
+function valuesFromArg(value) {
+  if (!value) return [];
+  const values = Array.isArray(value) ? value : [value];
+  return values
+    .flatMap((entry) => String(entry).split(";"))
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 }
 
 function profileLockFiles(profilePath) {
@@ -347,6 +364,175 @@ async function collectSendButtonCandidates(page, composer, nonce) {
   return candidates;
 }
 
+async function attachmentSignals(page, attachmentPaths) {
+  const names = attachmentPaths.map((file) => path.basename(file));
+  const bodyText = await page.locator("body").textContent().catch(() => "");
+  const fileInputValues = await page.locator('input[type="file"]').evaluateAll((inputs) =>
+    inputs.map((input) => ({
+      value: input.value || "",
+      fileCount: input.files ? input.files.length : 0
+    }))
+  ).catch(() => []);
+  const thumbnailCount = await page.locator('img[src^="blob:"], img[alt*=".png" i], img[alt*=".jpg" i], img[alt*=".jpeg" i]').count().catch(() => 0);
+  const attachmentLikeCount = await page.locator(
+    '[data-testid*="attachment" i], [data-testid*="file" i], [aria-label*="Remove" i], [aria-label*="Supprimer" i], [aria-label*="Retirer" i]'
+  ).count().catch(() => 0);
+  const progressCount = await page.locator(
+    '[role="progressbar"], [data-testid*="progress" i], [aria-busy="true"]'
+  ).count().catch(() => 0);
+  return {
+    names,
+    fileInputValues,
+    fileInputHasFiles: fileInputValues.some((entry) => entry.fileCount > 0 || entry.value),
+    fileNameVisible: names.some((name) => bodyText.includes(name)),
+    thumbnailCount,
+    attachmentLikeCount,
+    progressCount
+  };
+}
+
+function uploadDetected(before, after) {
+  return Boolean(
+    after.fileInputHasFiles ||
+    after.fileNameVisible ||
+    after.thumbnailCount > before.thumbnailCount ||
+    after.attachmentLikeCount > before.attachmentLikeCount
+  );
+}
+
+async function waitForAttachmentVisible(page, attachmentPaths, before, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  let latest = await attachmentSignals(page, attachmentPaths);
+  while (Date.now() < deadline) {
+    if (uploadDetected(before, latest)) {
+      const completionDeadline = Date.now() + Math.min(10000, Math.max(1000, deadline - Date.now()));
+      let completed = latest.progressCount === 0;
+      while (!completed && Date.now() < completionDeadline) {
+        await page.waitForTimeout(500);
+        latest = await attachmentSignals(page, attachmentPaths);
+        completed = latest.progressCount === 0;
+      }
+      return {
+        detected: true,
+        completed: completed ? "yes" : "unknown",
+        signals: latest
+      };
+    }
+    await page.waitForTimeout(500);
+    latest = await attachmentSignals(page, attachmentPaths);
+  }
+  return {
+    detected: false,
+    completed: "no",
+    signals: latest
+  };
+}
+
+async function collectAttachButtonCandidates(page, composer) {
+  const anchorBox = await getPromptAnchorBox(page, composer, "");
+  const buttons = page.locator("button");
+  const count = await buttons.count().catch(() => 0);
+  const candidates = [];
+  for (let index = 0; index < count; index += 1) {
+    const item = buttons.nth(index);
+    const visible = await item.isVisible().catch(() => false);
+    const enabled = await item.isEnabled().catch(() => false);
+    const box = await item.boundingBox().catch(() => null);
+    const label = await item.getAttribute("aria-label").catch(() => "");
+    const title = await item.getAttribute("title").catch(() => "");
+    const testId = await item.getAttribute("data-testid").catch(() => "");
+    const text = (await item.innerText().catch(() => "")).trim();
+    const metadata = `${label} ${title} ${testId} ${text}`;
+    const nameLooksLikeAttach = /attach|upload|file|image|plus|add|joindre|ajouter|télévers|televers|\+|pièce/i.test(metadata);
+    const nearComposer = Boolean(anchorBox && box &&
+      box.x >= anchorBox.x - 160 &&
+      box.x <= anchorBox.x + anchorBox.width + 160 &&
+      box.y >= anchorBox.y - 180 &&
+      box.y <= anchorBox.y + anchorBox.height + 180);
+    candidates.push({ selector: "button", index, visible, enabled, box, label, title, testId, text, nearComposer, nameLooksLikeAttach });
+  }
+  return candidates.filter((candidate) => candidate.visible && candidate.enabled && candidate.nearComposer && candidate.nameLooksLikeAttach);
+}
+
+async function uploadViaExistingInput(page, attachmentPaths) {
+  const inputs = page.locator('input[type="file"]');
+  const count = await inputs.count().catch(() => 0);
+  for (let index = count - 1; index >= 0; index -= 1) {
+    const input = inputs.nth(index);
+    const accept = await input.getAttribute("accept").catch(() => "");
+    try {
+      await input.setInputFiles(attachmentPaths, { timeout: 8000 });
+      return { ok: true, strategy: "input_set_files", inputIndex: index, accept };
+    } catch (error) {
+      if (index === 0) {
+        return { ok: false, strategy: "input_set_files", inputIndex: index, accept, error: error.message };
+      }
+    }
+  }
+  return { ok: false, strategy: "input_set_files", error: "No input[type=file] found." };
+}
+
+async function uploadViaFileChooser(page, composer, attachmentPaths, outDir) {
+  const candidates = await collectAttachButtonCandidates(page, composer);
+  write(path.join(outDir, "attach_button_candidates.json"), JSON.stringify(candidates, null, 2));
+  for (const candidate of candidates.slice(0, 6)) {
+    const button = page.locator("button").nth(candidate.index);
+    try {
+      const chooserPromise = page.waitForEvent("filechooser", { timeout: 8000 });
+      await button.click({ timeout: 3000 });
+      const chooser = await chooserPromise;
+      await chooser.setFiles(attachmentPaths);
+      return { ok: true, strategy: "filechooser_button", candidate };
+    } catch {
+      // Try the next candidate.
+    }
+  }
+  return { ok: false, strategy: "filechooser_button", error: "No attach button opened a file chooser." };
+}
+
+async function uploadAttachments(page, composer, attachmentPaths, outDir, timeoutMs) {
+  if (attachmentPaths.length === 0) {
+    return { ok: true, skipped: true };
+  }
+  for (const file of attachmentPaths) {
+    if (!fs.existsSync(file)) {
+      return { ok: false, reason: "ATTACHMENT_FILE_MISSING", file };
+    }
+  }
+
+  await page.screenshot({ path: path.join(outDir, "upload_before.png"), fullPage: true }).catch(() => {});
+  const before = await attachmentSignals(page, attachmentPaths);
+  const attempts = [];
+
+  const strategies = [
+    () => uploadViaExistingInput(page, attachmentPaths),
+    () => uploadViaFileChooser(page, composer, attachmentPaths, outDir),
+    async () => {
+      const retry = await uploadViaExistingInput(page, attachmentPaths);
+      return { ...retry, strategy: "input_set_files_after_attach_probe" };
+    }
+  ];
+
+  for (const strategy of strategies) {
+    const attempt = await strategy();
+    attempts.push(attempt);
+    if (!attempt.ok) continue;
+    const visible = await waitForAttachmentVisible(page, attachmentPaths, before, timeoutMs);
+    const result = { ...attempt, ...visible, before };
+    write(path.join(outDir, "upload_result.json"), JSON.stringify(result, null, 2));
+    if (visible.detected) {
+      await page.screenshot({ path: path.join(outDir, "upload_after.png"), fullPage: true }).catch(() => {});
+      return { ok: true, ...result };
+    }
+  }
+
+  const after = await attachmentSignals(page, attachmentPaths);
+  const failure = { ok: false, reason: "UPLOAD_FAILED", attempts, before, after };
+  write(path.join(outDir, "upload_result.json"), JSON.stringify(failure, null, 2));
+  await page.screenshot({ path: path.join(outDir, "upload_failed.png"), fullPage: true }).catch(() => {});
+  return failure;
+}
+
 function bestVisibleSendCandidate(candidates) {
   return candidates
     .filter((candidate) => candidate.visible && candidate.enabled && candidate.box && candidate.box.width > 0 && candidate.box.height > 0)
@@ -447,9 +633,9 @@ async function saveSendFailureDebug(page, composer, outDir, candidates, reason, 
   }
 }
 
-async function submitMessage(page, composer, request, nonce, outDir, timeoutMs) {
+async function submitMessage(page, composer, request, nonce, outDir, timeoutMs, options = {}) {
   await page.screenshot({ path: path.join(outDir, "send_before.png"), fullPage: true }).catch(() => {});
-  const composerText = await writeComposer(page, composer, request);
+  const composerText = options.requestAlreadyWritten ? await getComposerText(composer) : await writeComposer(page, composer, request);
   const nonceVisible = composerText.includes(nonce) || await pageContainsNonce(page, nonce);
   if (!nonceVisible) {
     await saveSendFailureDebug(page, composer, outDir, [], "COMPOSER_NONCE_MISSING_AFTER_FILL", nonce);
@@ -599,8 +785,29 @@ async function main() {
     process.exit(1);
   }
 
+  const attachmentPaths = valuesFromArg(args.attachment || args.attachments).map((file) => path.resolve(file));
+  const uploadTimeoutMs = Number(bridgeConfig.upload_phase_timeout_seconds || 90) * 1000;
+  let requestAlreadyWritten = false;
+  if (attachmentPaths.length > 0) {
+    const composerText = await writeComposer(page, composer, request);
+    const nonceVisible = composerText.includes(nonce) || await pageContainsNonce(page, nonce);
+    if (!nonceVisible) {
+      await saveSendFailureDebug(page, composer, outDir, [], "COMPOSER_NONCE_MISSING_BEFORE_UPLOAD", nonce);
+      write(path.join(outDir, "bridge_error.md"), "COMPOSER_NONCE_MISSING_BEFORE_UPLOAD");
+      await browser.close();
+      process.exit(1);
+    }
+    requestAlreadyWritten = true;
+    const uploadResult = await uploadAttachments(page, composer, attachmentPaths, outDir, uploadTimeoutMs);
+    if (!uploadResult.ok) {
+      write(path.join(outDir, "bridge_error.md"), uploadResult.reason || "UPLOAD_FAILED");
+      await browser.close();
+      process.exit(1);
+    }
+  }
+
   const sendTimeoutMs = Number(bridgeConfig.send_phase_timeout_seconds || 60) * 1000;
-  const sendResult = await submitMessage(page, composer, request, nonce, outDir, sendTimeoutMs);
+  const sendResult = await submitMessage(page, composer, request, nonce, outDir, sendTimeoutMs, { requestAlreadyWritten });
   if (!sendResult.ok) {
     write(path.join(outDir, "bridge_error.md"), sendResult.reason);
     await browser.close();

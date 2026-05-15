@@ -8,6 +8,7 @@
     "response_stability_seconds": 15,
     "max_wait_seconds": 900,
     "send_phase_timeout_seconds": 60,
+    "upload_phase_timeout_seconds": 90,
     "format_repair_attempts": 1,
     "max_autonomous_steps": 3,
     "live_send_requires_flag": true,

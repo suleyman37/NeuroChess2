@@ -4,6 +4,7 @@ param(
   [switch]$CloseProfileProcesses,
   [string]$Fixture = "",
   [string]$EvidencePackPath = "",
+  [string[]]$AttachmentPath = @(),
   [string]$MissionId = "SUPERVISOR_BRIDGE_DRY_RUN"
 )
 
@@ -53,6 +54,7 @@ $summary = [ordered]@{
   nonce = $nonce
   run_dir = $runDir
   fixture = $Fixture
+  attachments = $AttachmentPath
   browser_called = $false
   codex_execution = $false
   commit = $false
@@ -108,7 +110,18 @@ if ($CloseProfileProcesses) {
 }
 
 $summary.browser_called = $true
-node $bridgeScript --live --config "$configPath" --evidence "$EvidencePackPath" --nonce "$nonce" --out "$runDir"
+$bridgeArgs = @(
+  $bridgeScript,
+  "--live",
+  "--config", $configPath,
+  "--evidence", $EvidencePackPath,
+  "--nonce", $nonce,
+  "--out", $runDir
+)
+foreach ($attachment in $AttachmentPath) {
+  $bridgeArgs += @("--attachment", $attachment)
+}
+node @bridgeArgs
 $bridgeCode = $LASTEXITCODE
 if ($bridgeCode -ne 0) {
   $summary.status = "fail"
