@@ -1,0 +1,20 @@
+<SUPERVISOR_DIGEST>
+mission_id: A4A_SUPERVISOR_DIGEST_FIXTURE
+current_head: 6e8cba9
+risk_tier: green
+work_type: docs_tooling
+goal: Validate the Supervisor Digest protocol.
+allowed_paths:
+- docs/autopilot/SUPERVISOR_DIGEST_PROTOCOL.md
+changed_files:
+- docs/autopilot/SUPERVISOR_DIGEST_PROTOCOL.md
+diff_stat: |
+  1 file changed, 20 insertions(+)
+checks_summary: |
+  git diff --check: PASS
+alarms_summary: |
+  none
+codex_confidence: 0.93
+question_for_supervisor: |
+  Is this digest sufficient for a single safe prompt?
+</SUPERVISOR_DIGEST>

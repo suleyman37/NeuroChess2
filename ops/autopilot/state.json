@@ -9,8 +9,12 @@
   "degraded": false,
   "last_successful_micro_loop": "A2_R3H",
   "last_successful_commit": "fe71b38",
-  "recommended_next_automation_mission": "A4_SUPERVISOR_DIGEST_REQUEST_MORE_AND_RETRO_EVERY_5",
+  "recommended_next_automation_mission": "A4B_REQUEST_MORE_PROTOCOL",
   "product_checkpoint": "R3H complete, R3I not started",
+  "evidence_policy_version": "A4A",
+  "supervisor_digest_enabled": true,
+  "request_more_enabled": false,
+  "retro_every_5_enabled": false,
   "chatgpt_web_bridge": {
     "enabled": false,
     "mode": "dry_run",
