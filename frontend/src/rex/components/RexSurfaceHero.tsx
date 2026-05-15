@@ -5,9 +5,10 @@ import type { RexSurfaceCopy } from "../rexTypes";
 type RexSurfaceHeroProps = {
   copy: RexSurfaceCopy;
   ctaNote?: string;
+  ctaVariant?: "primary" | "secondary";
 };
 
-export function RexSurfaceHero({ copy, ctaNote }: RexSurfaceHeroProps) {
+export function RexSurfaceHero({ copy, ctaNote, ctaVariant = "primary" }: RexSurfaceHeroProps) {
   return (
     <div className="rex-surface__hero">
       <div>
@@ -22,7 +23,12 @@ export function RexSurfaceHero({ copy, ctaNote }: RexSurfaceHeroProps) {
         </div>
       </div>
       <div className="rex-cta-stack">
-        <button className="rex-primary-cta" type="button" data-placeholder-action="true">
+        <button
+          className={ctaVariant === "secondary" ? "rex-primary-cta rex-primary-cta--secondary" : "rex-primary-cta"}
+          type="button"
+          data-placeholder-action="true"
+          data-cta-variant={ctaVariant}
+        >
           {copy.ctaLabel}
         </button>
         {ctaNote ? <span className="rex-cta-note">{ctaNote}</span> : null}

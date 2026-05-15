@@ -2113,6 +2113,215 @@
   margin-top: 0.75rem;
 }
 
+.rex-qg-mission-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.52fr) minmax(280px, 0.62fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.rex-qg-mission-core {
+  position: relative;
+  overflow: hidden;
+  min-height: 360px;
+  border: 1px solid color-mix(in srgb, var(--surface-line) 72%, rgba(255, 255, 255, 0.08));
+  border-radius: 18px;
+  padding: 18px;
+  background:
+    radial-gradient(circle at 15% 25%, color-mix(in srgb, var(--surface-accent) 14%, transparent), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012)),
+    var(--rex-panel-deep);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.rex-qg-mission-core::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.026) 1px, transparent 1px) 0 0 / 44px 44px,
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px) 0 0 / 44px 44px;
+  mask-image: radial-gradient(circle at 40% 40%, black, transparent 78%);
+}
+
+.rex-qg-mission-core > * {
+  position: relative;
+  z-index: 1;
+}
+
+.rex-qg-mission-core[data-qg-source="truth_chain_moments"] {
+  border-color: rgba(105, 228, 239, 0.3);
+}
+
+.rex-qg-mission-core[data-qg-source="moves_only"],
+.rex-qg-mission-core[data-qg-source="latest_game"] {
+  border-color: rgba(244, 197, 118, 0.22);
+}
+
+.rex-qg-mission-core[data-qg-source="empty"],
+.rex-qg-mission-core[data-qg-source="unavailable"] {
+  border-color: rgba(174, 190, 205, 0.16);
+}
+
+.rex-qg-mission-core__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #dce9f7;
+}
+
+.rex-qg-mission-core__header span,
+.rex-qg-mission-core__proofline {
+  color: var(--surface-accent);
+  font-size: 0.73rem;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.rex-qg-mission-core__header strong {
+  color: rgba(234, 244, 255, 0.78);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.rex-qg-mission-core__body {
+  display: grid;
+  grid-template-columns: 178px minmax(0, 1fr);
+  gap: 22px;
+  align-items: center;
+  min-height: 260px;
+}
+
+.rex-qg-mission-core__signal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 150px;
+  height: 150px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(245, 255, 250, 0.16) 0 24%, transparent 25%),
+    conic-gradient(from 120deg, var(--surface-accent), transparent 34%, var(--surface-strong) 62%, transparent 80%, var(--surface-accent));
+  box-shadow: 0 0 34px color-mix(in srgb, var(--surface-accent) 18%, transparent);
+}
+
+.rex-qg-mission-core__signal span {
+  width: 82px;
+  height: 82px;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.44), transparent 24%),
+    rgba(4, 8, 14, 0.9);
+}
+
+.rex-qg-mission-core__copy h2 {
+  max-width: 780px;
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.55rem, 2.25vw, 2.2rem);
+  line-height: 1.08;
+}
+
+.rex-qg-mission-core__proofline,
+.rex-qg-mission-core__subtitle {
+  margin: 0 0 10px;
+}
+
+.rex-qg-mission-core__subtitle {
+  max-width: 620px;
+  margin-top: 12px;
+  color: #c7d2de;
+  line-height: 1.45;
+}
+
+.rex-qg-mission-core__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.rex-qg-primary-action {
+  border: 1px solid color-mix(in srgb, var(--surface-line) 80%, rgba(255, 255, 255, 0.1));
+  border-radius: 999px;
+  padding: 0.72rem 1rem;
+  color: #07110f;
+  background: linear-gradient(135deg, var(--surface-accent), var(--surface-strong));
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.rex-qg-primary-action:disabled {
+  color: rgba(232, 241, 245, 0.7);
+  background: rgba(255, 255, 255, 0.055);
+  cursor: default;
+}
+
+.rex-primary-cta--secondary {
+  color: rgba(232, 241, 245, 0.78);
+  background: rgba(255, 255, 255, 0.052);
+  box-shadow: none;
+}
+
+.rex-qg-action-badge {
+  border: 1px solid rgba(181, 230, 225, 0.16);
+  border-radius: 999px;
+  padding: 0.42rem 0.62rem;
+  color: rgba(222, 238, 238, 0.78);
+  background: rgba(8, 20, 24, 0.38);
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.rex-qg-readonly-panel[data-qg-source="truth_chain_moments"] {
+  border-color: rgba(105, 228, 239, 0.24);
+}
+
+.rex-qg-readonly-panel[data-qg-source="moves_only"],
+.rex-qg-readonly-panel[data-qg-source="latest_game"] {
+  border-color: rgba(244, 197, 118, 0.22);
+}
+
+.rex-qg-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 1rem 0;
+}
+
+.rex-qg-evidence-grid div {
+  min-width: 0;
+  border: 1px solid rgba(204, 222, 242, 0.11);
+  border-radius: 8px;
+  padding: 0.72rem;
+  background: rgba(5, 12, 18, 0.38);
+}
+
+.rex-qg-evidence-grid span {
+  display: block;
+  margin-bottom: 0.32rem;
+  color: rgba(217, 229, 240, 0.58);
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rex-qg-evidence-grid strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: rgba(242, 248, 255, 0.92);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 @keyframes rex-mission-core-breathe {
   0%,
   100% {
@@ -2209,7 +2418,18 @@
   .rex-truth-chain__loaded-story,
   .rex-truth-chain__opening-signal,
   .rex-real-chain,
-  .rex-position-lens {
+  .rex-position-lens,
+  .rex-qg-mission-shell,
+  .rex-qg-mission-core__body {
+    grid-template-columns: 1fr;
+  }
+
+  .rex-qg-mission-core__signal {
+    width: 118px;
+    height: 118px;
+  }
+
+  .rex-qg-evidence-grid {
     grid-template-columns: 1fr;
   }
 
