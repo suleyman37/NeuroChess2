@@ -53,6 +53,12 @@ function validateDone(text, nonce) {
   return { ok: true };
 }
 
+function extractBlock(text, blockName) {
+  const pattern = new RegExp(`<${blockName}>\\s*([\\s\\S]*?)\\s*</${blockName}>`);
+  const match = text.match(pattern);
+  return match ? match[1].trim() : "";
+}
+
 async function getLatestAssistantText(page) {
   const texts = await page.locator('[data-message-author-role="assistant"]').allTextContents().catch(() => []);
   if (texts.length > 0) return texts[texts.length - 1].trim();
@@ -65,6 +71,135 @@ async function getComposerText(composer) {
     if ("value" in element) return element.value || "";
     return element.innerText || element.textContent || "";
   }).catch(() => "");
+}
+
+async function getDomBox(locator) {
+  return await locator.evaluate((element) => {
+    const style = window.getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    if (
+      style.display === "none" ||
+      style.visibility === "hidden" ||
+      style.opacity === "0" ||
+      rect.width <= 0 ||
+      rect.height <= 0
+    ) {
+      return null;
+    }
+    return {
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height
+    };
+  }).catch(() => null);
+}
+
+async function describeLocator(locator, selector, index) {
+  const dom = await locator.evaluate((element) => {
+    const style = window.getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    const text = "value" in element ? element.value || "" : element.innerText || element.textContent || "";
+    return {
+      tagName: element.tagName,
+      id: element.id || "",
+      className: typeof element.className === "string" ? element.className : "",
+      role: element.getAttribute("role") || "",
+      ariaHidden: element.getAttribute("aria-hidden") || "",
+      ariaLabel: element.getAttribute("aria-label") || "",
+      dataTestId: element.getAttribute("data-testid") || "",
+      contentEditable: element.getAttribute("contenteditable") || "",
+      isContentEditable: Boolean(element.isContentEditable),
+      rect: {
+        x: rect.x,
+        y: rect.y,
+        width: rect.width,
+        height: rect.height
+      },
+      computedStyle: {
+        display: style.display,
+        visibility: style.visibility,
+        opacity: style.opacity,
+        pointerEvents: style.pointerEvents
+      },
+      textSample: text.slice(0, 240)
+    };
+  }).catch((error) => ({ error: error.message }));
+
+  const visibleByPlaywright = await locator.isVisible().catch(() => false);
+  const editableByPlaywright = await locator.isEditable().catch(() => false);
+  const visibleByCss = Boolean(
+    dom.rect &&
+    dom.rect.width > 20 &&
+    dom.rect.height > 20 &&
+    dom.computedStyle?.display !== "none" &&
+    dom.computedStyle?.visibility !== "hidden" &&
+    dom.computedStyle?.opacity !== "0" &&
+    dom.ariaHidden !== "true"
+  );
+  const hiddenFallbackTextarea =
+    dom.tagName === "TEXTAREA" &&
+    /fallbackTextarea/i.test(dom.className || "") &&
+    !visibleByCss;
+  const isEditor =
+    dom.isContentEditable ||
+    dom.contentEditable === "true" ||
+    dom.role === "textbox" ||
+    dom.tagName === "TEXTAREA";
+  const usable = Boolean(visibleByCss && visibleByPlaywright && isEditor && (editableByPlaywright || dom.isContentEditable) && !hiddenFallbackTextarea);
+  const rejectionReason = usable
+    ? ""
+    : [
+        visibleByCss ? "" : "not_visible_by_css",
+        visibleByPlaywright ? "" : "not_visible_by_playwright",
+        isEditor ? "" : "not_editor",
+        (editableByPlaywright || dom.isContentEditable) ? "" : "not_editable",
+        hiddenFallbackTextarea ? "hidden_fallback_textarea" : ""
+      ].filter(Boolean).join(",");
+  const score =
+    (dom.isContentEditable ? 100 : 0) +
+    (dom.contentEditable === "true" ? 40 : 0) +
+    (dom.role === "textbox" ? 20 : 0) +
+    (dom.tagName === "TEXTAREA" ? 5 : 0) +
+    ((selector || "").includes("data-testid") ? 5 : 0) +
+    Math.min(20, Math.round(((dom.rect?.width || 0) * (dom.rect?.height || 0)) / 10000));
+  return {
+    selector,
+    index,
+    visibleByPlaywright,
+    editableByPlaywright,
+    visibleByCss,
+    hiddenFallbackTextarea,
+    usable,
+    rejectionReason,
+    score,
+    ...dom
+  };
+}
+
+async function pageContainsNonce(page, nonce) {
+  if (!nonce) return false;
+  const text = await page.locator("body").textContent().catch(() => "");
+  return (text || "").includes(nonce);
+}
+
+async function getPromptAnchorBox(page, composer, nonce) {
+  const composerBox = await getDomBox(composer) || composer.__chatgptBridgeBox || await composer.boundingBox().catch(() => null);
+  if (composerBox && composerBox.width > 20 && composerBox.height > 20) {
+    return composerBox;
+  }
+
+  const nonceBox = await page.getByText(nonce).first().boundingBox().catch(() => null);
+  if (nonceBox && nonceBox.width > 0 && nonceBox.height > 0) {
+    return nonceBox;
+  }
+
+  const markerBox = await page.getByText("LIVE_BRIDGE_SMOKE_TEST_OK").first().boundingBox().catch(() => null);
+  if (markerBox && markerBox.width > 0 && markerBox.height > 0) {
+    return markerBox;
+  }
+
+  return null;
 }
 
 async function loadPlaywright() {
@@ -94,48 +229,79 @@ async function loadPlaywright() {
   throw new Error("Cannot load Playwright. Set NODE_PATH to a node_modules directory containing playwright.");
 }
 
-async function findComposer(page) {
+async function findComposer(page, outDir) {
   const selectors = [
+    '[data-testid="composer"] [contenteditable="true"]',
     '[contenteditable="true"][data-lexical-editor="true"]',
+    '#prompt-textarea[contenteditable="true"]',
+    '#prompt-textarea',
     'div.ProseMirror[contenteditable="true"]',
     '[contenteditable="true"][role="textbox"]',
     'div[contenteditable="true"]',
     'textarea[name="prompt-textarea"]',
     'textarea'
   ];
+  const candidates = [];
   for (const selector of selectors) {
     const locator = page.locator(selector);
     const count = await locator.count().catch(() => 0);
     for (let index = count - 1; index >= 0; index -= 1) {
       const candidate = locator.nth(index);
-      const visible = await candidate.isVisible().catch(() => false);
-      const editable = await candidate.isEditable().catch(() => false);
-      if (visible && editable) {
-        return candidate;
-      }
+      candidates.push(await describeLocator(candidate, selector, index));
     }
+  }
+  if (outDir) {
+    write(path.join(outDir, "composer_candidates.json"), JSON.stringify(candidates, null, 2));
+  }
+  const chosen = candidates
+    .filter((candidate) => candidate.usable)
+    .sort((a, b) => b.score - a.score)[0];
+  if (chosen && outDir) {
+    write(path.join(outDir, "chosen_composer.json"), JSON.stringify(chosen, null, 2));
+  }
+  if (chosen) {
+    const selected = page.locator(chosen.selector).nth(chosen.index);
+    selected.__chatgptBridgeBox = chosen.rect;
+    selected.__chatgptBridgeComposer = chosen;
+    return selected;
   }
   return null;
 }
 
+async function clickVisibleComposer(page, composer) {
+  const box = await getDomBox(composer) || composer.__chatgptBridgeBox || await composer.boundingBox().catch(() => null);
+  if (box && box.width > 20 && box.height > 20) {
+    await page.mouse.click(box.x + Math.min(box.width / 2, 80), box.y + Math.min(box.height / 2, 40));
+    return true;
+  }
+  throw new Error("No visible composer box available for coordinate focus.");
+}
+
 async function writeComposer(page, composer, text) {
   const cleanText = text.replace(/^\uFEFF/, "");
-  await composer.click();
+  await clickVisibleComposer(page, composer);
   await page.keyboard.press(process.platform === "darwin" ? "Meta+A" : "Control+A").catch(() => {});
   await page.keyboard.press("Backspace").catch(() => {});
+  await page.waitForTimeout(150).catch(() => {});
   const beforeFill = (await getComposerText(composer)).trim();
   if (beforeFill) {
-    await composer.fill("", { timeout: 5000 }).catch(() => {});
+    await page.keyboard.press(process.platform === "darwin" ? "Meta+A" : "Control+A").catch(() => {});
+    await page.keyboard.press("Backspace").catch(() => {});
   }
-  try {
-    await composer.fill(cleanText, { timeout: 10000 });
-  } catch {
-    await page.keyboard.insertText(cleanText);
-  }
+  await page.keyboard.insertText(cleanText);
   return await getComposerText(composer);
 }
 
-async function collectSendButtonCandidates(page, composer) {
+async function focusComposerForSubmit(page, composer, nonce) {
+  const anchorBox = await getPromptAnchorBox(page, composer, nonce);
+  if (anchorBox) {
+    await page.mouse.click(anchorBox.x + Math.min(40, Math.max(4, anchorBox.width / 2)), anchorBox.y + Math.max(4, anchorBox.height / 2));
+    return;
+  }
+  await clickVisibleComposer(page, composer).catch(() => {});
+}
+
+async function collectSendButtonCandidates(page, composer, nonce) {
   const selectors = [
     'button[aria-label*="Send" i]',
     'button[aria-label*="Envoyer" i]',
@@ -151,11 +317,14 @@ async function collectSendButtonCandidates(page, composer) {
       const visible = await item.isVisible().catch(() => false);
       const enabled = await item.isEnabled().catch(() => false);
       const box = await item.boundingBox().catch(() => null);
-      candidates.push({ selector, index, visible, enabled, box });
+      const label = await item.getAttribute("aria-label").catch(() => "");
+      const testId = await item.getAttribute("data-testid").catch(() => "");
+      const disabled = await item.getAttribute("disabled").catch(() => "");
+      candidates.push({ selector, index, visible, enabled, disabled: Boolean(disabled), box, label, testId });
     }
   }
 
-  const composerBox = await composer.boundingBox().catch(() => null);
+  const anchorBox = await getPromptAnchorBox(page, composer, nonce);
   const buttons = page.locator("button");
   const count = await buttons.count().catch(() => 0);
   for (let index = 0; index < count; index += 1) {
@@ -163,12 +332,12 @@ async function collectSendButtonCandidates(page, composer) {
     const visible = await item.isVisible().catch(() => false);
     const enabled = await item.isEnabled().catch(() => false);
     const box = await item.boundingBox().catch(() => null);
-    if (!visible || !enabled || !box || !composerBox) continue;
+    if (!visible || !enabled || !box || !anchorBox) continue;
     const nearComposer =
-      box.x >= composerBox.x - 24 &&
-      box.x <= composerBox.x + composerBox.width + 80 &&
-      box.y >= composerBox.y - 24 &&
-      box.y <= composerBox.y + composerBox.height + 80;
+      box.x >= anchorBox.x - 80 &&
+      box.x <= anchorBox.x + anchorBox.width + 220 &&
+      box.y >= anchorBox.y - 120 &&
+      box.y <= anchorBox.y + anchorBox.height + 180;
     if (nearComposer) {
       const label = await item.getAttribute("aria-label").catch(() => "");
       const testId = await item.getAttribute("data-testid").catch(() => "");
@@ -178,20 +347,35 @@ async function collectSendButtonCandidates(page, composer) {
   return candidates;
 }
 
+function bestVisibleSendCandidate(candidates) {
+  return candidates
+    .filter((candidate) => candidate.visible && candidate.enabled && candidate.box && candidate.box.width > 0 && candidate.box.height > 0)
+    .sort((a, b) => {
+      const score = (candidate) =>
+        (candidate.selector.includes("aria-label") ? 30 : 0) +
+        (candidate.selector.includes("data-testid") ? 20 : 0) +
+        (candidate.selector === "near_composer_button" ? 10 : 0) +
+        Math.min(10, Math.round((candidate.box.width * candidate.box.height) / 500));
+      return score(b) - score(a);
+    })[0] || null;
+}
+
 async function sendState(page, composer, nonce) {
   const composerText = await getComposerText(composer);
   const userTexts = await page.locator('[data-message-author-role="user"]').allTextContents().catch(() => []);
   const nonceInUserMessage = userTexts.some((text) => text.includes(nonce));
-  const assistantStarted = Boolean(await getLatestAssistantText(page));
+  const assistantText = await getLatestAssistantText(page);
+  const assistantHasNonce = assistantText.includes(`<NC_SUPERVISOR_RESPONSE nonce="${nonce}">`) ||
+    assistantText.includes(`<NC_DONE nonce="${nonce}">DONE</NC_DONE>`);
   const stopIndicatorCount = await page.locator(
     'button[aria-label*="Stop" i], button[aria-label*="Arrêter" i], button[data-testid*="stop" i]'
   ).count().catch(() => 0);
   const composerStillHasNonce = composerText.includes(nonce);
   return {
-    sent: nonceInUserMessage || (!composerStillHasNonce && (assistantStarted || stopIndicatorCount > 0)),
+    sent: nonceInUserMessage || assistantHasNonce || stopIndicatorCount > 0,
     composerText,
     nonceInUserMessage,
-    assistantStarted,
+    assistantHasNonce,
     stopIndicatorCount,
     composerStillHasNonce
   };
@@ -206,6 +390,20 @@ async function waitForSendSuccess(page, composer, nonce, timeoutMs = 4000) {
     state = await sendState(page, composer, nonce);
   }
   return state;
+}
+
+async function withTimeout(promise, timeoutMs, label) {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs);
+      })
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function clickAccessibleSendButton(page, candidates, jsClick = false) {
@@ -228,38 +426,50 @@ async function clickAccessibleSendButton(page, candidates, jsClick = false) {
   return null;
 }
 
-async function saveSendFailureDebug(page, composer, outDir, candidates, reason) {
+async function saveSendFailureDebug(page, composer, outDir, candidates, reason, nonce = "") {
   await page.screenshot({ path: path.join(outDir, "send_failed_after.png"), fullPage: true }).catch(() => {});
   const composerText = await getComposerText(composer);
   const composerHtml = await composer.evaluate((element) => element.outerHTML || "").catch(() => "");
+  const chosenButton = bestVisibleSendCandidate(candidates || []);
   const debug = {
     reason,
     currentUrl: page.url(),
     composerText,
+    pageContainsRequestNonce: await pageContainsNonce(page, nonce),
     candidateSendButtons: candidates,
+    chosenSendButton: chosenButton,
     composerHtmlSnippet: composerHtml.slice(0, 4000)
   };
   write(path.join(outDir, "send_failed_debug.json"), JSON.stringify(debug, null, 2));
   write(path.join(outDir, "composer_text_snapshot.txt"), composerText);
+  if (chosenButton) {
+    write(path.join(outDir, "chosen_send_button.json"), JSON.stringify(chosenButton, null, 2));
+  }
 }
 
 async function submitMessage(page, composer, request, nonce, outDir, timeoutMs) {
   await page.screenshot({ path: path.join(outDir, "send_before.png"), fullPage: true }).catch(() => {});
   const composerText = await writeComposer(page, composer, request);
-  if (!composerText.includes(nonce)) {
-    await saveSendFailureDebug(page, composer, outDir, [], "COMPOSER_NONCE_MISSING_AFTER_FILL");
+  const nonceVisible = composerText.includes(nonce) || await pageContainsNonce(page, nonce);
+  if (!nonceVisible) {
+    await saveSendFailureDebug(page, composer, outDir, [], "COMPOSER_NONCE_MISSING_AFTER_FILL", nonce);
     return { ok: false, reason: "COMPOSER_NONCE_MISSING_AFTER_FILL" };
   }
 
   const deadline = Date.now() + timeoutMs;
   const attempts = [];
-  const candidates = await collectSendButtonCandidates(page, composer);
+  const candidates = await collectSendButtonCandidates(page, composer, nonce);
   write(path.join(outDir, "send_button_candidates.json"), JSON.stringify(candidates, null, 2));
+  const chosenButton = bestVisibleSendCandidate(candidates);
+  if (chosenButton) {
+    write(path.join(outDir, "chosen_send_button.json"), JSON.stringify(chosenButton, null, 2));
+  }
 
   const recordAttempt = async (name, action) => {
     if (Date.now() > deadline) return false;
     try {
-      await action();
+      const remaining = Math.max(1000, deadline - Date.now());
+      await withTimeout(action(), Math.min(8000, remaining), name);
       const state = await waitForSendSuccess(page, composer, nonce, Math.min(5000, Math.max(1000, deadline - Date.now())));
       attempts.push({ name, ok: state.sent, state });
       return state.sent;
@@ -270,7 +480,7 @@ async function submitMessage(page, composer, request, nonce, outDir, timeoutMs) 
   };
 
   if (await recordAttempt("keyboard_enter", async () => {
-    await composer.click();
+    await focusComposerForSubmit(page, composer, nonce);
     await page.keyboard.press("Enter");
   })) {
     write(path.join(outDir, "send_attempts.json"), JSON.stringify(attempts, null, 2));
@@ -278,7 +488,7 @@ async function submitMessage(page, composer, request, nonce, outDir, timeoutMs) 
   }
 
   if (await recordAttempt("keyboard_ctrl_enter", async () => {
-    await composer.click();
+    await focusComposerForSubmit(page, composer, nonce);
     await page.keyboard.press(process.platform === "darwin" ? "Meta+Enter" : "Control+Enter");
   })) {
     write(path.join(outDir, "send_attempts.json"), JSON.stringify(attempts, null, 2));
@@ -302,16 +512,16 @@ async function submitMessage(page, composer, request, nonce, outDir, timeoutMs) 
   }
 
   if (await recordAttempt("coordinate_fallback", async () => {
-    const box = await composer.boundingBox();
-    if (!box) throw new Error("No composer bounding box for coordinate fallback.");
-    await page.mouse.click(box.x + box.width - 18, box.y + box.height - 18);
+    const target = bestVisibleSendCandidate(candidates);
+    if (!target?.box) throw new Error("No visible send button bounding box for coordinate fallback.");
+    await page.mouse.click(target.box.x + target.box.width / 2, target.box.y + target.box.height / 2);
   })) {
     write(path.join(outDir, "send_attempts.json"), JSON.stringify(attempts, null, 2));
     return { ok: true, method: "coordinate_fallback" };
   }
 
   write(path.join(outDir, "send_attempts.json"), JSON.stringify(attempts, null, 2));
-  await saveSendFailureDebug(page, composer, outDir, candidates, "SEND_FAILED");
+  await saveSendFailureDebug(page, composer, outDir, candidates, "SEND_FAILED", nonce);
   return { ok: false, reason: "SEND_FAILED" };
 }
 
@@ -382,7 +592,7 @@ async function main() {
   const page = await browser.newPage();
   await page.goto(bridgeConfig.chatgpt_url || "https://chatgpt.com/", { waitUntil: "domcontentloaded" });
 
-  const composer = await findComposer(page);
+  const composer = await findComposer(page, outDir);
   if (!composer) {
     write(path.join(outDir, "bridge_error.md"), "ChatGPT composer not found. Log in manually with the dedicated Chrome profile, select the required model/mode, and retry.");
     await browser.close();
@@ -437,6 +647,10 @@ async function main() {
 
   write(path.join(outDir, "raw_response.txt"), completed);
   write(path.join(outDir, "extracted_response.txt"), completed);
+  const stopReason = extractBlock(completed, "STOP_REASON");
+  if (stopReason) {
+    write(path.join(outDir, "stop_reason.md"), stopReason);
+  }
   await browser.close();
 }
 
