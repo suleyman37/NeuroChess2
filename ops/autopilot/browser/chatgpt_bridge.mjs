@@ -89,17 +89,36 @@ async function loadPlaywright() {
 
 async function findComposer(page) {
   const selectors = [
-    'textarea',
+    '[contenteditable="true"][data-lexical-editor="true"]',
+    'div.ProseMirror[contenteditable="true"]',
     '[contenteditable="true"][role="textbox"]',
-    'div[contenteditable="true"]'
+    'div[contenteditable="true"]',
+    'textarea[name="prompt-textarea"]',
+    'textarea'
   ];
   for (const selector of selectors) {
-    const locator = page.locator(selector).last();
-    if (await locator.count().catch(() => 0)) {
-      return locator;
+    const locator = page.locator(selector);
+    const count = await locator.count().catch(() => 0);
+    for (let index = count - 1; index >= 0; index -= 1) {
+      const candidate = locator.nth(index);
+      const visible = await candidate.isVisible().catch(() => false);
+      const editable = await candidate.isEditable().catch(() => false);
+      if (visible && editable) {
+        return candidate;
+      }
     }
   }
   return null;
+}
+
+async function writeComposer(page, composer, text) {
+  const cleanText = text.replace(/^\uFEFF/, "");
+  await composer.click();
+  try {
+    await composer.fill(cleanText, { timeout: 10000 });
+  } catch {
+    await page.keyboard.insertText(cleanText);
+  }
 }
 
 async function main() {
@@ -176,8 +195,7 @@ async function main() {
     process.exit(1);
   }
 
-  await composer.click();
-  await composer.fill(request);
+  await writeComposer(page, composer, request);
   await page.keyboard.press("Enter");
 
   const maxWaitMs = Number(bridgeConfig.max_wait_seconds || 900) * 1000;
