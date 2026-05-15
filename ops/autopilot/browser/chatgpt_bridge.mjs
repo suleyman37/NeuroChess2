@@ -60,6 +60,13 @@ async function getLatestAssistantText(page) {
   return (fallback || "").trim();
 }
 
+async function getComposerText(composer) {
+  return await composer.evaluate((element) => {
+    if ("value" in element) return element.value || "";
+    return element.innerText || element.textContent || "";
+  }).catch(() => "");
+}
+
 async function loadPlaywright() {
   try {
     return await import("playwright");
@@ -114,11 +121,198 @@ async function findComposer(page) {
 async function writeComposer(page, composer, text) {
   const cleanText = text.replace(/^\uFEFF/, "");
   await composer.click();
+  await page.keyboard.press(process.platform === "darwin" ? "Meta+A" : "Control+A").catch(() => {});
+  await page.keyboard.press("Backspace").catch(() => {});
+  const beforeFill = (await getComposerText(composer)).trim();
+  if (beforeFill) {
+    await composer.fill("", { timeout: 5000 }).catch(() => {});
+  }
   try {
     await composer.fill(cleanText, { timeout: 10000 });
   } catch {
     await page.keyboard.insertText(cleanText);
   }
+  return await getComposerText(composer);
+}
+
+async function collectSendButtonCandidates(page, composer) {
+  const selectors = [
+    'button[aria-label*="Send" i]',
+    'button[aria-label*="Envoyer" i]',
+    'button[data-testid*="send" i]',
+    'form button[type="submit"]'
+  ];
+  const candidates = [];
+  for (const selector of selectors) {
+    const locator = page.locator(selector);
+    const count = await locator.count().catch(() => 0);
+    for (let index = 0; index < count; index += 1) {
+      const item = locator.nth(index);
+      const visible = await item.isVisible().catch(() => false);
+      const enabled = await item.isEnabled().catch(() => false);
+      const box = await item.boundingBox().catch(() => null);
+      candidates.push({ selector, index, visible, enabled, box });
+    }
+  }
+
+  const composerBox = await composer.boundingBox().catch(() => null);
+  const buttons = page.locator("button");
+  const count = await buttons.count().catch(() => 0);
+  for (let index = 0; index < count; index += 1) {
+    const item = buttons.nth(index);
+    const visible = await item.isVisible().catch(() => false);
+    const enabled = await item.isEnabled().catch(() => false);
+    const box = await item.boundingBox().catch(() => null);
+    if (!visible || !enabled || !box || !composerBox) continue;
+    const nearComposer =
+      box.x >= composerBox.x - 24 &&
+      box.x <= composerBox.x + composerBox.width + 80 &&
+      box.y >= composerBox.y - 24 &&
+      box.y <= composerBox.y + composerBox.height + 80;
+    if (nearComposer) {
+      const label = await item.getAttribute("aria-label").catch(() => "");
+      const testId = await item.getAttribute("data-testid").catch(() => "");
+      candidates.push({ selector: "near_composer_button", index, visible, enabled, box, label, testId });
+    }
+  }
+  return candidates;
+}
+
+async function sendState(page, composer, nonce) {
+  const composerText = await getComposerText(composer);
+  const userTexts = await page.locator('[data-message-author-role="user"]').allTextContents().catch(() => []);
+  const nonceInUserMessage = userTexts.some((text) => text.includes(nonce));
+  const assistantStarted = Boolean(await getLatestAssistantText(page));
+  const stopIndicatorCount = await page.locator(
+    'button[aria-label*="Stop" i], button[aria-label*="Arrêter" i], button[data-testid*="stop" i]'
+  ).count().catch(() => 0);
+  const composerStillHasNonce = composerText.includes(nonce);
+  return {
+    sent: nonceInUserMessage || (!composerStillHasNonce && (assistantStarted || stopIndicatorCount > 0)),
+    composerText,
+    nonceInUserMessage,
+    assistantStarted,
+    stopIndicatorCount,
+    composerStillHasNonce
+  };
+}
+
+async function waitForSendSuccess(page, composer, nonce, timeoutMs = 4000) {
+  const deadline = Date.now() + timeoutMs;
+  let state = await sendState(page, composer, nonce);
+  while (Date.now() < deadline) {
+    if (state.sent) return state;
+    await page.waitForTimeout(500);
+    state = await sendState(page, composer, nonce);
+  }
+  return state;
+}
+
+async function clickAccessibleSendButton(page, candidates, jsClick = false) {
+  for (const candidate of candidates) {
+    if (!candidate.visible || !candidate.enabled) continue;
+    const locator = candidate.selector === "near_composer_button"
+      ? page.locator("button").nth(candidate.index)
+      : page.locator(candidate.selector).nth(candidate.index);
+    try {
+      if (jsClick) {
+        await locator.evaluate((element) => element.click());
+      } else {
+        await locator.click({ timeout: 5000 });
+      }
+      return candidate;
+    } catch {
+      // Try the next candidate.
+    }
+  }
+  return null;
+}
+
+async function saveSendFailureDebug(page, composer, outDir, candidates, reason) {
+  await page.screenshot({ path: path.join(outDir, "send_failed_after.png"), fullPage: true }).catch(() => {});
+  const composerText = await getComposerText(composer);
+  const composerHtml = await composer.evaluate((element) => element.outerHTML || "").catch(() => "");
+  const debug = {
+    reason,
+    currentUrl: page.url(),
+    composerText,
+    candidateSendButtons: candidates,
+    composerHtmlSnippet: composerHtml.slice(0, 4000)
+  };
+  write(path.join(outDir, "send_failed_debug.json"), JSON.stringify(debug, null, 2));
+  write(path.join(outDir, "composer_text_snapshot.txt"), composerText);
+}
+
+async function submitMessage(page, composer, request, nonce, outDir, timeoutMs) {
+  await page.screenshot({ path: path.join(outDir, "send_before.png"), fullPage: true }).catch(() => {});
+  const composerText = await writeComposer(page, composer, request);
+  if (!composerText.includes(nonce)) {
+    await saveSendFailureDebug(page, composer, outDir, [], "COMPOSER_NONCE_MISSING_AFTER_FILL");
+    return { ok: false, reason: "COMPOSER_NONCE_MISSING_AFTER_FILL" };
+  }
+
+  const deadline = Date.now() + timeoutMs;
+  const attempts = [];
+  const candidates = await collectSendButtonCandidates(page, composer);
+  write(path.join(outDir, "send_button_candidates.json"), JSON.stringify(candidates, null, 2));
+
+  const recordAttempt = async (name, action) => {
+    if (Date.now() > deadline) return false;
+    try {
+      await action();
+      const state = await waitForSendSuccess(page, composer, nonce, Math.min(5000, Math.max(1000, deadline - Date.now())));
+      attempts.push({ name, ok: state.sent, state });
+      return state.sent;
+    } catch (error) {
+      attempts.push({ name, ok: false, error: error.message });
+      return false;
+    }
+  };
+
+  if (await recordAttempt("keyboard_enter", async () => {
+    await composer.click();
+    await page.keyboard.press("Enter");
+  })) {
+    write(path.join(outDir, "send_attempts.json"), JSON.stringify(attempts, null, 2));
+    return { ok: true, method: "keyboard_enter" };
+  }
+
+  if (await recordAttempt("keyboard_ctrl_enter", async () => {
+    await composer.click();
+    await page.keyboard.press(process.platform === "darwin" ? "Meta+Enter" : "Control+Enter");
+  })) {
+    write(path.join(outDir, "send_attempts.json"), JSON.stringify(attempts, null, 2));
+    return { ok: true, method: "keyboard_ctrl_enter" };
+  }
+
+  if (await recordAttempt("accessible_button_click", async () => {
+    const clicked = await clickAccessibleSendButton(page, candidates, false);
+    if (!clicked) throw new Error("No enabled visible send button candidate clicked.");
+  })) {
+    write(path.join(outDir, "send_attempts.json"), JSON.stringify(attempts, null, 2));
+    return { ok: true, method: "accessible_button_click" };
+  }
+
+  if (await recordAttempt("js_button_click", async () => {
+    const clicked = await clickAccessibleSendButton(page, candidates, true);
+    if (!clicked) throw new Error("No enabled visible send button candidate JS-clicked.");
+  })) {
+    write(path.join(outDir, "send_attempts.json"), JSON.stringify(attempts, null, 2));
+    return { ok: true, method: "js_button_click" };
+  }
+
+  if (await recordAttempt("coordinate_fallback", async () => {
+    const box = await composer.boundingBox();
+    if (!box) throw new Error("No composer bounding box for coordinate fallback.");
+    await page.mouse.click(box.x + box.width - 18, box.y + box.height - 18);
+  })) {
+    write(path.join(outDir, "send_attempts.json"), JSON.stringify(attempts, null, 2));
+    return { ok: true, method: "coordinate_fallback" };
+  }
+
+  write(path.join(outDir, "send_attempts.json"), JSON.stringify(attempts, null, 2));
+  await saveSendFailureDebug(page, composer, outDir, candidates, "SEND_FAILED");
+  return { ok: false, reason: "SEND_FAILED" };
 }
 
 async function main() {
@@ -195,8 +389,14 @@ async function main() {
     process.exit(1);
   }
 
-  await writeComposer(page, composer, request);
-  await page.keyboard.press("Enter");
+  const sendTimeoutMs = Number(bridgeConfig.send_phase_timeout_seconds || 60) * 1000;
+  const sendResult = await submitMessage(page, composer, request, nonce, outDir, sendTimeoutMs);
+  if (!sendResult.ok) {
+    write(path.join(outDir, "bridge_error.md"), sendResult.reason);
+    await browser.close();
+    process.exit(1);
+  }
+  write(path.join(outDir, "send_result.json"), JSON.stringify(sendResult, null, 2));
 
   const maxWaitMs = Number(bridgeConfig.max_wait_seconds || 900) * 1000;
   const stableMs = Number(bridgeConfig.response_stability_seconds || 15) * 1000;

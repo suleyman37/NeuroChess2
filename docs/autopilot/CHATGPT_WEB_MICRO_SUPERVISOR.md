@@ -31,6 +31,16 @@ operator passes `-Live`.
 The script never automates login, stores credentials, bypasses account controls,
 or sends broad prompts.
 
+The live bridge uses a bounded send ladder after filling the composer:
+
+1. keyboard submit;
+2. accessible send button click;
+3. JavaScript click on a visible send button candidate;
+4. coordinate fallback near the composer.
+
+If no strategy succeeds within the configured send phase timeout, it writes
+debug artifacts and stops without executing anything else.
+
 Manual setup:
 
 1. Open Chrome with `C:\Users\suley\Documents\Dev\ChatGPTSupervisorChromeProfile`.
