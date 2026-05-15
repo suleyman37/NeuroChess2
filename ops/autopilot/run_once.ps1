@@ -17,6 +17,29 @@ if (-not $task.id) {
   exit 0
 }
 
+if ($DryRun) {
+  $summary = [ordered]@{
+    task_id = $task.id
+    status = "dry_run"
+    run_dir = $runDir
+    would_prepare_worktree = $false
+    would_execute_codex = $false
+    would_run_checks = $false
+    would_commit = $false
+    would_push = $false
+    notes = @(
+      "DryRun is non-executing by contract.",
+      "No worktree was prepared.",
+      "No Codex CLI command was run.",
+      "No promotion, commit, or push was attempted."
+    )
+  }
+  Write-AutopilotJson -Path (Join-Path $runDir "run_once_dry_run_summary.json") -Value $summary
+  & "$PSScriptRoot\write_report.ps1" -RunDir $runDir -TaskId $task.id -Status "dry_run" | Out-Null
+  $summary | ConvertTo-Json -Depth 8
+  exit 0
+}
+
 $worktreeInfoJson = & "$PSScriptRoot\prepare_worktree.ps1" -TaskId $task.id
 $worktreeInfo = $worktreeInfoJson | ConvertFrom-Json
 

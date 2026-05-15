@@ -1,0 +1,38 @@
+<NC_SUPERVISOR_RESPONSE nonce="TEST_NONCE_123">
+<VERDICT>CONTINUE_WITH_MICRO_PROMPT</VERDICT>
+<PROMPT_SELF_AUDIT>
+single_goal: PASS
+risk_tier_valid: PASS
+work_type_valid: PASS
+allowed_paths_precise: PASS
+forbidden_paths_present: PASS
+max_files_present: PASS
+max_diff_lines_present: PASS
+required_checks_present: PASS
+stop_conditions_present: PASS
+no_vague_language: PASS
+no_forbidden_scope: PASS
+quality_score_0_to_10: 9
+main_risks:
+- Partial response.
+</PROMPT_SELF_AUDIT>
+<MICRO_PROMPT>
+id: PARTIAL
+risk_tier: green
+work_type: docs_tooling
+goal: Add one fixture.
+allowed_paths:
+- ops/autopilot/fixtures/**
+forbidden_paths:
+- frontend/**
+max_files: 1
+max_diff_lines: 40
+timebox_minutes: 10
+required_checks:
+- git diff --check
+stop_conditions:
+- missing DONE
+commit_policy: no_commit
+codex_prompt: Add one fixture.
+</MICRO_PROMPT>
+</NC_SUPERVISOR_RESPONSE>

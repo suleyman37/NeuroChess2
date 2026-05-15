@@ -1,0 +1,141 @@
+param(
+  [switch]$DryRun,
+  [switch]$Live,
+  [string]$Fixture = "",
+  [string]$EvidencePackPath = "",
+  [string]$MissionId = "SUPERVISOR_BRIDGE_DRY_RUN"
+)
+
+$ErrorActionPreference = "Stop"
+$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+$configPath = Join-Path $PSScriptRoot "config.json"
+$config = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
+
+if (-not $Live) {
+  $DryRun = $true
+}
+
+if ($Live -and $config.chatgpt_web_bridge.live_send_requires_flag -and -not $PSBoundParameters.ContainsKey("Live")) {
+  & "$PSScriptRoot\stop_with_report.ps1" -Reason "LIVE_FLAG_REQUIRED" -Details "Live send requires explicit -Live."
+}
+
+if ($Live -and -not $config.chatgpt_web_bridge.enabled) {
+  & "$PSScriptRoot\stop_with_report.ps1" -Reason "BRIDGE_DISABLED" -Details "config.json has chatgpt_web_bridge.enabled=false."
+}
+
+$runRoot = "C:\Users\suley\Documents\Dev\NeuroChess_QA_Artifacts\autopilot\chatgpt_bridge"
+try {
+  New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
+} catch {
+  $runRoot = Join-Path $repoRoot "ops\autopilot\reports\generated"
+}
+$runDir = Join-Path $runRoot (Get-Date -Format "yyyyMMdd_HHmmss")
+New-Item -ItemType Directory -Force -Path $runDir | Out-Null
+
+if (-not $EvidencePackPath) {
+  $packJson = & "$PSScriptRoot\build_evidence_pack.ps1" -MissionId $MissionId
+  $pack = $packJson | ConvertFrom-Json
+  $EvidencePackPath = $pack.evidence_pack
+  $nonce = $pack.nonce
+} else {
+  $noncePath = Join-Path $EvidencePackPath "nonce.txt"
+  if (-not (Test-Path $noncePath)) {
+    & "$PSScriptRoot\stop_with_report.ps1" -RunDir $runDir -Reason "MISSING_NONCE" -Details "Evidence pack has no nonce.txt."
+  }
+  $nonce = (Get-Content -LiteralPath $noncePath -Raw).Trim()
+}
+
+$summary = [ordered]@{
+  mode = if ($Live) { "live" } else { "dry_run" }
+  live_send = [bool]$Live
+  evidence_pack = $EvidencePackPath
+  nonce = $nonce
+  run_dir = $runDir
+  fixture = $Fixture
+  browser_called = $false
+  codex_execution = $false
+  commit = $false
+  push = $false
+}
+
+if ($DryRun) {
+  if (-not $Fixture) {
+    $Fixture = Join-Path $PSScriptRoot "fixtures\supervisor_valid_response.txt"
+  }
+  if (-not (Test-Path $Fixture)) {
+    & "$PSScriptRoot\stop_with_report.ps1" -RunDir $runDir -Reason "FIXTURE_MISSING" -Details $Fixture
+  }
+  $rawPath = Join-Path $runDir "raw_response.txt"
+  $fixtureText = Get-Content -LiteralPath $Fixture -Raw
+  $fixtureText = $fixtureText -replace "TEST_NONCE_123", $nonce
+  Set-Content -LiteralPath $rawPath -Value $fixtureText -Encoding UTF8
+  $validation = & "$PSScriptRoot\validate_supervisor_response.ps1" -InputPath $rawPath -Nonce $nonce -OutDir $runDir 2>&1
+  $code = $LASTEXITCODE
+  $validation | Set-Content -LiteralPath (Join-Path $runDir "validation_stdout.txt") -Encoding UTF8
+  $summary.validation_exit_code = $code
+  $summary.validation_output = ($validation -join "`n")
+  $summary.status = if ($code -eq 0) { "pass" } else { "fail" }
+  $summary | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $runDir "ask_chatgpt_web_summary.json") -Encoding UTF8
+  $summary | ConvertTo-Json -Depth 12
+  exit $code
+}
+
+$bridgeScript = Join-Path $PSScriptRoot "browser\chatgpt_bridge.mjs"
+$summary.browser_called = $true
+node $bridgeScript --live --config "$configPath" --evidence "$EvidencePackPath" --nonce "$nonce" --out "$runDir"
+$bridgeCode = $LASTEXITCODE
+if ($bridgeCode -ne 0) {
+  $summary.status = "fail"
+  $summary.bridge_exit_code = $bridgeCode
+  $summary | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $runDir "ask_chatgpt_web_summary.json") -Encoding UTF8
+  $summary | ConvertTo-Json -Depth 12
+  exit $bridgeCode
+}
+
+$responsePath = Join-Path $runDir "raw_response.txt"
+$validation = & "$PSScriptRoot\validate_supervisor_response.ps1" -InputPath $responsePath -Nonce $nonce -OutDir $runDir 2>&1
+$code = $LASTEXITCODE
+$validation | Set-Content -LiteralPath (Join-Path $runDir "validation_stdout.txt") -Encoding UTF8
+
+if ($code -ne 0 -and [int]$config.chatgpt_web_bridge.format_repair_attempts -gt 0) {
+  $repairDir = Join-Path $runDir "format_repair_attempt_1"
+  New-Item -ItemType Directory -Force -Path $repairDir | Out-Null
+  $repairPrompt = Get-Content -LiteralPath (Join-Path $PSScriptRoot "prompts\format_repair_prompt.md") -Raw
+  $repairPrompt = $repairPrompt -replace "\{\{NONCE\}\}", $nonce
+  $rawPrevious = if (Test-Path $responsePath) { Get-Content -LiteralPath $responsePath -Raw } else { "" }
+  $repairRequest = @"
+$repairPrompt
+
+Nonce:
+$nonce
+
+Validation rejection:
+$($validation -join "`n")
+
+Previous response:
+$rawPrevious
+"@
+  $repairRequestPath = Join-Path $repairDir "format_repair_request.md"
+  Set-Content -LiteralPath $repairRequestPath -Value $repairRequest -Encoding UTF8
+  node $bridgeScript --live --config "$configPath" --evidence "$EvidencePackPath" --nonce "$nonce" --out "$repairDir" --request "$repairRequestPath"
+  $repairBridgeCode = $LASTEXITCODE
+  if ($repairBridgeCode -eq 0) {
+    $repairResponse = Join-Path $repairDir "raw_response.txt"
+    $repairValidation = & "$PSScriptRoot\validate_supervisor_response.ps1" -InputPath $repairResponse -Nonce $nonce -OutDir $repairDir 2>&1
+    $repairCode = $LASTEXITCODE
+    $repairValidation | Set-Content -LiteralPath (Join-Path $repairDir "validation_stdout.txt") -Encoding UTF8
+    $code = $repairCode
+    $validation = $repairValidation
+    $summary.format_repair_attempted = $true
+    $summary.format_repair_exit_code = $repairCode
+  } else {
+    $summary.format_repair_attempted = $true
+    $summary.format_repair_exit_code = $repairBridgeCode
+  }
+}
+
+$summary.status = if ($code -eq 0) { "pass" } else { "fail" }
+$summary.validation_exit_code = $code
+$summary | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $runDir "ask_chatgpt_web_summary.json") -Encoding UTF8
+$summary | ConvertTo-Json -Depth 12
+exit $code

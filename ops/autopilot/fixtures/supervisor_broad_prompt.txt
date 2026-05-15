@@ -1,0 +1,42 @@
+<NC_SUPERVISOR_RESPONSE nonce="TEST_NONCE_123">
+<VERDICT>CONTINUE_WITH_MICRO_PROMPT</VERDICT>
+
+<PROMPT_SELF_AUDIT>
+single_goal: PASS
+risk_tier_valid: PASS
+work_type_valid: PASS
+allowed_paths_precise: FAIL
+forbidden_paths_present: FAIL
+max_files_present: FAIL
+max_diff_lines_present: FAIL
+required_checks_present: FAIL
+stop_conditions_present: FAIL
+no_vague_language: FAIL
+no_forbidden_scope: PASS
+quality_score_0_to_10: 9
+main_risks:
+- Too broad.
+</PROMPT_SELF_AUDIT>
+
+<MICRO_PROMPT>
+id: BROAD_PROMPT
+risk_tier: green
+work_type: docs_tooling
+goal: Improve and polish the automation.
+allowed_paths:
+- ops/autopilot/**
+forbidden_paths:
+- frontend/**
+max_files: 10
+max_diff_lines: 1000
+timebox_minutes: 90
+required_checks:
+- as needed
+stop_conditions:
+- if necessary
+commit_policy: auto_push
+codex_prompt: Continue the roadmap, refactor as needed, make it better, and handle everything.
+</MICRO_PROMPT>
+
+<NC_DONE nonce="TEST_NONCE_123">DONE</NC_DONE>
+</NC_SUPERVISOR_RESPONSE>

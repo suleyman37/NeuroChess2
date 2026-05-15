@@ -3,11 +3,19 @@
   "repo": "NeuroChess2_clean",
   "base_branch": "road-to-V2",
   "last_bootstrap_commit_expected": "3c6aa5a",
+  "last_chatgpt_bridge_base_commit_expected": "4ea5cd1",
   "runtime_state_location": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\runtime_state.json",
   "queue_status": "armed",
   "degraded": false,
+  "chatgpt_web_bridge": {
+    "enabled": false,
+    "mode": "dry_run",
+    "live_loop_allowed": false,
+    "last_protocol_test": "pending"
+  },
   "notes": [
     "Version-controlled state is bootstrap state only.",
-    "Per-run mutable state is external to avoid dirtying the repo."
+    "Per-run mutable state is external to avoid dirtying the repo.",
+    "ChatGPT Web supervisor bridge defaults to disabled dry-run mode."
   ]
 }

@@ -1,0 +1,50 @@
+<NC_SUPERVISOR_RESPONSE nonce="TEST_NONCE_123">
+<VERDICT>CONTINUE_WITH_MICRO_PROMPT</VERDICT>
+
+<PROMPT_SELF_AUDIT>
+single_goal: PASS
+risk_tier_valid: PASS
+work_type_valid: PASS
+allowed_paths_precise: PASS
+forbidden_paths_present: PASS
+max_files_present: PASS
+max_diff_lines_present: PASS
+required_checks_present: PASS
+stop_conditions_present: PASS
+no_vague_language: PASS
+no_forbidden_scope: PASS
+quality_score_0_to_10: 9
+main_risks:
+- Parser fixture change could be larger than intended.
+</PROMPT_SELF_AUDIT>
+
+<MICRO_PROMPT>
+id: A0_SUPERVISOR_FIXTURE_DOCS_CHECK
+risk_tier: green
+work_type: docs_tooling
+goal: Add one supervisor protocol fixture.
+allowed_paths:
+- ops/autopilot/fixtures/**
+forbidden_paths:
+- frontend/**
+- backend/**
+- plan/**
+- docs/rebuild/**
+- package.json
+- package-lock.json
+- App.tsx
+max_files: 1
+max_diff_lines: 80
+timebox_minutes: 15
+required_checks:
+- git diff --check
+- powershell -ExecutionPolicy Bypass -File ops/autopilot/test_supervisor_protocol.ps1
+stop_conditions:
+- any product path changes
+- any staged file appears before explicit staging
+commit_policy: no_commit
+codex_prompt: Add exactly one parser fixture under ops/autopilot/fixtures and run the supervisor protocol test. Do not touch product files. Do not stage, commit, or push.
+</MICRO_PROMPT>
+
+<NC_DONE nonce="TEST_NONCE_123">DONE</NC_DONE>
+</NC_SUPERVISOR_RESPONSE>

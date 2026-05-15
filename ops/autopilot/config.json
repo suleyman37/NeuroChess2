@@ -1,0 +1,22 @@
+{
+  "chatgpt_web_bridge": {
+    "enabled": false,
+    "mode": "dry_run",
+    "chrome_profile_path": "C:\\Users\\suley\\Documents\\Dev\\ChatGPTSupervisorChromeProfile",
+    "chatgpt_url": "https://chatgpt.com/",
+    "require_done_nonce": true,
+    "response_stability_seconds": 15,
+    "max_wait_seconds": 900,
+    "format_repair_attempts": 1,
+    "max_autonomous_steps": 3,
+    "live_send_requires_flag": true
+  },
+  "micro_prompt_limits": {
+    "default_max_files": 3,
+    "default_max_diff_lines": 200,
+    "green_max_diff_lines": 500,
+    "blue_max_diff_lines": 300,
+    "amber_max_diff_lines": 250,
+    "red_max_diff_lines": 120
+  }
+}

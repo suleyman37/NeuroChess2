@@ -41,6 +41,9 @@ logs/
 *.log
 *.err
 .claude/worktrees/
+ops/autopilot/evidence/generated/
+ops/autopilot/reports/*
+!ops/autopilot/reports/.gitkeep
 
 # Secrets / local config
 .env
