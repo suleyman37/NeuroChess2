@@ -11,14 +11,14 @@ export const rexSurfaceCopies: Record<RexSurfaceId, RexSurfaceCopy> = {
     testId: "rex-surface-qg",
     eyebrow: "Quartier général",
     question: "Que dois-je faire maintenant pour progresser ?",
-    promise: "Un cockpit de mission : une priorité, un effort utile, zéro donnée réelle.",
+    promise: "Une priorité lue depuis les données existantes, sans écriture.",
     commandTitle: "Mission utile du jour",
     commandBody:
       "La hiérarchie cible devient plus simple : mission, preuve, prochain effort. Rien n'est calculé.",
     emptyTitle: "La mission du jour sera branchée plus tard.",
     emptyBody:
       "Ce bloc est un journal d'objectifs illustratif. Il prépare l'espace sans créer de plan réel ni appeler le backend.",
-    ctaLabel: "Voir la mission du jour",
+    ctaLabel: "Mission read-only",
     signals: [
       { label: "Priorité", value: "À choisir" },
       { label: "Effort", value: "Actif" },
