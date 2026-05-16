@@ -1,0 +1,9 @@
+{
+  "mission_id": "TIMEBOX_WARNING",
+  "risk_tier": "green",
+  "work_type": "automation-safety",
+  "elapsed_minutes": 8,
+  "test_elapsed_minutes": 0,
+  "long_tests_allowed": false,
+  "repair_attempts": 0
+}

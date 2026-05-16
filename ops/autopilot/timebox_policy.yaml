@@ -1,0 +1,26 @@
+schema_version: A8C
+enabled: false
+warning_after_minutes: 8
+checkpoint_after_minutes: 10
+max_repair_attempts_before_checkpoint: 2
+hard_kill_enabled: false
+soft_stop_enabled: true
+
+duration_scopes:
+  codex_active_work:
+    default_checkpoint_minutes: 10
+  checks_and_tests:
+    measured_separately: true
+    requires_explicit_long_check_permission: true
+  browser_chatgpt_wait:
+    handled_by_bridge_max_wait_seconds: true
+    count_as_active_work: false
+  red_tier:
+    stricter_by_default: true
+    checkpoint_before_retries: true
+
+decisions:
+  continue: elapsed below warning threshold
+  warn: elapsed at or above warning threshold
+  checkpoint_stop: elapsed at or above checkpoint threshold
+  stop_for_supervisor: repeated repairs or red-tier timebox exceeded

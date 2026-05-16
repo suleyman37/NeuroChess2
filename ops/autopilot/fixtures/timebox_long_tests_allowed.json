@@ -1,0 +1,9 @@
+{
+  "mission_id": "TIMEBOX_LONG_TESTS_ALLOWED",
+  "risk_tier": "green",
+  "work_type": "validation",
+  "elapsed_minutes": 4,
+  "test_elapsed_minutes": 25,
+  "long_tests_allowed": true,
+  "repair_attempts": 0
+}
