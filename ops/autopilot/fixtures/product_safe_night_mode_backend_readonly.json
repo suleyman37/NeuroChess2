@@ -1,0 +1,17 @@
+{
+  "id": "A13_FIXTURE_BACKEND_READONLY",
+  "risk_tier": "amber",
+  "work_type": "backend-readonly",
+  "branch_name": "autopilot/r3n-readonly-detail",
+  "target_branch": "autopilot/r3n-readonly-detail",
+  "promotion_mode": "ephemeral_branch_only",
+  "allowed_paths": [
+    "backend/**"
+  ],
+  "required_evidence": [
+    "anti_mutation_tests",
+    "repeated_get_db_state_same"
+  ],
+  "goal": "Implement a GET-only existing exercise detail route on an ephemeral branch.",
+  "codex_prompt": "Implement only a GET/read-only backend route with anti-mutation evidence. Do not merge to road-to-V2."
+}

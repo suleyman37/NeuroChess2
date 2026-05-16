@@ -1,0 +1,59 @@
+product_safe_night_mode_protocol_version: A13
+enabled: false
+live_night_mode_enabled: false
+
+defaults:
+  max_missions: 15
+  max_wall_clock_hours: 8
+  auto_drain_at_hours: 7
+  max_consecutive_failures: 1
+  max_total_failures: 2
+  max_quarantines: 1
+  max_same_mission_hash_repeats: 1
+  max_total_diff_lines: 1500
+  mission_timebox_minutes: 10
+  strategic_pulse_every_missions: 3
+  conversation_rollover_after_missions: 5
+  request_more_max_rounds: 2
+  prompt_repair_max_attempts: 1
+
+allowed_scopes:
+  docs_only:
+    auto_merge_to_road_allowed: true
+    requires_ephemeral_branch: false
+  backend_readonly:
+    auto_merge_to_road_allowed: false
+    requires_ephemeral_branch: true
+    requires_anti_mutation_evidence: true
+  frontend_readonly:
+    auto_merge_to_road_allowed: false
+    requires_ephemeral_branch: true
+    requires_screenshots: true
+    requires_visual_review_brief: true
+  smoke_test_only:
+    auto_merge_to_road_allowed: false
+    requires_evidence: true
+
+forbidden:
+  red_tier: true
+  practice_active_execution: true
+  training_items_write: true
+  practice_attempts_write: true
+  due_at_mutation: true
+  daily_plan_mutation: true
+  scoring_writes: true
+  xp_rank_transfer: true
+  db_migrations: true
+  package_changes: true
+  github_runner_changes: true
+  credential_or_session_changes: true
+  scheduler_changes: true
+  direct_product_code_merge_to_road: true
+  force_push: true
+  git_add_A: true
+
+morning_review_outcomes:
+  - READY_TO_REVIEW
+  - NEEDS_REWORK
+  - ABANDON_BRANCH
+  - QUARANTINE_REQUIRED

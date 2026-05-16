@@ -1,0 +1,22 @@
+{
+  "run_id": "A13_REPORT_FIXTURE",
+  "base_branch": "road-to-V2",
+  "base_head": "648ec77",
+  "final_branch": "road-to-V2",
+  "final_head": "648ec77",
+  "missions_attempted": 3,
+  "missions_succeeded": 2,
+  "missions_failed": 1,
+  "missions_quarantined": 0,
+  "branches": [
+    "autopilot/r3n-readonly-detail"
+  ],
+  "commits": [
+    "abc1234"
+  ],
+  "stop_reason": "planned_drain",
+  "evidence_paths": [
+    "C:/example/evidence"
+  ],
+  "morning_recommendation": "READY_TO_REVIEW"
+}

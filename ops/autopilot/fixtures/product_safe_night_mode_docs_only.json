@@ -1,0 +1,19 @@
+{
+  "id": "A13_FIXTURE_DOCS_ONLY",
+  "risk_tier": "green",
+  "work_type": "docs-only",
+  "branch_name": "road-to-V2",
+  "target_branch": "road-to-V2",
+  "promotion_mode": "auto_merge_to_road",
+  "allowed_paths": [
+    "docs/autopilot/**"
+  ],
+  "expected_changed_files": [
+    "docs/autopilot/SAFE_DOC.md"
+  ],
+  "required_evidence": [
+    "git diff --check"
+  ],
+  "goal": "Create one safe autopilot documentation page.",
+  "codex_prompt": "Create exactly one safe autopilot documentation page. Do not touch product code."
+}

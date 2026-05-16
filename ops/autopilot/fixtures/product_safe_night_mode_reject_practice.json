@@ -1,0 +1,16 @@
+{
+  "id": "A13_FIXTURE_REJECT_PRACTICE",
+  "risk_tier": "amber",
+  "work_type": "backend-readonly",
+  "branch_name": "autopilot/practice-attempt",
+  "target_branch": "autopilot/practice-attempt",
+  "promotion_mode": "ephemeral_branch_only",
+  "allowed_paths": [
+    "backend/**"
+  ],
+  "required_evidence": [
+    "anti_mutation_tests"
+  ],
+  "goal": "Create Practice attempt flow.",
+  "codex_prompt": "Create practice_attempts and update due_at for Daily Plan scoring."
+}

@@ -1,0 +1,16 @@
+{
+  "id": "A13_FIXTURE_REJECT_RED",
+  "risk_tier": "red",
+  "work_type": "backend-readonly",
+  "branch_name": "autopilot/red-tier-attempt",
+  "target_branch": "autopilot/red-tier-attempt",
+  "promotion_mode": "ephemeral_branch_only",
+  "allowed_paths": [
+    "backend/**"
+  ],
+  "required_evidence": [
+    "anti_mutation_tests"
+  ],
+  "goal": "Attempt red-tier work.",
+  "codex_prompt": "Touch Practice scoring behavior."
+}

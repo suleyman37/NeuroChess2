@@ -1,0 +1,18 @@
+{
+  "id": "A13_FIXTURE_FRONTEND_READONLY",
+  "risk_tier": "blue",
+  "work_type": "frontend-readonly",
+  "branch_name": "autopilot/rex-readonly-detail-ui",
+  "target_branch": "autopilot/rex-readonly-detail-ui",
+  "promotion_mode": "ephemeral_branch_only",
+  "allowed_paths": [
+    "frontend/**"
+  ],
+  "required_evidence": [
+    "screenshots",
+    "contact_sheet",
+    "chatgpt_visual_review_brief"
+  ],
+  "goal": "Wire a read-only detail surface without backend writes.",
+  "codex_prompt": "Create a read-only frontend surface. Capture screenshots and do not merge product code to road-to-V2."
+}

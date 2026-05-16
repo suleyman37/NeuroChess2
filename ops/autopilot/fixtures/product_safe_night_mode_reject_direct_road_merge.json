@@ -1,0 +1,16 @@
+{
+  "id": "A13_FIXTURE_REJECT_DIRECT_ROAD",
+  "risk_tier": "amber",
+  "work_type": "backend-readonly",
+  "branch_name": "road-to-V2",
+  "target_branch": "road-to-V2",
+  "promotion_mode": "auto_merge_to_road",
+  "allowed_paths": [
+    "backend/**"
+  ],
+  "required_evidence": [
+    "anti_mutation_tests"
+  ],
+  "goal": "Implement backend read-only route directly on road.",
+  "codex_prompt": "Implement a backend read-only route and push directly to road-to-V2."
+}
