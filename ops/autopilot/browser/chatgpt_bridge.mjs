@@ -40,6 +40,10 @@ function readMaybe(file) {
   return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
 }
 
+function readJsonFile(file) {
+  return JSON.parse(fs.readFileSync(file, "utf8").replace(/^\uFEFF/, ""));
+}
+
 function valuesFromArg(value) {
   if (!value) return [];
   const values = Array.isArray(value) ? value : [value];
@@ -63,16 +67,16 @@ function profileLockFiles(profilePath) {
     .filter((file) => fs.existsSync(file));
 }
 
-function validateDone(text, nonce) {
+function validateDone(text, nonce, responseRoot = "NC_SUPERVISOR_RESPONSE") {
   const trimmed = text.trim();
   const done = `<NC_DONE nonce="${nonce}">DONE</NC_DONE>`;
   const doneMatches = [...trimmed.matchAll(/<NC_DONE nonce="([^"]+)">DONE<\/NC_DONE>/g)];
   if (doneMatches.length !== 1) return { ok: false, reason: "DONE missing or duplicated" };
   if (doneMatches[0][1] !== nonce) return { ok: false, reason: "DONE wrong nonce" };
-  if (!trimmed.endsWith("</NC_SUPERVISOR_RESPONSE>")) return { ok: false, reason: "response block is not final" };
+  if (!trimmed.endsWith(`</${responseRoot}>`)) return { ok: false, reason: "response block is not final" };
   const afterDone = trimmed.slice(doneMatches[0].index + done.length).trim();
-  if (afterDone !== "</NC_SUPERVISOR_RESPONSE>") return { ok: false, reason: "DONE is not final meaningful block" };
-  if (!trimmed.startsWith(`<NC_SUPERVISOR_RESPONSE nonce="${nonce}">`)) {
+  if (afterDone !== `</${responseRoot}>`) return { ok: false, reason: "DONE is not final meaningful block" };
+  if (!trimmed.startsWith(`<${responseRoot} nonce="${nonce}">`)) {
     return { ok: false, reason: "root nonce missing or wrong" };
   }
   return { ok: true };
@@ -97,12 +101,12 @@ async function verifyProjectContext(page, projectConfig, targetUrl, outDir) {
   const currentUrl = page.url();
   const title = await page.title().catch(() => "");
   const bodyText = await page.locator("body").textContent({ timeout: 5000 }).catch(() => "");
-  const textSample = (bodyText || "").slice(0, 4000);
+  const pageText = bodyText || "";
   const normalizedCurrent = normalizeUrlForCompare(currentUrl);
   const normalizedTarget = normalizeUrlForCompare(targetUrl);
-  const projectNameVisible = textSample.includes(projectName) || title.includes(projectName);
+  const projectNameVisible = pageText.includes(projectName) || title.includes(projectName);
   const projectUrlStable = Boolean(normalizedTarget && normalizedCurrent.startsWith(normalizedTarget));
-  const loginLikely = /log in|sign up|connexion|connectez|se connecter/i.test(textSample);
+  const loginLikely = /log in|sign up|connexion|connectez|se connecter/i.test(pageText);
   const ok = Boolean(projectNameVisible || projectUrlStable);
   const result = {
     ok,
@@ -114,7 +118,9 @@ async function verifyProjectContext(page, projectConfig, targetUrl, outDir) {
     projectUrlStable,
     loginLikely,
     verificationMode: "explicit_project_url",
-    textSample
+    bodyTextLength: pageText.length,
+    textSampleStored: false,
+    sensitiveDomTextRedacted: true
   };
   write(path.join(outDir, "project_context_verification.json"), JSON.stringify(result, null, 2));
   return result;
@@ -278,6 +284,21 @@ async function loadPlaywright() {
     } catch {
       // Try the next NODE_PATH entry.
     }
+
+    const pnpmRoot = path.join(moduleRoot, ".pnpm");
+    if (fs.existsSync(pnpmRoot)) {
+      const playwrightDirs = fs.readdirSync(pnpmRoot)
+        .filter((entry) => /^playwright@/.test(entry))
+        .sort()
+        .reverse();
+      for (const entry of playwrightDirs) {
+        try {
+          return requireFromHere(path.join(pnpmRoot, entry, "node_modules", "playwright"));
+        } catch {
+          // Try the next PNPM candidate.
+        }
+      }
+    }
   }
 
   throw new Error("Cannot load Playwright. Set NODE_PATH to a node_modules directory containing playwright.");
@@ -325,7 +346,12 @@ async function findComposer(page, outDir) {
 async function clickVisibleComposer(page, composer) {
   const box = await getDomBox(composer) || composer.__chatgptBridgeBox || await composer.boundingBox().catch(() => null);
   if (box && box.width > 20 && box.height > 20) {
-    await page.mouse.click(box.x + Math.min(box.width / 2, 80), box.y + Math.min(box.height / 2, 40));
+    const viewport = page.viewportSize() || { width: 1280, height: 720 };
+    const rawX = box.x + Math.min(box.width / 2, 80);
+    const rawY = box.y + Math.min(box.height / 2, 40);
+    const x = Math.min(Math.max(rawX, 16), Math.max(16, viewport.width - 16));
+    const y = Math.min(Math.max(rawY, 16), Math.max(16, viewport.height - 16));
+    await page.mouse.click(x, y);
     return true;
   }
   throw new Error("No visible composer box available for coordinate focus.");
@@ -334,6 +360,17 @@ async function clickVisibleComposer(page, composer) {
 async function writeComposer(page, composer, text) {
   const cleanText = text.replace(/^\uFEFF/, "");
   await clickVisibleComposer(page, composer);
+  try {
+    await composer.fill(cleanText, { timeout: 8000 });
+    const filled = await getComposerText(composer);
+    const nonceLike = cleanText.match(/(?:A\d+[A-Z_]*|NC)_[A-Za-z0-9_]+/);
+    if (!nonceLike || filled.includes(nonceLike[0])) {
+      return filled;
+    }
+  } catch {
+    // Some ChatGPT composer builds expose ProseMirror as contenteditable but do
+    // not support Playwright fill reliably; fall back to keyboard replacement.
+  }
   await page.keyboard.press(process.platform === "darwin" ? "Meta+A" : "Control+A").catch(() => {});
   await page.keyboard.press("Backspace").catch(() => {});
   await page.waitForTimeout(150).catch(() => {});
@@ -583,19 +620,23 @@ function bestVisibleSendCandidate(candidates) {
     })[0] || null;
 }
 
-async function sendState(page, composer, nonce) {
+async function sendState(page, composer, nonce, responseRoot = "NC_SUPERVISOR_RESPONSE") {
   const composerText = await getComposerText(composer);
   const userTexts = await page.locator('[data-message-author-role="user"]').allTextContents().catch(() => []);
   const nonceInUserMessage = userTexts.some((text) => text.includes(nonce));
   const assistantText = await getLatestAssistantText(page);
-  const assistantHasNonce = assistantText.includes(`<NC_SUPERVISOR_RESPONSE nonce="${nonce}">`) ||
+  const assistantHasNonce = assistantText.includes(`<${responseRoot} nonce="${nonce}">`) ||
     assistantText.includes(`<NC_DONE nonce="${nonce}">DONE</NC_DONE>`);
   const stopIndicatorCount = await page.locator(
     'button[aria-label*="Stop" i], button[aria-label*="Arrêter" i], button[data-testid*="stop" i]'
   ).count().catch(() => 0);
   const composerStillHasNonce = composerText.includes(nonce);
+  const sent =
+    nonceInUserMessage ||
+    stopIndicatorCount > 0 ||
+    (assistantHasNonce && !composerStillHasNonce);
   return {
-    sent: nonceInUserMessage || assistantHasNonce || stopIndicatorCount > 0,
+    sent,
     composerText,
     nonceInUserMessage,
     assistantHasNonce,
@@ -604,13 +645,13 @@ async function sendState(page, composer, nonce) {
   };
 }
 
-async function waitForSendSuccess(page, composer, nonce, timeoutMs = 4000) {
+async function waitForSendSuccess(page, composer, nonce, responseRoot = "NC_SUPERVISOR_RESPONSE", timeoutMs = 4000) {
   const deadline = Date.now() + timeoutMs;
-  let state = await sendState(page, composer, nonce);
+  let state = await sendState(page, composer, nonce, responseRoot);
   while (Date.now() < deadline) {
     if (state.sent) return state;
     await page.waitForTimeout(500);
-    state = await sendState(page, composer, nonce);
+    state = await sendState(page, composer, nonce, responseRoot);
   }
   return state;
 }
@@ -693,7 +734,7 @@ async function submitMessage(page, composer, request, nonce, outDir, timeoutMs, 
     try {
       const remaining = Math.max(1000, deadline - Date.now());
       await withTimeout(action(), Math.min(8000, remaining), name);
-      const state = await waitForSendSuccess(page, composer, nonce, Math.min(5000, Math.max(1000, deadline - Date.now())));
+      const state = await waitForSendSuccess(page, composer, nonce, options.responseRoot || "NC_SUPERVISOR_RESPONSE", Math.min(5000, Math.max(1000, deadline - Date.now())));
       attempts.push({ name, ok: state.sent, state });
       return state.sent;
     } catch (error) {
@@ -756,7 +797,7 @@ async function main() {
   const live = Boolean(args.live);
   const nonce = args.nonce || `NC_${crypto.randomBytes(12).toString("hex")}`;
   const configPath = args.config || path.join(process.cwd(), "ops", "autopilot", "config.json");
-  const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  const config = readJsonFile(configPath);
   const bridgeConfig = config.chatgpt_web_bridge || {};
   const projectConfig = config.chatgpt_project || {};
 
@@ -805,6 +846,7 @@ async function main() {
   }
 
   const evidencePath = args.evidence;
+  const responseRoot = String(args["response-root"] || args.responseRoot || "NC_SUPERVISOR_RESPONSE");
   let request = "";
   if (args.request) {
     request = readMaybe(args.request);
@@ -884,7 +926,7 @@ async function main() {
   }
 
   const sendTimeoutMs = Number(bridgeConfig.send_phase_timeout_seconds || 60) * 1000;
-  const sendResult = await submitMessage(page, composer, request, nonce, outDir, sendTimeoutMs, { requestAlreadyWritten });
+  const sendResult = await submitMessage(page, composer, request, nonce, outDir, sendTimeoutMs, { requestAlreadyWritten, responseRoot });
   if (!sendResult.ok) {
     write(path.join(outDir, "bridge_error.md"), sendResult.reason);
     await browser.close();
@@ -906,7 +948,7 @@ async function main() {
       last = text;
       stableSince = Date.now();
     }
-    const doneCheck = validateDone(text, nonce);
+    const doneCheck = validateDone(text, nonce, responseRoot);
     if (doneCheck.ok && Date.now() - stableSince >= stableMs) {
       completed = text;
       break;
@@ -921,7 +963,7 @@ async function main() {
     process.exit(1);
   }
 
-  const doneCheck = validateDone(completed, nonce);
+  const doneCheck = validateDone(completed, nonce, responseRoot);
   if (!doneCheck.ok) {
     write(path.join(outDir, "raw_response.txt"), completed);
     write(path.join(outDir, "bridge_error.md"), doneCheck.reason);

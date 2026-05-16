@@ -38,7 +38,8 @@ foreach ($entry in @(
   }
 }
 
-$config | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ConfigPath -Encoding UTF8
+$utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+[System.IO.File]::WriteAllText($ConfigPath, ($config | ConvertTo-Json -Depth 20), $utf8NoBom)
 
 [ordered]@{
   status = "pass"

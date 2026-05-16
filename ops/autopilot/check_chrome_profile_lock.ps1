@@ -31,12 +31,12 @@ $normalized = Normalize-ProfilePath -Path $ProfilePath
 $profileExists = Test-Path -LiteralPath $normalized
 $escaped = [regex]::Escape($normalized)
 
-$matches = @()
+$matchingProcesses = @()
 $chromeProcesses = @(Get-CimInstance Win32_Process -Filter "name = 'chrome.exe'" -ErrorAction SilentlyContinue)
 foreach ($proc in $chromeProcesses) {
   $cmd = [string]$proc.CommandLine
   if ($cmd -and ($cmd -match $escaped)) {
-    $matches += [ordered]@{
+    $matchingProcesses += [ordered]@{
       pid = [int]$proc.ProcessId
       name = [string]$proc.Name
       command_line = $cmd
@@ -56,13 +56,13 @@ if ($profileExists) {
 }
 
 $result = [ordered]@{
-  status = if ($matches.Count -gt 0) { "locked" } else { "unlocked" }
+  status = if ($matchingProcesses.Count -gt 0) { "locked" } else { "unlocked" }
   profile_path = $normalized
   profile_exists = $profileExists
-  locked = ($matches.Count -gt 0)
-  matching_process_count = $matches.Count
-  matching_processes = @($matches)
-  stale_lock_files_present = ($matches.Count -eq 0 -and $lockFiles.Count -gt 0)
+  locked = ($matchingProcesses.Count -gt 0)
+  matching_process_count = $matchingProcesses.Count
+  matching_processes = @($matchingProcesses)
+  stale_lock_files_present = ($matchingProcesses.Count -eq 0 -and $lockFiles.Count -gt 0)
   lock_files = @($lockFiles)
   checked_at = (Get-Date -Format o)
   report_dir = $OutDir
@@ -77,11 +77,11 @@ if (-not $JsonOnly) {
   $lines += ""
   $lines += "Profile: $normalized"
   $lines += "Status: $($result.status)"
-  $lines += "Matching process count: $($matches.Count)"
-  if ($matches.Count -gt 0) {
+  $lines += "Matching process count: $($matchingProcesses.Count)"
+  if ($matchingProcesses.Count -gt 0) {
     $lines += ""
     $lines += "Matching processes:"
-    foreach ($proc in $matches) {
+    foreach ($proc in $matchingProcesses) {
       $lines += "- PID $($proc.pid): $($proc.command_line)"
     }
   }
