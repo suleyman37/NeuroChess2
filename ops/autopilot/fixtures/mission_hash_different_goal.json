@@ -1,0 +1,29 @@
+{
+  "mission_id": "R3M_REBUILD_DECISION_CONTRACT",
+  "risk_tier": "GREEN",
+  "work_type": "docs-only",
+  "goal": "Create a safe backend route implementation.",
+  "allowed_paths": [
+    "docs/rebuild/R3M_REBUILD_DECISION_CONTRACT.md",
+    "docs/autopilot/**"
+  ],
+  "forbidden_paths": [
+    "frontend/**",
+    "backend/**",
+    "package.json"
+  ],
+  "expected_changed_files": [
+    "docs/rebuild/R3M_REBUILD_DECISION_CONTRACT.md"
+  ],
+  "max_files": 1,
+  "max_diff_lines": 120,
+  "required_checks": [
+    "git diff --check",
+    "tools/plan_guard.py"
+  ],
+  "stop_conditions": [
+    "forbidden path touched",
+    "mission contract mismatch"
+  ],
+  "codex_prompt": "Write the docs-only decision contract and stop."
+}

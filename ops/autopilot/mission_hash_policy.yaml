@@ -1,0 +1,37 @@
+mission_hash_detector_version: A16B
+enabled: false
+
+hash_algorithm: SHA256
+max_same_mission_hash_repeats: 1
+
+normalized_fields:
+  - mission_id
+  - risk_tier
+  - work_type
+  - goal
+  - allowed_paths
+  - forbidden_paths
+  - expected_changed_files
+  - max_files
+  - max_diff_lines
+  - required_checks
+  - stop_conditions
+  - codex_prompt
+  - compact_intent
+
+normalization:
+  trim_whitespace: true
+  collapse_repeated_whitespace: true
+  normalize_path_separators: true
+  sort_arrays: true
+  lowercase_enum_fields:
+    - risk_tier
+    - work_type
+
+decisions:
+  no_repeat: CONTINUE
+  first_repeat: STOP_REPEAT_MISSION_HASH
+  repeated_again: STOP_REPEAT_MISSION_HASH
+
+live_chatgpt_called_by_detector: false
+product_mission_executed_by_detector: false

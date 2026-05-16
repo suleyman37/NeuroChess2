@@ -1,0 +1,23 @@
+{
+  "schema_version": "A16B_progress_ledger_entry_v1",
+  "session_id": "night_a16b_fixture",
+  "mission_id": "backend_branch_success",
+  "mission_hash": "hash_branch_success",
+  "started_at": "2026-05-17T00:00:00Z",
+  "ended_at": "2026-05-17T00:05:00Z",
+  "status": "COMPLETED",
+  "branch": "codex/backend-readonly-r3n",
+  "commit_sha": "",
+  "files_changed_count": 2,
+  "diff_lines": 180,
+  "evidence_pack_path": "C:/Users/suley/Documents/Dev/NeuroChess_QA_Artifacts/autopilot/backend_readonly/evidence",
+  "external_report_path": "",
+  "tests_run": ["backend targeted anti-mutation tests"],
+  "tests_passed": true,
+  "contract_result": "PASS",
+  "prompt_firewall_result": "PASS",
+  "strategic_pulse_decision": "",
+  "forward_progress": true,
+  "no_progress_reason": "",
+  "stop_reason": ""
+}

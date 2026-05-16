@@ -1,0 +1,23 @@
+{
+  "schema_version": "A16B_progress_ledger_entry_v1",
+  "session_id": "night_a16b_fixture",
+  "mission_id": "docs_commit_success",
+  "mission_hash": "hash_commit_success",
+  "started_at": "2026-05-17T00:00:00Z",
+  "ended_at": "2026-05-17T00:03:00Z",
+  "status": "COMPLETED",
+  "branch": "road-to-V2",
+  "commit_sha": "abc1234",
+  "files_changed_count": 1,
+  "diff_lines": 60,
+  "evidence_pack_path": "",
+  "external_report_path": "",
+  "tests_run": ["git diff --check"],
+  "tests_passed": true,
+  "contract_result": "PASS",
+  "prompt_firewall_result": "PASS",
+  "strategic_pulse_decision": "",
+  "forward_progress": true,
+  "no_progress_reason": "",
+  "stop_reason": ""
+}

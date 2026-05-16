@@ -1,0 +1,23 @@
+{
+  "schema_version": "A16B_progress_ledger_entry_v1",
+  "session_id": "night_a16b_fixture",
+  "mission_id": "artifact_success",
+  "mission_hash": "hash_artifact_success",
+  "started_at": "2026-05-17T00:00:00Z",
+  "ended_at": "2026-05-17T00:04:00Z",
+  "status": "STOPPED_REPAIRABLE",
+  "branch": "road-to-V2",
+  "commit_sha": "",
+  "files_changed_count": 0,
+  "diff_lines": 0,
+  "evidence_pack_path": "",
+  "external_report_path": "C:/Users/suley/Documents/Dev/NeuroChess_QA_Artifacts/autopilot/night_mode_live_pilots/report.md",
+  "tests_run": [],
+  "tests_passed": false,
+  "contract_result": "MISMATCH",
+  "prompt_firewall_result": "PASS",
+  "strategic_pulse_decision": "",
+  "forward_progress": true,
+  "no_progress_reason": "",
+  "stop_reason": "Mission Contract mismatch revealed repairable bug"
+}

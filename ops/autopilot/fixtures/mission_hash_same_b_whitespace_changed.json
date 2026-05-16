@@ -1,0 +1,14 @@
+{
+  "mission_id": "R3M_REBUILD_DECISION_CONTRACT",
+  "risk_tier": " green ",
+  "work_type": "DOCS-ONLY",
+  "goal": "Create   a safe\nrebuild decision contract.",
+  "allowed_paths": "docs\\autopilot\\**; docs\\rebuild\\R3M_REBUILD_DECISION_CONTRACT.md",
+  "forbidden_paths": "package.json, backend\\**, frontend\\**",
+  "expected_changed_files": " docs\\rebuild\\R3M_REBUILD_DECISION_CONTRACT.md ",
+  "max_files": "1",
+  "max_diff_lines": "120",
+  "required_checks": "tools/plan_guard.py; git diff --check",
+  "stop_conditions": "mission contract mismatch\nforbidden path touched",
+  "codex_prompt": "Write the docs-only decision contract and stop."
+}

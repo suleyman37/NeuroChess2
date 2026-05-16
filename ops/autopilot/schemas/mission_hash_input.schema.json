@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/autopilot/mission_hash_input.schema.json",
+  "title": "A16B Mission Hash Input",
+  "type": "object",
+  "required": [
+    "risk_tier",
+    "work_type",
+    "goal",
+    "allowed_paths",
+    "forbidden_paths",
+    "expected_changed_files",
+    "max_files",
+    "max_diff_lines",
+    "required_checks",
+    "stop_conditions"
+  ],
+  "properties": {
+    "mission_id": { "type": "string" },
+    "risk_tier": { "type": "string" },
+    "work_type": { "type": "string" },
+    "goal": { "type": "string" },
+    "allowed_paths": { "type": ["array", "string"], "items": { "type": "string" } },
+    "forbidden_paths": { "type": ["array", "string"], "items": { "type": "string" } },
+    "expected_changed_files": { "type": ["array", "string"], "items": { "type": "string" } },
+    "max_files": { "type": ["integer", "string"] },
+    "max_diff_lines": { "type": ["integer", "string"] },
+    "required_checks": { "type": ["array", "string"], "items": { "type": "string" } },
+    "stop_conditions": { "type": ["array", "string"], "items": { "type": "string" } },
+    "codex_prompt": { "type": "string" },
+    "compact_intent": { "type": "string" }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,41 @@
+forward_progress_detector_version: A16B
+enabled: false
+
+ledger:
+  default_path: "%USERPROFILE%\\AgentOS\\runtime\\progress_ledger.jsonl"
+  append_only: true
+
+counts_as_progress:
+  - commit_created
+  - ephemeral_branch_with_evidence_pack
+  - external_report_or_artifact
+  - meaningful_test_or_smoke_evidence
+  - strategic_pulse_changed_direction
+  - mission_contract_mismatch_with_repairable_report
+
+does_not_count_as_progress:
+  - no_files_changed
+  - no_commit
+  - no_branch
+  - no_evidence_pack
+  - no_useful_report
+  - repeated_prompt_repair_only
+  - repeated_bridge_retries_only
+  - same_mission_hash_repeated
+  - noise_cleanup_only
+  - no_op_report_without_new_evidence
+
+thresholds:
+  warn_after_no_progress_missions: 1
+  max_consecutive_no_progress_missions: 2
+  rolling_window_size: 5
+  no_progress_in_window_requires_pulse: 3
+
+decisions:
+  progress: CONTINUE
+  one_no_progress: WARN_NO_PROGRESS
+  two_consecutive_no_progress: STOP_NO_FORWARD_PROGRESS
+  three_in_window: STRATEGIC_PULSE_REQUIRED
+
+live_chatgpt_called_by_detector: false
+product_mission_executed_by_detector: false
