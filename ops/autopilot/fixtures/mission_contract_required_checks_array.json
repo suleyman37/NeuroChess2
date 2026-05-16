@@ -1,0 +1,44 @@
+{
+  "schema_version": "A11A_mission_contract_v1",
+  "mission_id": "A15B_REQUIRED_CHECKS_ARRAY",
+  "risk_tier": "green",
+  "work_type": "docs-only",
+  "goal": "Create one required checks normalization fixture.",
+  "expected_changed_files": [
+    "docs/autopilot/A15B_REQUIRED_CHECKS.md"
+  ],
+  "allowed_paths": [
+    "docs/autopilot/**"
+  ],
+  "forbidden_paths": [
+    "frontend/**",
+    "backend/**",
+    "docs/rebuild/**",
+    "plan/**",
+    "package.json",
+    "package-lock.json",
+    "App.tsx"
+  ],
+  "max_files": 1,
+  "max_diff_lines": 120,
+  "required_checks": [
+    "git diff --check",
+    "tools/plan_guard.py"
+  ],
+  "expected_artifacts": [
+    "mission_report.md"
+  ],
+  "commit_policy": {
+    "commit_allowed": true,
+    "push_allowed": true
+  },
+  "stop_conditions": [
+    "required check missing"
+  ],
+  "red_tier_allowed": false,
+  "backend_allowed": false,
+  "frontend_allowed": false,
+  "docs_rebuild_allowed": false,
+  "package_changes_allowed": false,
+  "exact_file_match": true
+}

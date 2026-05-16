@@ -1,0 +1,20 @@
+{
+  "actual_changed_files": [
+    "docs/autopilot/A15B_REQUIRED_CHECKS.md"
+  ],
+  "actual_diff_lines": 80,
+  "actual_paths_touched": [
+    "docs/autopilot/A15B_REQUIRED_CHECKS.md"
+  ],
+  "actual_checks_run": [
+    "git diff --check"
+  ],
+  "actual_artifacts_created": [
+    "mission_report.md"
+  ],
+  "actual_commit_hash": "abc1234",
+  "actual_push_result": "pushed",
+  "commit_happened": true,
+  "push_happened": true,
+  "current_branch": "road-to-V2"
+}

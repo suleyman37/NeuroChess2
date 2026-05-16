@@ -35,6 +35,10 @@ $matches = Invoke-CompareFixture -ContractPath $contractPath -ActualPath (Join-P
 $extra = Invoke-CompareFixture -ContractPath $contractPath -ActualPath (Join-Path $fixtureRoot "mission_contract_extra_file_violation.json") -OutDir (Join-Path $runDir "compare_extra")
 $large = Invoke-CompareFixture -ContractPath $contractPath -ActualPath (Join-Path $fixtureRoot "mission_contract_diff_too_large.json") -OutDir (Join-Path $runDir "compare_large")
 $forbidden = Invoke-CompareFixture -ContractPath $contractPath -ActualPath (Join-Path $fixtureRoot "mission_contract_forbidden_path_violation.json") -OutDir (Join-Path $runDir "compare_forbidden")
+$checksArray = Invoke-CompareFixture -ContractPath (Join-Path $fixtureRoot "mission_contract_required_checks_array.json") -ActualPath (Join-Path $fixtureRoot "mission_contract_required_checks_actual_matches.json") -OutDir (Join-Path $runDir "compare_checks_array")
+$checksComma = Invoke-CompareFixture -ContractPath (Join-Path $fixtureRoot "mission_contract_required_checks_comma_string.json") -ActualPath (Join-Path $fixtureRoot "mission_contract_required_checks_actual_matches.json") -OutDir (Join-Path $runDir "compare_checks_comma")
+$checksNewline = Invoke-CompareFixture -ContractPath (Join-Path $fixtureRoot "mission_contract_required_checks_newline_semicolon_string.json") -ActualPath (Join-Path $fixtureRoot "mission_contract_required_checks_actual_matches.json") -OutDir (Join-Path $runDir "compare_checks_newline")
+$checksMissing = Invoke-CompareFixture -ContractPath (Join-Path $fixtureRoot "mission_contract_required_checks_array.json") -ActualPath (Join-Path $fixtureRoot "mission_contract_required_checks_missing_check.json") -OutDir (Join-Path $runDir "compare_checks_missing")
 
 $built = (& (Join-Path $PSScriptRoot "build_mission_contract.ps1") `
   -MissionId "A11A_BUILDER_SMOKE" `
@@ -72,6 +76,15 @@ Assert-True ($large.exit_code -eq 2) "diff too large should stop for supervisor"
 Assert-True ($large.result.contract_result -eq "STOP_FOR_SUPERVISOR") "large diff comparison result mismatch"
 Assert-True ($forbidden.exit_code -eq 3) "forbidden backend path should require quarantine"
 Assert-True ($forbidden.result.contract_result -eq "QUARANTINE_REQUIRED") "forbidden path comparison result mismatch"
+Assert-True ($checksArray.exit_code -eq 0) "required_checks array should pass"
+Assert-True ($checksArray.result.contract_result -eq "PASS") "required_checks array result mismatch"
+Assert-True ($checksComma.exit_code -eq 0) "required_checks comma string should pass"
+Assert-True ($checksComma.result.contract_result -eq "PASS") "required_checks comma result mismatch"
+Assert-True ($checksNewline.exit_code -eq 0) "required_checks newline/semicolon string should pass"
+Assert-True ($checksNewline.result.contract_result -eq "PASS") "required_checks newline result mismatch"
+Assert-True ($checksMissing.exit_code -eq 1) "missing required check should still fail"
+Assert-True ($checksMissing.result.contract_result -eq "FAIL") "missing required check result mismatch"
+Assert-True (($checksMissing.result.violations -join "`n") -match "tools/plan_guard.py") "missing plan guard check should be reported"
 Assert-True ($built.status -eq "built") "builder smoke should create a contract"
 Assert-True (Test-Path -LiteralPath $built.contract_json) "builder smoke contract json missing"
 Assert-True (Test-Path -LiteralPath $built.contract_markdown) "builder smoke contract markdown missing"
@@ -95,6 +108,10 @@ $summary = [ordered]@{
     extra_file_violation_fails = $true
     diff_too_large_fails = $true
     forbidden_path_violation_fails = $true
+    required_checks_array_passes = $true
+    required_checks_comma_string_passes = $true
+    required_checks_newline_semicolon_string_passes = $true
+    missing_required_check_still_fails = $true
     build_mission_contract_creates_files = $true
     no_live_chatgpt_call = $true
     no_product_mission_executed = $true

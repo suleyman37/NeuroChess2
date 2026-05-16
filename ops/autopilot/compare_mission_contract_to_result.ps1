@@ -23,6 +23,35 @@ function As-Array {
   return @($Value)
 }
 
+function Normalize-CheckText {
+  param([string]$Check)
+  $text = ([string]$Check).Trim()
+  if (-not $text) { return "" }
+  $text = $text -replace "\\", "/"
+  $text = $text -replace "\s+", " "
+  $lower = $text.ToLowerInvariant()
+  if ($lower -eq "diffcheck") { return "git diff --check" }
+  if ($lower -match '(^| )git diff --check($| )') { return "git diff --check" }
+  if ($lower -match 'tools/plan_guard\.py') { return "tools/plan_guard.py" }
+  return $lower
+}
+
+function Normalize-CheckList {
+  param($Value)
+  $items = [System.Collections.Generic.List[string]]::new()
+  foreach ($entry in @(As-Array $Value)) {
+    if ($null -eq $entry) { continue }
+    $text = [string]$entry
+    foreach ($part in ($text -split "(?:`r`n|`n|`r|;|,)")) {
+      $normalized = Normalize-CheckText $part
+      if ($normalized -and -not $items.Contains($normalized)) {
+        $items.Add($normalized) | Out-Null
+      }
+    }
+  }
+  return @($items)
+}
+
 function Test-PathLikePattern {
   param([string]$Path, [string]$Pattern)
   return ((Normalize-PathText $Path) -like (Normalize-PathText $Pattern))
@@ -82,7 +111,7 @@ $forbiddenPaths = @(As-Array $contract.forbidden_paths | ForEach-Object { Normal
 $actualFiles = @(As-Array $actual.actual_changed_files | ForEach-Object { Normalize-PathText $_ })
 $actualTouched = @(As-Array $actual.actual_paths_touched | ForEach-Object { Normalize-PathText $_ })
 if ($actualTouched.Count -eq 0) { $actualTouched = $actualFiles }
-$actualChecks = @(As-Array $actual.actual_checks_run | ForEach-Object { [string]$_ })
+$actualChecks = @(Normalize-CheckList $actual.actual_checks_run)
 $actualArtifacts = @(As-Array $actual.actual_artifacts_created | ForEach-Object { [string]$_ })
 $actualDiffLines = [int]$actual.actual_diff_lines
 
@@ -160,8 +189,9 @@ foreach ($pkg in @("package.json", "package-lock.json", "App.tsx")) {
   }
 }
 
-foreach ($check in @(As-Array $contract.required_checks)) {
-  if ($actualChecks -notcontains [string]$check) {
+$requiredChecks = @(Normalize-CheckList $contract.required_checks)
+foreach ($check in $requiredChecks) {
+  if ($actualChecks -notcontains $check) {
     $violations.Add("required check missing: $check") | Out-Null
   }
 }
@@ -225,7 +255,7 @@ $result = [ordered]@{
     forbidden_paths = @($forbiddenPaths)
     max_files = $contract.max_files
     max_diff_lines = $contract.max_diff_lines
-    required_checks = @(As-Array $contract.required_checks)
+    required_checks = @($requiredChecks)
     expected_artifacts = @(As-Array $contract.expected_artifacts)
   }
   actual = [ordered]@{

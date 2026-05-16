@@ -76,6 +76,21 @@ paths outside quarantine require quarantine.
 The comparison must verify that every required check was run. A missing check is
 a stop condition, even if the diff itself looks safe.
 
+### Required Check Normalization
+
+`required_checks` are normalized before comparison. The contract may represent
+them as a JSON array, comma-separated string, newline-separated string, or
+semicolon-separated string.
+
+Normalization trims whitespace, removes empty entries, normalizes path
+separators, and applies only explicit aliases such as `diffcheck` to
+`git diff --check` and Python wrapper invocations of `tools/plan_guard.py` to
+`tools/plan_guard.py`.
+
+This does not weaken enforcement. Missing checks remain blocking, and path,
+scope, file-count, diff-size, artifact, commit, and push checks still run
+unchanged.
+
 Expected artifacts are also checked. If an artifact was declared but not
 produced, the mission result is incomplete and must stop before promotion.
 
