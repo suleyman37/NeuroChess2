@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/autopilot/product_impact_review.schema.json",
+  "title": "A16E Product Impact Review",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "mission_id",
+    "mission_type",
+    "friction_targeted",
+    "friction_reduced",
+    "friction_created",
+    "potential_unlock_loop_steps",
+    "potential_acceleration_score",
+    "unlock_value",
+    "revolutionary_value_verdict",
+    "fake_progress_risk",
+    "why_this_matters",
+    "evidence",
+    "recommended_next_action"
+  ],
+  "properties": {
+    "schema_version": { "const": "A16E" },
+    "mission_id": { "type": "string" },
+    "mission_type": { "type": "string" },
+    "friction_targeted": { "type": "array", "items": { "type": "string" } },
+    "friction_reduced": { "type": "array", "items": { "type": "string" } },
+    "friction_created": { "type": "array", "items": { "type": "string" } },
+    "potential_unlock_loop_steps": { "type": "array", "items": { "type": "string" } },
+    "potential_acceleration_score": {
+      "type": "object",
+      "required": ["real_game_leverage", "active_effort", "feedback_quality", "transfer_probability", "personalization", "engagement_loop", "truthfulness", "total"]
+    },
+    "unlock_value": { "enum": ["direct", "indirect", "blocker_removal", "infra_only", "none"] },
+    "revolutionary_value_verdict": { "enum": ["YES_STRONG", "YES_INDIRECT", "WEAK", "NO", "NEGATIVE"] },
+    "fake_progress_risk": { "enum": ["none", "low", "medium", "high"] },
+    "why_this_matters": { "type": "string" },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "recommended_next_action": { "enum": ["CONTINUE", "RETURN_TO_PRODUCT", "STRATEGIC_PULSE", "BACKLOG_ONLY", "STOP"] }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/autopilot/product_friction_entry.schema.json",
+  "title": "A16E Product Friction Entry",
+  "type": "object",
+  "required": [
+    "friction_id",
+    "title",
+    "surface",
+    "severity",
+    "status",
+    "related_loop_steps",
+    "evidence",
+    "next_possible_mission"
+  ],
+  "properties": {
+    "friction_id": { "type": "string" },
+    "title": { "type": "string" },
+    "surface": { "type": "string" },
+    "severity": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "status": { "enum": ["active", "reduced", "blocked", "resolved"] },
+    "related_loop_steps": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "next_possible_mission": { "type": "string" }
+  },
+  "additionalProperties": false
+}

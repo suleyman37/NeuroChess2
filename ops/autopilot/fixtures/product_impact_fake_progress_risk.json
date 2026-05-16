@@ -1,0 +1,25 @@
+{
+  "schema_version": "A16E",
+  "mission_id": "BAD_FAKE_PROGRESS",
+  "mission_type": "PRODUCT_CORE",
+  "friction_targeted": ["F11"],
+  "friction_reduced": [],
+  "friction_created": ["F10"],
+  "potential_unlock_loop_steps": ["Replay"],
+  "potential_acceleration_score": {
+    "real_game_leverage": 0,
+    "active_effort": 1,
+    "feedback_quality": 0,
+    "transfer_probability": 0,
+    "personalization": 0,
+    "engagement_loop": 4,
+    "truthfulness": 0,
+    "total": 5
+  },
+  "unlock_value": "none",
+  "revolutionary_value_verdict": "YES_STRONG",
+  "fake_progress_risk": "high",
+  "why_this_matters": "It claims progress without proof.",
+  "evidence": [],
+  "recommended_next_action": "STOP"
+}

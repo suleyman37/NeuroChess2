@@ -1,0 +1,39 @@
+product_intelligence_gate_version: A16E
+enabled: false
+
+north_star: "Build an addictive, game-like, truth-driven chess learning system that helps any player unlock their real chess potential as fast as possible through real-game decisions, active replay, feedback, repetition, and transfer."
+
+potential_unlock_loop:
+  - Detect
+  - Isolate
+  - Try
+  - Judge
+  - Explain
+  - Replay
+  - Re-expose
+  - Verify Transfer
+  - Adapt
+
+score_axes:
+  - real_game_leverage
+  - active_effort
+  - feedback_quality
+  - transfer_probability
+  - personalization
+  - engagement_loop
+  - truthfulness
+
+thresholds:
+  weak_max: 9
+  indirect_max: 18
+  strong_max: 26
+  revolutionary_max: 35
+
+balance_rules:
+  max_automation_streak_before_pulse: 2
+  no_friction_reduction_window: 3
+  fake_progress_risk_high_result: FAIL
+
+live_enforcement_enabled: false
+live_chatgpt_called_by_scripts: false
+product_mission_executed_by_scripts: false

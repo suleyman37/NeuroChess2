@@ -1,0 +1,25 @@
+{
+  "schema_version": "A16E",
+  "mission_id": "R3N_READONLY_DETAIL_DIRECT",
+  "mission_type": "PRODUCT_CORE",
+  "friction_targeted": ["F3", "F1"],
+  "friction_reduced": ["F3"],
+  "friction_created": [],
+  "potential_unlock_loop_steps": ["Detect", "Isolate", "Explain"],
+  "potential_acceleration_score": {
+    "real_game_leverage": 5,
+    "active_effort": 3,
+    "feedback_quality": 4,
+    "transfer_probability": 3,
+    "personalization": 4,
+    "engagement_loop": 3,
+    "truthfulness": 5,
+    "total": 27
+  },
+  "unlock_value": "direct",
+  "revolutionary_value_verdict": "YES_STRONG",
+  "fake_progress_risk": "low",
+  "why_this_matters": "Players can inspect a real existing exercise safely before active practice exists.",
+  "evidence": ["read-only detail contract", "anti-reveal limitations"],
+  "recommended_next_action": "CONTINUE"
+}

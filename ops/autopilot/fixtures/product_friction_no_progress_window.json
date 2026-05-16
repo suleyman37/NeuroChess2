@@ -1,0 +1,28 @@
+{
+  "reviews": [
+    {
+      "schema_version": "A16E",
+      "mission_id": "AUTO_1",
+      "mission_type": "AUTOMATION_EFFICIENCY",
+      "friction_reduced": [],
+      "unlock_value": "infra_only",
+      "fake_progress_risk": "low"
+    },
+    {
+      "schema_version": "A16E",
+      "mission_id": "AUTO_2",
+      "mission_type": "AUTOMATION_EFFICIENCY",
+      "friction_reduced": [],
+      "unlock_value": "infra_only",
+      "fake_progress_risk": "low"
+    },
+    {
+      "schema_version": "A16E",
+      "mission_id": "AUTO_3",
+      "mission_type": "AUTOMATION_EFFICIENCY",
+      "friction_reduced": [],
+      "unlock_value": "none",
+      "fake_progress_risk": "medium"
+    }
+  ]
+}
