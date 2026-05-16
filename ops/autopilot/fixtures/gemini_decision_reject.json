@@ -1,0 +1,26 @@
+{
+  "schema_version": "A16I_DECISION_FIXTURE/1",
+  "validated_response": {
+    "valid": true,
+    "format": "json",
+    "mode": "prompt_auditor",
+    "verdict": "REJECT",
+    "required_action": "force_strategic_pulse",
+    "scores": {
+      "scope_risk": 4,
+      "product_value": 1,
+      "safety_risk": 4,
+      "automation_drift_risk": 3,
+      "confidence": 0.92
+    }
+  },
+  "gate_status": {
+    "control_plane_result": "PASS",
+    "mission_contract_result": "MATCH",
+    "prompt_firewall_result": "PASS",
+    "shadow_plan_result": "MATCH",
+    "night_mode_scope_result": "PASS",
+    "red_tier_result": "NOT_RED"
+  },
+  "expected_decision": "STOP_FOR_STRATEGIC_PULSE"
+}

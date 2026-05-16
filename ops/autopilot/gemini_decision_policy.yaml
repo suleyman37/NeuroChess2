@@ -1,0 +1,33 @@
+schema_version: A16I
+enabled_live: false
+gemini_role: auditor
+deterministic_priority:
+  - control_plane_hard_stop
+  - mission_contract
+  - prompt_firewall
+  - shadow_plan
+  - red_tier_quarantine_policy
+  - product_safe_night_mode_scope
+  - gemini_audit_decision
+  - chatgpt_planner_recommendation
+actions:
+  APPROVE: CONTINUE
+  NARROW: REQUEST_PLANNER_NARROWING
+  REJECT: STOP_FOR_STRATEGIC_PULSE
+  QUARANTINE: QUARANTINE_REQUIRED
+  PASS_VISUAL: CONTINUE
+  WARNING_VISUAL: REQUEST_PLANNER_NARROWING
+  BLOCK_VISUAL: BLOCK_VISUAL_REWORK
+  REPORT_ONLY: RECORD_LONG_HORIZON_REPORT
+deterministic_failure_action: STOP_DETERMINISTIC_GATE
+visual_policy:
+  pass_requires_screenshots: true
+  pass_requires_contact_sheet: true
+  pass_requires_visual_review_brief: true
+  warning_allows_auto_merge: false
+  block_action: BLOCK_VISUAL_REWORK
+forbidden:
+  gemini_generates_codex_prompt: true
+  gemini_bypasses_deterministic_gates: true
+  gemini_approves_red_tier_outside_quarantine: true
+  gemini_approves_product_code_auto_merge_to_road: true

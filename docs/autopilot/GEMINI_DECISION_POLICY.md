@@ -4,11 +4,14 @@ Gemini is useful because it is outside the ChatGPT Planner and Codex Executor lo
 
 Gemini is not a second chief. The priority order is:
 
-1. Mission Contract, Prompt Firewall, Shadow Plan, Control Plane.
-2. Red-tier quarantine policy.
-3. Night Mode scope policy.
-4. Gemini audit decision.
-5. ChatGPT Planner recommendation.
+1. Control Plane hard stops.
+2. Mission Contract.
+3. Prompt Firewall.
+4. Shadow Plan.
+5. Red-tier quarantine policy.
+6. Night Mode scope policy.
+7. Gemini audit decision.
+8. ChatGPT Planner recommendation.
 
 Decision mapping:
 
@@ -24,3 +27,8 @@ Decision mapping:
 If deterministic gates fail, stop regardless of Gemini approval. If Gemini rejects or blocks, do not execute the original prompt.
 
 The decision policy is response-format neutral. JSON is preferred for live Gemini because it survives Gemini Web formatting better than nested XML, but JSON approval still cannot bypass deterministic gates.
+
+A16I implements this as a dry-run resolver. `APPROVE` can become `CONTINUE`
+only when Control Plane, Mission Contract, Prompt Firewall, Shadow Plan,
+red-tier policy, and Night Mode scope all pass. Any failed deterministic gate
+returns `STOP_DETERMINISTIC_GATE`.

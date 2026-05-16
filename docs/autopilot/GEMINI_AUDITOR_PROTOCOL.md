@@ -22,3 +22,7 @@ Gemini modes:
 Live Gemini responses now use JSON as the primary format because Gemini Web may flatten nested XML tags. The legacy nonce-bound `NC_GEMINI_AUDIT` XML block remains supported for old fixtures and offline protocol tests, but live smoke requests should ask for one JSON object with `schema: "NC_GEMINI_AUDIT_JSON/1"`, matching `nonce`, and `done` equal to the nonce.
 
 Gemini responses must not contain `MICRO_PROMPT`, `codex_prompt`, or executable implementation instructions.
+
+A16I adds a dry-run decision resolver that maps validated Gemini verdicts into
+Control Plane actions. The resolver is still offline only. It proves that
+deterministic gates beat Gemini before any live enforcement is enabled.

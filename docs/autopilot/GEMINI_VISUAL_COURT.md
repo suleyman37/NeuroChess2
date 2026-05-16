@@ -27,3 +27,8 @@ Checks:
 - contract match
 
 Visual Court never generates prompts or product implementation instructions.
+
+A16I maps `PASS_VISUAL` to `CONTINUE` only when screenshots, contact sheet,
+visual review brief, and deterministic gates are present. `WARNING_VISUAL`
+requires narrowing or morning review, and `BLOCK_VISUAL` maps to
+`BLOCK_VISUAL_REWORK`.
