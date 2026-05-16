@@ -1,0 +1,12 @@
+<NC_SUPERVISOR_READY nonce="A12_READY_NONCE">
+<PROJECT>NeuroChess Supervisor</PROJECT>
+<READY>YES</READY>
+<CANARY_CHECKS>
+nonce_protocol: PASS
+micro_prompt_only: PASS
+forbidden_paths_known: PASS
+red_tier_known: PASS
+git_add_A_forbidden: PASS
+</CANARY_CHECKS>
+<NC_DONE nonce="A12_READY_NONCE">DONE</NC_DONE>
+</NC_SUPERVISOR_READY>

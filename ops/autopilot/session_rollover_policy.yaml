@@ -1,0 +1,44 @@
+session_rollover_protocol_version: A12
+enabled: false
+chatgpt_project_name: NeuroChess Supervisor
+
+thresholds:
+  assistant_responses_in_session: 15
+  missions_in_session: 5
+  estimated_context_tokens: null
+
+normal_triggers:
+  - assistant_responses_in_session_at_or_above_threshold
+  - missions_in_session_at_or_above_threshold
+  - estimated_context_tokens_at_or_above_threshold_when_available
+
+strategic_triggers:
+  - strategic_pulse_completed
+  - invalid_supervisor_responses_in_session_at_or_above_2
+  - repeated_request_more
+  - bridge_instability
+  - supervisor_drift_canary_failed
+
+emergency_triggers:
+  - wrong_model_or_mode_response
+  - format_drift
+  - repeated_missing_nonce_done
+  - broad_prompts_twice
+  - stale_or_wrong_project_conversation
+
+ready_boot_test:
+  required: true
+  project: NeuroChess Supervisor
+  required_canary_checks:
+    - nonce_protocol
+    - micro_prompt_only
+    - forbidden_paths_known
+    - red_tier_known
+    - git_add_A_forbidden
+
+disabled_in_a12:
+  live_rollover: true
+  live_chatgpt_call: true
+  project_upload_automation: true
+  night_mode: true
+  product_mission_execution: true

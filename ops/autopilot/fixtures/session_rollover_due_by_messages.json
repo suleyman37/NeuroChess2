@@ -1,0 +1,9 @@
+{
+  "assistant_responses_in_session": 15,
+  "missions_in_session": 2,
+  "invalid_supervisor_responses_in_session": 0,
+  "strategic_pulse_completed": false,
+  "request_more_repeated": false,
+  "bridge_instability": false,
+  "supervisor_drift_canary_failed": false
+}
