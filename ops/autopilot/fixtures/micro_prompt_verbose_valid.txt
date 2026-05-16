@@ -1,0 +1,14 @@
+<MICRO_PROMPT>
+mission_id: A16C_VERBOSE_VALID
+risk_tier: green
+work_type: docs-only
+goal: nc_mp2_verbose_conversion_fixture
+allowed_paths: docs/autopilot/NC_MP2_COMPATIBILITY_WITH_MICRO_PROMPT.md
+forbidden_paths: backend/**,frontend/**,plan/**,package.json,package-lock.json,App.tsx,.serena/**,qa_artifacts/**,.venv/**
+max_files: 1
+max_diff_lines: 300
+required_checks: git diff --check
+stop_conditions: forbidden_path,max_files,diff_over,missing_check,contract_mismatch
+commit_policy: explicit_file_only
+codex_prompt: Create only the compatibility document. No code execution. No product work.
+</MICRO_PROMPT>

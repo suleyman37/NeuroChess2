@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/autopilot/nc_mp2.schema.json",
+  "title": "NC-MP/2 Compact Mission Protocol",
+  "type": "object",
+  "required": [
+    "id",
+    "tier",
+    "type",
+    "goal",
+    "allow",
+    "deny",
+    "max_files",
+    "max_diff",
+    "checks",
+    "stop",
+    "commit",
+    "intent"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "tier": { "enum": ["green", "blue", "amber", "red", "checkpoint"] },
+    "type": {
+      "enum": [
+        "docs-only",
+        "autopilot-docs-only",
+        "safe-contract-doc-only",
+        "backend-readonly-only",
+        "frontend-readonly-only",
+        "test-only",
+        "smoke-only",
+        "cleanup-only",
+        "strategic-pulse",
+        "checkpoint"
+      ]
+    },
+    "goal": { "type": "string", "minLength": 1 },
+    "allow": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "deny": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "max_files": { "type": ["integer", "string"] },
+    "max_diff": { "type": ["integer", "string"] },
+    "checks": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "stop": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "commit": { "type": "string", "minLength": 1 },
+    "intent": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,14 @@
+NC-MP/2
+id=A16C_BROAD_LANGUAGE
+tier=green
+type=docs-only
+goal=improve_prompt_quality
+allow=docs/autopilot/PROMPT_LINTER_RULES.md
+deny=backend/**,frontend/**
+max_files=1
+max_diff=200
+checks=git diff --check
+stop=forbidden_path
+commit=explicit_file_only
+intent=Improve and polish the protocol as needed.
+DONE

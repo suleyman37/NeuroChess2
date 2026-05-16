@@ -1,0 +1,14 @@
+NC-MP/2
+id=A16C_RED_TERM_OUTSIDE_QUARANTINE
+tier=green
+type=docs-only
+goal=practice_scheduler_fixture
+allow=docs/autopilot/PROMPT_LINTER_RULES.md
+deny=backend/**,frontend/**
+max_files=1
+max_diff=200
+checks=git diff --check
+stop=forbidden_path
+commit=explicit_file_only
+intent=Describe Practice and due_at handling.
+DONE

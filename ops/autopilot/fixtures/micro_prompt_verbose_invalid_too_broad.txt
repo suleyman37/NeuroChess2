@@ -1,0 +1,13 @@
+<MICRO_PROMPT>
+mission_id: A16C_VERBOSE_INVALID
+risk_tier: green
+work_type: docs-only
+goal: improve everything
+forbidden_paths: backend/**,frontend/**
+max_files: 10
+max_diff_lines: 1000
+required_checks: git diff --check
+stop_conditions: forbidden_path
+commit_policy: explicit_file_only
+codex_prompt: Improve, polish, and handle everything as needed.
+</MICRO_PROMPT>

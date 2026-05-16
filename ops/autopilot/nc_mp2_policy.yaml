@@ -1,0 +1,72 @@
+nc_mp2_protocol_version: A16C
+enabled: false
+
+format:
+  first_line: NC-MP/2
+  final_token: DONE
+  syntax: key=value
+  allow_hidden_prose: false
+  allow_markdown_required: false
+
+required_fields:
+  - id
+  - tier
+  - type
+  - goal
+  - allow
+  - deny
+  - max_files
+  - max_diff
+  - checks
+  - stop
+  - commit
+  - intent
+
+allowed_tiers:
+  - green
+  - blue
+  - amber
+  - red
+  - checkpoint
+
+allowed_types:
+  - docs-only
+  - autopilot-docs-only
+  - safe-contract-doc-only
+  - backend-readonly-only
+  - frontend-readonly-only
+  - test-only
+  - smoke-only
+  - cleanup-only
+  - strategic-pulse
+  - checkpoint
+
+broad_language_rejected:
+  - improve
+  - polish
+  - optimize
+  - refactor
+  - finalize
+  - stabilize
+  - as needed
+  - if necessary
+  - clean up everything
+  - handle everything
+  - continue the roadmap
+  - make it better
+  - fix all
+
+red_tier_terms:
+  - Practice
+  - due_at
+  - Daily Plan
+  - training_items
+  - practice_attempts
+  - scoring
+  - XP
+  - rank
+  - Transfer
+
+live_enforcement_enabled: false
+live_chatgpt_called_by_scripts: false
+product_mission_executed_by_scripts: false

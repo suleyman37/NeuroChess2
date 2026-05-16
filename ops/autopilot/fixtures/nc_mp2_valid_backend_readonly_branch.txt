@@ -1,0 +1,15 @@
+NC-MP/2
+id=A16C_BACKEND_READONLY_BRANCH_VALID
+tier=amber
+type=backend-readonly-only
+goal=readonly_route_test_contract_branch_fixture
+allow=backend/tests/test_readonly_contract.py
+deny=frontend/**,plan/**,package.json,package-lock.json,App.tsx,.serena/**,qa_artifacts/**,.venv/**
+max_files=1
+max_diff=500
+checks=git diff --check,backend targeted anti-mutation evidence
+stop=forbidden_path,max_files,diff_over,missing_check,contract_mismatch,ephemeral_branch_required
+commit=ephemeral_branch_only
+branch=ephemeral
+intent=Create only backend read-only test evidence on an ephemeral branch. No road merge.
+DONE

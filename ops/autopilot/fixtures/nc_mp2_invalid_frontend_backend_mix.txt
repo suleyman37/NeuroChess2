@@ -1,0 +1,15 @@
+NC-MP/2
+id=A16C_FRONTEND_BACKEND_MIX
+tier=amber
+type=frontend-readonly-only
+goal=mixed_surface_fixture
+allow=frontend/src/api/client.ts,backend/neurochess/api/game_routes.py
+deny=plan/**,package.json,package-lock.json,App.tsx,.serena/**,qa_artifacts/**,.venv/**
+max_files=2
+max_diff=400
+checks=git diff --check,screenshot contact sheet,visual review brief
+stop=forbidden_path,contract_mismatch
+commit=ephemeral_branch_only
+branch=ephemeral
+intent=Create frontend visual evidence and backend route evidence together.
+DONE

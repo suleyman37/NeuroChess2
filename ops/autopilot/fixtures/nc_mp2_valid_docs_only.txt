@@ -1,0 +1,14 @@
+NC-MP/2
+id=A16C_DOCS_ONLY_VALID
+tier=green
+type=docs-only
+goal=nc_mp2_docs_protocol_fixture
+allow=docs/autopilot/NC_MP2_COMPACT_MISSION_PROTOCOL.md
+deny=backend/**,frontend/**,plan/**,package.json,package-lock.json,App.tsx,.serena/**,qa_artifacts/**,.venv/**
+max_files=1
+max_diff=300
+checks=git diff --check
+stop=forbidden_path,max_files,diff_over,missing_check,contract_mismatch
+commit=explicit_file_only
+intent=Create only the compact mission protocol document. No code execution. No product work.
+DONE
