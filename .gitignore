@@ -44,6 +44,8 @@ logs/
 ops/autopilot/evidence/generated/
 ops/autopilot/reports/*
 !ops/autopilot/reports/.gitkeep
+ops/autopilot/runtime/**
+!ops/autopilot/runtime/.gitkeep
 
 # Secrets / local config
 .env

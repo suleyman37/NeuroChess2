@@ -1,0 +1,13 @@
+{
+  "current_task": "A8_EARLY_EXIT_SHADOW_LINTING_PROTOCOL",
+  "base_head": "cdb0faf",
+  "current_branch": "road-to-V2",
+  "risk_tier": "green",
+  "work_type": "automation-safety",
+  "active_constraints": ["do not touch product code"],
+  "recent_decisions": ["early exit remains disabled"],
+  "active_risks": ["runtime context must not become source of truth"],
+  "do_not_touch": ["frontend/**", "backend/**", "docs/rebuild/**"],
+  "last_successful_commit": "cdb0faf",
+  "next_expected_step": "A8B_STRATEGIC_PULSE_REVIEW_PROTOCOL"
+}

@@ -1,0 +1,25 @@
+schema_version: A8
+enabled: false
+destructive_kill_enabled: false
+diff_too_large_decision: STOP_FOR_SUPERVISOR
+timebox_exceeded_decision: STOP_FOR_SUPERVISOR
+repeated_failure_limit: 3
+
+mechanical_stop:
+  forbidden_path_touched: STOP_MECHANICAL
+  docs_only_touched_code: STOP_MECHANICAL
+  mixed_frontend_backend_without_permission: STOP_MECHANICAL
+  package_touched_without_permission: STOP_MECHANICAL
+  local_noise_or_generated_path_touched: STOP_MECHANICAL
+  git_diff_check_failed: STOP_MECHANICAL
+  changed_file_count_exceeded: STOP_MECHANICAL
+  red_tier_keyword_outside_red: STOP_MECHANICAL
+  tdd_separation_violation: STOP_MECHANICAL
+  branch_policy_violation: STOP_MECHANICAL
+
+supervisor_stop:
+  diff_too_large: STOP_FOR_SUPERVISOR
+  timebox_exceeded: STOP_FOR_SUPERVISOR
+  ambiguous_test_failure: STOP_FOR_SUPERVISOR
+  route_safety_unclear: STOP_FOR_SUPERVISOR
+  product_scope_unclear: STOP_FOR_SUPERVISOR

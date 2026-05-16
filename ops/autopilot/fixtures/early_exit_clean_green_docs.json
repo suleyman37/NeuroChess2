@@ -1,0 +1,10 @@
+{
+  "changed_files": ["docs/autopilot/EXAMPLE.md"],
+  "diff_lines": 24,
+  "diff_check_pass": true,
+  "elapsed_minutes": 3,
+  "red_keywords_present": false,
+  "tdd_separation_violation": false,
+  "branch_policy_violation": false,
+  "repeated_failure_count": 0
+}
