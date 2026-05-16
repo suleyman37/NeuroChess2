@@ -1,0 +1,19 @@
+{
+  "required_files": [
+    "git_status.txt",
+    "branch.txt",
+    "head.txt",
+    "diff_stat.txt",
+    "changed_files.txt",
+    "patch.diff",
+    "heartbeat.json",
+    "watchdog_reason.txt",
+    "post_mortem.md"
+  ],
+  "must_not_mutate_road_to_v2": true,
+  "must_not_run_git_stash": true,
+  "must_not_run_git_reset": true,
+  "must_not_run_git_clean": true,
+  "must_not_push": true,
+  "must_not_kill_real_process": true
+}

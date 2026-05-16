@@ -1,0 +1,7 @@
+{
+  "scenario": "StopFlag",
+  "expected_stop_requested": true,
+  "expected_flag": "STOP",
+  "expected_rescue": true,
+  "expected_real_process_kill": false
+}

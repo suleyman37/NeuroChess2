@@ -1,0 +1,7 @@
+{
+  "scenario": "Hung",
+  "expected_minimum_phase": "ORANGE",
+  "expected_stop_flag_should_be_written": true,
+  "expected_rescue": true,
+  "expected_real_process_kill": false
+}

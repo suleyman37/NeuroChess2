@@ -1,0 +1,8 @@
+{
+  "scenario": "Healthy",
+  "expected_phase": "GREEN",
+  "expected_action": "NONE",
+  "expected_stop_requested": false,
+  "expected_rescue": false,
+  "expected_real_process_kill": false
+}
