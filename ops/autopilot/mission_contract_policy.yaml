@@ -1,0 +1,42 @@
+mission_contract_protocol_version: A11A
+enabled: false
+required_for_night_mode: true
+compare_expected_actual: true
+default_exact_file_match: true
+default_result_on_failure: STOP_MECHANICAL
+default_result_on_large_diff: STOP_FOR_SUPERVISOR
+default_result_on_red_tier_touch: QUARANTINE_REQUIRED
+broad_wording:
+  - improve
+  - polish
+  - optimize
+  - refactor
+  - finalize
+  - stabilize
+  - as needed
+  - if necessary
+  - clean up everything
+  - handle everything
+  - continue the roadmap
+protected_paths:
+  - frontend/**
+  - backend/**
+  - docs/rebuild/**
+  - plan/**
+  - package.json
+  - package-lock.json
+  - App.tsx
+  - .serena/**
+  - qa_artifacts/**
+  - .venv/**
+  - backend/neurochess/data/openings_book.json
+red_tier_terms:
+  - Practice
+  - practice_attempts
+  - training_items
+  - due_at
+  - Daily Plan
+  - scoring
+  - XP
+  - rank
+  - Transfer

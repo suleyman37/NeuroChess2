@@ -1,0 +1,22 @@
+{
+  "actual_changed_files": [
+    "docs/autopilot/A11A_SAMPLE_CONTRACT_DOC.md",
+    "backend/neurochess/api/game_routes.py"
+  ],
+  "actual_diff_lines": 95,
+  "actual_paths_touched": [
+    "docs/autopilot/A11A_SAMPLE_CONTRACT_DOC.md",
+    "backend/neurochess/api/game_routes.py"
+  ],
+  "actual_checks_run": [
+    "git diff --check"
+  ],
+  "actual_artifacts_created": [
+    "mission_report.md"
+  ],
+  "actual_commit_hash": "",
+  "actual_push_result": "",
+  "commit_happened": false,
+  "push_happened": false,
+  "current_branch": "road-to-V2"
+}

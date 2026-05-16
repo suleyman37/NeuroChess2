@@ -1,0 +1,43 @@
+{
+  "schema_version": "A11A_mission_contract_v1",
+  "mission_id": "A11A_MISSING_REQUIRED",
+  "risk_tier": "green",
+  "work_type": "docs-only",
+  "goal": "Create one mission contract protocol document.",
+  "expected_changed_files": [
+    "docs/autopilot/A11A_SAMPLE_CONTRACT_DOC.md"
+  ],
+  "allowed_paths": [
+    "docs/autopilot/**"
+  ],
+  "forbidden_paths": [
+    "frontend/**",
+    "backend/**"
+  ],
+  "max_files": 1,
+  "max_diff_lines": 120,
+  "expected_diff_lines_min": 20,
+  "expected_diff_lines_max": 100,
+  "expected_read_paths": [
+    "docs/autopilot/**"
+  ],
+  "expected_write_paths": [
+    "docs/autopilot/A11A_SAMPLE_CONTRACT_DOC.md"
+  ],
+  "required_checks": [
+    "git diff --check"
+  ],
+  "expected_artifacts": [
+    "mission_report.md"
+  ],
+  "commit_policy": {
+    "commit_allowed": true,
+    "push_allowed": true
+  },
+  "red_tier_allowed": false,
+  "backend_allowed": false,
+  "frontend_allowed": false,
+  "docs_rebuild_allowed": false,
+  "package_changes_allowed": false,
+  "exact_file_match": true
+}
