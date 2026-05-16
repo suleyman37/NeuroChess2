@@ -1,0 +1,27 @@
+schema_version: A7
+enabled: false
+red_tier_requires_tdd_separation: true
+amber_backend_requires_tdd_separation: true
+
+phases:
+  docs_only:
+    allow_tests: false
+    allow_implementation: false
+  test_contract:
+    allow_tests: true
+    allow_implementation: false
+  implementation:
+    allow_tests: false
+    allow_implementation: true
+    requires_prior_test_reference_for:
+      - amber
+      - red
+  validation:
+    allow_tests: false
+    allow_implementation: false
+
+rules:
+  amber_red_mixed_test_and_impl_rejected: true
+  red_tier_mixed_test_and_impl_rejected: true
+  green_docs_only_exempt: true
+  red_tier_auto_promotion_enabled: false

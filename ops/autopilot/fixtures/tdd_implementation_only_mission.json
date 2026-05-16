@@ -1,0 +1,9 @@
+{
+  "id": "TDD_IMPL_ONLY_BACKEND",
+  "risk_tier": "amber",
+  "work_type": "backend-readonly implementation",
+  "goal": "Implement one read-only backend route.",
+  "allowed_paths": ["backend/neurochess/existing_exercise_detail_service.py"],
+  "forbidden_paths": ["frontend/**", "docs/rebuild/**"],
+  "codex_prompt": "Implement only the service change. No tests are included in this mission."
+}

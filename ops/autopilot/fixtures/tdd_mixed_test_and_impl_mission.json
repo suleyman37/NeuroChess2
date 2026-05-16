@@ -1,0 +1,12 @@
+{
+  "id": "TDD_MIXED_AMBER",
+  "risk_tier": "amber",
+  "work_type": "backend-readonly mixed",
+  "goal": "Add tests and implement the read-only route in one mission.",
+  "allowed_paths": [
+    "backend/tests/test_existing_exercise_detail_readonly.py",
+    "backend/neurochess/existing_exercise_detail_service.py"
+  ],
+  "forbidden_paths": ["frontend/**", "docs/rebuild/**"],
+  "codex_prompt": "Add tests and implementation in the same mission."
+}

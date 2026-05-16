@@ -1,0 +1,9 @@
+{
+  "id": "TDD_TEST_ONLY_BACKEND_CONTRACT",
+  "risk_tier": "amber",
+  "work_type": "backend-readonly test_contract",
+  "goal": "Add targeted backend tests for a future read-only route.",
+  "allowed_paths": ["backend/tests/test_existing_exercise_detail_readonly.py"],
+  "forbidden_paths": ["backend/neurochess/**", "frontend/**", "docs/rebuild/**"],
+  "codex_prompt": "Write tests only. Do not edit production code."
+}

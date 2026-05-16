@@ -1,0 +1,12 @@
+{
+  "id": "TDD_RED_PRACTICE_MIXED",
+  "risk_tier": "red",
+  "work_type": "practice mixed",
+  "goal": "Add tests and implement active Practice attempt creation in one mission.",
+  "allowed_paths": [
+    "backend/tests/test_practice_attempts.py",
+    "backend/neurochess/practice_attempt_service.py"
+  ],
+  "forbidden_paths": ["frontend/**", "docs/rebuild/**"],
+  "codex_prompt": "Add tests and implementation for practice_attempts in the same mission."
+}
