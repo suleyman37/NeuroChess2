@@ -1,0 +1,7 @@
+{
+  "clean_success_min_score": 90,
+  "repair_needed_penalty_contains": "prompt required repair",
+  "contract_mismatch_penalty_contains": "Mission Contract mismatch",
+  "low_product_value_penalty_contains": "product value missing",
+  "red_tier_penalty_contains": "red-tier outside quarantine"
+}

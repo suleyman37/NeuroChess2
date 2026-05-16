@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/autopilot/prompt_execution_score.schema.json",
+  "title": "A16F Prompt Execution Score",
+  "type": "object",
+  "required": [
+    "prompt_execution_score",
+    "score_band",
+    "positive_factors",
+    "penalties",
+    "recommended_prompt_improvement"
+  ],
+  "properties": {
+    "prompt_execution_score": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "score_band": { "type": "string" },
+    "positive_factors": { "type": "array", "items": { "type": "string" } },
+    "penalties": { "type": "array", "items": { "type": "string" } },
+    "recommended_prompt_improvement": { "type": "string" }
+  },
+  "additionalProperties": true
+}

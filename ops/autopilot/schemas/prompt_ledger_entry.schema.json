@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/autopilot/prompt_ledger_entry.schema.json",
+  "title": "A16F Prompt Ledger Entry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "prompt_id",
+    "mission_id",
+    "session_id",
+    "created_at",
+    "prompt_source",
+    "prompt_format",
+    "prompt_hash",
+    "risk_tier",
+    "work_type",
+    "goal",
+    "allowed_paths",
+    "expected_changed_files",
+    "max_files",
+    "max_diff_lines",
+    "prompt_firewall_result",
+    "mission_contract_result",
+    "execution_status",
+    "stop_reason",
+    "checks_required",
+    "checks_run",
+    "checks_passed",
+    "prompt_execution_score",
+    "lessons"
+  ],
+  "properties": {
+    "schema_version": { "const": "A16F_prompt_ledger_entry_v1" },
+    "prompt_format": { "enum": ["MICRO_PROMPT", "NC-MP/2", "STRATEGIC_PULSE", "READY"] },
+    "execution_status": { "enum": ["PASS", "FAIL", "STOP", "QUARANTINE", "PARTIAL"] },
+    "prompt_execution_score": { "type": "integer", "minimum": 0, "maximum": 100 }
+  },
+  "additionalProperties": true
+}

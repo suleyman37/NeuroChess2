@@ -1,0 +1,39 @@
+prompt_ledger_protocol_version: A16F
+enabled: false
+
+runtime_ledger_path: "%USERPROFILE%\\AgentOS\\runtime\\prompt_ledger.jsonl"
+append_only: true
+self_rated_quality_score_trusted: false
+
+score_bands:
+  excellent: "90-100"
+  good: "75-89"
+  usable: "60-74"
+  weak: "40-59"
+  dangerous: "<40"
+
+failure_codes:
+  - STOP_PROMPT_TOO_BROAD
+  - STOP_PROMPT_LINT_FAIL
+  - STOP_NC_MP2_INVALID
+  - STOP_SHADOW_PLAN_MISMATCH
+  - STOP_CONTRACT_MISMATCH
+  - STOP_FORBIDDEN_PATH
+  - STOP_RED_TIER
+  - STOP_BRIDGE_FAIL
+  - STOP_READY_FAIL
+  - STOP_REQUEST_MORE_LIMIT
+  - STOP_TIMEBOX
+  - STOP_NO_FORWARD_PROGRESS
+  - STOP_REPEAT_MISSION_HASH
+  - STOP_PRODUCT_VALUE_LOW
+  - STOP_VISUAL_BLOCK
+  - STOP_TEST_FAILURE
+  - STOP_PUSH_FAILURE
+  - STOP_REPO_DIRTY
+  - STOP_CONTEXT_DRIFT
+  - STOP_UNKNOWN
+
+live_enforcement_enabled: false
+live_chatgpt_called_by_scripts: false
+product_mission_executed_by_scripts: false
