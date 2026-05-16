@@ -1,0 +1,13 @@
+{
+  "mission_id": "A16G_FIXTURE_VISUAL",
+  "risk_tier": "amber",
+  "work_type": "frontend-readonly-only",
+  "supervisor_digest": "Visual Court requested for read-only branch.",
+  "screenshot_paths": [
+    "C:/Users/suley/Documents/Dev/NeuroChess_QA_Artifacts/autopilot/example_before.png",
+    "C:/Users/suley/Documents/Dev/NeuroChess_QA_Artifacts/autopilot/example_after.png"
+  ],
+  "visual_review_brief": "Check truthfulness and no fake Practice readiness.",
+  "raw_dom": "<html>must not be included</html>",
+  "dangerous_zones": ["Practice", "XP/rank/Transfer"]
+}

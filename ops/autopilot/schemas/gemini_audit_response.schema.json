@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Gemini audit response validation result",
+  "type": "object",
+  "required": ["valid", "mode", "verdict", "required_action", "violations", "scores"],
+  "properties": {
+    "valid": { "type": "boolean" },
+    "mode": { "type": "string" },
+    "verdict": { "type": "string" },
+    "required_action": { "type": "string" },
+    "violations": { "type": "array", "items": { "type": "string" } },
+    "scores": { "type": "object" },
+    "live_gemini_called": { "const": false },
+    "live_chatgpt_called": { "const": false },
+    "product_mission_executed": { "const": false }
+  }
+}

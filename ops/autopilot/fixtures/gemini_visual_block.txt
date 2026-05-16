@@ -1,0 +1,31 @@
+<NC_GEMINI_AUDIT nonce="A16G_TEST_NONCE">
+<MODE>visual_court</MODE>
+<VERDICT>BLOCK_VISUAL</VERDICT>
+
+<SCORES>
+scope_risk: 4
+product_value: 2
+safety_risk: 5
+automation_drift_risk: 1
+confidence: 0.9
+</SCORES>
+
+<FINDINGS>
+- UI implies active training readiness without safe contract.
+- Fake progression claim is visible.
+</FINDINGS>
+
+<REQUIRED_ACTION>
+block_visual
+</REQUIRED_ACTION>
+
+<MUST_NOT_DO>
+Do not merge or mark visual review passed.
+</MUST_NOT_DO>
+
+<NOTES>
+Needs rework.
+</NOTES>
+
+<NC_DONE nonce="A16G_TEST_NONCE">DONE</NC_DONE>
+</NC_GEMINI_AUDIT>

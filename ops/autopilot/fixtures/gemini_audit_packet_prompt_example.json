@@ -1,0 +1,13 @@
+{
+  "mission_id": "A16G_FIXTURE_PROMPT",
+  "risk_tier": "green",
+  "work_type": "docs-only",
+  "supervisor_digest": "Repo clean, prompt audit requested.",
+  "proposed_micro_prompt": "Create one docs/autopilot file only.",
+  "local_project_url": "https://chatgpt.com/g/g-p-6a07c20c139c8191a0d8972fc7b7019e/project",
+  "mission_contract": {
+    "expected_changed_files": ["docs/autopilot/example.md"],
+    "required_checks": ["git diff --check"]
+  },
+  "dangerous_zones": ["Practice", "due_at", "ops/autopilot/local/chatgpt_project.local.json"]
+}

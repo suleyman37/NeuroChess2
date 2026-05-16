@@ -1,0 +1,30 @@
+<NC_GEMINI_AUDIT nonce="A16G_TEST_NONCE">
+<MODE>prompt_auditor</MODE>
+<VERDICT>APPROVE</VERDICT>
+
+<SCORES>
+scope_risk: 1
+product_value: 4
+safety_risk: 1
+automation_drift_risk: 1
+confidence: 0.86
+</SCORES>
+
+<FINDINGS>
+- Scope is narrow and matches allowed paths.
+</FINDINGS>
+
+<REQUIRED_ACTION>
+none
+</REQUIRED_ACTION>
+
+<MUST_NOT_DO>
+Do not bypass deterministic gates.
+</MUST_NOT_DO>
+
+<NOTES>
+Audit only.
+</NOTES>
+
+<NC_DONE nonce="A16G_TEST_NONCE">DONE</NC_DONE>
+</NC_GEMINI_AUDIT>

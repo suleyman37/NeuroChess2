@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Gemini audit packet",
+  "type": "object",
+  "required": ["schema_version", "nonce", "mode", "current_head", "branch", "mission_id", "risk_tier", "work_type", "dangerous_zones"],
+  "properties": {
+    "schema_version": { "const": "A16G_gemini_audit_packet_v1" },
+    "nonce": { "type": "string" },
+    "mode": { "enum": ["prompt_auditor", "visual_court", "long_horizon_critic"] },
+    "current_head": { "type": "string" },
+    "branch": { "type": "string" },
+    "mission_id": { "type": "string" },
+    "risk_tier": { "type": "string" },
+    "work_type": { "type": "string" },
+    "screenshot_paths": { "type": "array", "items": { "type": "string" } },
+    "dangerous_zones": { "type": "array", "items": { "type": "string" } },
+    "live_gemini_called": { "const": false },
+    "live_chatgpt_called": { "const": false }
+  }
+}

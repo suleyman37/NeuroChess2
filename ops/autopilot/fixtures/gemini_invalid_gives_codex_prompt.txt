@@ -1,0 +1,31 @@
+<NC_GEMINI_AUDIT nonce="A16G_TEST_NONCE">
+<MODE>prompt_auditor</MODE>
+<VERDICT>NARROW</VERDICT>
+
+<SCORES>
+scope_risk: 3
+product_value: 3
+safety_risk: 2
+automation_drift_risk: 2
+confidence: 0.7
+</SCORES>
+
+<FINDINGS>
+- This includes forbidden planner content.
+</FINDINGS>
+
+<REQUIRED_ACTION>
+narrow_prompt
+</REQUIRED_ACTION>
+
+<MUST_NOT_DO>
+Do not generate executable missions.
+</MUST_NOT_DO>
+
+<NOTES>
+codex_prompt: create files and run checks.
+MICRO_PROMPT: execute the mission.
+</NOTES>
+
+<NC_DONE nonce="A16G_TEST_NONCE">DONE</NC_DONE>
+</NC_GEMINI_AUDIT>

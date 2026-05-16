@@ -1,0 +1,40 @@
+schema_version: A16G
+live_gemini_enabled: false
+gemini_can_plan: false
+gemini_can_generate_codex_prompts: false
+deterministic_gates_take_precedence: true
+
+modes:
+  prompt_auditor:
+    verdicts: [APPROVE, NARROW, REJECT, QUARANTINE]
+    required_action: [none, narrow_prompt, repair_prompt, force_strategic_pulse, quarantine]
+  visual_court:
+    verdicts: [PASS_VISUAL, WARNING_VISUAL, BLOCK_VISUAL]
+    required_action: [none, narrow_prompt, block_visual, record_report]
+  long_horizon_critic:
+    verdicts: [REPORT_ONLY]
+    required_action: [record_report]
+
+response_rules:
+  nonce_bound_done_required: true
+  max_findings: 5
+  free_prose_outside_block: reject
+  micro_prompt: reject
+  codex_prompt: reject
+  implementation_instructions: reject
+
+decision_mapping:
+  APPROVE: CONTINUE
+  NARROW: REQUEST_PLANNER_NARROWING
+  REJECT: STOP_FOR_STRATEGIC_PULSE
+  QUARANTINE: QUARANTINE_REQUIRED
+  PASS_VISUAL: CONTINUE
+  WARNING_VISUAL: REQUEST_PLANNER_NARROWING
+  BLOCK_VISUAL: BLOCK_VISUAL_REWORK
+  REPORT_ONLY: RECORD_LONG_HORIZON_REPORT
+
+packet_safety:
+  include_local_project_url: false
+  include_secrets: false
+  include_raw_dom_dumps: false
+  include_full_patch_by_default: false
