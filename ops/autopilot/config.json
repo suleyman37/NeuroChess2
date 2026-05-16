@@ -16,6 +16,14 @@
     "profile_lock_preflight": true,
     "close_profile_processes_requires_flag": true
   },
+  "chatgpt_project": {
+    "enabled": true,
+    "project_name": "NeuroChess Supervisor",
+    "project_url": "",
+    "require_project_url": true,
+    "verify_project_name": true,
+    "allow_generic_chat_fallback": false
+  },
   "micro_prompt_limits": {
     "default_max_files": 3,
     "default_max_diff_lines": 200,

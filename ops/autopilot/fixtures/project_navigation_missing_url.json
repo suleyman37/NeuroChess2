@@ -1,0 +1,15 @@
+{
+  "chatgpt_web_bridge": {
+    "enabled": false,
+    "mode": "dry_run",
+    "chatgpt_url": "https://chatgpt.com/"
+  },
+  "chatgpt_project": {
+    "enabled": true,
+    "project_name": "NeuroChess Supervisor",
+    "project_url": "",
+    "require_project_url": true,
+    "verify_project_name": true,
+    "allow_generic_chat_fallback": false
+  }
+}

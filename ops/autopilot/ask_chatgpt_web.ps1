@@ -61,6 +61,17 @@ $summary = [ordered]@{
   push = $false
 }
 
+$projectConfig = $config.chatgpt_project
+if ($projectConfig) {
+  $summary.chatgpt_project = [ordered]@{
+    enabled = [bool]$projectConfig.enabled
+    project_name = [string]$projectConfig.project_name
+    project_url_configured = -not [string]::IsNullOrWhiteSpace([string]$projectConfig.project_url)
+    require_project_url = [bool]$projectConfig.require_project_url
+    allow_generic_chat_fallback = [bool]$projectConfig.allow_generic_chat_fallback
+  }
+}
+
 if ($DryRun) {
   if (-not $Fixture) {
     $Fixture = Join-Path $PSScriptRoot "fixtures\supervisor_valid_response.txt"
@@ -84,6 +95,21 @@ if ($DryRun) {
 }
 
 $bridgeScript = Join-Path $PSScriptRoot "browser\chatgpt_bridge.mjs"
+
+if ($Live -and $projectConfig -and [bool]$projectConfig.enabled) {
+  $projectUrl = [string]$projectConfig.project_url
+  $requiresProjectUrl = [bool]$projectConfig.require_project_url
+  $allowGenericFallback = [bool]$projectConfig.allow_generic_chat_fallback
+  if ([string]::IsNullOrWhiteSpace($projectUrl) -and $requiresProjectUrl -and -not $allowGenericFallback) {
+    $summary.status = "fail"
+    $summary.reason = "PROJECT_URL_MISSING"
+    $summary.browser_called = $false
+    $summary.instructions = "Run: powershell -ExecutionPolicy Bypass -File ops/autopilot/set_chatgpt_project_url.ps1 -ProjectUrl `"PASTE_PROJECT_URL_HERE`""
+    $summary | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $runDir "ask_chatgpt_web_summary.json") -Encoding UTF8
+    $summary | ConvertTo-Json -Depth 12
+    exit 1
+  }
+}
 
 $profilePath = if ($config.chatgpt_web_bridge.chrome_profile_path) {
   [string]$config.chatgpt_web_bridge.chrome_profile_path

@@ -49,6 +49,14 @@ function valuesFromArg(value) {
     .filter(Boolean);
 }
 
+function isAcceptedChatGptUrl(value) {
+  return /^https:\/\/(chatgpt\.com|chat\.openai\.com)\//.test(String(value || ""));
+}
+
+function normalizeUrlForCompare(value) {
+  return String(value || "").replace(/[?#].*$/, "").replace(/\/+$/, "");
+}
+
 function profileLockFiles(profilePath) {
   return ["SingletonLock", "SingletonCookie", "SingletonSocket"]
     .map((name) => path.join(profilePath, name))
@@ -81,6 +89,35 @@ async function getLatestAssistantText(page) {
   if (texts.length > 0) return texts[texts.length - 1].trim();
   const fallback = await page.locator("main").textContent().catch(() => "");
   return (fallback || "").trim();
+}
+
+async function verifyProjectContext(page, projectConfig, targetUrl, outDir) {
+  const projectName = projectConfig.project_name || "NeuroChess Supervisor";
+  await page.waitForTimeout(2500).catch(() => {});
+  const currentUrl = page.url();
+  const title = await page.title().catch(() => "");
+  const bodyText = await page.locator("body").textContent({ timeout: 5000 }).catch(() => "");
+  const textSample = (bodyText || "").slice(0, 4000);
+  const normalizedCurrent = normalizeUrlForCompare(currentUrl);
+  const normalizedTarget = normalizeUrlForCompare(targetUrl);
+  const projectNameVisible = textSample.includes(projectName) || title.includes(projectName);
+  const projectUrlStable = Boolean(normalizedTarget && normalizedCurrent.startsWith(normalizedTarget));
+  const loginLikely = /log in|sign up|connexion|connectez|se connecter/i.test(textSample);
+  const ok = Boolean(projectNameVisible || projectUrlStable);
+  const result = {
+    ok,
+    projectName,
+    targetUrl,
+    currentUrl,
+    title,
+    projectNameVisible,
+    projectUrlStable,
+    loginLikely,
+    verificationMode: "explicit_project_url",
+    textSample
+  };
+  write(path.join(outDir, "project_context_verification.json"), JSON.stringify(result, null, 2));
+  return result;
 }
 
 async function getComposerText(composer) {
@@ -721,10 +758,42 @@ async function main() {
   const configPath = args.config || path.join(process.cwd(), "ops", "autopilot", "config.json");
   const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
   const bridgeConfig = config.chatgpt_web_bridge || {};
+  const projectConfig = config.chatgpt_project || {};
 
   if (!live) {
     write(path.join(outDir, "bridge_error.md"), "Dry-run mode: browser bridge did not send a message.");
     process.exit(0);
+  }
+
+  const projectMode = Boolean(projectConfig.enabled);
+  let targetUrl = bridgeConfig.chatgpt_url || "https://chatgpt.com/";
+  if (projectMode) {
+    const projectUrl = String(projectConfig.project_url || "").trim();
+    const requireProjectUrl = projectConfig.require_project_url !== false;
+    const allowGenericFallback = Boolean(projectConfig.allow_generic_chat_fallback);
+    if (!projectUrl && requireProjectUrl && !allowGenericFallback) {
+      write(path.join(outDir, "bridge_error.md"), "PROJECT_URL_MISSING");
+      write(path.join(outDir, "project_navigation.json"), JSON.stringify({
+        status: "fail",
+        reason: "PROJECT_URL_MISSING",
+        project_name: projectConfig.project_name || "NeuroChess Supervisor",
+        project_url_configured: false,
+        allow_generic_chat_fallback: allowGenericFallback
+      }, null, 2));
+      process.exit(1);
+    }
+    if (projectUrl) {
+      if (!isAcceptedChatGptUrl(projectUrl)) {
+        write(path.join(outDir, "bridge_error.md"), "PROJECT_URL_INVALID");
+        write(path.join(outDir, "project_navigation.json"), JSON.stringify({
+          status: "fail",
+          reason: "PROJECT_URL_INVALID",
+          project_url: projectUrl
+        }, null, 2));
+        process.exit(1);
+      }
+      targetUrl = projectUrl;
+    }
   }
 
   let playwright;
@@ -776,7 +845,15 @@ async function main() {
   };
   const browser = await playwright.chromium.launchPersistentContext(profile, launchOptions);
   const page = await browser.newPage();
-  await page.goto(bridgeConfig.chatgpt_url || "https://chatgpt.com/", { waitUntil: "domcontentloaded" });
+  await page.goto(targetUrl, { waitUntil: "domcontentloaded" });
+  if (projectMode) {
+    const projectVerification = await verifyProjectContext(page, projectConfig, targetUrl, outDir);
+    if (!projectVerification.ok) {
+      write(path.join(outDir, "bridge_error.md"), "PROJECT_CONTEXT_UNVERIFIED");
+      await browser.close();
+      process.exit(1);
+    }
+  }
 
   const composer = await findComposer(page, outDir);
   if (!composer) {
