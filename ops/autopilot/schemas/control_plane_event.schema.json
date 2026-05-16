@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/autopilot/control_plane_event.schema.json",
+  "title": "A16A Control Plane Event",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "event_id",
+    "session_id",
+    "sequence",
+    "event_type",
+    "created_at",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": { "const": "A16A_control_plane_event_v1" },
+    "event_id": { "type": "string", "minLength": 1 },
+    "session_id": { "type": "string", "minLength": 1 },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "event_type": {
+      "enum": [
+        "SESSION_STARTED",
+        "SESSION_STOP_REQUESTED",
+        "MISSION_PROPOSED",
+        "MISSION_CONTRACT_REGISTERED",
+        "MISSION_STARTED",
+        "MISSION_COMPLETED",
+        "MISSION_FAILED",
+        "MISSION_CONTRACT_MISMATCH",
+        "PROMPT_FIREWALL_REJECTED",
+        "REQUEST_MORE_USED",
+        "STRATEGIC_PULSE_RECEIVED",
+        "BRIDGE_FAILURE",
+        "WATCHDOG_WARNING",
+        "WATCHDOG_RESCUE_CREATED",
+        "TIMEBOX_CHECKPOINT",
+        "BRANCH_CREATED",
+        "COMMIT_CREATED",
+        "PUSH_COMPLETED",
+        "QUARANTINE_REQUIRED",
+        "SESSION_DRAINED",
+        "SESSION_STOPPED"
+      ]
+    },
+    "created_at": { "type": "string" },
+    "mission_id": { "type": "string" },
+    "source": { "type": "string" },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": true
+}

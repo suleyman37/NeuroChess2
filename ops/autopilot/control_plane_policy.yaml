@@ -1,0 +1,41 @@
+control_plane_protocol_version: A16A
+enabled: false
+live_integration_enabled: false
+
+runtime_root: "%USERPROFILE%\\AgentOS\\runtime"
+
+principles:
+  single_writer_state: true
+  event_based_ipc: true
+  atomic_state_writes: true
+  last_good_recovery: true
+  append_only_mission_log: true
+  lock_required: true
+
+state_files:
+  night_session: "state\\night_session.json"
+  last_good: "state\\night_session.last_good.json"
+  mission_log: "logs\\mission_log.jsonl"
+
+event_dirs:
+  inbox: "events\\inbox"
+  processing: "events\\processing"
+  processed: "events\\processed"
+  failed: "events\\failed"
+
+lock:
+  path: "locks\\control_plane.lock.json"
+  stale_after_seconds: 3600
+  delete_stale_by_default: false
+  kill_process_by_default: false
+
+default_limits:
+  max_steps: 15
+  max_hours: 8
+  max_consecutive_failures: 1
+  max_total_failures: 2
+  max_quarantines: 1
+
+live_chatgpt_called_by_control_plane: false
+product_mission_executed_by_control_plane: false
+commit_or_push_by_control_plane: false

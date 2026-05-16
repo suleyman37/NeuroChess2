@@ -1,0 +1,22 @@
+{
+  "events": [
+    {
+      "schema_version": "A16A_control_plane_event_v1",
+      "event_id": "evt_fixture_gap_1",
+      "session_id": "night_fixture_valid",
+      "sequence": 1,
+      "event_type": "SESSION_STARTED",
+      "created_at": "2026-05-16T20:00:00.0000000Z",
+      "payload": {}
+    },
+    {
+      "schema_version": "A16A_control_plane_event_v1",
+      "event_id": "evt_fixture_gap_3",
+      "session_id": "night_fixture_valid",
+      "sequence": 3,
+      "event_type": "MISSION_STARTED",
+      "created_at": "2026-05-16T20:01:00.0000000Z",
+      "payload": {}
+    }
+  ]
+}

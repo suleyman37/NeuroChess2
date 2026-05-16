@@ -1,0 +1,43 @@
+{
+  "schema_version": "A16A_night_session_v1",
+  "session_id": "night_fixture_valid",
+  "started_at": "2026-05-16T20:00:00.0000000Z",
+  "initial_head": "7efd1c3",
+  "current_head": "7efd1c3",
+  "branch": "road-to-V2",
+  "status": "INITIALIZED",
+  "max_steps": 15,
+  "max_hours": 8,
+  "missions_attempted": 0,
+  "missions_succeeded": 0,
+  "missions_failed": 0,
+  "missions_quarantined": 0,
+  "current_step": 0,
+  "current_mission_id": "",
+  "current_mission_hash": "",
+  "mission_hashes_seen": [],
+  "total_diff_lines": 0,
+  "total_failures": 0,
+  "consecutive_failures": 0,
+  "last_commit_sha": "7efd1c3",
+  "last_successful_mission_id": "",
+  "last_stop_reason": "",
+  "active_branch": "road-to-V2",
+  "active_risks": [],
+  "disabled_features": [
+    "live_control_plane",
+    "live_night_mode"
+  ],
+  "allowed_lanes": [
+    "docs_only"
+  ],
+  "forbidden_zones": [
+    "Practice",
+    "due_at",
+    "training_items writes"
+  ],
+  "pending_events": [],
+  "last_event_sequence": 0,
+  "last_state_update": "2026-05-16T20:00:00.0000000Z",
+  "recommended_next_action": "await_control_plane_integration"
+}
