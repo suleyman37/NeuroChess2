@@ -45,6 +45,17 @@ $longReport = Validate-Fixture "gemini_long_horizon_report.txt"
 $missingDone = Validate-Fixture "gemini_invalid_missing_done.txt"
 $badPrompt = Validate-Fixture "gemini_invalid_gives_codex_prompt.txt"
 
+function Validate-JsonFixture {
+  param([string]$Name)
+  return Invoke-JsonCommand -Arguments @("-File", $validator, "-InputPath", (Join-Path $fixtureRoot $Name), "-Nonce", "A16H_TEST_NONCE")
+}
+
+$jsonApprove = Validate-JsonFixture "gemini_json_prompt_audit_approve.txt"
+$jsonReject = Validate-JsonFixture "gemini_json_prompt_audit_reject.txt"
+$jsonInvalidMicroPrompt = Validate-JsonFixture "gemini_json_invalid_micro_prompt.txt"
+$jsonInvalidNonce = Validate-JsonFixture "gemini_json_invalid_nonce.txt"
+$jsonInvalidFindings = Validate-JsonFixture "gemini_json_invalid_findings_too_many.txt"
+
 $tooManyFindingsPath = Join-Path $runDir "gemini_invalid_too_many_findings.txt"
 @"
 <NC_GEMINI_AUDIT nonce="$nonce">
@@ -111,9 +122,14 @@ Assert-True ($visualPass.exit_code -eq 0 -and $visualPass.json.verdict -eq "PASS
 Assert-True ($visualWarning.exit_code -eq 0 -and $visualWarning.json.verdict -eq "WARNING_VISUAL") "valid visual WARNING should parse"
 Assert-True ($visualBlock.exit_code -eq 0 -and $visualBlock.json.verdict -eq "BLOCK_VISUAL") "valid visual BLOCK should parse"
 Assert-True ($longReport.exit_code -eq 0 -and $longReport.json.verdict -eq "REPORT_ONLY") "long-horizon REPORT_ONLY should parse"
+Assert-True ($jsonApprove.exit_code -eq 0 -and $jsonApprove.json.format -eq "json" -and $jsonApprove.json.verdict -eq "APPROVE") "valid JSON prompt APPROVE should parse"
+Assert-True ($jsonReject.exit_code -eq 0 -and $jsonReject.json.format -eq "json" -and $jsonReject.json.verdict -eq "REJECT") "valid fenced JSON prompt REJECT should parse"
 Assert-True ($missingDone.exit_code -ne 0 -and (($missingDone.json.violations -join "`n") -match "NC_DONE")) "missing DONE should fail"
 Assert-True ($badPrompt.exit_code -ne 0 -and (($badPrompt.json.violations -join "`n") -match "MICRO_PROMPT")) "MICRO_PROMPT content should fail"
 Assert-True ($badPrompt.exit_code -ne 0 -and (($badPrompt.json.violations -join "`n") -match "codex_prompt")) "codex_prompt content should fail"
+Assert-True ($jsonInvalidMicroPrompt.exit_code -ne 0 -and (($jsonInvalidMicroPrompt.json.violations -join "`n") -match "MICRO_PROMPT")) "JSON MICRO_PROMPT content should fail"
+Assert-True ($jsonInvalidNonce.exit_code -ne 0 -and (($jsonInvalidNonce.json.violations -join "`n") -match "nonce")) "JSON nonce mismatch should fail"
+Assert-True ($jsonInvalidFindings.exit_code -ne 0 -and (($jsonInvalidFindings.json.violations -join "`n") -match "findings")) "JSON findings over 5 should fail"
 Assert-True ($tooManyFindings.exit_code -ne 0 -and (($tooManyFindings.json.violations -join "`n") -match "findings")) "findings over 5 should fail"
 Assert-True ($narrowDecision.json.control_plane_action -eq "REQUEST_PLANNER_NARROWING") "NARROW should map to planner narrowing"
 Assert-True ($rejectDecision.json.control_plane_action -eq "STOP_FOR_STRATEGIC_PULSE") "REJECT should map to Strategic Pulse stop"
@@ -148,9 +164,14 @@ $summary = [ordered]@{
     visual_warning_parses = "PASS"
     visual_block_parses = "PASS"
     long_horizon_report_only_parses = "PASS"
+    json_approve_parses = "PASS"
+    json_reject_parses = "PASS"
     missing_done_fails = "PASS"
     micro_prompt_fails = "PASS"
     codex_prompt_fails = "PASS"
+    json_invalid_micro_prompt_fails = "PASS"
+    json_invalid_nonce_fails = "PASS"
+    json_findings_limit_fails = "PASS"
     findings_limit_fails = "PASS"
     decision_mapping = "PASS"
     audit_packet_excludes_project_url = "PASS"

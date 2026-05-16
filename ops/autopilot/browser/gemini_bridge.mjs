@@ -76,6 +76,63 @@ function extractAuditBlock(text, nonce) {
   return match ? match[0].trim() : "";
 }
 
+function findJsonObjectTexts(text) {
+  const objects = [];
+  for (let start = text.indexOf("{"); start >= 0; start = text.indexOf("{", start + 1)) {
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    for (let i = start; i < text.length; i += 1) {
+      const ch = text[i];
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (ch === "\\") {
+        escape = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+      if (ch === "{") depth += 1;
+      if (ch === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          objects.push(text.slice(start, i + 1).trim());
+          break;
+        }
+      }
+    }
+  }
+  return objects;
+}
+
+function extractJsonAuditBlock(text, nonce) {
+  for (const candidate of findJsonObjectTexts(text).reverse()) {
+    try {
+      const parsed = JSON.parse(candidate);
+      if (
+        parsed &&
+        parsed.schema === "NC_GEMINI_AUDIT_JSON/1" &&
+        parsed.nonce === nonce &&
+        parsed.done === nonce
+      ) {
+        return JSON.stringify(parsed, null, 2);
+      }
+    } catch {
+      // Try next JSON-looking object.
+    }
+  }
+  return "";
+}
+
+function extractAuditResponse(text, nonce) {
+  return extractJsonAuditBlock(text, nonce) || extractAuditBlock(text, nonce);
+}
+
 async function getBodyText(page) {
   return (await page.locator("body").textContent({ timeout: 5000 }).catch(() => "")) || "";
 }
@@ -210,7 +267,7 @@ async function waitForAudit(page, nonce, timeoutMs, stabilityMs) {
   while (Date.now() < deadline) {
     await page.waitForTimeout(2000);
     const text = await getBodyText(page);
-    const block = extractAuditBlock(text, nonce);
+    const block = extractAuditResponse(text, nonce);
     if (block && block !== lastBlock) {
       lastBlock = block;
       stableSince = Date.now();
@@ -220,7 +277,7 @@ async function waitForAudit(page, nonce, timeoutMs, stabilityMs) {
     }
   }
   const finalText = await getBodyText(page);
-  return { ok: false, block: extractAuditBlock(finalText, nonce), partial: finalText.slice(-12000), bodyTextLength: finalText.length };
+  return { ok: false, block: extractAuditResponse(finalText, nonce), partial: finalText.slice(-12000), bodyTextLength: finalText.length };
 }
 
 async function main() {

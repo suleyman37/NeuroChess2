@@ -36,6 +36,7 @@ Assert-True ($bridgeSource.Contains("GeminiAuditorChromeProfile")) "Gemini bridg
 Assert-True (-not $bridgeSource.Contains("ChatGPTSupervisorChromeProfile")) "Gemini bridge must not use ChatGPT supervisor profile"
 Assert-True ($bridgeSource.Contains("STOP_MANUAL_GEMINI_LOGIN_REQUIRED")) "Gemini bridge must fail safely when login is required"
 Assert-True ($bridgeSource.Contains("NC_GEMINI_AUDIT")) "Gemini bridge must extract NC_GEMINI_AUDIT"
+Assert-True ($bridgeSource.Contains("NC_GEMINI_AUDIT_JSON/1")) "Gemini bridge must extract JSON audit responses"
 Assert-True ($bridgeSource.Contains("REQUEST_CONTAINS_FORBIDDEN_PROMPT_TOKEN")) "Gemini bridge must reject request prompt tokens"
 
 $nodeCheck = & node --check $bridgePath 2>&1
@@ -45,7 +46,7 @@ $profileCheck = Invoke-JsonCommand -Arguments @("-File", $closeScript, "-OutDir"
 Assert-True ([bool]$profileCheck.json.no_global_chrome_kill) "Gemini profile closer must never kill all Chrome"
 Assert-True ($profileCheck.json.profile_path -match "GeminiAuditorChromeProfile") "Gemini profile closer should target Gemini profile"
 
-$dryRun = Invoke-JsonCommand -Arguments @("-File", $askScript, "-DryRun", "-Fixture", (Join-Path $fixtureRoot "gemini_live_smoke_valid_response.txt"), "-OutDir", (Join-Path $runDir "dry_run"))
+$dryRun = Invoke-JsonCommand -Arguments @("-File", $askScript, "-DryRun", "-Fixture", (Join-Path $fixtureRoot "gemini_json_prompt_audit_approve.txt"), "-OutDir", (Join-Path $runDir "dry_run"))
 Assert-True ($dryRun.json.status -eq "pass") "Gemini dry-run should pass"
 Assert-True (-not [bool]$dryRun.json.browser_called) "Dry-run must not call browser"
 Assert-True (-not [bool]$dryRun.json.codex_execution) "Dry-run must not execute Codex"

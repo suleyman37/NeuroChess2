@@ -19,3 +19,11 @@ Verdicts:
 - QUARANTINE: route to quarantine policy; no road-to-V2 product merge.
 
 Gemini may identify missing constraints, unsafe scope, fake product value, or automation drift. Gemini must not write a final Codex prompt and must not provide implementation instructions.
+
+For live smoke and future live use, Prompt Auditor should return JSON only:
+
+- `schema` must be `NC_GEMINI_AUDIT_JSON/1`;
+- `nonce` and `done` must match the provided nonce;
+- `mode` must be `prompt_auditor`;
+- `verdict` must be one of `APPROVE`, `NARROW`, `REJECT`, `QUARANTINE`;
+- `findings` must contain at most five strings.

@@ -19,4 +19,6 @@ Gemini modes:
 - Visual Court: judges screenshots, contact sheets, and visual briefs for frontend-readonly branches.
 - Long-Horizon Critic: reviews run reports, prompt ledger summaries, failure trends, and product-vs-infra drift after longer sessions.
 
-All Gemini responses must use the nonce-bound NC_GEMINI_AUDIT block and must not contain a MICRO_PROMPT, codex_prompt, or executable mission.
+Live Gemini responses now use JSON as the primary format because Gemini Web may flatten nested XML tags. The legacy nonce-bound `NC_GEMINI_AUDIT` XML block remains supported for old fixtures and offline protocol tests, but live smoke requests should ask for one JSON object with `schema: "NC_GEMINI_AUDIT_JSON/1"`, matching `nonce`, and `done` equal to the nonce.
+
+Gemini responses must not contain `MICRO_PROMPT`, `codex_prompt`, or executable implementation instructions.

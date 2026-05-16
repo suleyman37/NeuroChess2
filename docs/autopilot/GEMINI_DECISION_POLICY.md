@@ -22,3 +22,5 @@ Decision mapping:
 - REPORT_ONLY maps to RECORD_LONG_HORIZON_REPORT.
 
 If deterministic gates fail, stop regardless of Gemini approval. If Gemini rejects or blocks, do not execute the original prompt.
+
+The decision policy is response-format neutral. JSON is preferred for live Gemini because it survives Gemini Web formatting better than nested XML, but JSON approval still cannot bypass deterministic gates.

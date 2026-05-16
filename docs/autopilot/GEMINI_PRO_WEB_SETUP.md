@@ -12,3 +12,5 @@ Future live integration must:
 - never let Gemini override deterministic safety gates.
 
 A16G is protocol-only. It creates the audit packet builder, response validator, decision mapper, prompts, fixtures, and tests needed before any live smoke.
+
+A16H repair note: live Gemini should be asked for JSON only. Gemini Web may flatten XML tags inside responses, so JSON is the primary live response format. XML remains a legacy offline fixture format.

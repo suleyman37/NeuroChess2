@@ -1,0 +1,20 @@
+{
+  "schema": "NC_GEMINI_AUDIT_JSON/1",
+  "nonce": "A16H_TEST_NONCE",
+  "mode": "prompt_auditor",
+  "verdict": "NARROW",
+  "scores": {
+    "scope_risk": 3,
+    "product_value": 2,
+    "safety_risk": 2,
+    "automation_drift_risk": 2,
+    "confidence": 0.7
+  },
+  "findings": [
+    "This invalid fixture contains MICRO_PROMPT text."
+  ],
+  "required_action": "repair_prompt",
+  "must_not_do": "Do not execute.",
+  "notes": "MICRO_PROMPT should fail.",
+  "done": "A16H_TEST_NONCE"
+}
