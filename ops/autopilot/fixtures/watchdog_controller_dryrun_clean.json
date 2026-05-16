@@ -1,0 +1,8 @@
+{
+  "scenario": "Clean",
+  "expected_final_decision": "COMPLETED_DRY_RUN",
+  "expected_rescue_pack": false,
+  "expected_real_process_kill": false,
+  "expected_live_chatgpt": false,
+  "expected_codex_execution": false
+}

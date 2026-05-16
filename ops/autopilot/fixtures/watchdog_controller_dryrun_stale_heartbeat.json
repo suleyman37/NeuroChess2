@@ -1,0 +1,10 @@
+{
+  "scenario": "StaleHeartbeat",
+  "expected_final_decision": "STALE_HEARTBEAT_RESCUE",
+  "expected_watchdog_phase": "BLACK",
+  "expected_action": "FORCE_KILL_DRY_RUN",
+  "expected_rescue_pack": true,
+  "expected_real_process_kill": false,
+  "expected_live_chatgpt": false,
+  "expected_codex_execution": false
+}

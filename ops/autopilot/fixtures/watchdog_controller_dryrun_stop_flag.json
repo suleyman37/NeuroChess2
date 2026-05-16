@@ -1,0 +1,9 @@
+{
+  "scenario": "StopFlag",
+  "expected_final_decision": "STOP_GRACEFUL",
+  "expected_rescue_pack": true,
+  "expected_flag": "STOP",
+  "expected_real_process_kill": false,
+  "expected_live_chatgpt": false,
+  "expected_codex_execution": false
+}

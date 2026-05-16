@@ -1,0 +1,9 @@
+{
+  "scenario": "DrainFlag",
+  "expected_final_decision": "DRAIN_SESSION",
+  "expected_rescue_pack": true,
+  "expected_flag": "DRAIN",
+  "expected_real_process_kill": false,
+  "expected_live_chatgpt": false,
+  "expected_codex_execution": false
+}
