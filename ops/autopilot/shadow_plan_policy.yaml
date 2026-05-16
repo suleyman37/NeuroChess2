@@ -1,0 +1,57 @@
+shadow_plan_protocol_version: A16D
+enabled: false
+required_before_execution: false
+contract_comparison_available: true
+
+required_fields:
+  - schema_version
+  - mission_id
+  - risk_tier
+  - work_type
+  - goal
+  - planned_read_paths
+  - planned_create_paths
+  - planned_modify_paths
+  - planned_delete_paths
+  - planned_commands
+  - planned_checks
+  - planned_artifacts
+  - planned_branch
+  - expected_diff_lines
+  - evidence_plan
+  - assumptions
+  - uncertainties
+  - stop_before_work_if
+
+branch_strategies:
+  - road_to_v2
+  - ephemeral
+  - quarantine
+  - none
+
+destructive_commands_forbidden:
+  - git add -A
+  - git reset --hard
+  - git clean
+  - git push --force
+  - rm -rf
+  - del /s /q
+
+broad_language_rejected:
+  - improve
+  - polish
+  - optimize
+  - refactor
+  - finalize
+  - stabilize
+  - as needed
+  - if necessary
+  - clean up everything
+  - handle everything
+  - continue the roadmap
+  - make it better
+  - fix all
+
+live_enforcement_enabled: false
+live_chatgpt_called_by_scripts: false
+product_mission_executed_by_scripts: false

@@ -1,0 +1,20 @@
+{
+  "schema_version": "A16D",
+  "mission_id": "A16D_EXTRA_WRITE",
+  "risk_tier": "green",
+  "work_type": "docs-only",
+  "goal": "Create one Shadow Plan document.",
+  "planned_read_paths": ["docs/autopilot/NC_MP2_COMPACT_MISSION_PROTOCOL.md"],
+  "planned_create_paths": ["docs/autopilot/SHADOW_PLAN_BEFORE_EXECUTION_PROTOCOL.md", "docs/autopilot/SHADOW_PLAN_EXTRA.md"],
+  "planned_modify_paths": [],
+  "planned_delete_paths": [],
+  "planned_commands": ["git diff --check"],
+  "planned_checks": ["git diff --check"],
+  "planned_artifacts": ["shadow_plan_report.json"],
+  "planned_branch": { "strategy": "road_to_v2", "branch_name": "road-to-V2" },
+  "expected_diff_lines": { "min": 20, "max": 250 },
+  "evidence_plan": ["diff check output"],
+  "assumptions": [],
+  "uncertainties": [],
+  "stop_before_work_if": ["too many files"]
+}

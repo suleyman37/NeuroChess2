@@ -1,0 +1,20 @@
+{
+  "schema_version": "A16D",
+  "mission_id": "A16D_BACKEND_READONLY_VALID",
+  "risk_tier": "amber",
+  "work_type": "backend-readonly-only",
+  "goal": "Create read-only backend route test evidence on an ephemeral branch.",
+  "planned_read_paths": ["backend/neurochess/api/game_routes.py"],
+  "planned_create_paths": [],
+  "planned_modify_paths": ["backend/tests/test_existing_exercise_readonly_detail.py"],
+  "planned_delete_paths": [],
+  "planned_commands": ["git diff --check", ".venv/Scripts/python.exe -m unittest backend.tests.test_existing_exercise_readonly_detail"],
+  "planned_checks": ["git diff --check", "backend targeted anti-mutation evidence"],
+  "planned_artifacts": ["anti_mutation_evidence.json"],
+  "planned_branch": { "strategy": "ephemeral", "branch_name": "codex/backend-readonly-shadow-plan" },
+  "expected_diff_lines": { "min": 20, "max": 500 },
+  "evidence_plan": ["anti_mutation_evidence", "targeted backend test output"],
+  "assumptions": ["no road-to-V2 product merge"],
+  "uncertainties": [],
+  "stop_before_work_if": ["ephemeral branch unavailable", "read-only proof missing"]
+}

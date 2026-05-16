@@ -1,0 +1,20 @@
+{
+  "schema_version": "A16D",
+  "mission_id": "A16D_FRONTEND_BACKEND_MIX",
+  "risk_tier": "amber",
+  "work_type": "frontend-readonly-only",
+  "goal": "Create frontend and backend read-only evidence together.",
+  "planned_read_paths": ["frontend/src/api/client.ts", "backend/neurochess/api/game_routes.py"],
+  "planned_create_paths": [],
+  "planned_modify_paths": ["frontend/src/api/client.ts", "backend/tests/test_existing_exercise_readonly_detail.py"],
+  "planned_delete_paths": [],
+  "planned_commands": ["git diff --check"],
+  "planned_checks": ["git diff --check", "screenshot contact sheet", "visual review brief"],
+  "planned_artifacts": ["contact_sheet.png", "visual_review_brief.md"],
+  "planned_branch": { "strategy": "ephemeral", "branch_name": "codex/frontend-backend-mix" },
+  "expected_diff_lines": { "min": 20, "max": 500 },
+  "evidence_plan": ["screenshots", "visual review brief"],
+  "assumptions": [],
+  "uncertainties": [],
+  "stop_before_work_if": ["mixed frontend backend scope"]
+}

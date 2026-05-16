@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/autopilot/shadow_plan.schema.json",
+  "title": "A16D Shadow Plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "mission_id",
+    "risk_tier",
+    "work_type",
+    "goal",
+    "planned_read_paths",
+    "planned_create_paths",
+    "planned_modify_paths",
+    "planned_delete_paths",
+    "planned_commands",
+    "planned_checks",
+    "planned_artifacts",
+    "planned_branch",
+    "expected_diff_lines",
+    "evidence_plan",
+    "assumptions",
+    "uncertainties",
+    "stop_before_work_if"
+  ],
+  "properties": {
+    "schema_version": { "const": "A16D" },
+    "mission_id": { "type": "string" },
+    "risk_tier": { "type": "string" },
+    "work_type": { "type": "string" },
+    "goal": { "type": "string" },
+    "planned_read_paths": { "type": "array", "items": { "type": "string" } },
+    "planned_create_paths": { "type": "array", "items": { "type": "string" } },
+    "planned_modify_paths": { "type": "array", "items": { "type": "string" } },
+    "planned_delete_paths": { "type": "array", "items": { "type": "string" } },
+    "planned_commands": { "type": "array", "items": { "type": "string" } },
+    "planned_checks": { "type": "array", "items": { "type": "string" } },
+    "planned_artifacts": { "type": "array", "items": { "type": "string" } },
+    "planned_branch": {
+      "type": "object",
+      "required": ["strategy", "branch_name"],
+      "properties": {
+        "strategy": { "enum": ["road_to_v2", "ephemeral", "quarantine", "none"] },
+        "branch_name": { "type": "string" }
+      }
+    },
+    "expected_diff_lines": {
+      "type": "object",
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "integer" },
+        "max": { "type": "integer" }
+      }
+    },
+    "evidence_plan": { "type": "array", "items": { "type": "string" } },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "uncertainties": { "type": "array", "items": { "type": "string" } },
+    "stop_before_work_if": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}
