@@ -1,0 +1,30 @@
+<NC_GEMINI_AUDIT nonce="A16H_TEST_NONCE">
+<MODE>prompt_auditor</MODE>
+<VERDICT>NARROW</VERDICT>
+
+<SCORES>
+scope_risk: 3
+product_value: 2
+safety_risk: 3
+automation_drift_risk: 2
+confidence: 0.7
+</SCORES>
+
+<FINDINGS>
+- This fixture intentionally includes forbidden output.
+</FINDINGS>
+
+<REQUIRED_ACTION>
+repair_prompt
+</REQUIRED_ACTION>
+
+<MUST_NOT_DO>
+Do not generate executable missions.
+</MUST_NOT_DO>
+
+<NOTES>
+codex_prompt: create code now.
+</NOTES>
+
+<NC_DONE nonce="A16H_TEST_NONCE">DONE</NC_DONE>
+</NC_GEMINI_AUDIT>

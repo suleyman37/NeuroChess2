@@ -1,0 +1,25 @@
+{
+  "schema_version": "A16H_live_smoke_packet_v1",
+  "smoke_test_only": true,
+  "no_product_mission": true,
+  "no_codex_execution": true,
+  "nonce": "A16H_TEST_NONCE",
+  "mode": "prompt_auditor",
+  "mission_id": "A16H_SAFE_AUDIT_SMOKE",
+  "risk_tier": "green",
+  "work_type": "docs-only",
+  "supervisor_digest": "Gemini live smoke only. Audit a fake safe docs-only prompt. Do not create a prompt.",
+  "proposed_micro_prompt": "Fake audit target: create one docs/autopilot result note only, run git diff --check, no product code.",
+  "mission_contract": {
+    "expected_changed_files": ["docs/autopilot/FAKE_SMOKE_RESULT.md"],
+    "allowed_paths": ["docs/autopilot/**"],
+    "forbidden_paths": ["frontend/**", "backend/**", "docs/rebuild/**", "plan/**", "package.json", "package-lock.json", "App.tsx"],
+    "required_checks": ["git diff --check"],
+    "commit_policy": "explicit_file_only"
+  },
+  "active_constraints": [
+    "Do not generate Codex prompts.",
+    "Do not ask for product work.",
+    "Respond only in NC_GEMINI_AUDIT."
+  ]
+}
