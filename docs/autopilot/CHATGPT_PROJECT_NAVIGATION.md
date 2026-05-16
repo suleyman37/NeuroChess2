@@ -9,7 +9,7 @@ requires the `NeuroChess Supervisor` Project.
 
 ## Required Project Configuration
 
-`ops/autopilot/config.json` contains:
+`ops/autopilot/config.json` contains the tracked defaults:
 
 ```json
 "chatgpt_project": {
@@ -23,19 +23,40 @@ requires the `NeuroChess Supervisor` Project.
 ```
 
 If `project_url` is empty and Project mode is enabled, live Project rollover
-smokes must stop with `PROJECT_URL_MISSING`.
+smokes must stop with `PROJECT_URL_MISSING` unless a local gitignored config or
+environment variable supplies the URL.
+
+Local URL lookup order:
+
+1. `ops/autopilot/local/chatgpt_project.local.json`
+2. `NEUROCHESS_CHATGPT_PROJECT_URL`
+3. tracked `ops/autopilot/config.json`
+
+The local file may follow this shape:
+
+```json
+{
+  "chatgpt_project": {
+    "project_url": "https://chatgpt.com/g/PROJECT_ID/project"
+  }
+}
+```
+
+The real local file must not be committed.
 
 ## Bridge Behavior
 
 When Project mode is enabled:
 
 1. Launch Chrome with the dedicated supervisor profile.
-2. Require `chatgpt_project.project_url` when `require_project_url` is true.
-3. Navigate directly to the configured URL.
-4. Wait for the page to load.
-5. Verify the page is usable and appears Project-scoped.
-6. Stop with `PROJECT_CONTEXT_UNVERIFIED` if the page cannot be verified.
-7. Send the READY request only after Project context verification passes.
+2. Resolve `chatgpt_project.project_url` from local config, environment, then
+   tracked config.
+3. Require the resolved Project URL when `require_project_url` is true.
+4. Navigate directly to the configured URL.
+5. Wait for the page to load.
+6. Verify the page is usable and appears Project-scoped.
+7. Stop with `PROJECT_CONTEXT_UNVERIFIED` if the page cannot be verified.
+8. Send the READY request only after Project context verification passes.
 
 The bridge must not:
 

@@ -44,6 +44,42 @@ function readJsonFile(file) {
   return JSON.parse(fs.readFileSync(file, "utf8").replace(/^\uFEFF/, ""));
 }
 
+function ensureProjectConfig(config) {
+  if (!config.chatgpt_project || typeof config.chatgpt_project !== "object") {
+    config.chatgpt_project = {};
+  }
+  return config.chatgpt_project;
+}
+
+function applyProjectUrl(config, projectUrl, source) {
+  if (!String(projectUrl || "").trim()) return source;
+  const projectConfig = ensureProjectConfig(config);
+  projectConfig.project_url = String(projectUrl).trim();
+  return source;
+}
+
+function loadEffectiveConfig(configPath) {
+  const config = readJsonFile(configPath);
+  const projectConfig = ensureProjectConfig(config);
+  let projectUrlSource = String(projectConfig.project_url || "").trim() ? "tracked" : "none";
+
+  if (process.env.NEUROCHESS_CHATGPT_PROJECT_URL) {
+    projectUrlSource = applyProjectUrl(config, process.env.NEUROCHESS_CHATGPT_PROJECT_URL, "environment");
+  }
+
+  const localConfigPath = path.join(path.dirname(configPath), "local", "chatgpt_project.local.json");
+  if (fs.existsSync(localConfigPath)) {
+    const localConfig = readJsonFile(localConfigPath);
+    const localUrl = localConfig?.chatgpt_project?.project_url;
+    if (String(localUrl || "").trim()) {
+      projectUrlSource = applyProjectUrl(config, localUrl, "local");
+    }
+  }
+
+  config.__chatgpt_project_url_source = projectUrlSource;
+  return config;
+}
+
 function valuesFromArg(value) {
   if (!value) return [];
   const values = Array.isArray(value) ? value : [value];
@@ -797,7 +833,7 @@ async function main() {
   const live = Boolean(args.live);
   const nonce = args.nonce || `NC_${crypto.randomBytes(12).toString("hex")}`;
   const configPath = args.config || path.join(process.cwd(), "ops", "autopilot", "config.json");
-  const config = readJsonFile(configPath);
+  const config = loadEffectiveConfig(configPath);
   const bridgeConfig = config.chatgpt_web_bridge || {};
   const projectConfig = config.chatgpt_project || {};
 

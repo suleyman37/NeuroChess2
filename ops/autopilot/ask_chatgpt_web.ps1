@@ -13,6 +13,41 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $configPath = Join-Path $PSScriptRoot "config.json"
 $config = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
 
+function Set-ProjectUrlIfPresent {
+  param(
+    [Parameter(Mandatory = $true)]$Config,
+    [string]$ProjectUrl,
+    [string]$Source
+  )
+  if ([string]::IsNullOrWhiteSpace($ProjectUrl)) {
+    return $null
+  }
+  if ($null -eq $Config.PSObject.Properties["chatgpt_project"]) {
+    $Config | Add-Member -NotePropertyName "chatgpt_project" -NotePropertyValue ([pscustomobject]@{})
+  }
+  $project = $Config.chatgpt_project
+  if ($null -eq $project.PSObject.Properties["project_url"]) {
+    $project | Add-Member -NotePropertyName "project_url" -NotePropertyValue $ProjectUrl
+  } else {
+    $project.project_url = $ProjectUrl
+  }
+  return $Source
+}
+
+$projectUrlSource = if (-not [string]::IsNullOrWhiteSpace([string]$config.chatgpt_project.project_url)) { "tracked" } else { "none" }
+$envProjectUrl = [string]$env:NEUROCHESS_CHATGPT_PROJECT_URL
+if (-not [string]::IsNullOrWhiteSpace($envProjectUrl)) {
+  $projectUrlSource = Set-ProjectUrlIfPresent -Config $config -ProjectUrl $envProjectUrl -Source "environment"
+}
+$localConfigPath = Join-Path $PSScriptRoot "local\chatgpt_project.local.json"
+if (Test-Path -LiteralPath $localConfigPath) {
+  $localConfig = Get-Content -LiteralPath $localConfigPath -Raw | ConvertFrom-Json
+  $localProjectUrl = [string]$localConfig.chatgpt_project.project_url
+  if (-not [string]::IsNullOrWhiteSpace($localProjectUrl)) {
+    $projectUrlSource = Set-ProjectUrlIfPresent -Config $config -ProjectUrl $localProjectUrl -Source "local"
+  }
+}
+
 if (-not $Live) {
   $DryRun = $true
 }
@@ -67,6 +102,7 @@ if ($projectConfig) {
     enabled = [bool]$projectConfig.enabled
     project_name = [string]$projectConfig.project_name
     project_url_configured = -not [string]::IsNullOrWhiteSpace([string]$projectConfig.project_url)
+    project_url_source = $projectUrlSource
     require_project_url = [bool]$projectConfig.require_project_url
     allow_generic_chat_fallback = [bool]$projectConfig.allow_generic_chat_fallback
   }

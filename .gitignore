@@ -46,6 +46,7 @@ ops/autopilot/reports/*
 !ops/autopilot/reports/.gitkeep
 ops/autopilot/runtime/**
 !ops/autopilot/runtime/.gitkeep
+ops/autopilot/local/*.local.json
 
 # Secrets / local config
 .env

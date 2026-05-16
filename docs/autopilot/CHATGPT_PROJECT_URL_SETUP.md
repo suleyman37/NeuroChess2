@@ -4,8 +4,9 @@
 
 Codex does not create the ChatGPT Project and does not automate login. The user
 manually opens the existing Project named `NeuroChess Supervisor`, copies its
-browser URL, and stores it in `ops/autopilot/config.json` with the helper
-script.
+browser URL, and stores it in a gitignored local config file with the helper
+script. The tracked `ops/autopilot/config.json` must keep `project_url` empty so
+the repository can start clean.
 
 ## User Steps
 
@@ -29,15 +30,24 @@ Accepted URL prefixes:
 The helper:
 
 - validates the URL prefix;
-- updates `chatgpt_project.project_url`;
+- writes `ops/autopilot/local/chatgpt_project.local.json`;
+- updates only local-only `chatgpt_project.project_url`;
 - keeps `project_name` as `NeuroChess Supervisor`;
 - keeps Project mode enabled;
 - does not open a browser;
 - does not call ChatGPT;
 - does not commit or push.
 
+The local file is ignored by Git. It may also be replaced temporarily by the
+`NEUROCHESS_CHATGPT_PROJECT_URL` environment variable. Runtime lookup order is:
+
+1. `ops/autopilot/local/chatgpt_project.local.json`
+2. `NEUROCHESS_CHATGPT_PROJECT_URL`
+3. tracked `ops/autopilot/config.json`
+
 ## After Setup
 
-After setting the URL, rerun the Project READY smoke mission. If READY validates,
-the next recommended mission can proceed toward product-safe Night Mode
-protocol work.
+After setting the URL, `ops/autopilot/config.json` should remain clean. Rerun
+the Project READY smoke mission only when a live smoke is explicitly requested.
+If READY validates, the next recommended mission can proceed toward
+product-safe Night Mode protocol work.

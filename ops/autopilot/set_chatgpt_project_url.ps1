@@ -1,6 +1,7 @@
 param(
   [Parameter(Mandatory = $true)][string]$ProjectUrl,
-  [string]$ConfigPath = ""
+  [string]$ConfigPath = "",
+  [string]$LocalConfigPath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -16,6 +17,9 @@ if (-not $ConfigPath) {
 if (-not (Test-Path -LiteralPath $ConfigPath)) {
   throw "Config file not found: $ConfigPath"
 }
+if (-not $LocalConfigPath) {
+  $LocalConfigPath = Join-Path $repoRoot "ops\autopilot\local\chatgpt_project.local.json"
+}
 
 $config = Get-Content -LiteralPath $ConfigPath -Raw | ConvertFrom-Json
 if ($null -eq $config.PSObject.Properties["chatgpt_project"]) {
@@ -26,7 +30,6 @@ $project = $config.chatgpt_project
 foreach ($entry in @(
   @{ Name = "enabled"; Value = $true },
   @{ Name = "project_name"; Value = "NeuroChess Supervisor" },
-  @{ Name = "project_url"; Value = $ProjectUrl },
   @{ Name = "require_project_url"; Value = $true },
   @{ Name = "verify_project_name"; Value = $true },
   @{ Name = "allow_generic_chat_fallback"; Value = $false }
@@ -38,15 +41,28 @@ foreach ($entry in @(
   }
 }
 
+$localConfig = [ordered]@{
+  chatgpt_project = [ordered]@{
+    project_url = $ProjectUrl
+  }
+}
+
 $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
-[System.IO.File]::WriteAllText($ConfigPath, ($config | ConvertTo-Json -Depth 20), $utf8NoBom)
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $LocalConfigPath) | Out-Null
+[System.IO.File]::WriteAllText($LocalConfigPath, ($localConfig | ConvertTo-Json -Depth 20), $utf8NoBom)
+
+$uri = [Uri]$ProjectUrl
+$pathPrefix = $uri.AbsolutePath.Substring(0, [Math]::Min(18, $uri.AbsolutePath.Length))
 
 [ordered]@{
   status = "pass"
   config_path = $ConfigPath
+  local_config_path = $LocalConfigPath
   project_name = "NeuroChess Supervisor"
   project_url_configured = $true
-  project_url = $ProjectUrl
+  project_url_source = "local"
+  project_url_host = $uri.Host
+  project_url_path_prefix = $pathPrefix
   live_chatgpt_called = $false
   browser_opened = $false
   commit = $false

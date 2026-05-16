@@ -40,6 +40,7 @@ Assert-True ($config.chatgpt_project.project_name -eq "NeuroChess Supervisor") "
 Assert-True ([bool]$config.chatgpt_project.require_project_url) "require_project_url must be true"
 Assert-True ([bool]$config.chatgpt_project.verify_project_name) "verify_project_name must be true"
 Assert-True (-not [bool]$config.chatgpt_project.allow_generic_chat_fallback) "generic fallback must be false"
+Assert-True ([string]::IsNullOrWhiteSpace([string]$config.chatgpt_project.project_url)) "tracked config must not store local project_url"
 
 $missing = Read-Json -Path (Join-Path $fixtureRoot "project_navigation_missing_url.json")
 Assert-True ([string]::IsNullOrWhiteSpace([string]$missing.chatgpt_project.project_url)) "missing URL fixture should have empty project_url"
@@ -49,15 +50,20 @@ $valid = Read-Json -Path (Join-Path $fixtureRoot "project_navigation_valid_confi
 Assert-True ($valid.chatgpt_project.project_url -match '^https://chatgpt\.com/') "valid URL fixture should use chatgpt.com"
 
 $tempConfig = Join-Path $runDir "config_under_test.json"
+$tempLocalConfig = Join-Path $runDir "chatgpt_project.local.json"
 Copy-Item -LiteralPath (Join-Path $fixtureRoot "project_navigation_missing_url.json") -Destination $tempConfig
 $setResult = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "set_chatgpt_project_url.ps1") -Arguments @(
   "-ConfigPath", $tempConfig,
+  "-LocalConfigPath", $tempLocalConfig,
   "-ProjectUrl", "https://chatgpt.com/g/g-test-neurochess-supervisor"
 )
 Assert-True ([bool]$setResult.project_url_configured) "helper should configure project URL"
+Assert-True ($setResult.project_url_source -eq "local") "helper should report local URL source"
 $updated = Read-Json -Path $tempConfig
-Assert-True ($updated.chatgpt_project.project_url -eq "https://chatgpt.com/g/g-test-neurochess-supervisor") "helper did not write project_url"
+Assert-True ([string]::IsNullOrWhiteSpace([string]$updated.chatgpt_project.project_url)) "helper must not write project_url into tracked config"
 Assert-True ($updated.chatgpt_project.project_name -eq "NeuroChess Supervisor") "helper must keep project name"
+$updatedLocal = Read-Json -Path $tempLocalConfig
+Assert-True ($updatedLocal.chatgpt_project.project_url -eq "https://chatgpt.com/g/g-test-neurochess-supervisor") "helper did not write local project_url"
 
 $invalidOutput = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "set_chatgpt_project_url.ps1") -Arguments @(
   "-ConfigPath", $tempConfig,
@@ -71,7 +77,9 @@ foreach ($needle in @(
   "PROJECT_CONTEXT_UNVERIFIED",
   "chatgpt_project",
   "project_url",
-  "allow_generic_chat_fallback"
+  "allow_generic_chat_fallback",
+  "chatgpt_project.local.json",
+  "NEUROCHESS_CHATGPT_PROJECT_URL"
 )) {
   Assert-True ($bridgeSource.Contains($needle)) "bridge source missing $needle"
 }
@@ -88,6 +96,7 @@ $result = [ordered]@{
   status = "pass"
   report_dir = $runDir
   project_url_configured_in_repo = -not [string]::IsNullOrWhiteSpace([string]$config.chatgpt_project.project_url)
+  project_url_configured_in_local_test = Test-Path -LiteralPath $tempLocalConfig
   start_branch = $startBranch
   end_branch = $endBranch
   start_head = $startHead
