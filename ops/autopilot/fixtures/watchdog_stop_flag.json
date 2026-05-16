@@ -1,0 +1,11 @@
+{
+  "runtime_flags": [
+    "STOP"
+  ],
+  "expected": {
+    "stop_requested": true,
+    "pause_requested": false,
+    "drain_requested": false,
+    "kill_requested": false
+  }
+}

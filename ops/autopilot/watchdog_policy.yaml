@@ -1,0 +1,41 @@
+watchdog_protocol_version: A11B
+enabled: false
+heartbeat_enabled: false
+kill_switch_enabled: false
+hard_kill_enabled: false
+runtime_root: "%USERPROFILE%\\AgentOS\\runtime"
+heartbeat_interval_seconds: 30
+phases:
+  GREEN:
+    max_age_seconds: 59
+    action: NONE
+  YELLOW:
+    min_age_seconds: 60
+    max_age_seconds: 89
+    action: WARN
+  ORANGE:
+    min_age_seconds: 90
+    max_age_seconds: 299
+    action: WRITE_STOP
+  RED:
+    min_age_seconds: 300
+    max_age_seconds: 360
+    action: POLITE_KILL_DRY_RUN
+  BLACK:
+    min_age_seconds: 361
+    action: FORCE_KILL_DRY_RUN
+stop_flags:
+  - STOP
+  - PAUSE
+  - DRAIN
+  - KILL
+authority_order:
+  - user_kill_switch_flags
+  - watchdog_forced_safety_stop
+  - mission_contract_violation
+  - mission_contract_mismatch
+  - prompt_firewall_rejection
+  - early_exit_mechanical_stop
+  - strategic_pulse_stop_quarantine_harden
+  - strategic_pulse_direction
+  - normal_flow

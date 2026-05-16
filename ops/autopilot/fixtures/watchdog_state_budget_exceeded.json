@@ -1,0 +1,23 @@
+{
+  "schema_version": "A11B_watchdog_heartbeat_v1",
+  "timestamp_iso": "1970-01-01T00:16:30Z",
+  "timestamp_unix": 990,
+  "controller_pid": 1111,
+  "controller_started_at_iso": "1970-01-01T00:00:00Z",
+  "state": "waiting_for_codex_subprocess",
+  "state_entered_at_iso": "1970-01-01T00:00:00Z",
+  "state_max_duration_seconds": 100,
+  "current_mission_id": "A11B_STATE_BUDGET",
+  "current_mission_risk_tier": "green",
+  "current_mission_timebox_minutes": 10,
+  "missions_completed_this_session": 0,
+  "missions_failed_this_session": 0,
+  "missions_quarantined_this_session": 0,
+  "session_id": "watchdog-test-state-budget",
+  "session_started_at_iso": "1970-01-01T00:00:00Z",
+  "branch": "road-to-V2",
+  "last_commit_sha": "b4bc402",
+  "stop_flag_observed": false,
+  "next_heartbeat_due_iso": "1970-01-01T00:17:00Z",
+  "anomalies": []
+}
