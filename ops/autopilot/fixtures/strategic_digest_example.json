@@ -1,0 +1,26 @@
+{
+  "current_head": "75dfbe5",
+  "current_roadmap": "A8B strategic pulse protocol",
+  "current_product_checkpoint": "R3I decision complete; R3J not started",
+  "active_risks": ["automation may crowd product work"],
+  "open_blockers": ["strategic pulse not integrated live"],
+  "unexpected_discoveries": ["two-step micro-loop succeeded"],
+  "automation_vs_product_ratio": "recent automation-heavy sequence",
+  "next_planned_mission": "A8C_MISSION_TIMEBOX_CHECKPOINT_PROTOCOL",
+  "last_n_missions": [
+    {
+      "id": "A8",
+      "result": "pass",
+      "commit": "75dfbe5",
+      "risk_tier": "green",
+      "work_type": "automation-safety",
+      "files_changed": 17,
+      "diff_lines": 655,
+      "duration": "short",
+      "alarms": [],
+      "friction": 1,
+      "product_value": 1,
+      "automation_value": 4
+    }
+  ]
+}

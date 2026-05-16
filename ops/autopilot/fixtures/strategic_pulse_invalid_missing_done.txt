@@ -1,0 +1,22 @@
+<NC_STRATEGIC_PULSE nonce="TEST_STRATEGIC_NONCE">
+<DECISION>CONTINUE</DECISION>
+<SCORES>
+product_progress: 3
+automation_friction: 2
+risk_exposure: 2
+strategic_coherence: 4
+confidence: 0.8
+</SCORES>
+<WHY>
+Missing DONE should fail.
+</WHY>
+<NEXT_BEST_MOVE>
+A8C_MISSION_TIMEBOX_CHECKPOINT_PROTOCOL
+</NEXT_BEST_MOVE>
+<DO_NOT_DO>
+Do not continue blindly.
+</DO_NOT_DO>
+<EXECUTION_MODE>
+backlog_only
+</EXECUTION_MODE>
+</NC_STRATEGIC_PULSE>

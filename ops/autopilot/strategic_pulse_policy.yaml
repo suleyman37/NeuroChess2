@@ -1,0 +1,46 @@
+schema_version: A8B
+enabled: false
+normal_pulse_every_successful_missions: 3
+deep_pulse_every_successful_missions: 9
+emergency_pulse_enabled: false
+
+decisions:
+  - CONTINUE
+  - NARROW
+  - SPLIT
+  - PIVOT
+  - HARDEN
+  - RETURN_TO_PRODUCT
+  - QUARANTINE
+  - STOP
+
+scores:
+  min_axis_score: 0
+  max_axis_score: 5
+  min_confidence: 0.0
+  max_confidence: 1.0
+
+triggers:
+  emergency:
+    consecutive_failures: 2
+    prompt_firewall_rejects: 2
+    request_more_limit_exceeded: true
+    chatgpt_bridge_instability: true
+    task_exceeds_timebox: true
+    diff_too_large: true
+    scope_larger_than_expected: true
+    unexpected_red_tier_risk: true
+    road_to_v2_safety_issue: true
+    inconsistent_checks: true
+
+anti_yak_shaving:
+  automation_missions_without_product_progress: 5
+  harden_pulses_in_a_row: 2
+  product_progress_low_threshold: 1
+  automation_friction_high_threshold: 4
+  risk_exposure_high_threshold: 4
+
+genius_spark:
+  enabled: true
+  max_lines: 5
+  auto_execute: false

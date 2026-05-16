@@ -1,0 +1,33 @@
+<NC_STRATEGIC_PULSE nonce="TEST_STRATEGIC_NONCE">
+<DECISION>CONTINUE</DECISION>
+
+<SCORES>
+product_progress: 3
+automation_friction: 2
+risk_exposure: 2
+strategic_coherence: 4
+confidence: 0.82
+</SCORES>
+
+<WHY>
+The current safety work remains bounded and is reducing operational risk.
+</WHY>
+
+<NEXT_BEST_MOVE>
+A8C_MISSION_TIMEBOX_CHECKPOINT_PROTOCOL
+</NEXT_BEST_MOVE>
+
+<DO_NOT_DO>
+Do not start sensitive product implementation in this pulse.
+</DO_NOT_DO>
+
+<GENIUS_SPARK>
+Use pulse history to detect when automation is crowding product work.
+</GENIUS_SPARK>
+
+<EXECUTION_MODE>
+backlog_only
+</EXECUTION_MODE>
+
+<NC_DONE nonce="TEST_STRATEGIC_NONCE">DONE</NC_DONE>
+</NC_STRATEGIC_PULSE>

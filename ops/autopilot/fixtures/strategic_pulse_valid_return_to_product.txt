@@ -1,0 +1,33 @@
+<NC_STRATEGIC_PULSE nonce="TEST_STRATEGIC_NONCE">
+<DECISION>RETURN_TO_PRODUCT</DECISION>
+
+<SCORES>
+product_progress: 1
+automation_friction: 1
+risk_exposure: 2
+strategic_coherence: 4
+confidence: 0.88
+</SCORES>
+
+<WHY>
+The automation safety stack is strong enough to resume bounded NeuroChess product work.
+</WHY>
+
+<NEXT_BEST_MOVE>
+Prepare a read-only product mission with existing safety gates.
+</NEXT_BEST_MOVE>
+
+<DO_NOT_DO>
+Do not add another automation hardening mission without a blocking safety reason.
+</DO_NOT_DO>
+
+<GENIUS_SPARK>
+Turn product-readiness into a recurring pulse score.
+</GENIUS_SPARK>
+
+<EXECUTION_MODE>
+stop_for_review
+</EXECUTION_MODE>
+
+<NC_DONE nonce="TEST_STRATEGIC_NONCE">DONE</NC_DONE>
+</NC_STRATEGIC_PULSE>

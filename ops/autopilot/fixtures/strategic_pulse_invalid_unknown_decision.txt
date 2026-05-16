@@ -1,0 +1,23 @@
+<NC_STRATEGIC_PULSE nonce="TEST_STRATEGIC_NONCE">
+<DECISION>ACCELERATE</DECISION>
+<SCORES>
+product_progress: 3
+automation_friction: 2
+risk_exposure: 2
+strategic_coherence: 4
+confidence: 0.8
+</SCORES>
+<WHY>
+Unknown decision should fail.
+</WHY>
+<NEXT_BEST_MOVE>
+Unknown.
+</NEXT_BEST_MOVE>
+<DO_NOT_DO>
+Do not accept unknown decision.
+</DO_NOT_DO>
+<EXECUTION_MODE>
+backlog_only
+</EXECUTION_MODE>
+<NC_DONE nonce="TEST_STRATEGIC_NONCE">DONE</NC_DONE>
+</NC_STRATEGIC_PULSE>
