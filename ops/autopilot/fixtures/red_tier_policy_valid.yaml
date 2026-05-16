@@ -1,0 +1,9 @@
+schema_version: A6
+enabled: false
+red_tier_auto_promote: false
+requires_quarantine_branch: true
+quarantine_prefix: quarantine/red-
+promotion:
+  automatic_merge_allowed: false
+  merge_commits_allowed: false
+  force_push_allowed: false

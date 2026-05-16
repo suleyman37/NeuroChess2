@@ -1,0 +1,10 @@
+{
+  "id": "GREEN_TEST_DOCS_ONLY",
+  "title": "Create one autopilot protocol document",
+  "description": "Docs-only automation safety documentation.",
+  "allowed_paths": ["docs/autopilot/EXAMPLE.md"],
+  "forbidden_paths": ["frontend/**", "backend/**", "docs/rebuild/**", "plan/**"],
+  "auto_promote": true,
+  "auto_push_to_road_to_V2": true,
+  "required_checks": ["git_diff_check"]
+}

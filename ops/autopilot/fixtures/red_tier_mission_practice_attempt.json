@@ -1,0 +1,10 @@
+{
+  "id": "RED_TEST_PRACTICE_ATTEMPT",
+  "title": "Create practice_attempts for a new training flow",
+  "description": "This mission would create practice_attempts and record a result.",
+  "allowed_paths": ["backend/neurochess/practice_attempt_service.py"],
+  "forbidden_paths": ["frontend/**"],
+  "auto_promote": false,
+  "auto_push_to_road_to_V2": false,
+  "required_checks": ["db_snapshot_before_after", "route_audit"]
+}

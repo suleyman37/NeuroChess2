@@ -1,0 +1,49 @@
+schema_version: A6
+enabled: false
+red_tier_auto_promote: false
+requires_quarantine_branch: true
+quarantine_prefix: quarantine/red-
+road_to_v2_direct_work_allowed: false
+road_to_v2_push_allowed: false
+future_promotion_requires_dedicated_mission: true
+
+red_flags:
+  - practice active execution
+  - training_items write
+  - practice_attempts write
+  - due_at mutation
+  - Daily Plan mutation
+  - scoring write
+  - result recording
+  - solution reveal
+  - XP rank league
+  - Transfer Score
+  - DB migration affecting learning state
+  - route or service with hidden side effects
+
+required_evidence:
+  - mission_brief
+  - red_tier_classification_reason
+  - allowed_paths
+  - forbidden_paths
+  - precheck
+  - branch_name
+  - base_head
+  - changed_files
+  - diff_patch
+  - checks_summary
+  - db_snapshot_before
+  - db_snapshot_after
+  - db_mutation_report
+  - route_inventory_if_backend_touched
+  - side_effect_risk_inventory
+  - rollback_plan
+  - codex_report
+  - supervisor_response_if_any
+  - final_go_no_go
+
+promotion:
+  automatic_merge_allowed: false
+  merge_commits_allowed: false
+  force_push_allowed: false
+  standard_promote_script_must_refuse: true

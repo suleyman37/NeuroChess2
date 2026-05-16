@@ -1,0 +1,10 @@
+{
+  "id": "RED_TEST_DUE_AT",
+  "title": "Update due_at scheduling for review items",
+  "description": "This mission would mutate due_at and rebuild Daily Plan state.",
+  "allowed_paths": ["backend/neurochess/scheduling_service.py"],
+  "forbidden_paths": ["frontend/**"],
+  "auto_promote": false,
+  "auto_push_to_road_to_V2": false,
+  "required_checks": ["db_snapshot_before_after", "plan_mutation_audit"]
+}
