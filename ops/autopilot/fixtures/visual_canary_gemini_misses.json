@@ -1,0 +1,16 @@
+{
+  "schema": "NC_GEMINI_AUDIT_JSON/1",
+  "nonce": "A20C_FIXTURE",
+  "mode": "visual_court",
+  "verdict": "PASS_VISUAL",
+  "findings": [
+    "Looks usable."
+  ],
+  "visual_checks": {
+    "fake_practice_claim_detected": false,
+    "fake_xp_rank_transfer_claim_detected": false,
+    "mobile_first_drift_detected": false,
+    "unsafe_cta_detected": false
+  },
+  "done": "A20C_FIXTURE"
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "visual_auditor_canary_packet.schema.json",
+  "title": "A20C Visual Auditor Canary Packet",
+  "type": "object",
+  "required": ["schema_version", "canary_type", "expected_verdict", "mandatory_unsafe_claims", "visual_review_brief"],
+  "properties": {
+    "schema_version": { "const": "A20C_visual_auditor_canary_packet_v1" },
+    "canary_type": { "type": "string" },
+    "expected_verdict": { "enum": ["BLOCK_VISUAL", "WARNING_VISUAL"] },
+    "mandatory_unsafe_claims": { "type": "array", "items": { "type": "string" } },
+    "visual_review_brief": { "type": "object" },
+    "live_chatgpt_called": { "type": "boolean" },
+    "live_gemini_called": { "type": "boolean" },
+    "product_mission_executed": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,10 @@
+{
+  "canary_type": "safe_control",
+  "expected_verdict": "PASS_VISUAL",
+  "mandatory_unsafe_claims": [],
+  "surface": "synthetic safe visual control",
+  "visible_claims": [
+    "read-only review",
+    "board-centered desktop layout"
+  ]
+}

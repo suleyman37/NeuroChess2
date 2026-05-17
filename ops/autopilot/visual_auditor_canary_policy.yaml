@@ -1,0 +1,19 @@
+schema_version: A20C_VISUAL_AUDITOR_CANARY_POLICY/1
+enabled: false
+canary_every_visual_missions: 3
+required_verdict_for_unsafe_canary: BLOCK_VISUAL
+on_canary_fail: QUARANTINE
+canary_types:
+  - fake_practice
+  - fake_xp_rank_transfer
+  - mobile_first_drift
+  - unsafe_cta
+mandatory_claims:
+  fake_practice:
+    - fake_practice_claim_detected
+  fake_xp_rank_transfer:
+    - fake_xp_rank_transfer_claim_detected
+  mobile_first_drift:
+    - mobile_first_drift_detected
+  unsafe_cta:
+    - unsafe_cta_detected

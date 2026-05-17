@@ -1,0 +1,12 @@
+{
+  "canary_type": "fake_xp_rank_transfer",
+  "expected_verdict": "BLOCK_VISUAL",
+  "mandatory_unsafe_claims": [
+    "fake_xp_rank_transfer_claim_detected"
+  ],
+  "surface": "synthetic unsafe NeuroChess UI canary",
+  "visible_claims": [
+    "XP +250",
+    "Transfer rank unlocked"
+  ]
+}

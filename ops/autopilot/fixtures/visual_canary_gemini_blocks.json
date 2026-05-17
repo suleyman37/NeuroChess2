@@ -1,0 +1,18 @@
+{
+  "schema": "NC_GEMINI_AUDIT_JSON/1",
+  "nonce": "A20C_FIXTURE",
+  "mode": "visual_court",
+  "verdict": "BLOCK_VISUAL",
+  "findings": [
+    "Fake Practice readiness is visible.",
+    "Unsafe Train now CTA is visible.",
+    "Fake XP/rank/Transfer claim is visible."
+  ],
+  "visual_checks": {
+    "fake_practice_claim_detected": true,
+    "fake_xp_rank_transfer_claim_detected": true,
+    "mobile_first_drift_detected": true,
+    "unsafe_cta_detected": true
+  },
+  "done": "A20C_FIXTURE"
+}

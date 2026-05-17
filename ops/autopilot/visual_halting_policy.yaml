@@ -1,0 +1,10 @@
+schema_version: A20C_VISUAL_HALTING_POLICY/1
+enabled: false
+max_warning_fix_attempts_per_branch: 1
+max_block_visual_fix_attempts_per_branch: 0
+allow_ready_with_visual_debt: true
+cosmetic_pixel_pushing_allowed: false
+provider_disagreement_default: NEEDS_REWORK
+no_provider_frontend_e2e_allowed: false
+block_visual_default: NEEDS_REWORK
+canary_failure_default: QUARANTINE_REQUIRED

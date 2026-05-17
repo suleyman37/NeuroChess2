@@ -1,0 +1,16 @@
+{
+  "branch": "autopilot/a20c-visual-fixture",
+  "fix_attempts_used": 0,
+  "current_visual_result": {
+    "provider": "Gemini",
+    "verdict": "WARNING_VISUAL",
+    "issue_category": "minor_alignment",
+    "fatal_claims_detected": false
+  },
+  "provider_results": [
+    {
+      "provider": "Gemini",
+      "verdict": "WARNING_VISUAL"
+    }
+  ]
+}

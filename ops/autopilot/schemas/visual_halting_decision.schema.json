@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "visual_halting_decision.schema.json",
+  "title": "A20C Visual Halting Decision",
+  "type": "object",
+  "required": ["visual_halting_result", "fix_attempts_used", "recommended_action"],
+  "properties": {
+    "visual_halting_result": {
+      "enum": [
+        "CONTINUE",
+        "ONE_SHOT_FIX_ALLOWED",
+        "READY_WITH_VISUAL_DEBT",
+        "NEEDS_REWORK",
+        "QUARANTINE_REQUIRED",
+        "STOP_AUDITOR_CANARY_FAILED"
+      ]
+    },
+    "fix_attempts_used": { "type": "integer" },
+    "recommended_action": { "enum": ["CONTINUE", "FIX_ONCE", "CLASSIFY_BRANCH", "QUARANTINE", "STOP"] },
+    "final_classification": { "type": ["string", "null"] },
+    "live_chatgpt_called": { "type": "boolean" },
+    "live_gemini_called": { "type": "boolean" },
+    "product_mission_executed": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

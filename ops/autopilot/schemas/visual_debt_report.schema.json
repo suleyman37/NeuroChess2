@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "visual_debt_report.schema.json",
+  "title": "A20C Visual Debt Report",
+  "type": "object",
+  "required": ["schema_version", "branch", "visual_verdict_history", "final_classification", "morning_review_recommendation"],
+  "properties": {
+    "schema_version": { "const": "A20C_visual_debt_report_v1" },
+    "branch": { "type": "string" },
+    "commit": { "type": ["string", "null"] },
+    "visual_verdict_history": { "type": "array" },
+    "issue_category": { "type": "string" },
+    "screenshot_paths": { "type": "array", "items": { "type": "string" } },
+    "reviewer": { "type": "string" },
+    "one_shot_fix_attempted": { "type": "boolean" },
+    "final_classification": {
+      "enum": [
+        "READY_TO_REVIEW",
+        "READY_TO_REVIEW_WITH_VISUAL_DEBT",
+        "NEEDS_REWORK",
+        "QUARANTINE_REQUIRED",
+        "ABANDON_BRANCH"
+      ]
+    },
+    "morning_review_recommendation": { "type": "string" },
+    "live_chatgpt_called": { "type": "boolean" },
+    "live_gemini_called": { "type": "boolean" },
+    "product_mission_executed": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

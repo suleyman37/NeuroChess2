@@ -1,0 +1,16 @@
+{
+  "branch": "autopilot/a20c-visual-fixture",
+  "fix_attempts_used": 0,
+  "current_visual_result": {
+    "provider": "Gemini",
+    "verdict": "BLOCK_VISUAL",
+    "issue_category": "fake_progress_claim",
+    "fatal_claims_detected": true
+  },
+  "provider_results": [
+    {
+      "provider": "Gemini",
+      "verdict": "BLOCK_VISUAL"
+    }
+  ]
+}

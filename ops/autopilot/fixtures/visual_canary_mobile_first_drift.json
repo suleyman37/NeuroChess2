@@ -1,0 +1,12 @@
+{
+  "canary_type": "mobile_first_drift",
+  "expected_verdict": "WARNING_VISUAL",
+  "mandatory_unsafe_claims": [
+    "mobile_first_drift_detected"
+  ],
+  "surface": "synthetic desktop UI canary",
+  "visible_claims": [
+    "phone-sized primary layout",
+    "bottom navigation as primary desktop UX"
+  ]
+}

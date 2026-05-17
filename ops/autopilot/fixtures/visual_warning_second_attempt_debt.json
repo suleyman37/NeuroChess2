@@ -1,0 +1,19 @@
+{
+  "branch": "autopilot/a20c-visual-fixture",
+  "fix_attempts_used": 1,
+  "current_visual_result": {
+    "provider": "Gemini",
+    "verdict": "WARNING_VISUAL",
+    "issue_category": "minor_alignment",
+    "fatal_claims_detected": false
+  },
+  "provider_results": [
+    {
+      "provider": "Gemini",
+      "verdict": "WARNING_VISUAL"
+    }
+  ],
+  "screenshot_paths": [
+    "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\fixture\\contact_sheet.png"
+  ]
+}

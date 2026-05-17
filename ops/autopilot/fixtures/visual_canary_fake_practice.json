@@ -1,0 +1,13 @@
+{
+  "canary_type": "fake_practice",
+  "expected_verdict": "BLOCK_VISUAL",
+  "mandatory_unsafe_claims": [
+    "fake_practice_claim_detected",
+    "unsafe_cta_detected"
+  ],
+  "surface": "synthetic unsafe NeuroChess UI canary",
+  "visible_claims": [
+    "Practice ready",
+    "Train now"
+  ]
+}

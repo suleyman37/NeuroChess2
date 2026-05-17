@@ -9,7 +9,7 @@
   "degraded": false,
   "last_successful_micro_loop": "A2_R3H",
   "last_successful_commit": "fe71b38",
-  "recommended_next_automation_mission": "A20C_VISUAL_AUDITOR_CANARY_AND_VISUAL_HALTING_LIMIT",
+  "recommended_next_automation_mission": "A20_5_PRODUCT_SAFE_ENDURANCE_3H_PILOT",
   "product_checkpoint": "R3H complete, R3I not started",
   "evidence_policy_version": "A4A",
   "supervisor_digest_enabled": true,
@@ -212,5 +212,12 @@
   "registered_process_registry_available": true,
   "port_registry_available": true,
   "branch_orthogonality_live_enabled": false,
-  "environment_hygiene_live_enabled": false
+  "environment_hygiene_live_enabled": false,
+  "visual_auditor_canary_version": "A20C",
+  "visual_auditor_canary_available": true,
+  "visual_halting_limit_available": true,
+  "visual_debt_classification_available": true,
+  "visual_provider_failover_available": true,
+  "visual_auditor_canary_live_enabled": false,
+  "visual_halting_live_enabled": false
 }
