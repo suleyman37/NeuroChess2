@@ -9,6 +9,8 @@ type StageState =
   | "feedback_miss"
   | "replay";
 
+type VariantId = "precision_cockpit" | "atmospheric_artifact" | "feedback_arena";
+
 type ScenePreset = {
   learning_state: StageState;
   label: string;
@@ -22,6 +24,19 @@ type ScenePreset = {
   motion_policy: string;
   allowed_effects: string[];
   forbidden_effects: string[];
+};
+
+type VariantPreset = {
+  id: VariantId;
+  label: string;
+  shortLabel: string;
+  headline: string;
+  intent: string;
+  boardRole: string;
+  references: string[];
+  primary: string;
+  secondary: string;
+  panel: string;
 };
 
 const SCENE_PRESETS: Record<StageState, ScenePreset> = {
@@ -142,35 +157,77 @@ const stateOrder: StageState[] = [
   "replay",
 ];
 
+const variantOrder: VariantId[] = ["precision_cockpit", "atmospheric_artifact", "feedback_arena"];
+
+const VARIANT_PRESETS: Record<VariantId, VariantPreset> = {
+  precision_cockpit: {
+    id: "precision_cockpit",
+    label: "Precision Cockpit",
+    shortLabel: "Precision",
+    headline: "Tactical instrument panel",
+    intent: "Sharper HUD logic, technical grid, and precise amber/cyan decision cues.",
+    boardRole: "tactical instrument",
+    references: ["Orano", "Linear", "Figma", "Into the Breach"],
+    primary: "#65e5ff",
+    secondary: "#f6c766",
+    panel: "rgba(4, 12, 24, 0.8)",
+  },
+  atmospheric_artifact: {
+    id: "atmospheric_artifact",
+    label: "Atmospheric Artifact",
+    shortLabel: "Artifact",
+    headline: "Board as mysterious object",
+    intent: "Deeper material atmosphere, a stronger sense of place, and calmer artifact presence.",
+    boardRole: "central artifact",
+    references: ["Igloo", "Messenger", "SOM"],
+    primary: "#8fd7ff",
+    secondary: "#f3d18c",
+    panel: "rgba(9, 13, 23, 0.78)",
+  },
+  feedback_arena: {
+    id: "feedback_arena",
+    label: "Feedback Arena",
+    shortLabel: "Arena",
+    headline: "Fast state feedback",
+    intent: "More immediate try, success, miss, and replay energy without fake rewards.",
+    boardRole: "active feedback arena",
+    references: ["Balatro", "Hades", "Into the Breach", "Raycast"],
+    primary: "#7dffca",
+    secondary: "#ffcf6a",
+    panel: "rgba(5, 10, 22, 0.82)",
+  },
+};
+
 function formatEffect(effect: string) {
   return effect.replace(/_/g, " ");
 }
 
 export function BoardStagePrototype() {
   const [stageState, setStageState] = useState<StageState>("observe");
+  const [variantId, setVariantId] = useState<VariantId>("precision_cockpit");
   const [reducedMotion, setReducedMotion] = useState(false);
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const preset = SCENE_PRESETS[stageState];
-  const style = { "--stage-accent": preset.accent } as CSSProperties;
+  const variant = VARIANT_PRESETS[variantId];
+  const style = {
+    "--stage-accent": preset.accent,
+    "--variant-primary": variant.primary,
+    "--variant-secondary": variant.secondary,
+    "--variant-panel": variant.panel,
+  } as CSSProperties;
 
   const sceneLanguage = useMemo(
     () => ({
-      schema_version: "A20H_dev_board_stage_scene_v1",
-      scene_id: `a20h_${preset.learning_state}`,
+      schema_version: "A20J_golden_screen_tournament_scene_v1",
+      scene_id: `a20j_${variant.id}_${preset.learning_state}`,
+      visual_variant: variant.id,
       learning_state: preset.learning_state,
-      board_role: preset.board_role,
+      board_role: `${variant.boardRole}_${preset.board_role}`,
       board_readability_rule:
         "Board remains central, stable, readable, and precise; if visual stage effects reduce readability they recede.",
       camera_mode: "locked_orthographic",
-      atmosphere_family: preset.atmosphere,
-      reference_inspirations: [
-        "Orano precision",
-        "Igloo material depth",
-        "Messenger compact living world",
-        "SOM central totem",
-        "Into the Breach tactical clarity",
-        "Balatro feedback rhythm",
-      ],
+      atmosphere_family: `${variant.shortLabel}: ${preset.atmosphere}`,
+      reference_inspirations: variant.references,
       allowed_effects: preset.allowed_effects,
       forbidden_effects: preset.forbidden_effects,
       motion_policy: preset.motion_policy,
@@ -186,7 +243,7 @@ export function BoardStagePrototype() {
         critical_information_not_only_visual: true,
       },
     }),
-    [preset],
+    [preset, variant],
   );
 
   return (
@@ -194,6 +251,7 @@ export function BoardStagePrototype() {
       className="a20h-board-stage-prototype"
       data-testid="a20h-board-stage-prototype"
       data-state={stageState}
+      data-variant={variantId}
       data-reduced-motion={reducedMotion ? "true" : "false"}
       data-effects-enabled={effectsEnabled ? "true" : "false"}
       style={style}
@@ -202,10 +260,12 @@ export function BoardStagePrototype() {
         <div>
           <p className="a20h-kicker">DEV-only prototype</p>
           <h1>NeuroChess Board Stage</h1>
-          <p className="a20h-stage-thesis">Desktop decision cockpit, board-first and code-native.</p>
+          <p className="a20h-stage-thesis">
+            Golden Screen Tournament: {variant.label}, board-first and code-native.
+          </p>
         </div>
         <div className="a20h-stage-status" data-testid="a20h-state-summary">
-          <span>{preset.label}</span>
+          <span>{variant.shortLabel} / {preset.label}</span>
           <strong>{preset.headline}</strong>
         </div>
       </header>
@@ -213,11 +273,15 @@ export function BoardStagePrototype() {
       <section className="a20h-stage-shell" aria-label="DEV-only board-centered visual stage">
         <aside className="a20h-side-panel a20h-left-panel">
           <p className="a20h-panel-label">Scene language</p>
-          <h2>{preset.shortLabel}</h2>
+          <h2>{variant.shortLabel}</h2>
           <dl>
             <div>
+              <dt>Variant intent</dt>
+              <dd>{variant.intent}</dd>
+            </div>
+            <div>
               <dt>Board role</dt>
-              <dd>{formatEffect(preset.board_role)}</dd>
+              <dd>{variant.boardRole}</dd>
             </div>
             <div>
               <dt>Motion</dt>
@@ -232,7 +296,7 @@ export function BoardStagePrototype() {
 
         <div className="a20h-stage-core" data-testid="a20h-stage-core">
           <div className="a20h-core-caption" data-testid="a20h-state-cue">
-            <span>{preset.stageCue}</span>
+            <span>{variant.headline} / {preset.stageCue}</span>
             <strong>{preset.boardSignal}</strong>
           </div>
           <div className="a20h-stage-depth" aria-hidden="true">
@@ -249,7 +313,7 @@ export function BoardStagePrototype() {
           <div className="a20h-board-plane" data-testid="a20h-board-plane">
             <div className="a20h-board-frame">
               <div className="a20h-artifact-label" aria-hidden="true">
-                <span>{preset.shortLabel}</span>
+                <span>{variant.shortLabel}</span>
                 <strong>central artifact</strong>
               </div>
               <div
@@ -296,6 +360,20 @@ export function BoardStagePrototype() {
         </div>
 
         <aside className="a20h-side-panel a20h-right-panel">
+          <p className="a20h-panel-label">Variant selector</p>
+          <div className="a20h-variant-controls" role="group" aria-label="DEV-only design variants">
+            {variantOrder.map((nextVariant) => (
+              <button
+                key={nextVariant}
+                type="button"
+                className={nextVariant === variantId ? "is-active" : ""}
+                data-testid={`a20j-variant-${nextVariant}`}
+                onClick={() => setVariantId(nextVariant)}
+              >
+                {VARIANT_PRESETS[nextVariant].label}
+              </button>
+            ))}
+          </div>
           <p className="a20h-panel-label">State controls</p>
           <div className="a20h-state-controls" role="group" aria-label="DEV-only visual states">
             {stateOrder.map((nextState) => (
@@ -336,7 +414,7 @@ export function BoardStagePrototype() {
         <span>No external assets</span>
         <span>No package install</span>
         <span data-testid="a20h-scene-language-json">
-          {sceneLanguage.learning_state} / {sceneLanguage.camera_mode}
+          {sceneLanguage.visual_variant} / {sceneLanguage.learning_state} / {sceneLanguage.camera_mode}
         </span>
       </footer>
     </main>
