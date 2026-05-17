@@ -117,6 +117,7 @@ import { DecisionLabPreview } from "./v2/review-lab/DecisionLabPreview";
 import { V2VisionApp } from "./v2/product-vision/V2VisionApp";
 import { RexApp } from "./rex/RexApp";
 import { StrictBoardStageTournament } from "./dev/board-stage-strict/StrictBoardStageTournament";
+import { NorthStarBoardStage } from "./dev/board-stage-north-star/NorthStarBoardStage";
 
 type BusyState = "idle" | "new-game" | "move" | "finish" | "load-game";
 type PositionMode = "LIVE" | "HISTORICAL" | "REVIEW";
@@ -387,6 +388,14 @@ function isStrictBoardStageDevRoute(): boolean {
   return window.location.pathname === "/app" && params.get("boardStageStrict") === "1";
 }
 
+function isNorthStarBoardStageDevRoute(): boolean {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return false;
+  }
+  const params = new URLSearchParams(window.location.search);
+  return window.location.pathname === "/app" && params.get("boardStageNorthStar") === "1";
+}
+
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<NeuroChessRoute>(() =>
     normalizeRoute(readCurrentPath()),
@@ -401,6 +410,9 @@ export default function App() {
   const [showStrictBoardStagePreview, setShowStrictBoardStagePreview] = useState(() =>
     isStrictBoardStageDevRoute(),
   );
+  const [showNorthStarBoardStagePreview, setShowNorthStarBoardStagePreview] = useState(() =>
+    isNorthStarBoardStageDevRoute(),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -412,6 +424,7 @@ export default function App() {
       setShowV2VisionPreview(isV2VisionDevRoute());
       setShowRexPreview(isRexDevRoute());
       setShowStrictBoardStagePreview(isStrictBoardStageDevRoute());
+      setShowNorthStarBoardStagePreview(isNorthStarBoardStageDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -465,6 +478,10 @@ export default function App() {
 
   if (showStrictBoardStagePreview) {
     return <StrictBoardStageTournament />;
+  }
+
+  if (showNorthStarBoardStagePreview) {
+    return <NorthStarBoardStage />;
   }
 
   if (currentRoute === "/app") {
