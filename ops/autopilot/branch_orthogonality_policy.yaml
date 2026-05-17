@@ -1,0 +1,21 @@
+schema_version: A20B_BRANCH_ORTHOGONALITY_POLICY/1
+enabled: false
+runtime_lock_path: C:\Users\suley\Documents\Dev\NeuroChess_QA_Artifacts\autopilot\runtime\branch_file_locks.jsonl
+overlap_default_action: REJECT_MISSION
+stacking_allowed: true
+stacking_requires_explicit_dependency: true
+red_tier_overlap_action: QUARANTINE_REQUIRED
+max_active_branch_locks: 50
+ignored_overlap_paths:
+  - docs/autopilot/**
+  - ops/autopilot/runtime/**
+red_tier_path_patterns:
+  - Practice
+  - due_at
+  - Daily Plan
+  - training_items
+  - practice_attempts
+  - scoring
+  - XP
+  - rank
+  - Transfer

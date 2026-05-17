@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "environment_hygiene_report.schema.json",
+  "title": "A20B Environment Hygiene Report",
+  "type": "object",
+  "required": ["environment_hygiene_result", "warnings", "violations", "recommended_action"],
+  "properties": {
+    "environment_hygiene_result": { "enum": ["PASS", "WARN_ENVIRONMENT_DIRTY", "STOP_ENVIRONMENT_POISONED"] },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "violations": { "type": "array", "items": { "type": "string" } },
+    "recommended_action": { "enum": ["CONTINUE", "DRAIN", "STOP"] },
+    "process_registry_result": { "type": ["string", "null"] },
+    "port_registry_result": { "type": ["string", "null"] },
+    "live_chatgpt_called": { "type": "boolean" },
+    "live_gemini_called": { "type": "boolean" },
+    "product_mission_executed": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

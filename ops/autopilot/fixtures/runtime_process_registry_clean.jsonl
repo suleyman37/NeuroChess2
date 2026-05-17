@@ -1,0 +1,1 @@
+{"schema_version":"A20B_runtime_process_entry_v1","run_id":"fixture-run","mission_id":"fixture","process_name":"node","pid":999991,"command_summary":"fixture exited dev server","started_at":"2026-05-17T00:00:00Z","expected_port":5173,"owner":"autopilot","cleanup_policy":"report_only","status":"exited"}

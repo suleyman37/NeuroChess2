@@ -1,0 +1,10 @@
+{
+  "ports": [
+    {
+      "port": 5173,
+      "in_use": true,
+      "pid": 999992,
+      "process_name": "node"
+    }
+  ]
+}

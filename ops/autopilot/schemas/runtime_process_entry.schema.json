@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "runtime_process_entry.schema.json",
+  "title": "A20B Runtime Process Entry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "mission_id",
+    "process_name",
+    "pid",
+    "command_summary",
+    "started_at",
+    "owner",
+    "cleanup_policy",
+    "status"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20B_runtime_process_entry_v1" },
+    "run_id": { "type": "string" },
+    "mission_id": { "type": "string" },
+    "process_name": { "type": "string" },
+    "pid": { "type": "integer" },
+    "command_summary": { "type": "string" },
+    "started_at": { "type": "string" },
+    "expected_port": { "type": ["integer", "null"] },
+    "owner": { "const": "autopilot" },
+    "cleanup_policy": { "enum": ["report_only", "terminate_if_registered"] },
+    "status": { "enum": ["running", "exited", "unknown"] }
+  },
+  "additionalProperties": true
+}

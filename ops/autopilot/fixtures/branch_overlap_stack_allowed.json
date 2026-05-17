@@ -1,0 +1,13 @@
+{
+  "overlap_result": "OVERLAP_DETECTED",
+  "overlapping_files": [
+    "frontend/src/components/ForgeHandoff.tsx"
+  ],
+  "conflicting_branches": [
+    "autopilot/a19x-frontend-visual-forge-proof-20260517"
+  ],
+  "recommended_action": "STACK_ON_PREVIOUS_BRANCH",
+  "red_tier_overlap": false,
+  "explicit_dependency": true,
+  "previous_branch_classification": "READY_TO_REVIEW"
+}

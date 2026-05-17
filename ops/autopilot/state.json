@@ -9,7 +9,7 @@
   "degraded": false,
   "last_successful_micro_loop": "A2_R3H",
   "last_successful_commit": "fe71b38",
-  "recommended_next_automation_mission": "A20B_BRANCH_ORTHOGONALITY_AND_ENVIRONMENT_HYGIENE",
+  "recommended_next_automation_mission": "A20C_VISUAL_AUDITOR_CANARY_AND_VISUAL_HALTING_LIMIT",
   "product_checkpoint": "R3H complete, R3I not started",
   "evidence_policy_version": "A4A",
   "supervisor_digest_enabled": true,
@@ -202,5 +202,15 @@
   "evidence_index_available": true,
   "morning_report_dryrun_hook_available": true,
   "meta_fix_max_count_for_a20_5": 0,
-  "meta_fix_max_count_for_a21_first_run": 0
+  "meta_fix_max_count_for_a21_first_run": 0,
+  "branch_orthogonality_version": "A20B",
+  "branch_orthogonality_available": true,
+  "global_file_mutability_lock_available": true,
+  "branch_stacking_policy_available": true,
+  "environment_hygiene_version": "A20B",
+  "environment_hygiene_available": true,
+  "registered_process_registry_available": true,
+  "port_registry_available": true,
+  "branch_orthogonality_live_enabled": false,
+  "environment_hygiene_live_enabled": false
 }

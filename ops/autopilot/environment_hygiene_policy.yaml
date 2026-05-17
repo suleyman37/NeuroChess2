@@ -1,0 +1,23 @@
+schema_version: A20B_ENVIRONMENT_HYGIENE_POLICY/1
+enabled: false
+runtime_process_registry_path: C:\Users\suley\Documents\Dev\NeuroChess_QA_Artifacts\autopilot\runtime\process_registry.jsonl
+runtime_environment_report_root: C:\Users\suley\Documents\Dev\NeuroChess_QA_Artifacts\autopilot\runtime\environment_hygiene
+registered_process_check: true
+port_check: true
+disk_check: true
+global_process_kill_allowed: false
+broad_cleanup_allowed: false
+destructive_git_cleanup_allowed: false
+default_on_environment_poisoned: DRAIN
+configured_ports:
+  - 3000
+  - 5173
+  - 8000
+  - 8080
+min_free_disk_gb: 2
+runtime_lock_indicators:
+  - ops/autopilot/STOP_NOW
+db_lock_indicators:
+  - neurochess.db-journal
+  - neurochess.db-shm
+  - neurochess.db-wal

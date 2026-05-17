@@ -1,0 +1,11 @@
+{
+  "process_registry_result": "STOP_STALE_REGISTERED_PROCESS",
+  "port_registry_result": "STOP_PORT_CONFLICT",
+  "disk_check_result": "WARN_LOW_DISK_SPACE",
+  "runtime_lock_warnings": [
+    "STOP_NOW present"
+  ],
+  "db_lock_warnings": [
+    "neurochess.db-wal present"
+  ]
+}

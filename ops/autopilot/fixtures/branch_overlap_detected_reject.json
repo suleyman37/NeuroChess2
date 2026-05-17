@@ -1,0 +1,11 @@
+{
+  "overlap_result": "OVERLAP_DETECTED",
+  "overlapping_files": [
+    "backend/tests/test_exercise_detail_readonly.py"
+  ],
+  "conflicting_branches": [
+    "autopilot/a19x-backend-readonly-truth-chain-20260517"
+  ],
+  "recommended_action": "REJECT_MISSION",
+  "red_tier_overlap": false
+}
