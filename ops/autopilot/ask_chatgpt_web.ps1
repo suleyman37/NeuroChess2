@@ -34,7 +34,29 @@ function Set-ProjectUrlIfPresent {
   return $Source
 }
 
+function Set-ActiveSessionUrlIfPresent {
+  param(
+    [Parameter(Mandatory = $true)]$Config,
+    [string]$SessionUrl,
+    [string]$Source
+  )
+  if ([string]::IsNullOrWhiteSpace($SessionUrl)) {
+    return $null
+  }
+  if ($null -eq $Config.PSObject.Properties["chatgpt_project"]) {
+    $Config | Add-Member -NotePropertyName "chatgpt_project" -NotePropertyValue ([pscustomobject]@{})
+  }
+  $project = $Config.chatgpt_project
+  if ($null -eq $project.PSObject.Properties["active_session_url"]) {
+    $project | Add-Member -NotePropertyName "active_session_url" -NotePropertyValue $SessionUrl
+  } else {
+    $project.active_session_url = $SessionUrl
+  }
+  return $Source
+}
+
 $projectUrlSource = if (-not [string]::IsNullOrWhiteSpace([string]$config.chatgpt_project.project_url)) { "tracked" } else { "none" }
+$activeSessionUrlSource = if (-not [string]::IsNullOrWhiteSpace([string]$config.chatgpt_project.active_session_url)) { "tracked" } else { "none" }
 $envProjectUrl = [string]$env:NEUROCHESS_CHATGPT_PROJECT_URL
 if (-not [string]::IsNullOrWhiteSpace($envProjectUrl)) {
   $projectUrlSource = Set-ProjectUrlIfPresent -Config $config -ProjectUrl $envProjectUrl -Source "environment"
@@ -45,6 +67,14 @@ if (Test-Path -LiteralPath $localConfigPath) {
   $localProjectUrl = [string]$localConfig.chatgpt_project.project_url
   if (-not [string]::IsNullOrWhiteSpace($localProjectUrl)) {
     $projectUrlSource = Set-ProjectUrlIfPresent -Config $config -ProjectUrl $localProjectUrl -Source "local"
+  }
+}
+$localSessionPath = Join-Path $PSScriptRoot "local\chatgpt_sessions.local.json"
+if (Test-Path -LiteralPath $localSessionPath) {
+  $localSession = Get-Content -LiteralPath $localSessionPath -Raw | ConvertFrom-Json
+  $localSessionUrl = [string]$localSession.active_session_url
+  if (-not [string]::IsNullOrWhiteSpace($localSessionUrl)) {
+    $activeSessionUrlSource = Set-ActiveSessionUrlIfPresent -Config $config -SessionUrl $localSessionUrl -Source "local_session"
   }
 }
 
@@ -103,6 +133,9 @@ if ($projectConfig) {
     project_name = [string]$projectConfig.project_name
     project_url_configured = -not [string]::IsNullOrWhiteSpace([string]$projectConfig.project_url)
     project_url_source = $projectUrlSource
+    active_session_url_configured = -not [string]::IsNullOrWhiteSpace([string]$projectConfig.active_session_url)
+    active_session_url_source = $activeSessionUrlSource
+    active_session_url_redacted = $true
     require_project_url = [bool]$projectConfig.require_project_url
     allow_generic_chat_fallback = [bool]$projectConfig.allow_generic_chat_fallback
   }
@@ -133,14 +166,15 @@ if ($DryRun) {
 $bridgeScript = Join-Path $PSScriptRoot "browser\chatgpt_bridge.mjs"
 
 if ($Live -and $projectConfig -and [bool]$projectConfig.enabled) {
+  $activeSessionUrl = [string]$projectConfig.active_session_url
   $projectUrl = [string]$projectConfig.project_url
   $requiresProjectUrl = [bool]$projectConfig.require_project_url
   $allowGenericFallback = [bool]$projectConfig.allow_generic_chat_fallback
-  if ([string]::IsNullOrWhiteSpace($projectUrl) -and $requiresProjectUrl -and -not $allowGenericFallback) {
+  if ([string]::IsNullOrWhiteSpace($activeSessionUrl) -and [string]::IsNullOrWhiteSpace($projectUrl) -and $requiresProjectUrl -and -not $allowGenericFallback) {
     $summary.status = "fail"
     $summary.reason = "PROJECT_URL_MISSING"
     $summary.browser_called = $false
-    $summary.instructions = "Run: powershell -ExecutionPolicy Bypass -File ops/autopilot/set_chatgpt_project_url.ps1 -ProjectUrl `"PASTE_PROJECT_URL_HERE`""
+    $summary.instructions = "Run: powershell -ExecutionPolicy Bypass -File ops/autopilot/set_chatgpt_project_url.ps1 -ProjectUrl `"PASTE_PROJECT_URL_HERE`" or set_chatgpt_active_session_url.ps1 -SessionUrl `"PASTE_PROJECT_CONVERSATION_URL_HERE`""
     $summary | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $runDir "ask_chatgpt_web_summary.json") -Encoding UTF8
     $summary | ConvertTo-Json -Depth 12
     exit 1

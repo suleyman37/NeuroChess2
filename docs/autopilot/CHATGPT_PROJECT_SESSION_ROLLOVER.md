@@ -66,10 +66,12 @@ Emergency rollover is due when the supervisor conversation shows:
 2. Codex builds a compact Supervisor Handoff Pack.
 3. The user or a later approved tool opens a new conversation inside
    `NeuroChess Supervisor`.
-4. Codex sends the handoff pack and READY boot request.
-5. ChatGPT must answer with `NC_SUPERVISOR_READY`.
-6. Codex validates nonce, project name, READY status, and canary checks.
-7. Only after READY passes may a later mission request a supervisor decision.
+4. Codex may bind the active Project conversation URL in the gitignored local
+   `ops/autopilot/local/chatgpt_sessions.local.json` file.
+5. Codex sends the handoff pack and READY boot request.
+6. ChatGPT must answer with `NC_SUPERVISOR_READY`.
+7. Codex validates nonce, project name, READY status, and canary checks.
+8. Only after READY passes may a later mission request a supervisor decision.
 
 ## Stop Conditions
 

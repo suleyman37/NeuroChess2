@@ -58,10 +58,18 @@ function applyProjectUrl(config, projectUrl, source) {
   return source;
 }
 
+function applyActiveSessionUrl(config, sessionUrl, source) {
+  if (!String(sessionUrl || "").trim()) return source;
+  const projectConfig = ensureProjectConfig(config);
+  projectConfig.active_session_url = String(sessionUrl).trim();
+  return source;
+}
+
 function loadEffectiveConfig(configPath) {
   const config = readJsonFile(configPath);
   const projectConfig = ensureProjectConfig(config);
   let projectUrlSource = String(projectConfig.project_url || "").trim() ? "tracked" : "none";
+  let activeSessionUrlSource = String(projectConfig.active_session_url || "").trim() ? "tracked" : "none";
 
   if (process.env.NEUROCHESS_CHATGPT_PROJECT_URL) {
     projectUrlSource = applyProjectUrl(config, process.env.NEUROCHESS_CHATGPT_PROJECT_URL, "environment");
@@ -76,7 +84,17 @@ function loadEffectiveConfig(configPath) {
     }
   }
 
+  const localSessionPath = path.join(path.dirname(configPath), "local", "chatgpt_sessions.local.json");
+  if (fs.existsSync(localSessionPath)) {
+    const localSession = readJsonFile(localSessionPath);
+    const localSessionUrl = localSession?.active_session_url;
+    if (String(localSessionUrl || "").trim()) {
+      activeSessionUrlSource = applyActiveSessionUrl(config, localSessionUrl, "local_session");
+    }
+  }
+
   config.__chatgpt_project_url_source = projectUrlSource;
+  config.__chatgpt_active_session_url_source = activeSessionUrlSource;
   return config;
 }
 
@@ -95,6 +113,13 @@ function unique(values) {
 
 function isAcceptedChatGptUrl(value) {
   return /^https:\/\/(chatgpt\.com|chat\.openai\.com)\//.test(String(value || ""));
+}
+
+function isAcceptedActiveProjectSessionUrl(value) {
+  const text = String(value || "");
+  return /^https:\/\/chatgpt\.com\//.test(text) &&
+    text.includes("g-p-6a07c20c139c8191a0d8972fc7b7019e-neurochess-supervisor") &&
+    /\/c\/[^/?#]+/.test(text);
 }
 
 function normalizeUrlForCompare(value) {
@@ -953,21 +978,35 @@ async function main() {
   const projectMode = Boolean(projectConfig.enabled);
   let targetUrl = bridgeConfig.chatgpt_url || "https://chatgpt.com/";
   if (projectMode) {
+    const activeSessionUrl = String(projectConfig.active_session_url || "").trim();
     const projectUrl = String(projectConfig.project_url || "").trim();
     const requireProjectUrl = projectConfig.require_project_url !== false;
     const allowGenericFallback = Boolean(projectConfig.allow_generic_chat_fallback);
-    if (!projectUrl && requireProjectUrl && !allowGenericFallback) {
+    if (!activeSessionUrl && !projectUrl && requireProjectUrl && !allowGenericFallback) {
       write(path.join(outDir, "bridge_error.md"), "PROJECT_URL_MISSING");
       write(path.join(outDir, "project_navigation.json"), JSON.stringify({
         status: "fail",
         reason: "PROJECT_URL_MISSING",
         project_name: projectConfig.project_name || "NeuroChess Supervisor",
         project_url_configured: false,
+        active_session_url_configured: false,
         allow_generic_chat_fallback: allowGenericFallback
       }, null, 2));
       process.exit(1);
     }
-    if (projectUrl) {
+    if (activeSessionUrl) {
+      if (!isAcceptedActiveProjectSessionUrl(activeSessionUrl)) {
+        write(path.join(outDir, "bridge_error.md"), "ACTIVE_SESSION_URL_INVALID");
+        write(path.join(outDir, "project_navigation.json"), JSON.stringify({
+          status: "fail",
+          reason: "ACTIVE_SESSION_URL_INVALID",
+          active_session_url_configured: true,
+          active_session_url_redacted: true
+        }, null, 2));
+        process.exit(1);
+      }
+      targetUrl = activeSessionUrl;
+    } else if (projectUrl) {
       if (!isAcceptedChatGptUrl(projectUrl)) {
         write(path.join(outDir, "bridge_error.md"), "PROJECT_URL_INVALID");
         write(path.join(outDir, "project_navigation.json"), JSON.stringify({

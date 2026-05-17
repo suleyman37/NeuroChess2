@@ -28,9 +28,11 @@ environment variable supplies the URL.
 
 Local URL lookup order:
 
-1. `ops/autopilot/local/chatgpt_project.local.json`
-2. `NEUROCHESS_CHATGPT_PROJECT_URL`
-3. tracked `ops/autopilot/config.json`
+1. `ops/autopilot/local/chatgpt_sessions.local.json` active session URL, when a
+   human has already opened a verified Project conversation.
+2. `ops/autopilot/local/chatgpt_project.local.json`
+3. `NEUROCHESS_CHATGPT_PROJECT_URL`
+4. tracked `ops/autopilot/config.json`
 
 The local file may follow this shape:
 
@@ -44,12 +46,21 @@ The local file may follow this shape:
 
 The real local file must not be committed.
 
+An active Project conversation may be bound locally with
+`ops/autopilot/set_chatgpt_active_session_url.ps1`. The helper writes only to
+`ops/autopilot/local/chatgpt_sessions.local.json`, which is gitignored. The
+active session URL must remain inside the `NeuroChess Supervisor` Project path
+and contain a `/c/` conversation segment. Reports should record that the active
+session URL is configured, but should not print the full value in committed
+docs.
+
 ## Bridge Behavior
 
 When Project mode is enabled:
 
 1. Launch Chrome with the dedicated supervisor profile.
-2. Resolve `chatgpt_project.project_url` from local config, environment, then
+2. Prefer a gitignored active Project conversation URL when present; otherwise
+   resolve `chatgpt_project.project_url` from local config, environment, then
    tracked config.
 3. Require the resolved Project URL when `require_project_url` is true.
 4. Navigate directly to the configured URL.

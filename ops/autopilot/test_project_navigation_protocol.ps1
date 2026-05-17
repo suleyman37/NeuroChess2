@@ -65,6 +65,23 @@ Assert-True ($updated.chatgpt_project.project_name -eq "NeuroChess Supervisor") 
 $updatedLocal = Read-Json -Path $tempLocalConfig
 Assert-True ($updatedLocal.chatgpt_project.project_url -eq "https://chatgpt.com/g/g-test-neurochess-supervisor") "helper did not write local project_url"
 
+$tempSessionConfig = Join-Path $runDir "chatgpt_sessions.local.json"
+$sessionResult = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "set_chatgpt_active_session_url.ps1") -Arguments @(
+  "-LocalSessionPath", $tempSessionConfig,
+  "-SessionUrl", "https://chatgpt.com/g/g-p-6a07c20c139c8191a0d8972fc7b7019e-neurochess-supervisor/c/test-session"
+)
+Assert-True ([bool]$sessionResult.active_session_url_configured) "helper should configure active session URL"
+Assert-True ([bool]$sessionResult.active_session_url_redacted) "helper output must redact active session URL"
+$updatedSession = Read-Json -Path $tempSessionConfig
+Assert-True ($updatedSession.project_name -eq "NeuroChess Supervisor") "active session helper must keep project name"
+Assert-True ($updatedSession.active_session_url -match '/c/test-session$') "active session helper did not write local session URL"
+
+$invalidSessionOutput = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "set_chatgpt_active_session_url.ps1") -Arguments @(
+  "-LocalSessionPath", $tempSessionConfig,
+  "-SessionUrl", "https://chatgpt.com/c/not-project-scoped"
+) -ExpectedExitCode 1
+Assert-True (($invalidSessionOutput -join "`n") -match "NeuroChess Supervisor project path") "invalid active session URL should be rejected"
+
 $invalidOutput = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "set_chatgpt_project_url.ps1") -Arguments @(
   "-ConfigPath", $tempConfig,
   "-ProjectUrl", "https://example.com/not-chatgpt"
@@ -79,6 +96,8 @@ foreach ($needle in @(
   "project_url",
   "allow_generic_chat_fallback",
   "chatgpt_project.local.json",
+  "chatgpt_sessions.local.json",
+  "active_session_url",
   "NEUROCHESS_CHATGPT_PROJECT_URL"
 )) {
   Assert-True ($bridgeSource.Contains($needle)) "bridge source missing $needle"
@@ -97,6 +116,7 @@ $result = [ordered]@{
   report_dir = $runDir
   project_url_configured_in_repo = -not [string]::IsNullOrWhiteSpace([string]$config.chatgpt_project.project_url)
   project_url_configured_in_local_test = Test-Path -LiteralPath $tempLocalConfig
+  active_session_url_configured_in_local_test = Test-Path -LiteralPath $tempSessionConfig
   start_branch = $startBranch
   end_branch = $endBranch
   start_head = $startHead
@@ -106,6 +126,8 @@ $result = [ordered]@{
     missing_url_fixture = "PASS"
     valid_url_fixture = "PASS"
     helper_sets_url = "PASS"
+    helper_sets_active_session_url = "PASS"
+    helper_rejects_invalid_active_session_url = "PASS"
     helper_rejects_invalid_url = "PASS"
     bridge_project_guards_present = "PASS"
     bridge_node_check = "PASS"
