@@ -1,0 +1,39 @@
+version: A18G
+purpose: Keep a ChatGPT Project conversation available during long live runs without reopening Chrome for every message.
+authority:
+  live_product_loop_enabled: false
+  product_mission_execution_allowed: false
+  micro_prompt_request_allowed_in_transport_smoke: false
+  human_verification_auto_bypass_enabled: false
+  generic_chatgpt_fallback_allowed: false
+required_context:
+  project_name: NeuroChess Supervisor
+  active_session_url_required: true
+  active_session_url_must_include: g-p-6a07c20c139c8191a0d8972fc7b7019e-neurochess-supervisor
+health_checks_before_send:
+  - project_context_verified
+  - composer_found
+  - no_human_verification
+  - no_loading_interstitial
+  - browser_connected
+  - page_open
+stop_reasons:
+  human_verification: STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED
+  loading_interstitial: STOP_PROJECT_LOADING_INTERSTITIAL
+  composer_missing: STOP_COMPOSER_NOT_FOUND
+  wrong_context: STOP_WRONG_CHATGPT_PROJECT_CONTEXT
+  bridge_unavailable: STOP_BRIDGE_UNAVAILABLE
+  request_more_limit: STOP_REQUEST_MORE_LIMIT
+  format_invalid: STOP_PROMPT_FORMAT_INVALID
+  rollover_failed: STOP_SESSION_ROLLOVER_FAILED
+limits:
+  max_request_more_rounds: 2
+  soft_reload_attempts: 1
+  clean_reopen_attempts_when_no_mission_active: 1
+  rollover_threshold_messages: 12
+  rollover_threshold_missions: 5
+live_smoke:
+  ready_required: true
+  message_count_after_ready: 2
+  response_schema: NC_TRANSPORT_ECHO/1
+  product_work_allowed: false

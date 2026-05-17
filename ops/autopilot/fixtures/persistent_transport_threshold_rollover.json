@@ -1,0 +1,12 @@
+{
+  "project_context_verified": true,
+  "composer_found": true,
+  "human_verification_detected": false,
+  "loading_interstitial_detected": false,
+  "browser_connected": true,
+  "page_open": true,
+  "messages_in_session": 12,
+  "missions_in_session": 1,
+  "rollover_threshold_messages": 12,
+  "rollover_threshold_missions": 5
+}

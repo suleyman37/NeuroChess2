@@ -44,6 +44,24 @@ function readJsonFile(file) {
   return JSON.parse(fs.readFileSync(file, "utf8").replace(/^\uFEFF/, ""));
 }
 
+function localSessionPathForConfig(configPath) {
+  return path.join(path.dirname(configPath), "local", "chatgpt_sessions.local.json");
+}
+
+function loadLocalSession(configPath) {
+  const sessionPath = localSessionPathForConfig(configPath);
+  if (!fs.existsSync(sessionPath)) return { sessionPath, session: null };
+  return { sessionPath, session: readJsonFile(sessionPath) };
+}
+
+function updateLocalSession(configPath, updates) {
+  const { sessionPath, session } = loadLocalSession(configPath);
+  if (!session) return { updated: false, sessionPath };
+  const next = { ...session, ...updates };
+  write(sessionPath, JSON.stringify(next, null, 2));
+  return { updated: true, sessionPath };
+}
+
 function ensureProjectConfig(config) {
   if (!config.chatgpt_project || typeof config.chatgpt_project !== "object") {
     config.chatgpt_project = {};
@@ -126,6 +144,11 @@ function normalizeUrlForCompare(value) {
   return String(value || "").replace(/[?#].*$/, "").replace(/\/+$/, "");
 }
 
+function conversationIdFromUrl(value) {
+  const match = String(value || "").match(/\/c\/([^/?#]+)/);
+  return match ? match[1] : "";
+}
+
 function profileLockFiles(profilePath) {
   return ["SingletonLock", "SingletonCookie", "SingletonSocket"]
     .map((name) => path.join(profilePath, name))
@@ -151,6 +174,48 @@ function extractBlock(text, blockName) {
   const pattern = new RegExp(`<${blockName}>\\s*([\\s\\S]*?)\\s*</${blockName}>`);
   const match = text.match(pattern);
   return match ? match[1].trim() : "";
+}
+
+function extractJsonObject(text) {
+  const raw = String(text || "").trim();
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  const candidate = fenced ? fenced[1].trim() : raw;
+  try {
+    return JSON.parse(candidate);
+  } catch {
+    const start = candidate.indexOf("{");
+    const end = candidate.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      return JSON.parse(candidate.slice(start, end + 1));
+    }
+    throw new Error("No extractable JSON object found.");
+  }
+}
+
+function validateTransportEchoText(text, nonce, messageIndex) {
+  const violations = [];
+  const raw = String(text || "");
+  if (/MICRO_PROMPT/i.test(raw)) violations.push("MICRO_PROMPT appeared in transport smoke response");
+  if (/codex_prompt/i.test(raw)) violations.push("codex_prompt appeared in transport smoke response");
+  let json = null;
+  try {
+    json = extractJsonObject(raw);
+  } catch (error) {
+    violations.push(error.message);
+  }
+  if (json) {
+    if (json.schema !== "NC_TRANSPORT_ECHO/1") violations.push("schema must be NC_TRANSPORT_ECHO/1");
+    if (json.nonce !== nonce) violations.push("nonce mismatch");
+    if (Number(json.message_index) !== Number(messageIndex)) violations.push("message_index mismatch");
+    if (json.role !== "transport_smoke_only") violations.push("role must be transport_smoke_only");
+    if (json.micro_prompt_requested !== false) violations.push("micro_prompt_requested must be false");
+    if (json.done !== nonce) violations.push("done must equal nonce");
+  }
+  return {
+    ok: violations.length === 0,
+    json,
+    violations
+  };
 }
 
 async function getLatestAssistantText(page) {
@@ -343,6 +408,17 @@ async function waitForProjectReadySurface(page, projectConfig, targetUrl, outDir
   write(path.join(outDir, "project_ready_stage_after_reload.json"), JSON.stringify(latest, null, 2));
   await page.screenshot({ path: path.join(outDir, "project_loading_after_reload.png"), fullPage: true }).catch(() => {});
   return latest;
+}
+
+async function requireReadyAvailability(page, projectConfig, targetUrl, outDir, bridgeConfig, label) {
+  const availability = await waitForProjectReadySurface(page, projectConfig, targetUrl, outDir, bridgeConfig);
+  write(path.join(outDir, `${label}_availability.json`), JSON.stringify(availability, null, 2));
+  if (availability.availability !== "READY") {
+    write(path.join(outDir, `${label}_current_url.txt`), availability.currentUrl || page.url());
+    await saveSanitizedDomSummary(page, outDir, `${label}_sanitized_dom_summary.json`);
+    await page.screenshot({ path: path.join(outDir, `${label}_blocked.png`), fullPage: true }).catch(() => {});
+  }
+  return availability;
 }
 
 async function getComposerText(composer) {
@@ -1016,6 +1092,274 @@ async function submitMessage(page, composer, request, nonce, outDir, timeoutMs, 
   return { ok: false, reason: "SEND_FAILED" };
 }
 
+async function waitForXmlResponse(page, nonce, responseRoot, outDir, label, bridgeConfig) {
+  const maxWaitMs = Number(bridgeConfig.max_wait_seconds || 900) * 1000;
+  const stableMs = Math.min(Number(bridgeConfig.response_stability_seconds || 15) * 1000, 15000);
+  const deadline = Date.now() + maxWaitMs;
+  let last = "";
+  let stableSince = Date.now();
+  let completed = "";
+
+  while (Date.now() < deadline) {
+    await page.waitForTimeout(2000);
+    const text = await getLatestAssistantText(page);
+    if (text !== last) {
+      last = text;
+      stableSince = Date.now();
+    }
+    const doneCheck = validateDone(text, nonce, responseRoot);
+    if (doneCheck.ok && Date.now() - stableSince >= stableMs) {
+      completed = text;
+      break;
+    }
+  }
+
+  if (!completed) {
+    const partial = last || await getLatestAssistantText(page);
+    write(path.join(outDir, `${label}_partial_response.txt`), partial);
+    return { ok: false, reason: "Timed out before stable nonce-bound DONE sentinel.", raw: partial };
+  }
+
+  const doneCheck = validateDone(completed, nonce, responseRoot);
+  if (!doneCheck.ok) {
+    write(path.join(outDir, `${label}_raw_response.txt`), completed);
+    return { ok: false, reason: doneCheck.reason, raw: completed };
+  }
+
+  write(path.join(outDir, `${label}_raw_response.txt`), completed);
+  return { ok: true, raw: completed };
+}
+
+async function waitForTransportEchoResponse(page, nonce, messageIndex, outDir, bridgeConfig) {
+  const maxWaitMs = Number(bridgeConfig.max_wait_seconds || 900) * 1000;
+  const stableMs = Math.min(Number(bridgeConfig.response_stability_seconds || 15) * 1000, 8000);
+  const deadline = Date.now() + maxWaitMs;
+  let last = "";
+  let stableSince = Date.now();
+  let completed = "";
+  let validation = { ok: false, violations: ["no response yet"], json: null };
+
+  while (Date.now() < deadline) {
+    await page.waitForTimeout(2000);
+    const text = await getLatestAssistantText(page);
+    if (text !== last) {
+      last = text;
+      stableSince = Date.now();
+    }
+    validation = validateTransportEchoText(text, nonce, messageIndex);
+    if (validation.ok && Date.now() - stableSince >= stableMs) {
+      completed = text;
+      break;
+    }
+  }
+
+  if (!completed) {
+    const partial = last || await getLatestAssistantText(page);
+    write(path.join(outDir, `message_${messageIndex}_partial_response.txt`), partial);
+    write(path.join(outDir, `message_${messageIndex}_validation.json`), JSON.stringify(validation, null, 2));
+    return { ok: false, reason: "TRANSPORT_ECHO_INVALID_OR_TIMEOUT", raw: partial, validation };
+  }
+
+  write(path.join(outDir, `message_${messageIndex}_raw_response.txt`), completed);
+  write(path.join(outDir, `message_${messageIndex}_json_response.json`), JSON.stringify(validation.json, null, 2));
+  write(path.join(outDir, `message_${messageIndex}_validation.json`), JSON.stringify(validation, null, 2));
+  return { ok: true, raw: completed, validation };
+}
+
+function buildReadyRequest(nonce) {
+  return `# A18G Persistent ChatGPT Transport READY-only check
+
+You are inside the NeuroChess Supervisor Project conversation.
+
+Rules:
+- Do not provide a MICRO_PROMPT.
+- Do not recommend product, backend, frontend, docs/rebuild, or Night Mode work.
+- Do not write code.
+- Do not output free prose.
+- Confirm readiness only.
+- Use this nonce exactly: ${nonce}
+
+Required response:
+<NC_SUPERVISOR_READY nonce="${nonce}">
+<PROJECT>NeuroChess Supervisor</PROJECT>
+<READY>YES</READY>
+<CANARY_CHECKS>
+nonce_protocol: PASS
+micro_prompt_only: PASS
+forbidden_paths_known: PASS
+red_tier_known: PASS
+git_add_A_forbidden: PASS
+</CANARY_CHECKS>
+<NC_DONE nonce="${nonce}">DONE</NC_DONE>
+</NC_SUPERVISOR_READY>`;
+}
+
+function buildTransportEchoRequest(nonce, messageIndex) {
+  return `A18G persistent transport smoke message ${messageIndex}.
+
+This is not a product mission.
+Do not provide a MICRO_PROMPT.
+Do not propose backend/frontend/product/docs work.
+Do not write code or implementation steps.
+Return strict JSON only, no markdown:
+
+{
+  "schema": "NC_TRANSPORT_ECHO/1",
+  "nonce": "${nonce}",
+  "message_index": ${messageIndex},
+  "role": "transport_smoke_only",
+  "micro_prompt_requested": false,
+  "done": "${nonce}"
+}`;
+}
+
+async function runPersistentTransportSmoke(args, config, projectConfig, bridgeConfig, targetUrl, playwright, outDir, nonce) {
+  const profile = bridgeConfig.chrome_profile_path || path.join(process.env.USERPROFILE || process.cwd(), "Documents", "Dev", "ChatGPTSupervisorChromeProfile");
+  const launchOptions = {
+    headless: false,
+    channel: bridgeConfig.chrome_channel || "chrome"
+  };
+  const startTime = new Date().toISOString();
+  const conversationIdBefore = conversationIdFromUrl(targetUrl);
+  const summary = {
+    mode: "persistent_smoke",
+    started_at: startTime,
+    finished_at: "",
+    profile,
+    active_session_url_configured: Boolean(projectConfig.active_session_url),
+    active_session_url_redacted: true,
+    target_conversation_id: conversationIdBefore || "unknown",
+    ready_result: "NOT_RUN",
+    message_1_result: "NOT_RUN",
+    message_2_result: "NOT_RUN",
+    same_page_reused: false,
+    same_browser_reused: false,
+    same_conversation_id: false,
+    composer_available_after_message_2: false,
+    no_micro_prompt_requested: true,
+    product_mission_executed: false,
+    live_chatgpt_called: true,
+    live_gemini_called: false,
+    browser_closed_between_messages: false,
+    stop_reason: "",
+    final_verdict: "FAIL_PERSISTENT_TRANSPORT_SMOKE"
+  };
+  write(path.join(outDir, "persistent_transport_start.json"), JSON.stringify(summary, null, 2));
+
+  const browser = await playwright.chromium.launchPersistentContext(profile, launchOptions);
+  const page = await browser.newPage();
+  const pageHandle = `page-${crypto.randomBytes(6).toString("hex")}`;
+  summary.same_browser_reused = true;
+
+  try {
+    await page.goto(targetUrl, { waitUntil: "domcontentloaded" });
+    const projectVerification = await verifyProjectContext(page, projectConfig, targetUrl, outDir);
+    if (!projectVerification.ok) {
+      summary.stop_reason = "STOP_WRONG_CHATGPT_PROJECT_CONTEXT";
+      throw new Error(summary.stop_reason);
+    }
+
+    const initialAvailability = await requireReadyAvailability(page, projectConfig, targetUrl, outDir, bridgeConfig, "persistent_initial");
+    if (initialAvailability.availability !== "READY") {
+      summary.stop_reason = initialAvailability.stopReason || "STOP_CHATGPT_READY_NOT_AVAILABLE";
+      throw new Error(summary.stop_reason);
+    }
+
+    let composer = await findComposer(page, path.join(outDir, "ready_composer"));
+    if (!composer) {
+      summary.stop_reason = "STOP_COMPOSER_NOT_FOUND";
+      throw new Error(summary.stop_reason);
+    }
+
+    const readyNonce = `${nonce}_READY`;
+    const readyRequest = buildReadyRequest(readyNonce);
+    write(path.join(outDir, "ready_request.md"), readyRequest);
+    const sendTimeoutMs = Number(bridgeConfig.send_phase_timeout_seconds || 60) * 1000;
+    const readySend = await submitMessage(page, composer, readyRequest, readyNonce, path.join(outDir, "ready_send"), sendTimeoutMs, { responseRoot: "NC_SUPERVISOR_READY" });
+    if (!readySend.ok) {
+      summary.stop_reason = readySend.reason || "STOP_CHATGPT_READY_NOT_AVAILABLE";
+      throw new Error(summary.stop_reason);
+    }
+    const readyResponse = await waitForXmlResponse(page, readyNonce, "NC_SUPERVISOR_READY", outDir, "ready", bridgeConfig);
+    if (!readyResponse.ok) {
+      summary.stop_reason = readyResponse.reason;
+      throw new Error(summary.stop_reason);
+    }
+    summary.ready_result = "PASS";
+
+    const pageUrlAfterReady = page.url();
+    const conversationIdAfterReady = conversationIdFromUrl(pageUrlAfterReady);
+
+    for (const index of [1, 2]) {
+      const availability = await requireReadyAvailability(page, projectConfig, targetUrl, outDir, bridgeConfig, `before_message_${index}`);
+      if (availability.availability !== "READY") {
+        summary.stop_reason = availability.stopReason || "STOP_CHATGPT_READY_NOT_AVAILABLE";
+        throw new Error(summary.stop_reason);
+      }
+      composer = await findComposer(page, path.join(outDir, `message_${index}_composer`));
+      if (!composer) {
+        summary.stop_reason = "STOP_COMPOSER_NOT_FOUND";
+        throw new Error(summary.stop_reason);
+      }
+      const messageNonce = `${nonce}_MSG${index}`;
+      const request = buildTransportEchoRequest(messageNonce, index);
+      write(path.join(outDir, `message_${index}_request.md`), request);
+      const sendResult = await submitMessage(page, composer, request, messageNonce, path.join(outDir, `message_${index}_send`), sendTimeoutMs, { responseRoot: "NC_TRANSPORT_ECHO" });
+      if (!sendResult.ok) {
+        summary.stop_reason = sendResult.reason || `MESSAGE_${index}_SEND_FAILED`;
+        throw new Error(summary.stop_reason);
+      }
+      const response = await waitForTransportEchoResponse(page, messageNonce, index, outDir, bridgeConfig);
+      if (!response.ok) {
+        summary.stop_reason = response.reason;
+        throw new Error(summary.stop_reason);
+      }
+      summary[`message_${index}_result`] = "PASS";
+    }
+
+    const finalAvailability = await requireReadyAvailability(page, projectConfig, targetUrl, outDir, bridgeConfig, "after_message_2");
+    summary.composer_available_after_message_2 = finalAvailability.availability === "READY";
+    const finalUrl = page.url();
+    const finalConversationId = conversationIdFromUrl(finalUrl);
+    summary.same_page_reused = !page.isClosed() && Boolean(pageHandle);
+    summary.same_conversation_id = Boolean(conversationIdAfterReady && finalConversationId && conversationIdAfterReady === finalConversationId);
+    summary.current_url_redacted = true;
+    summary.conversation_id_after_ready = conversationIdAfterReady || "unknown";
+    summary.conversation_id_after_message_2 = finalConversationId || "unknown";
+    summary.final_verdict = summary.same_page_reused && summary.same_browser_reused && summary.message_1_result === "PASS" && summary.message_2_result === "PASS"
+      ? "PASS_PERSISTENT_TRANSPORT_SMOKE"
+      : "SAME_PAGE_REUSE_NOT_PROVEN";
+
+    const sessionUpdate = updateLocalSession(config.__config_path || args.config || path.join(process.cwd(), "ops", "autopilot", "config.json"), {
+      active_conversation_id: finalConversationId || conversationIdBefore || conversationIdAfterReady || "",
+      messages_in_session: Number((loadLocalSession(config.__config_path || args.config || path.join(process.cwd(), "ops", "autopilot", "config.json")).session || {}).messages_in_session || 0) + 3,
+      assistant_responses_in_session: Number((loadLocalSession(config.__config_path || args.config || path.join(process.cwd(), "ops", "autopilot", "config.json")).session || {}).assistant_responses_in_session || 0) + 3,
+      last_ready_check: new Date().toISOString(),
+      last_availability_check: new Date().toISOString(),
+      last_health_state: finalAvailability.availability,
+      persistent_transport_started_at: startTime,
+      persistent_transport_mode_enabled: true,
+      same_page_reuse_last_result: summary.same_page_reused,
+      same_browser_pid_last_result: null
+    });
+    summary.local_session_updated = sessionUpdate.updated;
+    summary.local_session_path_redacted = true;
+  } catch (error) {
+    if (!summary.stop_reason) summary.stop_reason = error.message;
+    write(path.join(outDir, "persistent_transport_error.md"), error.stack || error.message);
+    await page.screenshot({ path: path.join(outDir, "persistent_transport_failure.png"), fullPage: true }).catch(() => {});
+  } finally {
+    summary.finished_at = new Date().toISOString();
+    write(path.join(outDir, "persistent_transport_summary.json"), JSON.stringify(summary, null, 2));
+    await browser.close().catch(() => {});
+  }
+
+  if (summary.final_verdict === "PASS_PERSISTENT_TRANSPORT_SMOKE") {
+    return summary;
+  }
+  throw new Error(summary.stop_reason || summary.final_verdict);
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   const outDir = args.out || path.join(process.cwd(), "ops", "autopilot", "reports", "generated", "chatgpt_bridge");
@@ -1025,6 +1369,7 @@ async function main() {
   const nonce = args.nonce || `NC_${crypto.randomBytes(12).toString("hex")}`;
   const configPath = args.config || path.join(process.cwd(), "ops", "autopilot", "config.json");
   const config = loadEffectiveConfig(configPath);
+  config.__config_path = configPath;
   const bridgeConfig = config.chatgpt_web_bridge || {};
   const projectConfig = config.chatgpt_project || {};
 
@@ -1084,6 +1429,16 @@ async function main() {
   } catch (error) {
     write(path.join(outDir, "bridge_error.md"), `Playwright unavailable: ${error.message}`);
     process.exit(1);
+  }
+
+  if (args["persistent-smoke"]) {
+    try {
+      await runPersistentTransportSmoke(args, config, projectConfig, bridgeConfig, targetUrl, playwright, outDir, nonce);
+      process.exit(0);
+    } catch (error) {
+      write(path.join(outDir, "bridge_error.md"), error.stack || error.message);
+      process.exit(1);
+    }
   }
 
   const evidencePath = args.evidence;
