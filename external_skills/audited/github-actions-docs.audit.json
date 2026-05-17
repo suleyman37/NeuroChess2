@@ -1,0 +1,45 @@
+﻿{
+    "schema_version":  "A16K2_EXTERNAL_SKILL_AUDIT/1",
+    "candidate":  "github-actions-docs",
+    "source":  "https://skills.sh/xixu-me/skills/github-actions-docs",
+    "raw_skill_url":  "https://raw.githubusercontent.com/xixu-me/skills/main/skills/github-actions-docs/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T02:40:04.4126628+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\github-actions-docs",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "QUARANTINE",
+    "dangerous_patterns":  [
+                               "network fetch",
+                               "secrets or environment access",
+                               "CI workflow/secrets/runners guidance requires dedicated mission"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "test-first pattern",
+                            "skill authoring pattern"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "behavior-first testing guidance",
+                                     "skill authoring conventions"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "workflow, secrets, token, or runner guidance without dedicated mission"
+                                ],
+    "recommended_internal_skill_target":  "neurochess-ci-workflow-guidance, morning-validation-pipeline",
+    "extraction_target":  "tdd-behavior-contract",
+    "adaptation_notes":  "Docs grounding only. Do not modify workflows, secrets, tokens, or runners without a dedicated mission.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false
+}

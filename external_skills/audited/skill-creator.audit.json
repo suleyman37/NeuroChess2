@@ -1,0 +1,46 @@
+﻿{
+    "schema_version":  "A16K2_EXTERNAL_SKILL_AUDIT/1",
+    "candidate":  "skill-creator",
+    "source":  "https://skills.sh/anthropics/skills/skill-creator",
+    "raw_skill_url":  "https://raw.githubusercontent.com/anthropics/skills/main/skills/skill-creator/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T02:40:04.0506339+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\skill-creator",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  false,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "secrets or environment access",
+                               "broad improvement language"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "test-first pattern",
+                            "design critique pattern",
+                            "skill authoring pattern"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "behavior-first testing guidance",
+                                     "skill authoring conventions"
+                                 ],
+    "unsafe_parts_to_discard":  [
+
+                                ],
+    "recommended_internal_skill_target":  "neurochess-internal-skill-authoring, skill-quality-checklist",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract authoring guidelines only. Do not create active internal skills in this mission.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false
+}

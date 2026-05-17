@@ -1,0 +1,45 @@
+﻿{
+    "schema_version":  "A16K2_EXTERNAL_SKILL_AUDIT/1",
+    "candidate":  "find-skills",
+    "source":  "https://skills.sh/vercel-labs/skills/find-skills",
+    "raw_skill_url":  "https://raw.githubusercontent.com/vercel-labs/skills/main/skills/find-skills/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T02:40:03.8406454+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\find-skills",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "QUARANTINE",
+    "dangerous_patterns":  [
+                               "network fetch",
+                               "install/add instructions require audit"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "design critique pattern",
+                            "skill authoring pattern"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "skill authoring conventions"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "automatic skill installation or npx skills add behavior"
+                                ],
+    "recommended_internal_skill_target":  "neurochess-skill-discovery, external-skills-intake-process",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Discovery only. Discard add/install instructions and keep only audited search/intake pattern.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false
+}

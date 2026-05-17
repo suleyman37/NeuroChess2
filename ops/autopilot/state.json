@@ -135,6 +135,8 @@
   "internal_skills_pack_planned": true,
   "external_skills_first_batch_audit_version": "A16K",
   "external_skills_first_batch_audit_passed": true,
+  "external_skills_second_batch_audit_version": "A16K2",
+  "external_skills_second_batch_audit_passed": true,
   "retro_every_5_enabled": false,
   "chatgpt_web_bridge": {
     "enabled": false,

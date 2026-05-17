@@ -1,0 +1,49 @@
+﻿{
+    "schema_version":  "A16K2_EXTERNAL_SKILL_AUDIT/1",
+    "candidate":  "shadcn",
+    "source":  "https://github.com/shadcn-ui/ui/tree/main/skills/shadcn",
+    "raw_skill_url":  "https://raw.githubusercontent.com/shadcn-ui/ui/main/skills/shadcn/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T02:40:04.2298284+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\shadcn",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "QUARANTINE",
+    "dangerous_patterns":  [
+                               "network fetch",
+                               "dependency install",
+                               "secrets or environment access",
+                               "broad improvement language",
+                               "package/component installation must remain disabled"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "design critique pattern",
+                            "skill authoring pattern"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "skill authoring conventions"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "script execution or install steps",
+                                    "dependency or shadcn package installation instructions"
+                                ],
+    "recommended_internal_skill_target":  "neurochess-component-system-review, frontend-visual-review",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Audit only. Discard dependency/package installation behavior.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false
+}

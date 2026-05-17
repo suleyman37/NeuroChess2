@@ -1,0 +1,44 @@
+﻿{
+    "schema_version":  "A16K2_EXTERNAL_SKILL_AUDIT/1",
+    "candidate":  "composition-patterns",
+    "source":  "https://skills.sh/vercel-labs/agent-skills/composition-patterns",
+    "raw_skill_url":  "https://raw.githubusercontent.com/vercel-labs/agent-skills/main/skills/composition-patterns/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T02:40:04.7803590+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\composition-patterns",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  false,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "low",
+    "recommended_verdict":  "APPROVE_INTERNAL",
+    "dangerous_patterns":  [
+
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "test-first pattern",
+                            "design critique pattern",
+                            "skill authoring pattern"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "design review criteria",
+                                     "behavior-first testing guidance",
+                                     "skill authoring conventions"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "broad refactor execution without Mission Contract and Shadow Plan"
+                                ],
+    "recommended_internal_skill_target":  "neurochess-react-component-architecture, react-performance-review",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Use for component architecture review. Do not permit broad refactor execution in Night Mode.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false
+}
