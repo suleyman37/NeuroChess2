@@ -1,0 +1,43 @@
+﻿{
+    "schema_version":  "A16K3_EXTERNAL_DESIGN_SKILL_AUDIT/1",
+    "candidate":  "make-interfaces-feel-better",
+    "source":  "https://skills.sh/jakubkrehel/make-interfaces-feel-better/make-interfaces-feel-better",
+    "raw_skill_url":  "https://raw.githubusercontent.com/jakubkrehel/make-interfaces-feel-better/main/skills/make-interfaces-feel-better/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T02:48:03.2522864+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\make-interfaces-feel-better",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  false,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "medium",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "broad polish prompt must be constrained by product intent, screenshots, and CTA truthfulness"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "design critique pattern",
+                            "skill authoring pattern"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "skill authoring conventions"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "unbounded make it beautiful / make it feel better instructions without Mission Contract, Shadow Plan, screenshot brief, and Product Gate"
+                                ],
+    "recommended_internal_skill_target":  "neurochess-game-like-interface-design, neurochess-frontend-visual-review, neurochess-visual-identity, neurochess-interface-feel, neurochess-cta-truthfulness",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract micro-interaction, surface, typography, hit-area, and motion review patterns. Do not use as a broad beautification prompt or as permission to change frontend code without screenshots and visual review.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false
+}
