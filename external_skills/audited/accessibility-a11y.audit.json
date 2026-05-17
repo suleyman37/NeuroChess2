@@ -1,0 +1,53 @@
+﻿{
+    "schema_version":  "A16K4_TESTING_VISUAL_PROOF_SKILL_AUDIT/1",
+    "candidate":  "accessibility-a11y",
+    "source":  "https://skills.sh/mindrally/skills/accessibility-a11y",
+    "raw_skill_url":  "https://raw.githubusercontent.com/mindrally/skills/main/accessibility-a11y/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:17:01.4723896+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\accessibility-a11y",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  false,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "medium",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "accessibility checks must remain desktop-first for NeuroChess and avoid mobile-first assumptions as the primary target"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "design critique pattern",
+                            "skill authoring pattern",
+                            "keyboard navigation checks",
+                            "visible focus states",
+                            "ARIA only where useful",
+                            "desktop accessibility proof"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "design review criteria",
+                                     "skill authoring conventions",
+                                     "keyboard navigation checks",
+                                     "visible focus states",
+                                     "ARIA only where useful",
+                                     "desktop accessibility proof"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "accessibility checks must remain desktop-first for NeuroChess and avoid mobile-first assumptions as the primary target"
+                                ],
+    "recommended_internal_skill_target":  "frontend-visual-review, neurochess-desktop-game-like-interface-design",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract testing and visual-proof patterns only. Rewrite into NeuroChess-owned procedures for desktop-first screenshots, browser smokes, console/network capture, accessibility, React behavior tests, and morning evidence packs. Do not execute external scripts, install dependencies, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

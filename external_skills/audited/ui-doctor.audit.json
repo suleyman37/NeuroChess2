@@ -1,0 +1,61 @@
+﻿{
+    "schema_version":  "A16K4_TESTING_VISUAL_PROOF_SKILL_AUDIT/1",
+    "candidate":  "ui-doctor",
+    "source":  "https://skills.sh/iress/design-system/ui-doctor",
+    "raw_skill_url":  "https://raw.githubusercontent.com/iress/design-system/main/.agents/skills/ui-doctor/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:17:02.0963959+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\ui-doctor",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "network fetch",
+                               "dependency install",
+                               "secrets or environment access",
+                               "UI review rubric must be constrained by CTA truthfulness, desktop board-centered layout, and NeuroChess North Star"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "design critique pattern",
+                            "skill authoring pattern",
+                            "scope discipline pattern",
+                            "UI diagnosis checklist",
+                            "visual hierarchy critique",
+                            "accessibility review prompts",
+                            "actionable visual findings"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "scope and path guardrails",
+                                     "skill authoring conventions",
+                                     "UI diagnosis checklist",
+                                     "visual hierarchy critique",
+                                     "accessibility review prompts",
+                                     "actionable visual findings"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "script execution or install steps",
+                                    "UI review rubric must be constrained by CTA truthfulness, desktop board-centered layout, and NeuroChess North Star"
+                                ],
+    "recommended_internal_skill_target":  "frontend-visual-review, neurochess-desktop-game-like-interface-design, morning-intelligence-report",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract testing and visual-proof patterns only. Rewrite into NeuroChess-owned procedures for desktop-first screenshots, browser smokes, console/network capture, accessibility, React behavior tests, and morning evidence packs. Do not execute external scripts, install dependencies, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

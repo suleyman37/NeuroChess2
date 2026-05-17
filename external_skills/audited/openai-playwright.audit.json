@@ -1,0 +1,59 @@
+﻿{
+    "schema_version":  "A16K4_TESTING_VISUAL_PROOF_SKILL_AUDIT/1",
+    "candidate":  "openai-playwright",
+    "source":  "https://skills.sh/openai/skills/playwright",
+    "raw_skill_url":  "https://raw.githubusercontent.com/openai/skills/main/skills/.curated/playwright/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:16:58.3763791+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\openai-playwright",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "network fetch",
+                               "dependency install",
+                               "browser automation must remain audited and evidence-only before any live frontend mission"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "design critique pattern",
+                            "skill authoring pattern",
+                            "scope discipline pattern",
+                            "Playwright browser smokes",
+                            "screenshot evidence",
+                            "console and network inspection",
+                            "deterministic user-flow proof"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "scope and path guardrails",
+                                     "skill authoring conventions",
+                                     "Playwright browser smokes",
+                                     "screenshot evidence",
+                                     "console and network inspection",
+                                     "deterministic user-flow proof"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "script execution or install steps",
+                                    "browser automation must remain audited and evidence-only before any live frontend mission"
+                                ],
+    "recommended_internal_skill_target":  "frontend-visual-review, product-safe-night-mode, morning-intelligence-report",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract testing and visual-proof patterns only. Rewrite into NeuroChess-owned procedures for desktop-first screenshots, browser smokes, console/network capture, accessibility, React behavior tests, and morning evidence packs. Do not execute external scripts, install dependencies, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

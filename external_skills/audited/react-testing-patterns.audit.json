@@ -1,0 +1,56 @@
+﻿{
+    "schema_version":  "A16K4_TESTING_VISUAL_PROOF_SKILL_AUDIT/1",
+    "candidate":  "react-testing-patterns",
+    "source":  "https://skills.sh/hieutrtr/ai1-skills/react-testing-patterns",
+    "raw_skill_url":  "https://raw.githubusercontent.com/hieutrtr/ai1-skills/main/skills/react-testing-patterns/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:16:59.6204822+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\react-testing-patterns",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  false,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "medium",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "React testing advice must not authorize dependency installs or snapshot-only confidence"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "test-first pattern",
+                            "design critique pattern",
+                            "skill authoring pattern",
+                            "user-facing behavior assertions",
+                            "React component test boundaries",
+                            "state-driven UI assertions",
+                            "avoid implementation-detail tests"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "behavior-first testing guidance",
+                                     "skill authoring conventions",
+                                     "user-facing behavior assertions",
+                                     "React component test boundaries",
+                                     "state-driven UI assertions",
+                                     "avoid implementation-detail tests"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "React testing advice must not authorize dependency installs or snapshot-only confidence"
+                                ],
+    "recommended_internal_skill_target":  "neurochess-tdd-behavior-contract, neurochess-react-performance-review",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract testing and visual-proof patterns only. Rewrite into NeuroChess-owned procedures for desktop-first screenshots, browser smokes, console/network capture, accessibility, React behavior tests, and morning evidence packs. Do not execute external scripts, install dependencies, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

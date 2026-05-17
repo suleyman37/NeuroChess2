@@ -1,0 +1,60 @@
+﻿{
+    "schema_version":  "A16K4_TESTING_VISUAL_PROOF_SKILL_AUDIT/1",
+    "candidate":  "playwright-visual-testing",
+    "source":  "https://skills.sh/manutej/luxor-claude-marketplace/playwright-visual-testing",
+    "raw_skill_url":  "https://raw.githubusercontent.com/manutej/luxor-claude-marketplace/main/plugins/luxor-specialized-tools/skills/playwright-visual-testing/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:17:00.8663418+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\playwright-visual-testing",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  true,
+    "risk_level":  "critical",
+    "recommended_verdict":  "REJECT",
+    "dangerous_patterns":  [
+                               "network fetch",
+                               "secrets or environment access",
+                               "Playwright visual testing must not run external scripts or install browser tooling from the skill"
+                           ],
+    "conflicts_with_neurochess":  [
+                                      "red-tier learning state conflict"
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "test-first pattern",
+                            "design critique pattern",
+                            "skill authoring pattern",
+                            "visual test evidence",
+                            "screenshot baselines",
+                            "desktop viewport checks",
+                            "artifact naming discipline"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "behavior-first testing guidance",
+                                     "skill authoring conventions",
+                                     "visual test evidence",
+                                     "screenshot baselines",
+                                     "desktop viewport checks",
+                                     "artifact naming discipline"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "NeuroChess red-tier conflict",
+                                    "Playwright visual testing must not run external scripts or install browser tooling from the skill"
+                                ],
+    "recommended_internal_skill_target":  "frontend-visual-review, neurochess-desktop-game-like-interface-design, product-safe-night-mode",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract testing and visual-proof patterns only. Rewrite into NeuroChess-owned procedures for desktop-first screenshots, browser smokes, console/network capture, accessibility, React behavior tests, and morning evidence packs. Do not execute external scripts, install dependencies, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

@@ -1,0 +1,59 @@
+﻿{
+    "schema_version":  "A16K4_TESTING_VISUAL_PROOF_SKILL_AUDIT/1",
+    "candidate":  "visual-regression",
+    "source":  "https://skills.sh/alekspetrov/navigator/visual-regression",
+    "raw_skill_url":  "https://raw.githubusercontent.com/alekspetrov/navigator/main/skills/visual-regression/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:17:00.2259921+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\visual-regression",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "QUARANTINE",
+    "dangerous_patterns":  [
+                               "network fetch",
+                               "dependency install",
+                               "secrets or environment access",
+                               "visual regression tooling can imply scripts, image baselines, and package workflow changes that need a dedicated mission"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "design critique pattern",
+                            "skill authoring pattern",
+                            "before/after screenshots",
+                            "viewport-specific visual comparison",
+                            "baseline drift awareness",
+                            "failure image evidence"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "skill authoring conventions",
+                                     "before/after screenshots",
+                                     "viewport-specific visual comparison",
+                                     "baseline drift awareness",
+                                     "failure image evidence"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "script execution or install steps",
+                                    "visual regression tooling can imply scripts, image baselines, and package workflow changes that need a dedicated mission"
+                                ],
+    "recommended_internal_skill_target":  "frontend-visual-review, neurochess-desktop-game-like-interface-design, morning-intelligence-report",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract testing and visual-proof patterns only. Rewrite into NeuroChess-owned procedures for desktop-first screenshots, browser smokes, console/network capture, accessibility, React behavior tests, and morning evidence packs. Do not execute external scripts, install dependencies, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}
