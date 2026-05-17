@@ -44,6 +44,11 @@ Use `STOP_BEFORE_WORK` when:
 - planned diff exceeds `max_diff_lines`;
 - planned checks omit required checks;
 - planned branch strategy conflicts with the work type;
+- destructive Git or filesystem commands appear without explicit mission
+  authority, including force push, `git reset --hard`, `git clean`, broad
+  deletion, or encoded shell commands;
+- package or dependency changes appear without a dedicated package mission;
+- mutable remote instructions become part of active execution;
 - work intent is unclear or broad.
 
 Use STOP after execution when:

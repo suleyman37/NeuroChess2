@@ -1,4 +1,4 @@
-version: A16M
+version: A16L2
 live_selection_enabled: false
 authority_reminder: "Skills are procedures, not permissions."
 skill_root: ".agents/skills"
@@ -13,6 +13,10 @@ internal_skills:
   - neurochess-tdd-behavior-contract
   - gemini-auditor
   - morning-intelligence-report
+  - neurochess-testing-visual-proof
+  - neurochess-security-repo-hygiene
+  - neurochess-product-ux-critic
+  - neurochess-learning-loop-accelerator
 external_skills_forbidden: true
 red_tier_requires_quarantine: true
 desktop_first_primary: true

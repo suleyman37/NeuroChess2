@@ -55,7 +55,11 @@ Frontend tests or smokes should prove:
 - visible state is truthful;
 - CTAs are safe;
 - loading, disabled, empty, and error states are credible;
-- screenshots match the product contract when UI changes are visible.
+- screenshots match the product contract when UI changes are visible;
+- browser behavior tests follow user flows;
+- public behavior beats implementation-detail assertions;
+- failure screenshots are captured for UI smokes;
+- snapshot-only proof is not enough for visual readiness.
 
 Red-tier implementation requires quarantine. This skill cannot authorize red-tier
 work on `road-to-V2`.

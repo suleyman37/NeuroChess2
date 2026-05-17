@@ -68,18 +68,22 @@ Assert-Result "frontend_desktop_pass" $frontend "PASS"
 Assert-Contains "frontend_visual" $frontend.selected_skills "frontend-visual-review"
 Assert-Contains "frontend_desktop_design" $frontend.selected_skills "neurochess-desktop-game-like-interface-design"
 Assert-Contains "frontend_react" $frontend.selected_skills "neurochess-react-performance-review"
+Assert-Contains "frontend_testing_visual_proof" $frontend.selected_skills "neurochess-testing-visual-proof"
+Assert-Contains "frontend_product_ux_critic" $frontend.selected_skills "neurochess-product-ux-critic"
 Validate-Selection "frontend_validates" $frontend
 
 $visual = Invoke-Select "skill_selection_frontend_visual_review.json"
 Assert-Result "visual_review_pass" $visual "PASS"
 Assert-Contains "visual_review_visual_skill" $visual.selected_skills "frontend-visual-review"
 Assert-Contains "visual_review_gemini" $visual.selected_skills "gemini-auditor"
+Assert-Contains "visual_review_testing_visual_proof" $visual.selected_skills "neurochess-testing-visual-proof"
 Validate-Selection "visual_validates" $visual
 
 $night = Invoke-Select "skill_selection_night_mode.json"
 Assert-Result "night_mode_pass" $night "PASS"
 Assert-Contains "night_product_safe" $night.selected_skills "product-safe-night-mode"
 Assert-Contains "night_morning" $night.selected_skills "morning-intelligence-report"
+Assert-Contains "night_security_repo_hygiene" $night.selected_skills "neurochess-security-repo-hygiene"
 Validate-Selection "night_validates" $night
 
 $gemini = Invoke-Select "skill_selection_gemini_audit.json"

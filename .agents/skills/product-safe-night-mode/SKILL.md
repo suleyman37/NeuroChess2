@@ -52,6 +52,16 @@ North Star Vector:
 
 - the mission should help real-game decisions, active replay, honest feedback,
   repetition, transfer verification, or adaptive planning.
+- product missions should pass `neurochess-product-ux-critic`;
+- player-facing work should identify the `neurochess-learning-loop-accelerator`
+  step it advances.
+
+Evidence Governor:
+
+- frontend branches require `neurochess-testing-visual-proof`;
+- every run should observe `neurochess-security-repo-hygiene`;
+- product-value quota matters more than docs-only volume;
+- avoid safe work that produces no player or product leverage.
 
 ## Branch And Merge Rules
 

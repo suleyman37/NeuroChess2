@@ -55,6 +55,9 @@ Frontend branches require:
 - screenshots;
 - contact sheet;
 - visual review brief;
+- console log capture when a browser smoke is run;
+- network error capture when a browser smoke is run;
+- route, state, and viewport proof;
 - ChatGPT or Gemini Visual Court if configured;
 - branch classification.
 
@@ -77,7 +80,13 @@ Check:
 - board visibility;
 - primary action clarity;
 - keyboard/mouse expectations;
-- loading, empty, error, disabled, hover, focus, and active states.
+- keyboard and focus visibility for desktop flows;
+- loading, empty, error, disabled, hover, focus, and active states;
+- no snapshot-only proof as the sole evidence for readiness.
+
+Contact-sheet proof should make before/after state, viewport, and critical UI
+claims inspectable. Visual regression can help later, but baseline tooling needs
+a dedicated mission before it becomes a gate.
 
 Every frontend branch must classify as one:
 

@@ -22,7 +22,11 @@ $internalSkillSet = @(
   "neurochess-react-performance-review",
   "neurochess-tdd-behavior-contract",
   "gemini-auditor",
-  "morning-intelligence-report"
+  "morning-intelligence-report",
+  "neurochess-testing-visual-proof",
+  "neurochess-security-repo-hygiene",
+  "neurochess-product-ux-critic",
+  "neurochess-learning-loop-accelerator"
 )
 
 $missing = [System.Collections.Generic.List[string]]::new()

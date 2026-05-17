@@ -50,6 +50,7 @@ Design for:
 Use concrete visual goals:
 
 - make the current decision state unmistakable;
+- make the first 30 seconds reveal the next useful action;
 - make the board feel like the active arena;
 - make the next action visible without hiding evidence;
 - make feedback feel immediate, not noisy.
@@ -64,6 +65,7 @@ progress, or feedback:
 - keyboard shortcut affordances;
 - responsive feedback;
 - purposeful motion;
+- motion that communicates state, attention, tension, progress, or feedback;
 - interruptible transitions;
 - stable typography;
 - tabular numbers for scores, timers, and eval-like values;
@@ -79,6 +81,9 @@ Avoid:
 - random glow without meaning;
 - animation that blocks input;
 - decoration that hides the board or decision evidence.
+
+Game-like means alive, focused, and replayable without dark patterns. Decorative
+motion without learning purpose is noise.
 
 ## Hard Rule
 

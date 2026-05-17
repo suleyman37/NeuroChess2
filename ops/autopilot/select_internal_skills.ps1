@@ -84,6 +84,10 @@ $nightMode = ($joinedText -match '(?i)night mode|live pilot|rolling loop|product
 $nightFinal = ($joinedText -match '(?i)\b(final|drain|report|summary|morning)\b') -or ([string]$mission.night_mode_phase -match '(?i)drain|final|report')
 $designGoal = ($joinedText -match '(?i)\b(ui|design|visual|interface|desktop|game-like|board|cta|screenshot)\b')
 $productFacing = ($joinedText -match '(?i)\b(product|player|learning|frontend|backend|route|review|practice|training|chess|exercise|friction|north star|docs/rebuild|contract)\b')
+$testingVisualProof = ($joinedText -match '(?i)browser smoke|playwright|visual proof|visual regression|contact[_ -]?sheet|screenshot|console log|network error|viewport|failure screenshot')
+$securityRepoHygiene = ($joinedText -match '(?i)\b(security|repo hygiene|supply[- ]chain|secret|token|credential|git|staging|force push|reset --hard|git clean|curl \| shell|powershell|package|dependency|github actions|ci|external skill|browser profile)\b')
+$productUxCritique = ($joinedText -match '(?i)\b(ux|user journey|onboarding|retention|engagement|friction|player problem|aha|what should i do now|product critique|game-like|cognitive load|empty state|loading state|error state)\b')
+$learningLoop = ($joinedText -match '(?i)\b(potential unlock|learn|learning|review|practice|training|feedback|repetition|re-expose|transfer|real-game|chess improvement|active effort)\b')
 $morningReport = ($joinedText -match '(?i)morning report|run summary|night report|ready_to_review|needs_rework|abandon_branch|quarantine_required')
 $sensitiveRedTier = ($joinedText -match '(?i)\bPractice\b|\bdue_at\b|\bDaily Plan\b|\btraining_items?\b|\bpractice_attempts?\b|\bscoring\b|\bXP\b|\brank\b|\bTransfer\b')
 $quarantineAllowed = ($riskTier -match 'red|quarantine') -and ($lane -match 'quarantine' -or [bool]$mission.control_plane_quarantine_allowed)
@@ -95,6 +99,7 @@ if ($nightMode) {
   Add-Unique $required "product-safe-night-mode"
   Add-Unique $required "mission-contract-shadow-plan"
   Add-Unique $required "neurochess-product-north-star"
+  Add-Unique $required "neurochess-security-repo-hygiene"
   if ($nightFinal) { Add-Unique $required "morning-intelligence-report" }
 }
 
@@ -109,6 +114,7 @@ if ($hasFrontend) {
   Add-Unique $required "frontend-visual-review"
   Add-Unique $required "neurochess-desktop-game-like-interface-design"
   Add-Unique $required "neurochess-react-performance-review"
+  Add-Unique $required "neurochess-testing-visual-proof"
   Add-Unique $required "mission-contract-shadow-plan"
   Add-Unique $required "neurochess-product-north-star"
 }
@@ -121,11 +127,16 @@ if ($designGoal) {
 if ($screenshotsExpected) {
   Add-Unique $required "frontend-visual-review"
   Add-Unique $required "neurochess-desktop-game-like-interface-design"
+  Add-Unique $required "neurochess-testing-visual-proof"
   if ($geminiRequested -or [bool]$mission.gemini_visual_court_enabled) { Add-Unique $required "gemini-auditor" }
 }
 
 if ($geminiRequested) { Add-Unique $required "gemini-auditor" }
 if ($morningReport) { Add-Unique $required "morning-intelligence-report" }
+if ($testingVisualProof) { Add-Unique $required "neurochess-testing-visual-proof" }
+if ($securityRepoHygiene) { Add-Unique $required "neurochess-security-repo-hygiene" }
+if ($productUxCritique -or ($productFacing -and $designGoal)) { Add-Unique $required "neurochess-product-ux-critic" }
+if ($learningLoop) { Add-Unique $required "neurochess-learning-loop-accelerator" }
 
 if ($joinedText -match '(?i)gemini (as|is|should be).{0,30}planner|gemini.{0,40}codex prompt|gemini.{0,40}micro_prompt') {
   Add-Unique $conflicts "Gemini audit mission treats Gemini as planner or prompt generator."
@@ -153,7 +164,11 @@ $internalSkillSet = @(
   "neurochess-react-performance-review",
   "neurochess-tdd-behavior-contract",
   "gemini-auditor",
-  "morning-intelligence-report"
+  "morning-intelligence-report",
+  "neurochess-testing-visual-proof",
+  "neurochess-security-repo-hygiene",
+  "neurochess-product-ux-critic",
+  "neurochess-learning-loop-accelerator"
 )
 $externalNames = @(
   "frontend-design",
@@ -166,7 +181,23 @@ $externalNames = @(
   "shadcn",
   "ui-ux-pro-max",
   "composition-patterns",
-  "make-interfaces-feel-better"
+  "make-interfaces-feel-better",
+  "openai-playwright",
+  "e2e-testing",
+  "react-testing-patterns",
+  "visual-regression",
+  "playwright-visual-testing",
+  "accessibility-a11y",
+  "ui-doctor",
+  "qa-testing-playwright",
+  "semgrep-code-security",
+  "sentry-gha-security-review",
+  "sentry-skill-scanner",
+  "prompt-guard",
+  "git-hygiene-enforcer",
+  "secrets-scanner",
+  "supply-chain-guard",
+  "powershell-windows"
 )
 foreach ($skill in $requestedSkills) {
   if ($externalNames -contains $skill) {

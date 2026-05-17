@@ -15,13 +15,19 @@ $requiredSkills = @(
   "neurochess-react-performance-review",
   "neurochess-tdd-behavior-contract",
   "gemini-auditor",
-  "morning-intelligence-report"
+  "morning-intelligence-report",
+  "neurochess-testing-visual-proof",
+  "neurochess-security-repo-hygiene",
+  "neurochess-product-ux-critic",
+  "neurochess-learning-loop-accelerator"
 )
 
 $designSkills = @(
   "frontend-visual-review",
   "neurochess-desktop-game-like-interface-design",
-  "neurochess-react-performance-review"
+  "neurochess-react-performance-review",
+  "neurochess-testing-visual-proof",
+  "neurochess-product-ux-critic"
 )
 
 $checks = [ordered]@{}
@@ -79,6 +85,8 @@ $frontend = $skillTexts["frontend-visual-review"]
 Require-Contains "frontend_requires_screenshots" $frontend "screenshots" "frontend-visual-review must require screenshots."
 Require-Contains "frontend_requires_contact_sheet" $frontend "contact sheet" "frontend-visual-review must require contact sheet."
 Require-Contains "frontend_requires_visual_brief" $frontend "visual review brief" "frontend-visual-review must require visual review brief."
+Require-Contains "frontend_viewport_evidence" $frontend "1366px.*1440px.*1920px|1366px[\s\S]*1440px[\s\S]*1920px" "frontend-visual-review must include desktop viewport evidence."
+Require-Contains "frontend_console_network_evidence" $frontend "console log capture[\s\S]*network error capture|network error capture[\s\S]*console log capture" "frontend-visual-review must include console/network capture evidence."
 
 $backend = $skillTexts["backend-readonly-proof"]
 foreach ($term in @("training_items", "practice_attempts", "due_at", "Daily Plan", "scoring")) {
@@ -93,6 +101,30 @@ $morning = $skillTexts["morning-intelligence-report"]
 foreach ($term in @("READY_TO_REVIEW", "NEEDS_REWORK", "ABANDON_BRANCH", "QUARANTINE_REQUIRED")) {
   Require-Contains "morning_classification_$term" $morning $term "morning-intelligence-report must include $term."
 }
+Require-Contains "morning_branch_evidence" $morning "screenshots and contact sheets|screenshot/contact-sheet summary|backend evidence" "morning-intelligence-report must reference branch evidence."
+Require-Contains "morning_player_value" $morning "player value" "morning-intelligence-report must rank or discuss player value."
+
+$testingVisual = $skillTexts["neurochess-testing-visual-proof"]
+Require-Contains "testing_visual_requires_screenshot" $testingVisual "screenshot_after|screenshots" "testing visual proof must require screenshots."
+Require-Contains "testing_visual_requires_contact_sheet" $testingVisual "contact_sheet|contact sheet" "testing visual proof must require contact sheet evidence."
+Require-Contains "testing_visual_requires_console_network" $testingVisual "console log capture[\s\S]*network error capture|network error capture[\s\S]*console log capture" "testing visual proof must require console/network capture."
+
+$security = $skillTexts["neurochess-security-repo-hygiene"]
+foreach ($term in @("git add -A", "force push", "git reset --hard", "git clean", "curl | shell")) {
+  Require-Contains "security_forbids_$($term -replace '[^A-Za-z0-9]','_')" $security ([regex]::Escape($term)) "security repo hygiene must mention $term."
+}
+
+$productUx = $skillTexts["neurochess-product-ux-critic"]
+Require-Contains "product_ux_rejects_dark_patterns" $productUx "dark-pattern" "product UX critic must reject dark-pattern framing."
+Require-Contains "product_ux_rejects_fake_progress" $productUx "fake progress" "product UX critic must reject fake progress."
+
+$learningLoop = $skillTexts["neurochess-learning-loop-accelerator"]
+Require-Contains "learning_loop_potential_unlock" $learningLoop "Potential Unlock Loop" "learning-loop accelerator must include Potential Unlock Loop."
+Require-Contains "learning_loop_transfer" $learningLoop "Transfer|transfer" "learning-loop accelerator must include transfer verification."
+
+$night = $skillTexts["product-safe-night-mode"]
+Require-Contains "night_references_testing_visual_proof" $night "neurochess-testing-visual-proof" "product-safe-night-mode must reference testing visual proof."
+Require-Contains "night_references_security_repo_hygiene" $night "neurochess-security-repo-hygiene" "product-safe-night-mode must reference security repo hygiene."
 
 $forbiddenPhrases = @(
   "ignore previous instructions",

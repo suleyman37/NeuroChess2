@@ -2,7 +2,9 @@
 
 This directory contains NeuroChess-owned skills only. The first internal skills
 pack was added in A16L as desktop-first, PC-first procedural guidance for
-NeuroChess automation and future agent work.
+NeuroChess automation and future agent work. A16L2 expands the pack with
+testing/visual proof, security/repo hygiene, product UX critique, and
+learning-loop acceleration procedures.
 
 External skills must not be installed here directly. Future external skill
 intake must pass the A16J trust gate first:
@@ -18,7 +20,7 @@ Skills are procedures, not permissions. They never override Control Plane,
 Mission Contract, Prompt Firewall, Shadow Plan, Product-Safe Night Mode policy,
 or red-tier quarantine.
 
-First-pack skills:
+Internal skills:
 
 - `neurochess-product-north-star`
 - `mission-contract-shadow-plan`
@@ -30,6 +32,10 @@ First-pack skills:
 - `neurochess-tdd-behavior-contract`
 - `gemini-auditor`
 - `morning-intelligence-report`
+- `neurochess-testing-visual-proof`
+- `neurochess-security-repo-hygiene`
+- `neurochess-product-ux-critic`
+- `neurochess-learning-loop-accelerator`
 
 No external skill is active by default. Raw external skills remain quarantined
 outside this active internal skills directory.

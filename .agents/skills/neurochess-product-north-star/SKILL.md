@@ -63,6 +63,9 @@ Before recommending or accepting a mission, ask:
 - Which player friction does this reduce?
 - Which Potential Unlock Loop step does this advance?
 - Does this directly or indirectly increase potential acceleration?
+- Does it create a first 30 seconds aha moment?
+- Does the player know what to do now?
+- Does it accelerate player potential rather than only making the system safer?
 - Does it risk fake progress?
 - Does this mission help NeuroChess become a revolutionary chess learning
   product?

@@ -1,15 +1,16 @@
 # NeuroChess Internal Skills Pack
 
-A16L creates the first NeuroChess-owned internal skills pack under
-`.agents/skills/`. These skills are adapted from audited external patterns and
-rewritten for NeuroChess governance, product truth, and desktop-first UX.
+A16L created the first NeuroChess-owned internal skills pack under
+`.agents/skills/`. A16L2 expands it from 10 to 14 skills using safe patterns
+from the testing/visual proof, security/repo hygiene, and product UX/game-like
+engagement audits.
 
 Raw external skills remain inactive and untrusted. The internal skills do not
 copy raw external skill content wholesale; they preserve useful procedures such
 as review checklists, scope discipline, design evidence, and behavior-first
 testing.
 
-## First-Pack Skills
+## Internal Skills
 
 | Skill | Purpose |
 |---|---|
@@ -23,6 +24,10 @@ testing.
 | `neurochess-tdd-behavior-contract` | Behavior-first tests and TDD separation |
 | `gemini-auditor` | Gemini as auditor, not planner |
 | `morning-intelligence-report` | Morning branch/deliverable decision report |
+| `neurochess-testing-visual-proof` | Browser smokes, screenshots, contact sheets, console/network capture, and desktop viewport evidence |
+| `neurochess-security-repo-hygiene` | Git discipline, secret safety, supply-chain quarantine, script safety, and CI caution |
+| `neurochess-product-ux-critic` | Player friction, first 30 seconds clarity, truthful feedback, and novelty-without-value checks |
+| `neurochess-learning-loop-accelerator` | Active effort, feedback, repetition, transfer verification, and learning-loop acceleration |
 
 ## Desktop-First Policy
 
@@ -33,10 +38,10 @@ resilience is secondary.
 
 ## Activation State
 
-The pack is committed as internal source material. A16L does not enable live
-automatic skill activation in Night Mode. Future missions may test selection and
-runtime usage, but skills remain procedures, not permissions.
+The pack is committed as internal source material. A16L and A16L2 do not enable
+live automatic skill activation in Night Mode. Future missions may test
+selection and runtime usage, but skills remain procedures, not permissions.
 
 ## Next Mission
 
-`A16M_INTERNAL_SKILLS_SELECTION_DRY_RUN`
+`A17_CONTROL_PLANE_INTEGRATION_DRY_RUN`

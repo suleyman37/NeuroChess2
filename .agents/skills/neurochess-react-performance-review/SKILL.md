@@ -36,11 +36,13 @@ stay responsive at 1366px, 1440px, and 1920px desktop widths.
 Check:
 
 - component boundaries;
+- stable component boundaries that support behavior tests;
 - unnecessary re-renders;
 - useEffect cascades;
 - state locality;
 - derived state risks;
 - stable props where needed;
+- render stability during board and panel interactions;
 - accessibility states;
 - loading, empty, error, disabled, hover, focus, and active states;
 - whether splitting a huge component improves clarity;
@@ -58,3 +60,6 @@ Check:
 
 React quality is judged by tests, build, typecheck, and screenshot behavior, not
 by abstract cleanliness.
+
+- Prefer behavior testing that proves user-visible state transitions.
+- Avoid brittle snapshot-only testing.

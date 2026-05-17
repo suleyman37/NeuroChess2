@@ -32,11 +32,16 @@ Collect:
 - commits and pushes;
 - tests and checks;
 - screenshots and contact sheets;
+- screenshot/contact-sheet summary by branch;
+- console and network evidence for browser smokes;
 - visual reviews;
 - backend evidence;
 - E2E deliverables;
 - product frictions reduced;
+- product UX friction reduction summary;
 - Potential Acceleration progress;
+- learning loop progress summary;
+- security and repo hygiene incidents;
 - prompt failures and repairs;
 - mission hashes and repeats;
 - no-progress events;
@@ -52,6 +57,7 @@ Answer:
 - Did the night produce real backend/frontend value?
 - Which branches deserve review?
 - Which branches are dangerous or noisy?
+- Which branches delivered the highest player value?
 - Which system friction should be fixed before next night?
 - What is the next best action?
 - What should not be done next?
