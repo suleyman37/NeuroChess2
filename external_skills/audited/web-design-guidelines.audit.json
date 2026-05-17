@@ -1,0 +1,41 @@
+﻿{
+    "schema_version":  "A16K_EXTERNAL_SKILL_AUDIT/1",
+    "candidate":  "web-design-guidelines",
+    "source":  "https://skills.sh/vercel-labs/agent-skills/web-design-guidelines",
+    "raw_skill_url":  "https://raw.githubusercontent.com/vercel-labs/agent-skills/main/skills/web-design-guidelines/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T02:25:33.7950460+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\web-design-guidelines",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "QUARANTINE",
+    "dangerous_patterns":  [
+                               "network fetch"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "design critique pattern",
+                            "skill authoring pattern"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "design review criteria",
+                                     "skill authoring conventions"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content"
+                                ],
+    "recommended_internal_skill_target":  "frontend-visual-review, accessibility/visual review checklist",
+    "extraction_target":  "frontend-visual-review",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false
+}

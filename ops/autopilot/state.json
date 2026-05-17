@@ -9,7 +9,7 @@
   "degraded": false,
   "last_successful_micro_loop": "A2_R3H",
   "last_successful_commit": "fe71b38",
-  "recommended_next_automation_mission": "A16K_EXTERNAL_SKILLS_FIRST_BATCH_AUDIT",
+  "recommended_next_automation_mission": "A16L_NEUROCHESS_INTERNAL_SKILLS_PACK",
   "product_checkpoint": "R3H complete, R3I not started",
   "evidence_policy_version": "A4A",
   "supervisor_digest_enabled": true,
@@ -133,6 +133,8 @@
   "external_skill_trust_gate_available": true,
   "external_skills_must_quarantine_first": true,
   "internal_skills_pack_planned": true,
+  "external_skills_first_batch_audit_version": "A16K",
+  "external_skills_first_batch_audit_passed": true,
   "retro_every_5_enabled": false,
   "chatgpt_web_bridge": {
     "enabled": false,

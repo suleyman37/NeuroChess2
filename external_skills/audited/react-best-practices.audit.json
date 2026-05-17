@@ -1,0 +1,39 @@
+﻿{
+    "schema_version":  "A16K_EXTERNAL_SKILL_AUDIT/1",
+    "candidate":  "react-best-practices",
+    "source":  "https://skills.sh/vercel-labs/agent-skills/vercel-react-best-practices",
+    "raw_skill_url":  "https://raw.githubusercontent.com/vercel-labs/agent-skills/main/skills/react-best-practices/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T02:25:33.7208171+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\react-best-practices",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  false,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "low",
+    "recommended_verdict":  "APPROVE_INTERNAL",
+    "dangerous_patterns":  [
+
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "skill authoring pattern"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "skill authoring conventions"
+                                 ],
+    "unsafe_parts_to_discard":  [
+
+                                ],
+    "recommended_internal_skill_target":  "neurochess-react-performance-review",
+    "extraction_target":  "react-performance-review",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false
+}

@@ -60,7 +60,12 @@ if ($hasSkillMd) {
 }
 
 $candidateTextExtensions = @(".md", ".txt", ".json", ".yaml", ".yml", ".ps1", ".sh", ".py", ".js", ".mjs", ".cmd", ".bat")
-$allFiles = @(Get-ChildItem -LiteralPath $resolvedSkillPath -File -Recurse -Force)
+$metadataNames = @("source.json")
+$allFiles = @(Get-ChildItem -LiteralPath $resolvedSkillPath -File -Recurse -Force | Where-Object {
+  $metadataNames -notcontains $_.Name -and
+  $_.Name -notlike "*.audit.json" -and
+  $_.Name -notlike "*.patterns.json"
+})
 foreach ($file in $allFiles) {
   if ($candidateTextExtensions -contains $file.Extension.ToLowerInvariant()) {
     try {
@@ -97,6 +102,7 @@ $patternRules = @(
   @{ Risk = "high"; Bucket = "danger"; Label = "dependency install"; Pattern = '\bnpm\s+install\b|\bpip\s+install\b|\bpnpm\s+add\b|\byarn\s+add\b' },
   @{ Risk = "high"; Bucket = "danger"; Label = "secrets or environment access"; Pattern = '\$env:|process\.env|\.env\b|id_rsa|keychain|ssh-agent|token|secret' },
   @{ Risk = "high"; Bucket = "danger"; Label = "browser profile access"; Pattern = 'ChromeProfile|ChatGPTSupervisorChromeProfile|GeminiAuditorChromeProfile|user-data-dir' },
+  @{ Risk = "medium"; Bucket = "danger"; Label = "architecture-wide refactor encouragement"; Pattern = 'codebase architecture|architectural friction|deepening opportunities|whole codebase|module-deepening refactors' },
   @{ Risk = "medium"; Bucket = "danger"; Label = "broad improvement language"; Pattern = 'improve everything|fix all|refactor everything|clean up everything|handle everything|as needed|if necessary' }
 )
 

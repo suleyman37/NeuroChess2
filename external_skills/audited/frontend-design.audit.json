@@ -1,0 +1,40 @@
+﻿{
+    "schema_version":  "A16K_EXTERNAL_SKILL_AUDIT/1",
+    "candidate":  "frontend-design",
+    "source":  "https://skills.sh/anthropics/skills/frontend-design",
+    "raw_skill_url":  "https://raw.githubusercontent.com/anthropics/skills/main/skills/frontend-design/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T02:25:33.6418860+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\frontend-design",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  false,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "low",
+    "recommended_verdict":  "APPROVE_INTERNAL",
+    "dangerous_patterns":  [
+
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "design critique pattern",
+                            "skill authoring pattern"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "design review criteria",
+                                     "skill authoring conventions"
+                                 ],
+    "unsafe_parts_to_discard":  [
+
+                                ],
+    "recommended_internal_skill_target":  "neurochess-frontend-visual-review, neurochess-game-like-ux, neurochess-visual-identity",
+    "extraction_target":  "frontend-visual-review",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false
+}
