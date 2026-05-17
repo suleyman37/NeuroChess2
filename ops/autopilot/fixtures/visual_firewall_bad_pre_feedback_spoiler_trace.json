@@ -1,0 +1,22 @@
+{
+  "schema_version": "A20K_visual_firewall_fixture_v1",
+  "subject": "bad_pre_feedback_spoiler_trace",
+  "states": [
+    {
+      "learning_state": "observe",
+      "phase": "pre_feedback",
+      "solution_line_present": false,
+      "candidate_path_present": false,
+      "destination_trace_present": false,
+      "ambiguous_answer_like_trace_present": false
+    },
+    {
+      "learning_state": "try_before_feedback",
+      "phase": "pre_feedback",
+      "solution_line_present": false,
+      "candidate_path_present": true,
+      "destination_trace_present": true,
+      "ambiguous_answer_like_trace_present": true
+    }
+  ]
+}

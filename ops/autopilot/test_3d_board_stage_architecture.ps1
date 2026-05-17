@@ -159,7 +159,11 @@ Assert-True ([bool]$state.board_stage_renderer_architecture_available) "state mi
 Assert-True ([bool]$state.three_d_performance_budget_available) "state missing performance budget availability"
 Assert-True ([bool]$state.three_d_accessibility_fallback_available) "state missing accessibility fallback availability"
 Assert-True (-not [bool]$state.code_native_3d_live_enforced) "3D live enforcement must remain disabled"
-Assert-True (@("A20G_DEV_ONLY_3D_BOARD_STAGE_PROTOTYPE", "A20H_DEV_ONLY_3D_BOARD_STAGE_PROTOTYPE") -contains $state.recommended_next_automation_mission) "next mission should be A20G or later A20H progression"
+Assert-True (@(
+  "A20G_DEV_ONLY_3D_BOARD_STAGE_PROTOTYPE",
+  "A20H_DEV_ONLY_3D_BOARD_STAGE_PROTOTYPE",
+  "A20J3_REWORK_3D_BOARD_STAGE_TOURNAMENT_WITH_STRICT_VISUAL_FIREWALL"
+) -contains $state.recommended_next_automation_mission) "next mission should be A20G, A20H, or later strict visual firewall progression"
 
 $endBranch = (git -C $repoRoot branch --show-current).Trim()
 $endHead = (git -C $repoRoot rev-parse --short HEAD).Trim()

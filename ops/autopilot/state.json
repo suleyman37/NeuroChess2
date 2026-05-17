@@ -9,7 +9,7 @@
   "degraded": false,
   "last_successful_micro_loop": "A2_R3H",
   "last_successful_commit": "fe71b38",
-  "recommended_next_automation_mission": "A20H_DEV_ONLY_3D_BOARD_STAGE_PROTOTYPE",
+  "recommended_next_automation_mission": "A20J3_REWORK_3D_BOARD_STAGE_TOURNAMENT_WITH_STRICT_VISUAL_FIREWALL",
   "product_checkpoint": "R3H complete, R3I not started",
   "evidence_policy_version": "A4A",
   "supervisor_digest_enabled": true,
@@ -252,5 +252,12 @@
   "reference_comparison_harness_available": true,
   "runtime_user_design_approval_required": false,
   "post_run_taste_calibration_available": true,
-  "autonomous_design_judgment_live_enforced": false
+  "autonomous_design_judgment_live_enforced": false,
+  "strict_chessboard_fidelity_gate_available": true,
+  "anti_spoiler_visual_state_gate_available": true,
+  "product_grade_visual_classification_available": true,
+  "premium_game_changer_design_gate_available": true,
+  "strict_gemini_visual_context_available": true,
+  "gemini_pass_can_be_overridden_by_hard_visual_gates": true,
+  "a20j_reaudit_required_before_consolidation": false
 }

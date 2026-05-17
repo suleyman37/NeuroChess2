@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "A20K Strict Visual Firewall Decision",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "visual_firewall_result",
+    "final_verdict",
+    "gemini_overridden",
+    "reasons"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20K_strict_visual_firewall_decision_v1" },
+    "visual_firewall_result": {
+      "enum": [
+        "PASS_PRODUCT_GRADE",
+        "PASS_PROTOTYPE_ONLY",
+        "BLOCK_CHESS_FIDELITY",
+        "BLOCK_STATE_SEMANTICS",
+        "BLOCK_CHEAP_UI",
+        "BLOCK_GENERIC_UI",
+        "GEMINI_CRITIQUE_INSUFFICIENT"
+      ]
+    },
+    "final_verdict": {
+      "enum": [
+        "READY_TO_REVIEW",
+        "READY_WITH_VISUAL_DEBT",
+        "NEEDS_REWORK",
+        "QUARANTINE_REQUIRED"
+      ]
+    },
+    "gemini_overridden": { "type": "boolean" },
+    "reasons": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

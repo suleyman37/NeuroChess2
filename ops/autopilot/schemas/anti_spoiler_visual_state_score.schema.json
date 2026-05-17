@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "A20K Anti-Spoiler Visual State Score",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "subject",
+    "anti_spoiler_visual_state_result",
+    "hard_gates_pass",
+    "state_results",
+    "violations"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20K_anti_spoiler_visual_state_score_v1" },
+    "subject": { "type": "string" },
+    "anti_spoiler_visual_state_result": {
+      "enum": ["PASS_STATE_SEMANTICS", "BLOCK_STATE_SEMANTICS"]
+    },
+    "hard_gates_pass": { "type": "boolean" },
+    "state_results": { "type": "array" },
+    "violations": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

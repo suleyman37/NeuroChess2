@@ -1,0 +1,18 @@
+{
+  "schema_version": "A20K_visual_firewall_fixture_v1",
+  "subject": "prototype_pass_product_fail",
+  "technical_prototype_safe": true,
+  "chessboard_fidelity_result": "BLOCK_CHESS_FIDELITY",
+  "anti_spoiler_visual_state_result": "PASS_STATE_SEMANTICS",
+  "no_fake_claims": true,
+  "cheap_ui_result": "WARN_DEV_HUD",
+  "generic_ui_result": "PASS_NON_GENERIC",
+  "premium_first_viewport": false,
+  "board_centered": true,
+  "memorable_identity": true,
+  "board_as_artifact": true,
+  "state_meaning_without_labels": false,
+  "premium_visual_depth": true,
+  "emotional_clarity": true,
+  "prototype_feeling_dominates": true
+}

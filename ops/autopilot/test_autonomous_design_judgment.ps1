@@ -196,7 +196,10 @@ Assert-True ([bool]$state.reference_comparison_harness_available) "state missing
 Assert-True (-not [bool]$state.runtime_user_design_approval_required) "runtime user design approval must be false"
 Assert-True ([bool]$state.post_run_taste_calibration_available) "state missing post-run calibration availability"
 Assert-True (-not [bool]$state.autonomous_design_judgment_live_enforced) "autonomous design judgment live enforcement must remain disabled"
-Assert-True ($state.recommended_next_automation_mission -eq "A20H_DEV_ONLY_3D_BOARD_STAGE_PROTOTYPE") "state next mission should be A20H"
+Assert-True (@(
+  "A20H_DEV_ONLY_3D_BOARD_STAGE_PROTOTYPE",
+  "A20J3_REWORK_3D_BOARD_STAGE_TOURNAMENT_WITH_STRICT_VISUAL_FIREWALL"
+) -contains $state.recommended_next_automation_mission) "state next mission should be A20H or later strict visual firewall progression"
 
 $endBranch = (git -C $repoRoot branch --show-current).Trim()
 $endHead = (git -C $repoRoot rev-parse --short HEAD).Trim()

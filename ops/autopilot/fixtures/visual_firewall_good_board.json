@@ -1,0 +1,14 @@
+{
+  "schema_version": "A20K_visual_firewall_fixture_v1",
+  "subject": "good_board",
+  "true_8x8_grid": true,
+  "square_dimensions_uniform": true,
+  "top_down_or_near_top_down": true,
+  "perspective_does_not_harm_reading": true,
+  "pieces_immediately_readable": true,
+  "board_surface_unpolluted": true,
+  "decorative_artifacts_enter_playing_surface": false,
+  "overlays_pedagogical_not_decorative": true,
+  "desktop_viewports_readable": true,
+  "understandable_without_debug_labels": true
+}

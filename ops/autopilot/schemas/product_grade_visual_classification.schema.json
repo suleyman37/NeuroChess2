@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "A20K Product Grade Visual Classification",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "subject",
+    "technical_prototype_grade",
+    "product_grade",
+    "game_changer_grade",
+    "cheap_ui_result",
+    "reasons"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20K_product_grade_visual_classification_v1" },
+    "subject": { "type": "string" },
+    "technical_prototype_grade": {
+      "enum": ["TECHNICAL_PROTOTYPE_PASS", "TECHNICAL_PROTOTYPE_FAIL"]
+    },
+    "product_grade": {
+      "enum": ["PRODUCT_GRADE_PASS", "PRODUCT_GRADE_FAIL"]
+    },
+    "game_changer_grade": {
+      "enum": ["GAME_CHANGER_PASS", "GAME_CHANGER_FAIL"]
+    },
+    "cheap_ui_result": {
+      "enum": ["PASS_PRODUCT_UI", "WARN_DEV_HUD", "BLOCK_CHEAP_UI"]
+    },
+    "generic_ui_result": {
+      "enum": ["PASS_NON_GENERIC", "WARN_GENERIC_DRIFT", "BLOCK_GENERIC_UI"]
+    },
+    "reasons": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

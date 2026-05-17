@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "A20K Chessboard Fidelity Score",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "subject",
+    "chessboard_fidelity_result",
+    "hard_gates_pass",
+    "violations"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20K_chessboard_fidelity_score_v1" },
+    "subject": { "type": "string" },
+    "chessboard_fidelity_result": {
+      "enum": ["PASS_CHESS_FIDELITY", "BLOCK_CHESS_FIDELITY"]
+    },
+    "hard_gates_pass": { "type": "boolean" },
+    "hard_gates": { "type": "object" },
+    "violations": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

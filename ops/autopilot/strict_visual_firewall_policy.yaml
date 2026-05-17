@@ -1,0 +1,42 @@
+enabled: false
+version: A20K
+strict_chessboard_fidelity_gate:
+  enabled: true
+  hard_fail_result: BLOCK_CHESS_FIDELITY
+  require_true_8x8_grid: true
+  require_uniform_square_perception: true
+  require_top_down_or_near_top_down: true
+  require_immediately_readable_pieces: true
+  forbid_decorative_artifacts_on_board: true
+  require_pedagogical_overlays: true
+anti_spoiler_visual_state_gate:
+  enabled: true
+  hard_fail_result: BLOCK_STATE_SEMANTICS
+  pre_feedback_states:
+    - observe
+    - try_before_feedback
+  forbid_pre_feedback_solution_line: true
+  forbid_pre_feedback_candidate_path: true
+  forbid_pre_feedback_destination_trace: true
+product_grade_visual_classification:
+  enabled: true
+  prototype_can_pass_while_product_fails: true
+  product_grade_requires_chess_fidelity: true
+  product_grade_requires_anti_spoiler: true
+  product_grade_requires_no_dev_hud_dominance: true
+premium_game_changer_design_gate:
+  enabled: true
+  requires_state_meaning_without_labels: true
+  requires_memorable_identity: true
+  requires_board_as_artifact: true
+cheap_ui_dev_hud_rejection:
+  enabled: true
+  block_dev_hud_dominance: true
+  warn_proof_scaffold_feel: true
+gemini_visual_court:
+  strict_context_available: true
+  gemini_pass_can_be_overridden_by_hard_visual_gates: true
+  placeholder_critique_cannot_be_sole_ready_basis: true
+live_enforcement_enabled: false
+live_gemini_required: false
+runtime_user_approval_required: false

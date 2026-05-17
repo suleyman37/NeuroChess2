@@ -1,0 +1,27 @@
+{
+  "schema": "A20K_STRICT_GEMINI_VISUAL_RESULT/1",
+  "nonce": "A20K_FIXTURE",
+  "mode": "visual_audit",
+  "verdict": "PASS_VISUAL",
+  "prototype_grade": "TECHNICAL_PROTOTYPE_PASS",
+  "product_grade": "PRODUCT_GRADE_PASS",
+  "game_changer_grade": "GAME_CHANGER_PASS",
+  "hard_gates": {
+    "chessboard_geometry_uniform": true,
+    "top_down_readability": true,
+    "pieces_immediately_readable": true,
+    "board_surface_unpolluted": true,
+    "overlays_pedagogical_not_decorative": true,
+    "pre_feedback_no_spoiler": true,
+    "primary_action_clear": true,
+    "no_fake_gamification": true,
+    "no_dev_hud_dominance": true,
+    "premium_identity": true
+  },
+  "fatal_defects": [],
+  "allowed_next_action": "CONTINUE",
+  "findings": ["fixture Gemini PASS that must be overridden by deterministic failure"],
+  "must_not_do": ["do not override deterministic hard gates"],
+  "placeholder_level": false,
+  "done": "A20K_FIXTURE"
+}
