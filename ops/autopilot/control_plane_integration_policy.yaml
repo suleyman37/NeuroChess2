@@ -1,0 +1,27 @@
+version: A17
+enabled: false
+live_control_plane_enabled: false
+live_rolling_loop_enabled: false
+runtime_default: temp
+external_report_root: "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\control_plane_dry_runs"
+integrated_components:
+  - control_plane_lock
+  - control_plane_state
+  - control_plane_events
+  - internal_skill_selection
+  - nc_mp2_parse_lint
+  - mission_contract
+  - shadow_plan
+  - mission_hash
+  - mission_repeat
+  - product_gate
+  - goldilocks
+  - e2e_deliverable_score
+  - forward_progress
+  - progress_ledger
+  - prompt_ledger
+  - night_mode_phase_transition
+live_chatgpt_allowed: false
+live_gemini_allowed: false
+product_execution_allowed: false
+recommended_next_automation_mission: A18_ROLLING_LOOP_CONTROLLER_DRY_RUN

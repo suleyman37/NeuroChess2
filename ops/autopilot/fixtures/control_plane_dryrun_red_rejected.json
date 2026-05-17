@@ -1,0 +1,20 @@
+{
+  "mission": {
+    "mission_id": "A17_RED_TIER_REJECTED_SIM",
+    "risk_tier": "amber",
+    "work_type": "backend-readonly-only",
+    "lane": "night-mode",
+    "goal": "Unsafe simulation that mentions Practice due_at Daily Plan training_items scoring XP rank Transfer.",
+    "allowed_paths": ["backend/**"],
+    "forbidden_paths": ["frontend/**", "docs/rebuild/**", "plan/**", "package.json", "package-lock.json", "App.tsx"],
+    "planned_read_paths": ["backend/**"],
+    "planned_write_paths": ["backend/neurochess/training_items.py"],
+    "expected_changed_files": ["backend/neurochess/training_items.py"],
+    "max_files": 1,
+    "max_diff_lines": 80,
+    "required_checks": ["git diff --check"],
+    "stop_conditions": ["red-tier detected"],
+    "night_mode_phase": "EXPANSION"
+  },
+  "expected_decision": "STOP_DETERMINISTIC_GATE"
+}

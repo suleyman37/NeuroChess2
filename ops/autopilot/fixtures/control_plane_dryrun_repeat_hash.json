@@ -1,0 +1,15 @@
+{
+  "mission_id": "A17_DOCS_ENABLER_SIM",
+  "risk_tier": "green",
+  "work_type": "docs-only",
+  "goal": "Create Control Plane dry-run reporting proof for the next rolling-loop controller mission.",
+  "allowed_paths": ["docs/autopilot/**"],
+  "forbidden_paths": ["frontend/**", "backend/**", "docs/rebuild/**", "plan/**", "package.json", "package-lock.json", "App.tsx"],
+  "expected_changed_files": ["docs/autopilot/CONTROL_PLANE_INTEGRATION_DRY_RUN.md"],
+  "max_files": 1,
+  "max_diff_lines": 160,
+  "required_checks": ["git diff --check"],
+  "stop_conditions": ["forbidden path touched", "contract mismatch"],
+  "codex_prompt": "",
+  "compact_intent": ""
+}

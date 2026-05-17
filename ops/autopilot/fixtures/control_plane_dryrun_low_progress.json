@@ -1,0 +1,13 @@
+{
+  "mission_id": "A17_LOW_PROGRESS_SIM",
+  "files_changed_count": 0,
+  "branch": "road-to-V2",
+  "commit_sha": "",
+  "evidence_pack_path": "",
+  "external_report_path": "",
+  "artifact_path": "",
+  "tests_run": [],
+  "same_mission_hash_repeated": false,
+  "contract_result": "MATCH",
+  "stop_reason": "no useful artifact"
+}

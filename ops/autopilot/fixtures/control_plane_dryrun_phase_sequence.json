@@ -1,0 +1,11 @@
+{
+  "session_id": "A17_CONTROL_PLANE_DRYRUN",
+  "initial_phase": "EXPANSION",
+  "required_e2e_deliverables": 2,
+  "missions": [
+    "control_plane_dryrun_docs_enabler.json",
+    "control_plane_dryrun_backend_e2e.json",
+    "control_plane_dryrun_frontend_e2e.json",
+    "control_plane_dryrun_red_rejected.json"
+  ]
+}
