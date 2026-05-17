@@ -1,0 +1,22 @@
+{
+  "cdp_attached": true,
+  "existing_chrome_reused": true,
+  "existing_page_reused": true,
+  "active_session_url_reuse": true,
+  "availability": "READY",
+  "ready_nonce": "READY_NONCE",
+  "ready_response": "<NC_SUPERVISOR_READY nonce=\"READY_NONCE\"><PROJECT>NeuroChess Supervisor</PROJECT><READY>YES</READY><CANARY_CHECKS>\nnonce_protocol: PASS\nmicro_prompt_only: PASS\nforbidden_paths_known: PASS\nred_tier_known: PASS\ngit_add_A_forbidden: PASS\n</CANARY_CHECKS><NC_DONE nonce=\"READY_NONCE\">DONE</NC_DONE></NC_SUPERVISOR_READY>",
+  "messages": [
+    {
+      "nonce": "NONCE_1",
+      "response": "{\"schema\":\"NC_TRANSPORT_ECHO/1\",\"nonce\":\"NONCE_1\",\"message_index\":1,\"role\":\"transport_smoke_only\",\"micro_prompt_requested\":false,\"done\":\"NONCE_1\"}"
+    },
+    {
+      "nonce": "NONCE_2",
+      "response": "```json\n{\"schema\":\"NC_TRANSPORT_ECHO/1\",\"nonce\":\"NONCE_2\",\"message_index\":2,\"role\":\"transport_smoke_only\",\"micro_prompt_requested\":false,\"done\":\"NONCE_2\"}\n```"
+    }
+  ],
+  "same_browser_reuse": "yes",
+  "same_page_reuse": "yes",
+  "same_conversation_id": "yes"
+}

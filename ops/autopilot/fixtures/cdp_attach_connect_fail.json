@@ -1,0 +1,5 @@
+{
+  "cdp_attached": false,
+  "availability": "CDP_ATTACH_FAILED",
+  "stop_reason": "STOP_CDP_ATTACH_FAILED"
+}

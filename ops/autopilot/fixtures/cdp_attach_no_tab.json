@@ -1,0 +1,7 @@
+{
+  "cdp_attached": true,
+  "existing_chrome_reused": true,
+  "existing_page_reused": false,
+  "availability": "ACTIVE_SESSION_TAB_NOT_FOUND",
+  "stop_reason": "STOP_ACTIVE_SESSION_TAB_NOT_FOUND"
+}
