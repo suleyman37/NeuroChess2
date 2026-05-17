@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NeuroChess North Star Vector",
+  "type": "object",
+  "required": [
+    "target_friction_id",
+    "potential_unlock_loop_steps",
+    "player_value_claim",
+    "evidence_expected",
+    "fake_progress_risk",
+    "expected_potential_acceleration_score",
+    "why_this_matters"
+  ],
+  "properties": {
+    "target_friction_id": { "type": "string", "minLength": 1 },
+    "potential_unlock_loop_steps": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "player_value_claim": { "type": "string", "minLength": 1 },
+    "evidence_expected": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "fake_progress_risk": { "type": "string" },
+    "expected_potential_acceleration_score": { "type": "number", "minimum": 0 },
+    "why_this_matters": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

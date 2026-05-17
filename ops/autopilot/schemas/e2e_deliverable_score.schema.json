@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NeuroChess E2E Deliverable Score",
+  "type": "object",
+  "required": ["score_result", "deliverable_type", "required_evidence_met", "missing_evidence", "reasons"],
+  "properties": {
+    "score_result": {
+      "enum": [
+        "E2E_DELIVERABLE_PASS",
+        "E2E_DELIVERABLE_PARTIAL",
+        "E2E_DELIVERABLE_FAIL",
+        "ENABLER_DELIVERABLE",
+        "NOT_DELIVERABLE"
+      ]
+    },
+    "verdict": { "type": "string" },
+    "deliverable_type": { "type": "string" },
+    "required_evidence_met": { "type": "boolean" },
+    "missing_evidence": { "type": "array", "items": { "type": "string" } },
+    "reasons": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

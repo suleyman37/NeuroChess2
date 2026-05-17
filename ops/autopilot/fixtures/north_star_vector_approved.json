@@ -1,0 +1,9 @@
+{
+  "target_friction_id": "NF-REVIEW-NEXT-ACTION",
+  "potential_unlock_loop_steps": ["Try", "Judge", "Replay"],
+  "player_value_claim": "The player can tell which Review action to take next.",
+  "evidence_expected": ["screenshot_after", "visual_review_brief"],
+  "fake_progress_risk": "low",
+  "expected_potential_acceleration_score": 4,
+  "why_this_matters": "Clear next action reduces Review drop-off."
+}

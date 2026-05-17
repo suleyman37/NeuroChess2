@@ -1,0 +1,7 @@
+{
+  "mission_hash": "abc123",
+  "same_mission_hash_seen": true,
+  "same_target_friction_retries": 0,
+  "consecutive_north_star_rejections": 1,
+  "rejection_reason": "Player value is vague and does not reduce a named friction."
+}

@@ -1,0 +1,15 @@
+{
+  "work_type": "frontend-readonly-only",
+  "deliverable_type": "frontend",
+  "branch_exists": true,
+  "commit_exists": true,
+  "screenshots_present": true,
+  "contact_sheet_present": true,
+  "visual_review_brief_present": true,
+  "visual_decision": "PASS_VISUAL",
+  "mission_contract_result": "MATCH",
+  "shadow_plan_result": "MATCH",
+  "forbidden_ui_claims": false,
+  "forbidden_path_touched": false,
+  "external_evidence_pack_path": "C:/Users/suley/Documents/Dev/NeuroChess_QA_Artifacts/autopilot/e2e/frontend"
+}

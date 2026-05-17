@@ -1,0 +1,10 @@
+{
+  "phase_state": {
+    "current_phase": "DRAIN",
+    "e2e_deliverables_count": 2,
+    "required_e2e_deliverables": 1,
+    "morning_report_complete": true,
+    "quotas_met_early": true
+  },
+  "latest_mission_result": {}
+}

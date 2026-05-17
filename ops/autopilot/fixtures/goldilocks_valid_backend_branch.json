@@ -1,0 +1,10 @@
+{
+  "mission_id": "BACKEND_READONLY_EVIDENCE_SLICE",
+  "planned_logical_delta_lines": 80,
+  "planned_modified_files_count": 4,
+  "planned_diff_lines": 180,
+  "docs_approved": false,
+  "has_e2e_deliverable": true,
+  "product_friction_reduction": true,
+  "safety_critical_unlock": false
+}

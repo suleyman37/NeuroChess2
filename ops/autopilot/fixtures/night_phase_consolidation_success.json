@@ -1,0 +1,11 @@
+{
+  "phase_state": {
+    "current_phase": "CONSOLIDATION",
+    "e2e_deliverables_count": 1,
+    "required_e2e_deliverables": 1,
+    "consecutive_low_value_consolidation_missions": 1
+  },
+  "latest_mission_result": {
+    "zero_e2e_gain": true
+  }
+}

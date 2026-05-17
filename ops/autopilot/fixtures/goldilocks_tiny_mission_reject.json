@@ -1,0 +1,10 @@
+{
+  "mission_id": "TINY_COMMENT_ONLY",
+  "planned_logical_delta_lines": 6,
+  "planned_modified_files_count": 1,
+  "planned_diff_lines": 8,
+  "docs_approved": false,
+  "has_e2e_deliverable": false,
+  "product_friction_reduction": false,
+  "safety_critical_unlock": false
+}

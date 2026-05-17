@@ -1,0 +1,41 @@
+version: A16N
+enabled: false
+phases:
+  - EXPANSION
+  - CONSOLIDATION
+  - DRAIN
+  - QUARANTINE
+time_policy:
+  min_wall_clock_required_for_success: false
+  time_is_success_target: false
+  max_wall_clock_is_cost_fuse: true
+goldilocks:
+  tiny_logic_delta_lines: 15
+  max_modified_files: 7
+  max_diff_lines: 350
+  ping_pong_failed_write_threshold: 3
+calibration:
+  A19:
+    max_wall_clock: 2h
+    max_missions_expansion: 5
+    required_e2e_deliverables: 1
+    consolidation_allowed: false
+  A20:
+    max_wall_clock: 4h
+    max_missions_expansion: 12
+    required_e2e_deliverables: 2
+    required_rollovers: 1
+    consolidation_allowed: true
+    max_consolidation_missions: 3
+  A21:
+    max_wall_clock: 8h
+    max_missions_expansion: 25
+    required_e2e_deliverables: 4
+    required_north_star_deliverables: 1
+    required_rollovers: 3
+    required_strategic_pulse: true
+    consolidation_allowed: asymptotic
+live_chatgpt_allowed: false
+live_gemini_allowed: false
+product_mission_execution_allowed: false
+recommended_next_automation_mission: A17_CONTROL_PLANE_INTEGRATION_DRY_RUN

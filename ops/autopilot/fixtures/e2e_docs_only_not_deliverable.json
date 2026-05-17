@@ -1,0 +1,10 @@
+{
+  "work_type": "docs-only",
+  "deliverable_type": "docs",
+  "product_impact_review": "AUTOMATION_EFFICIENCY",
+  "unblocks_specific_product_mission": false,
+  "mission_contract_result": "MATCH",
+  "shadow_plan_result": "MATCH",
+  "forbidden_path_touched": false,
+  "external_evidence_pack_path": "C:/Users/suley/Documents/Dev/NeuroChess_QA_Artifacts/autopilot/e2e/docs"
+}

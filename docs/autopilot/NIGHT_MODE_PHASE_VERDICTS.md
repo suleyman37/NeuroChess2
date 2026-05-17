@@ -1,0 +1,34 @@
+# Night Mode Phase Verdicts
+
+## Success States
+
+- `PASS_CAPACITY`
+- `PASS_CAPACITY_FAST`
+- `PASS_ENDURANCE`
+- `PASS_FULL_NIGHT`
+- `PASS_EARLY_EXCELLENCE`
+
+## Partial States
+
+- `PARTIAL_CAPACITY_REACHED`
+- `PARTIAL_STERILE_EXPANSION`
+- `PARTIAL_E2E_DELIVERABLES_CREATED`
+- `PARTIAL_CONSOLIDATION_INCOMPLETE`
+
+## Failure States
+
+- `FAIL_LOW_PRODUCT_WORKLOAD`
+- `FAIL_BLAST_RADIUS_VIOLATION`
+- `FAIL_TINY_MISSION_LOOP`
+- `FAIL_RED_TIER_BREACH`
+- `FAIL_CONTROL_PLANE_DESYNC`
+- `FAIL_NO_E2E_DELIVERABLE`
+- `FAIL_CONTEXT_ROLLOVER`
+- `FAIL_VISUAL_BLOCK`
+- `FAIL_NO_NORTH_STAR_VECTOR`
+- `FAIL_NORTH_STAR_REJECTED_LOOP`
+
+## Phase Notes
+
+Verdicts are deterministic run classifications. They do not authorize product
+execution, branch promotion, or safety gate relaxation.

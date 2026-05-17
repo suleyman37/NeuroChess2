@@ -151,6 +151,12 @@
   "internal_skills_selection_dryrun_passed": true,
   "internal_skills_live_selection_enabled": false,
   "internal_skills_required_for_night_mode": false,
+  "night_mode_state_machine_version": "A16N",
+  "night_mode_state_machine_enabled": false,
+  "goldilocks_governor_available": true,
+  "e2e_deliverable_score_available": true,
+  "north_star_vector_gate_available": true,
+  "asymptotic_drain_available": true,
   "retro_every_5_enabled": false,
   "chatgpt_web_bridge": {
     "enabled": false,

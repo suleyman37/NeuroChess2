@@ -1,0 +1,10 @@
+{
+  "phase_state": {
+    "current_phase": "EXPANSION",
+    "e2e_deliverables_count": 0,
+    "required_e2e_deliverables": 1
+  },
+  "latest_mission_result": {
+    "red_tier_breach": true
+  }
+}

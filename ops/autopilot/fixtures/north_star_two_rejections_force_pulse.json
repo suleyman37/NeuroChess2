@@ -1,0 +1,7 @@
+{
+  "mission_hash": "def456",
+  "same_mission_hash_seen": false,
+  "same_target_friction_retries": 1,
+  "consecutive_north_star_rejections": 2,
+  "rejection_reason": "Second consecutive North Star rejection."
+}

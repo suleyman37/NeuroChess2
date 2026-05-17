@@ -1,0 +1,13 @@
+{
+  "work_type": "backend-readonly-only",
+  "deliverable_type": "backend",
+  "branch_exists": true,
+  "commit_exists": true,
+  "targeted_tests_run": true,
+  "read_only": true,
+  "anti_mutation_evidence": true,
+  "mission_contract_result": "MATCH",
+  "shadow_plan_result": "MATCH",
+  "forbidden_path_touched": false,
+  "external_evidence_pack_path": "C:/Users/suley/Documents/Dev/NeuroChess_QA_Artifacts/autopilot/e2e/backend"
+}

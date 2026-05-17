@@ -1,0 +1,12 @@
+{
+  "phase_state": {
+    "current_phase": "EXPANSION",
+    "e2e_deliverables_count": 0,
+    "required_e2e_deliverables": 1,
+    "expansion_mission_count": 2,
+    "max_missions_expansion": 5
+  },
+  "latest_mission_result": {
+    "e2e_deliverable_created": true
+  }
+}

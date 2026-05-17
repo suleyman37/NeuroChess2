@@ -1,0 +1,9 @@
+{
+  "mission_id": "TOO_LARGE_ONE_STEP",
+  "planned_logical_delta_lines": 200,
+  "planned_modified_files_count": 9,
+  "planned_diff_lines": 520,
+  "docs_approved": false,
+  "has_e2e_deliverable": true,
+  "product_friction_reduction": true
+}

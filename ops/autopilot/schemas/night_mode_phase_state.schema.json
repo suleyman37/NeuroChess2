@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NeuroChess Night Mode Phase State",
+  "type": "object",
+  "required": ["current_phase"],
+  "properties": {
+    "current_phase": { "enum": ["EXPANSION", "CONSOLIDATION", "DRAIN", "QUARANTINE"] },
+    "e2e_deliverables_count": { "type": "integer", "minimum": 0 },
+    "required_e2e_deliverables": { "type": "integer", "minimum": 0 },
+    "expansion_mission_count": { "type": "integer", "minimum": 0 },
+    "max_missions_expansion": { "type": "integer", "minimum": 0 },
+    "consecutive_low_value_consolidation_missions": { "type": "integer", "minimum": 0 },
+    "branches_classified": { "type": "boolean" },
+    "morning_report_complete": { "type": "boolean" },
+    "quotas_met_early": { "type": "boolean" },
+    "time_fuse_approaching": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

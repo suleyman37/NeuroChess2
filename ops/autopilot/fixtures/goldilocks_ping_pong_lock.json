@@ -1,0 +1,8 @@
+{
+  "mission_id": "PING_PONG_FILE",
+  "planned_logical_delta_lines": 40,
+  "planned_modified_files_count": 1,
+  "planned_diff_lines": 60,
+  "same_file_failed_attempt_count": 3,
+  "same_file_failed_path": "frontend/src/review/DecisionPanel.tsx"
+}
