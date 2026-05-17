@@ -1,0 +1,21 @@
+{
+  "objective_id": "A21_LOW_VALUE_DOCS_FILLER",
+  "category": "DISTRACTION",
+  "target_friction_id": null,
+  "north_star_vector": [],
+  "expected_e2e_potential": false,
+  "expected_branch_count": 0,
+  "expected_files": ["docs/autopilot/filler.md"],
+  "expected_time_minutes_min": 10,
+  "expected_time_minutes_max": 20,
+  "branch_overlap_risk": 0,
+  "red_tier_risk": 0,
+  "visual_audit_required": false,
+  "visual_provider_available": true,
+  "evidence_expected": [],
+  "marginal_value_score": 24,
+  "confidence": 0.9,
+  "reason_to_do_now": "None.",
+  "reason_not_to_do": "Docs-only filler after quota does not reduce product friction.",
+  "recommended_phase": "DRAIN"
+}

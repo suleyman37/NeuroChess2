@@ -1,0 +1,14 @@
+{
+  "target_wall_clock_minutes": 360,
+  "hard_cap_minutes": 360,
+  "drain_required_by_minutes": 330,
+  "useful_work_target_ratio": 0.65,
+  "minimum_meaningful_mission_minutes": 20,
+  "wall_clock_elapsed": 150,
+  "useful_mission_minutes_estimate": 115,
+  "time_in_expansion": 110,
+  "missions_attempted": 4,
+  "high_value_missions": 3,
+  "low_value_missions": 0,
+  "e2e_deliverables": 3
+}

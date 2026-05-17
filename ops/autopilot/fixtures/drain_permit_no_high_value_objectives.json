@@ -1,0 +1,15 @@
+{
+  "run_state": {
+    "quota_reached": true,
+    "remaining_time_minutes": 30,
+    "strategic_pulse_ran": true,
+    "report_complete": true,
+    "evidence_complete": true,
+    "branches_classified": true,
+    "time_to_drain_window_reached": true
+  },
+  "objective_reservoir": {
+    "high_value_count": 0,
+    "candidates": []
+  }
+}

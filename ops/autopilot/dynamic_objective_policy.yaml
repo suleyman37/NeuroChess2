@@ -1,0 +1,68 @@
+schema_version: A20D_DYNAMIC_OBJECTIVE_POLICY/1
+enabled: false
+dynamic_objectives_enabled_for_a21_recommended: true
+adaptive_extension_after_quota: true
+drain_permit_required: true
+marginal_value_gate_required: true
+meta_fix_max_count_for_a20_5: 0
+meta_fix_max_count_for_a21_first_run: 0
+a21:
+  target_wall_clock_minutes: 360
+  hard_cap_minutes: 360
+  drain_required_by_minutes: 330
+  soft_target_minutes: 240
+  min_e2e_deliverables_for_pass: 4
+  target_e2e_deliverables_min: 4
+  target_e2e_deliverables_max: 6
+  max_e2e_deliverables: 8
+  minimum_meaningful_mission_minutes: 20
+  adaptive_extension_required_if_remaining_minutes_at_or_above: 45
+  useful_work_target_ratio: 0.65
+  docs_auto_merge_to_road_to_V2: false
+  product_code_auto_merge_to_road_to_V2: false
+score_thresholds:
+  high_value_min: 70
+  consolidation_min: 50
+  max_normal_risk: 40
+  reject_risk_above: 70
+objective_categories:
+  - PRODUCT_CORE
+  - PRODUCT_ENABLER
+  - BACKEND_READONLY_E2E
+  - FRONTEND_VISUAL_E2E
+  - TEST_OR_SMOKE_EVIDENCE
+  - BRANCH_CONSOLIDATION
+  - VISUAL_REVIEW_OR_CANARY
+  - EVIDENCE_AMPLIFICATION
+  - MORNING_REPORT_PREP
+  - DISTRACTION
+value_ladder:
+  - PRODUCT_CORE
+  - PRODUCT_ENABLER
+  - BACKEND_READONLY_E2E
+  - FRONTEND_VISUAL_E2E
+  - BRANCH_CONSOLIDATION
+  - TEST_OR_SMOKE_EVIDENCE
+  - VISUAL_REVIEW_OR_CANARY
+  - EVIDENCE_AMPLIFICATION
+  - MORNING_REPORT_PREP
+  - DRAIN
+allowed_architect_actions:
+  - EXTEND_PRODUCT_OBJECTIVE
+  - CONSOLIDATE_EXISTING_BRANCHES
+  - ADD_TEST_OR_SMOKE_EVIDENCE
+  - RUN_VISUAL_REVIEW_OR_CANARY
+  - EVIDENCE_AMPLIFICATION
+  - PREPARE_MORNING_REPORT
+  - DRAIN
+  - STOP
+drain_allowed_reasons:
+  - hard_stop_condition
+  - time_to_drain_window_reached
+  - no_high_value_objectives_remain
+  - budget_or_quota_near_cap
+  - environment_hygiene_requires_drain
+  - branch_orthogonality_blocks_safe_work
+  - strategic_pulse_drain_and_control_plane_agrees
+  - all_branches_classified_and_report_complete
+  - kill_switch_present

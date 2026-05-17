@@ -1,0 +1,12 @@
+{
+  "architect_decision": {
+    "chosen_action": "DRAIN",
+    "reason": "Initial quota reached."
+  },
+  "drain_permit": {
+    "drain_permit": "DENY_DRAIN",
+    "required_next_action": "ASK_ARCHITECT_FOR_NEXT_OBJECTIVE",
+    "reasons": [],
+    "blockers": ["quota reached early but high-value safe objectives remain and time is available"]
+  }
+}

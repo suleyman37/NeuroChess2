@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "NC_A20D_dynamic_objective_decision.schema.json",
+  "type": "object",
+  "required": ["dynamic_objective_decision", "architect_action", "recommended_action", "reason"],
+  "properties": {
+    "dynamic_objective_decision": {
+      "enum": [
+        "ACCEPT_OBJECTIVE",
+        "ACCEPT_DRAIN",
+        "ACCEPT_STOP",
+        "REJECT_DRAIN_DENIED",
+        "REJECT_LOW_MARGINAL_VALUE",
+        "REJECT_OBJECTIVE_NOT_FOUND",
+        "REJECT_UNKNOWN_ACTION"
+      ]
+    },
+    "architect_action": { "type": "string" },
+    "objective_id": { "type": ["string", "null"] },
+    "recommended_action": { "type": "string" },
+    "reason": { "type": "string" }
+  }
+}

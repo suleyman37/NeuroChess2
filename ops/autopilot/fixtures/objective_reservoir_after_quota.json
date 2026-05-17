@@ -1,0 +1,51 @@
+{
+  "schema_version": "A20D_objective_reservoir_v1",
+  "run_id": "fixture_after_quota",
+  "phase": "ADAPTIVE_EXTENSION",
+  "objective_count": 2,
+  "high_value_count": 1,
+  "candidates": [
+    {
+      "objective_id": "A21_FRONTEND_VISUAL_EXERCISE_DETAIL_E2E",
+      "category": "FRONTEND_VISUAL_E2E",
+      "target_friction_id": "read_only_visual_truth",
+      "north_star_vector": ["honest feedback", "active replay"],
+      "expected_e2e_potential": true,
+      "expected_branch_count": 1,
+      "expected_files": ["scripts/browser_exercise_detail_visual_followup.mjs"],
+      "expected_time_minutes_min": 30,
+      "expected_time_minutes_max": 55,
+      "branch_overlap_risk": 12,
+      "red_tier_risk": 0,
+      "visual_audit_required": true,
+      "visual_provider_available": true,
+      "evidence_expected": ["screenshots", "contact sheet", "Gemini Visual JSON"],
+      "marginal_value_score": 78,
+      "confidence": 0.8,
+      "reason_to_do_now": "High-value visual proof remains available.",
+      "reason_not_to_do": "Skip if visual provider unavailable.",
+      "recommended_phase": "ADAPTIVE_EXTENSION"
+    },
+    {
+      "objective_id": "A21_CONSOLIDATE_A20_5_BRANCH_EVIDENCE",
+      "category": "BRANCH_CONSOLIDATION",
+      "target_friction_id": "morning_review_confidence",
+      "north_star_vector": ["honest feedback"],
+      "expected_e2e_potential": false,
+      "expected_branch_count": 0,
+      "expected_files": [],
+      "expected_time_minutes_min": 15,
+      "expected_time_minutes_max": 30,
+      "branch_overlap_risk": 5,
+      "red_tier_risk": 0,
+      "visual_audit_required": false,
+      "visual_provider_available": true,
+      "evidence_expected": ["branch classification report"],
+      "marginal_value_score": 62,
+      "confidence": 0.75,
+      "reason_to_do_now": "Useful consolidation fallback.",
+      "reason_not_to_do": "Prefer product E2E if enough time remains.",
+      "recommended_phase": "CONSOLIDATION"
+    }
+  ]
+}

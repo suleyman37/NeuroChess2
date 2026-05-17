@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "NC_A20D_drain_permit.schema.json",
+  "type": "object",
+  "required": ["drain_permit", "reasons", "required_next_action"],
+  "properties": {
+    "drain_permit": { "enum": ["ALLOW_DRAIN", "DENY_DRAIN"] },
+    "reasons": { "type": "array", "items": { "type": "string" } },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "required_next_action": {
+      "enum": ["ASK_ARCHITECT_FOR_NEXT_OBJECTIVE", "CONSOLIDATE", "EVIDENCE_AMPLIFICATION", "DRAIN"]
+    }
+  }
+}

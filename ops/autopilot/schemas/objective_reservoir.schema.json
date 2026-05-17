@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "NC_A20D_objective_reservoir.schema.json",
+  "type": "object",
+  "required": ["schema_version", "run_id", "phase", "objective_count", "high_value_count", "candidates"],
+  "properties": {
+    "schema_version": { "const": "A20D_objective_reservoir_v1" },
+    "run_id": { "type": "string" },
+    "phase": { "type": "string" },
+    "objective_count": { "type": "integer" },
+    "high_value_count": { "type": "integer" },
+    "candidates": { "type": "array", "items": { "$ref": "objective_candidate.schema.json" } }
+  }
+}

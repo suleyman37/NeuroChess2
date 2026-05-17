@@ -1,0 +1,21 @@
+{
+  "run_state": {
+    "quota_reached": true,
+    "remaining_time_minutes": 140,
+    "strategic_pulse_ran": true,
+    "report_complete": true,
+    "evidence_complete": true,
+    "branches_classified": true
+  },
+  "objective_reservoir": {
+    "high_value_count": 1,
+    "candidates": [
+      {
+        "objective_id": "A21_FRONTEND_VISUAL_EXERCISE_DETAIL_E2E",
+        "marginal_value_score": 78,
+        "red_tier_risk": 0,
+        "branch_overlap_risk": 12
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "architect_decision": {
+    "chosen_action": "DRAIN",
+    "reason": "No high-value safe work remains."
+  },
+  "drain_permit": {
+    "drain_permit": "ALLOW_DRAIN",
+    "required_next_action": "DRAIN",
+    "reasons": ["no high-value objectives remain"],
+    "blockers": []
+  }
+}

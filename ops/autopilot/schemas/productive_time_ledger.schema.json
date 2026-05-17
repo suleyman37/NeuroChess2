@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "NC_A20D_productive_time_ledger.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "wall_clock_elapsed",
+    "useful_mission_minutes_estimate",
+    "productive_utilization_ratio",
+    "productive_time_status",
+    "recommended_action"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20D_productive_time_ledger_v1" },
+    "productive_time_status": {
+      "enum": ["HEALTHY", "LOW_UTILIZATION", "TIME_TO_DRAIN", "STOP_TIME_EXCEEDED"]
+    },
+    "recommended_action": { "type": "string" }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "run_id": "fixture_initial",
+  "phase": "EXPANSION",
+  "sources": ["Product Friction Register", "A20.5 report"],
+  "objective_candidates": [
+    {
+      "objective_id": "A21_BACKEND_READONLY_EXERCISE_DETAIL_E2E",
+      "category": "BACKEND_READONLY_E2E",
+      "target_friction_id": "review_exercise_detail_trust",
+      "north_star_vector": ["honest feedback", "repetition"],
+      "expected_e2e_potential": true,
+      "expected_branch_count": 1,
+      "expected_files": ["backend/tests/test_readonly_exercise_detail_followup.py"],
+      "expected_time_minutes_min": 25,
+      "expected_time_minutes_max": 45,
+      "branch_overlap_risk": 10,
+      "red_tier_risk": 0,
+      "visual_audit_required": false,
+      "visual_provider_available": true,
+      "evidence_expected": ["backend test", "anti-mutation proof"],
+      "marginal_value_score": 84,
+      "confidence": 0.86,
+      "reason_to_do_now": "Backend read-only proof remains high leverage.",
+      "reason_not_to_do": "Skip on file overlap.",
+      "recommended_phase": "EXPANSION"
+    },
+    {
+      "objective_id": "A21_LOW_VALUE_DOCS_FILLER",
+      "category": "DISTRACTION",
+      "target_friction_id": null,
+      "north_star_vector": [],
+      "expected_e2e_potential": false,
+      "expected_branch_count": 0,
+      "expected_files": ["docs/autopilot/filler.md"],
+      "expected_time_minutes_min": 10,
+      "expected_time_minutes_max": 20,
+      "branch_overlap_risk": 0,
+      "red_tier_risk": 0,
+      "visual_audit_required": false,
+      "visual_provider_available": true,
+      "evidence_expected": [],
+      "marginal_value_score": 24,
+      "confidence": 0.9,
+      "reason_to_do_now": "None.",
+      "reason_not_to_do": "Filler.",
+      "recommended_phase": "DRAIN"
+    }
+  ]
+}
