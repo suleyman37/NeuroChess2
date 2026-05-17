@@ -1,0 +1,30 @@
+{
+  "schema_version": "A18_rolling_loop_scenario_v1",
+  "scenario_name": "success_sequence",
+  "initial_phase": "EXPANSION",
+  "max_steps": 5,
+  "required_e2e_deliverables": 2,
+  "expected_final_verdict": "PASS_ROLLING_LOOP_DRY_RUN",
+  "mission_queue": [
+    { "step_id": "docs_enabler", "fixture": "control_plane_dryrun_docs_enabler.json" },
+    { "step_id": "backend_readonly_e2e", "fixture": "control_plane_dryrun_backend_e2e.json" },
+    { "step_id": "frontend_visual_e2e", "fixture": "control_plane_dryrun_frontend_e2e.json" }
+  ],
+  "phase_checks": [
+    {
+      "step_id": "expansion_to_consolidation",
+      "phase_state": { "current_phase": "EXPANSION", "e2e_deliverables_count": 2, "required_e2e_deliverables": 2, "expansion_mission_count": 3, "max_missions_expansion": 5 },
+      "latest_mission_result": { "e2e_deliverable_created": true }
+    },
+    {
+      "step_id": "consolidation_to_drain",
+      "phase_state": { "current_phase": "CONSOLIDATION", "e2e_deliverables_count": 2, "required_e2e_deliverables": 2, "consecutive_low_value_consolidation_missions": 1 },
+      "latest_mission_result": { "zero_e2e_gain": true }
+    },
+    {
+      "step_id": "drain_complete",
+      "phase_state": { "current_phase": "DRAIN", "e2e_deliverables_count": 2, "required_e2e_deliverables": 2, "morning_report_complete": true, "quotas_met_early": true },
+      "latest_mission_result": {}
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": "A18_rolling_loop_scenario_v1",
+  "scenario_name": "low_product_value",
+  "initial_phase": "EXPANSION",
+  "expected_final_verdict": "STOP_LOW_PRODUCT_VALUE",
+  "stop_on_product_warn": true,
+  "mission_queue": [
+    {
+      "step_id": "low_product_value",
+      "fixture": "control_plane_dryrun_docs_enabler.json",
+      "product_impact_override": {
+        "schema_version": "A16E",
+        "mission_id": "A18_LOW_PRODUCT_VALUE_SIM",
+        "mission_type": "AUTOMATION_EFFICIENCY",
+        "friction_targeted": [],
+        "friction_reduced": [],
+        "friction_created": ["LOW-PRODUCT-VALUE"],
+        "potential_unlock_loop_steps": [],
+        "potential_acceleration_score": {
+          "real_game_leverage": 0,
+          "active_effort": 0,
+          "feedback_quality": 1,
+          "transfer_probability": 0,
+          "personalization": 0,
+          "engagement_loop": 0,
+          "truthfulness": 5,
+          "total": 6
+        },
+        "unlock_value": "indirect",
+        "revolutionary_value_verdict": "NO",
+        "fake_progress_risk": "medium",
+        "why_this_matters": "This fixture proves low product value stops the dry-run loop.",
+        "evidence": [],
+        "recommended_next_action": "STRATEGIC_PULSE"
+      }
+    },
+    { "step_id": "should_not_process", "fixture": "control_plane_dryrun_backend_e2e.json" }
+  ]
+}

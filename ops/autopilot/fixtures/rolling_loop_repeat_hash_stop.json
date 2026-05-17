@@ -1,0 +1,11 @@
+{
+  "schema_version": "A18_rolling_loop_scenario_v1",
+  "scenario_name": "repeat_hash_stop",
+  "initial_phase": "EXPANSION",
+  "expected_final_verdict": "FAIL_REPEAT_MISSION_HASH",
+  "mission_queue": [
+    { "step_id": "docs_enabler_first", "fixture": "control_plane_dryrun_docs_enabler.json" },
+    { "step_id": "docs_enabler_repeat", "fixture": "control_plane_dryrun_docs_enabler.json" },
+    { "step_id": "should_not_process", "fixture": "control_plane_dryrun_backend_e2e.json" }
+  ]
+}

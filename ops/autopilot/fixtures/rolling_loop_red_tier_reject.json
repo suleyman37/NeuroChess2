@@ -1,0 +1,10 @@
+{
+  "schema_version": "A18_rolling_loop_scenario_v1",
+  "scenario_name": "red_tier_reject",
+  "initial_phase": "EXPANSION",
+  "expected_final_verdict": "QUARANTINE_REQUIRED",
+  "mission_queue": [
+    { "step_id": "red_tier_reject", "fixture": "control_plane_dryrun_red_rejected.json" },
+    { "step_id": "should_not_process", "fixture": "control_plane_dryrun_backend_e2e.json" }
+  ]
+}

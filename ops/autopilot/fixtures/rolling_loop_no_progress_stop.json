@@ -1,0 +1,11 @@
+{
+  "schema_version": "A18_rolling_loop_scenario_v1",
+  "scenario_name": "no_progress_stop",
+  "initial_phase": "EXPANSION",
+  "expected_final_verdict": "FAIL_NO_FORWARD_PROGRESS",
+  "mission_queue": [
+    { "step_id": "no_progress_warn", "fixture": "control_plane_dryrun_docs_enabler.json", "force_no_progress": true },
+    { "step_id": "no_progress_stop", "fixture": "control_plane_dryrun_backend_e2e.json", "force_no_progress": true },
+    { "step_id": "should_not_process", "fixture": "control_plane_dryrun_frontend_e2e.json" }
+  ]
+}

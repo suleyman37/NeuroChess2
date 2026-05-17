@@ -1,0 +1,11 @@
+{
+  "schema_version": "A18_rolling_loop_scenario_v1",
+  "scenario_name": "rollover_due",
+  "initial_phase": "EXPANSION",
+  "expected_final_verdict": "ROLLOVER_REQUIRED",
+  "rollover_due_after_steps": 1,
+  "mission_queue": [
+    { "step_id": "docs_enabler_before_rollover", "fixture": "control_plane_dryrun_docs_enabler.json" },
+    { "step_id": "should_not_process", "fixture": "control_plane_dryrun_backend_e2e.json" }
+  ]
+}

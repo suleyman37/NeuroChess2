@@ -1,0 +1,28 @@
+schema_version: A18_rolling_loop_policy_v1
+mode: dry_run_only
+live_chatgpt_allowed: false
+live_gemini_allowed: false
+codex_product_execution_allowed: false
+live_night_mode_allowed: false
+live_control_plane_enabled: false
+live_rolling_loop_enabled: false
+max_same_mission_hash_repeats: 1
+max_consecutive_no_progress_missions: 2
+no_progress_window_size: 5
+no_progress_in_window_requires_pulse: 3
+actions:
+  - CONTINUE
+  - DRAIN
+  - STOP
+  - QUARANTINE
+  - ROLLOVER_REQUIRED
+stop_conditions:
+  - mission_contract_mismatch
+  - shadow_plan_mismatch
+  - nc_mp2_lint_fail
+  - product_gate_fail
+  - repeat_mission_hash
+  - no_forward_progress
+  - goldilocks_reject
+  - red_tier_detected
+  - rollover_due_live_disabled
