@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "NC_A20E_design_brief.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "surface",
+    "user_state",
+    "product_intent",
+    "desktop_target",
+    "primary_action",
+    "board_role",
+    "position_artifact_role",
+    "reference_inspirations",
+    "forbidden_design_drift",
+    "screenshot_requirements",
+    "gemini_visual_court_questions",
+    "expected_pass_fail_criteria"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20E_design_brief_v1" },
+    "surface": { "type": "string" },
+    "reference_inspirations": { "type": "array" },
+    "forbidden_design_drift": { "type": "array", "items": { "type": "string" } }
+  }
+}

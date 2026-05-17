@@ -1,0 +1,18 @@
+{
+  "schema_version": "A20E_design_brief_v1",
+  "surface": "generic analytics view",
+  "user_state": "reading metrics",
+  "product_intent": "show a modern clean UI",
+  "desktop_target": "desktop",
+  "primary_action": "view dashboard",
+  "board_role": "board is optional",
+  "position_artifact_role": "artifact concept present but weak",
+  "reference_inspirations": [],
+  "interaction_expectations": ["click cards"],
+  "visual_hierarchy_expectations": ["too many bland cards", "generic metric table", "passive information layout"],
+  "motion_expectations": ["meaningless glow"],
+  "forbidden_design_drift": ["generic metric table", "SaaS landing-page style", "too many bland cards", "meaningless glow", "passive information", "fake Practice ready", "XP/rank/Transfer"],
+  "screenshot_requirements": ["desktop screenshot"],
+  "gemini_visual_court_questions": ["Is this drifting toward generic SaaS?"],
+  "expected_pass_fail_criteria": ["generic SaaS drift <= 2"]
+}

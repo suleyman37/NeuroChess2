@@ -1,0 +1,14 @@
+{
+  "schema_version": "A20E_design_reference_v1",
+  "reference_id": "messenger",
+  "name": "Messenger by Abeto",
+  "corpus_type": "visual_atmosphere",
+  "traits": ["miniature living world", "warmth", "memorable compact universe", "simple loop", "hand-crafted personality"],
+  "learn": ["make the product feel like a place", "give compact states personality", "keep the loop simple"],
+  "do_not_copy": ["too cute or soft", "decorative characters without learning purpose", "mobile-game softness"],
+  "neurochess_lessons": ["avoid sterile dashboard feel", "create a living place around player decisions"],
+  "risk_if_copied_badly": "Can become cute, soft, or childish instead of serious chess training.",
+  "neurochess_usage": "Use for warmth, place-making, and memorable state identity.",
+  "scores": { "clarity": 4, "speed": 3, "premium_feel": 4, "atmosphere": 5, "game_like_feedback": 4, "desktop_command_center": 2, "motion_quality": 4, "decision_visibility": 3, "learning_relevance": 4 },
+  "copyrighted_assets_stored": false
+}

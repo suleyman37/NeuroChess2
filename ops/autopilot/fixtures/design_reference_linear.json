@@ -1,0 +1,14 @@
+{
+  "schema_version": "A20E_design_reference_v1",
+  "reference_id": "linear",
+  "name": "Linear",
+  "corpus_type": "application_ux",
+  "traits": ["clarity", "speed", "density", "execution focus"],
+  "learn": ["fast scan hierarchy", "dense but quiet execution surfaces", "keyboard-friendly workflow"],
+  "do_not_copy": ["too cold SaaS", "generic issue tracker feel", "flat dashboard personality"],
+  "neurochess_lessons": ["make decision evidence fast to scan", "keep dense panels orderly"],
+  "risk_if_copied_badly": "NeuroChess becomes a SaaS dashboard instead of a chess cockpit.",
+  "neurochess_usage": "Use for hierarchy, speed, and quiet density.",
+  "scores": { "clarity": 5, "speed": 5, "premium_feel": 4, "atmosphere": 2, "game_like_feedback": 2, "desktop_command_center": 4, "motion_quality": 3, "decision_visibility": 5, "learning_relevance": 4 },
+  "copyrighted_assets_stored": false
+}

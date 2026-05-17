@@ -1,0 +1,14 @@
+{
+  "schema_version": "A20E_design_reference_v1",
+  "reference_id": "figma",
+  "name": "Figma",
+  "corpus_type": "application_ux",
+  "traits": ["central canvas", "panels around visual workspace", "contextual tools", "collaborative precision"],
+  "learn": ["central workspace with supporting panels", "contextual tools near the active object", "canvas as command surface"],
+  "do_not_copy": ["too complex", "tool chrome overload", "expert-only panel density"],
+  "neurochess_lessons": ["board as central canvas", "panels support the position rather than compete"],
+  "risk_if_copied_badly": "The interface becomes too complex for learning flow.",
+  "neurochess_usage": "Use for board-centered canvas and contextual panels.",
+  "scores": { "clarity": 4, "speed": 4, "premium_feel": 4, "atmosphere": 2, "game_like_feedback": 2, "desktop_command_center": 5, "motion_quality": 3, "decision_visibility": 4, "learning_relevance": 5 },
+  "copyrighted_assets_stored": false
+}

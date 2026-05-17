@@ -1,0 +1,76 @@
+schema_version: A20E_DESIGN_INTELLIGENCE_POLICY/1
+enabled: false
+live_enforcement_enabled: false
+copyrighted_assets_allowed: false
+download_reference_images_allowed: false
+visual_reference_corpus_available: true
+application_ux_reference_corpus_available: true
+frontend_design_brief_required_recommended: true
+visual_taste_ledger_runtime_path: C:\Users\suley\Documents\Dev\NeuroChess_QA_Artifacts\autopilot\runtime\visual_taste_ledger.jsonl
+visual_north_star:
+  feels_like:
+    - desktop strategic command center
+    - serious but exciting chess training cockpit
+    - premium dark PC application
+    - board-centered arena
+    - living place where real decisions become playable learning moments
+    - laboratory of chess potential
+  must_not_feel_like:
+    - SaaS analytics dashboard
+    - generic Stockfish GUI
+    - mobile app stretched to desktop
+    - cheap RPG gamification screen
+    - random glowing cyber UI
+    - spreadsheet of chess metrics
+    - passive analysis report
+    - website landing page
+design_rubric_thresholds:
+  desktop_first_fit_min: 4
+  board_centered_composition_min_when_board_present: 4
+  decision_clarity_min: 4
+  cta_truthfulness_required: 5
+  no_fake_gamification_required: 5
+  generic_saas_drift_max: 2
+  learning_loop_support_min: 4
+anti_generic_saas_flags:
+  - too_many_bland_cards
+  - generic_blue_purple_gradient
+  - meaningless_glow
+  - metric_dashboard_without_action
+  - no_board_centrality
+  - weak_primary_action
+  - passive_information_layout
+  - modern_clean_ui_without_identity
+  - saas_landing_page_style
+  - repetitive_rounded_cards
+  - no_state_tension
+  - no_feedback_energy
+  - empty_card_grid
+  - no_sense_of_place
+desktop_command_center_checks:
+  - board_or_key_position_central
+  - support_panels_do_not_compete
+  - primary_action_visible_without_scroll
+  - keyboard_mouse_flow_considered
+  - desktop_widths_1366_1440_1920_considered
+  - no_mobile_first_bottom_navigation
+  - context_visible_during_action
+  - feedback_near_board_or_decision
+  - purposeful_visual_density
+game_like_ux_checks:
+  - next_action_obvious
+  - state_responds_to_action
+  - feedback_is_earned
+  - next_attempt_obvious
+  - chess_decision_feels_alive
+  - analysis_paralysis_reduced
+  - potential_unlock_loop_accelerated
+forbidden_design_claims:
+  - fake Practice ready
+  - fake XP
+  - fake rank
+  - fake Transfer
+  - fake neuroscience
+  - fake Elo
+  - loot boxes
+  - manipulative streaks

@@ -1,0 +1,14 @@
+{
+  "schema_version": "A20E_design_reference_v1",
+  "reference_id": "igloo",
+  "name": "Igloo Inc.",
+  "corpus_type": "visual_atmosphere",
+  "traits": ["cold premium atmosphere", "cinematic reveal", "3D artifacts", "fog and material depth", "monochrome mystery", "interface as a place"],
+  "learn": ["use empty space as focus", "make artifacts feel premium", "let reveal create attention"],
+  "do_not_copy": ["overly contemplative pacing", "portfolio-site navigation", "mystery that hides the next action"],
+  "neurochess_lessons": ["make the chessboard or key moment feel like an artifact", "build a premium strategic atmosphere"],
+  "risk_if_copied_badly": "Too slow, too atmospheric, or too website-like for a learning cockpit.",
+  "neurochess_usage": "Use for board staging, moment reveal, and premium material depth.",
+  "scores": { "clarity": 3, "speed": 2, "premium_feel": 5, "atmosphere": 5, "game_like_feedback": 2, "desktop_command_center": 3, "motion_quality": 5, "decision_visibility": 3, "learning_relevance": 4 },
+  "copyrighted_assets_stored": false
+}

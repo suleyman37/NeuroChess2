@@ -226,5 +226,15 @@
   "adaptive_extension_phase_available": true,
   "drain_permit_policy_available": true,
   "marginal_value_gate_available": true,
-  "a21_dynamic_objectives_recommended": true
+  "a21_dynamic_objectives_recommended": true,
+  "design_intelligence_layer_version": "A20E",
+  "visual_reference_corpus_available": true,
+  "application_ux_reference_corpus_available": true,
+  "frontend_design_brief_compiler_available": true,
+  "visual_taste_ledger_available": true,
+  "design_rubric_available": true,
+  "anti_generic_saas_checklist_available": true,
+  "game_like_ux_checklist_available": true,
+  "desktop_command_center_checklist_available": true,
+  "design_intelligence_live_enforced": false
 }

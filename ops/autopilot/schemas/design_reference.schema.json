@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "NC_A20E_design_reference.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "reference_id",
+    "name",
+    "corpus_type",
+    "traits",
+    "learn",
+    "do_not_copy",
+    "neurochess_lessons",
+    "risk_if_copied_badly",
+    "neurochess_usage",
+    "scores",
+    "copyrighted_assets_stored"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20E_design_reference_v1" },
+    "reference_id": { "type": "string" },
+    "name": { "type": "string" },
+    "corpus_type": { "enum": ["visual_atmosphere", "application_ux"] },
+    "traits": { "type": "array", "items": { "type": "string" } },
+    "learn": { "type": "array", "items": { "type": "string" } },
+    "do_not_copy": { "type": "array", "items": { "type": "string" } },
+    "neurochess_lessons": { "type": "array", "items": { "type": "string" } },
+    "risk_if_copied_badly": { "type": "string" },
+    "neurochess_usage": { "type": "string" },
+    "copyrighted_assets_stored": { "const": false }
+  }
+}

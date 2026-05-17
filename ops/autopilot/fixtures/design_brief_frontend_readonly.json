@@ -1,0 +1,10 @@
+{
+  "surface": "read-only exercise detail",
+  "user_state": "inspecting an existing exercise before deciding whether to train later",
+  "product_intent": "prove read-only clarity and make the chess decision feel inspectable",
+  "desktop_target": "1366/1440/1920 desktop-first",
+  "primary_action": "one truthful read-only next action",
+  "board_role": "central board or key position stage",
+  "position_artifact_role": "the key position is an inspectable artifact",
+  "selected_references": ["linear", "figma", "orano", "igloo", "balatro"]
+}

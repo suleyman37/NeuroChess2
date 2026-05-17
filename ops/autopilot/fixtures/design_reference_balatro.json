@@ -1,0 +1,14 @@
+{
+  "schema_version": "A20E_design_reference_v1",
+  "reference_id": "balatro",
+  "name": "Balatro",
+  "corpus_type": "application_ux",
+  "traits": ["feedback", "tactical state clarity", "one-more-try loop", "challenge and reward without long explanation"],
+  "learn": ["earned feedback can feel satisfying", "state changes should be tactile", "replay loop can be clear and addictive"],
+  "do_not_copy": ["cheap gamification", "fake XP/rank/Transfer", "casino aesthetics", "cartoon reward inflation"],
+  "neurochess_lessons": ["make feedback earned after effort", "create one-more-try energy without lying"],
+  "risk_if_copied_badly": "Can become gamey or manipulative instead of honest learning.",
+  "neurochess_usage": "Use for tactile feedback, attempt loops, and satisfying resolution.",
+  "scores": { "clarity": 4, "speed": 5, "premium_feel": 3, "atmosphere": 4, "game_like_feedback": 5, "desktop_command_center": 3, "motion_quality": 5, "decision_visibility": 4, "learning_relevance": 4 },
+  "copyrighted_assets_stored": false
+}

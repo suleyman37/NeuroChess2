@@ -1,0 +1,14 @@
+{
+  "schema_version": "A20E_design_reference_v1",
+  "reference_id": "som",
+  "name": "SOM",
+  "corpus_type": "visual_atmosphere",
+  "traits": ["central product totem", "energetic color", "massive typography", "emotional states", "strong visual rhythm"],
+  "learn": ["make the key position a totem", "use state words with impact", "create energy without fake gamification"],
+  "do_not_copy": ["marketing hype", "oversized typography that competes with the board", "empty spectacle"],
+  "neurochess_lessons": ["board or key position should anchor the whole screen", "important state words can carry emotion"],
+  "risk_if_copied_badly": "Can feel like a landing page or hype screen.",
+  "neurochess_usage": "Use for totemic board staging and emotionally legible state rhythm.",
+  "scores": { "clarity": 4, "speed": 3, "premium_feel": 4, "atmosphere": 4, "game_like_feedback": 4, "desktop_command_center": 3, "motion_quality": 4, "decision_visibility": 4, "learning_relevance": 4 },
+  "copyrighted_assets_stored": false
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "NC_A20E_design_score.schema.json",
+  "type": "object",
+  "required": ["design_brief_score_result", "requirements_present", "flags", "recommended_action"],
+  "properties": {
+    "design_brief_score_result": {
+      "enum": ["PASS", "WARN_GENERIC_SAAS_DRIFT", "REJECT_DESIGN_BRIEF"]
+    },
+    "requirements_present": { "type": "array", "items": { "type": "string" } },
+    "flags": { "type": "array", "items": { "type": "string" } },
+    "recommended_action": { "type": "string" }
+  }
+}

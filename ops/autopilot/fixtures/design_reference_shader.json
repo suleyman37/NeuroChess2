@@ -1,0 +1,14 @@
+{
+  "schema_version": "A20E_design_reference_v1",
+  "reference_id": "shader",
+  "name": "Shader Development Studio",
+  "corpus_type": "visual_atmosphere",
+  "traits": ["strong personality", "retro-futuristic storytelling", "editorial scenes", "warmth", "anti-template"],
+  "learn": ["develop a voice", "make learning states memorable", "avoid cold tool feeling"],
+  "do_not_copy": ["agency-site self-consciousness", "retro style over usability", "humor that weakens seriousness"],
+  "neurochess_lessons": ["give NeuroChess a point of view", "use personality to make feedback stick"],
+  "risk_if_copied_badly": "Can become style-forward and less usable.",
+  "neurochess_usage": "Use for voice, memorable state labels, and anti-template energy.",
+  "scores": { "clarity": 3, "speed": 3, "premium_feel": 4, "atmosphere": 4, "game_like_feedback": 4, "desktop_command_center": 2, "motion_quality": 4, "decision_visibility": 3, "learning_relevance": 4 },
+  "copyrighted_assets_stored": false
+}

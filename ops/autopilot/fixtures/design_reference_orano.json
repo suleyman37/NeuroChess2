@@ -1,0 +1,14 @@
+{
+  "schema_version": "A20E_design_reference_v1",
+  "reference_id": "orano",
+  "name": "Orano",
+  "corpus_type": "visual_atmosphere",
+  "traits": ["technical cockpit", "dark precision", "wireframe blueprint language", "rare yellow attention color", "industrial clarity"],
+  "learn": ["show decision-critical information with precision", "make tension visible", "use HUD language sparingly"],
+  "do_not_copy": ["cold industrial opacity", "dense technical clutter", "safety-critical seriousness without warmth"],
+  "neurochess_lessons": ["position as a system of tensions", "precision without overwhelming the learner"],
+  "risk_if_copied_badly": "Can become cold, industrial, or opaque.",
+  "neurochess_usage": "Use for high-stakes clarity, board support panels, and rare attention color.",
+  "scores": { "clarity": 5, "speed": 4, "premium_feel": 4, "atmosphere": 4, "game_like_feedback": 2, "desktop_command_center": 5, "motion_quality": 3, "decision_visibility": 5, "learning_relevance": 4 },
+  "copyrighted_assets_stored": false
+}

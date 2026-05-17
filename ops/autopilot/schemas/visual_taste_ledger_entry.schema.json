@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "NC_A20E_visual_taste_ledger_entry.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "timestamp",
+    "artifact_path",
+    "surface",
+    "branch",
+    "verdict",
+    "reason",
+    "visual_traits",
+    "what_to_repeat",
+    "what_to_avoid",
+    "related_reference",
+    "neurochess_relevance",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20E_visual_taste_ledger_entry_v1" },
+    "verdict": { "enum": ["LOVE", "LIKE", "NEUTRAL", "DISLIKE", "REJECT"] }
+  }
+}
