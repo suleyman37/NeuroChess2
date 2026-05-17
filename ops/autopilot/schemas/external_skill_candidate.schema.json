@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "External Skill Candidate",
+  "type": "object",
+  "required": [
+    "name",
+    "source",
+    "purpose",
+    "expected_value",
+    "risk_notes",
+    "first_audit_priority",
+    "recommended_internal_skill_target"
+  ],
+  "properties": {
+    "name": { "type": "string" },
+    "source": { "type": "string" },
+    "purpose": { "type": "string" },
+    "expected_value": { "type": "string" },
+    "risk_notes": { "type": "string" },
+    "first_audit_priority": { "enum": ["S", "A", "B"] },
+    "recommended_internal_skill_target": { "type": "string" }
+  }
+}

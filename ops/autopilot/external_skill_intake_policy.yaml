@@ -1,0 +1,39 @@
+schema_version: A16J
+enabled_live: false
+auto_install_enabled: false
+raw_external_content_committed_by_default: false
+states:
+  - DISCOVERED
+  - DOWNLOADED_READONLY
+  - QUARANTINED
+  - AUDITED
+  - ADAPT_TO_INTERNAL
+  - APPROVE_INTERNAL
+  - REJECTED
+authority_order:
+  - Control Plane
+  - Mission Contract
+  - Prompt Firewall
+  - Shadow Plan
+  - Product-Safe Night Mode Policy
+  - Red-tier Quarantine
+  - Skills
+  - ChatGPT / Gemini suggestions
+verdicts:
+  critical: REJECT
+  high: QUARANTINE
+  medium: ADAPT_TO_INTERNAL
+  low: APPROVE_INTERNAL
+forbidden_patterns:
+  - git add -A
+  - git reset
+  - git clean
+  - git push --force
+  - rm -rf
+  - Remove-Item -Recurse
+  - Invoke-WebRequest
+  - curl
+  - wget
+  - ignore previous instructions
+  - bypass Mission Contract
+  - bypass Control Plane

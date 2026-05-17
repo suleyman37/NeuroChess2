@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Skill Audit Result",
+  "type": "object",
+  "required": [
+    "skill_path",
+    "skill_name",
+    "has_skill_md",
+    "has_scripts",
+    "risk_level",
+    "dangerous_patterns",
+    "useful_patterns",
+    "conflicts_with_neurochess",
+    "recommended_verdict"
+  ],
+  "properties": {
+    "skill_path": { "type": "string" },
+    "skill_name": { "type": "string" },
+    "has_skill_md": { "type": "boolean" },
+    "has_scripts": { "type": "boolean" },
+    "risk_level": { "enum": ["low", "medium", "high", "critical"] },
+    "dangerous_patterns": { "type": "array", "items": { "type": "string" } },
+    "useful_patterns": { "type": "array", "items": { "type": "string" } },
+    "conflicts_with_neurochess": { "type": "array", "items": { "type": "string" } },
+    "recommended_verdict": { "enum": ["REJECT", "QUARANTINE", "ADAPT_TO_INTERNAL", "APPROVE_INTERNAL"] }
+  }
+}

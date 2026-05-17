@@ -47,6 +47,10 @@ ops/autopilot/reports/*
 ops/autopilot/runtime/**
 !ops/autopilot/runtime/.gitkeep
 ops/autopilot/local/*.local.json
+external_skills/quarantine/**
+!external_skills/quarantine/.gitkeep
+external_skills/audited/raw/**
+external_skills/adapted/raw/**
 
 # Secrets / local config
 .env
