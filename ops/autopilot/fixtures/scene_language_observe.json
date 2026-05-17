@@ -1,0 +1,35 @@
+{
+  "schema_version": "NC_A20F_scene_language_v1",
+  "scene_id": "a20f_observe_board_stage",
+  "learning_state": "observe",
+  "board_role": "central stable readable board stage with precise coordinates",
+  "board_readability_rule": "Board remains central, stable, readable, and precise; if 3D reduces readability it recedes.",
+  "camera_mode": "locked_orthographic",
+  "atmosphere_family": "premium_dark_strategic_cockpit",
+  "reference_inspirations": ["orano", "igloo", "linear"],
+  "allowed_effects": ["subtle_grid", "material_depth", "focus_halo"],
+  "forbidden_effects": ["meaningless_glow", "camera_spin", "board_obscuring_fog", "fake_xp_rank_transfer", "fake_neuroscience", "fake_elo", "mobile_layout"],
+  "artifacts": ["position_artifact_panel", "quiet_decision_context"],
+  "motion_policy": {
+    "motion_meaning": "ambient only, no answer reveal",
+    "max_duration_ms": 500,
+    "interruptible": true
+  },
+  "performance_budget": {
+    "target_desktop_fps": 60,
+    "graceful_minimum_fps": 30,
+    "max_postprocess_passes": 1,
+    "max_dynamic_lights": 1,
+    "max_particle_systems": 0,
+    "reduced_motion_required": true,
+    "low_quality_fallback_required": true
+  },
+  "accessibility_mode": {
+    "reduced_motion_required": true,
+    "disable_postprocessing": true,
+    "high_contrast": true,
+    "fallback_mode": "2d_only_board_stage"
+  },
+  "screenshot_requirements": ["1366 desktop", "1440 desktop", "reduced motion", "board readable"],
+  "visual_audit_questions": ["Is the board central and readable?", "Does the atmosphere support the decision without decoration?"]
+}

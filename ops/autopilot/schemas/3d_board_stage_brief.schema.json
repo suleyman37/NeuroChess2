@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "3d_board_stage_brief.schema.json",
+  "title": "A20F 3D Board Stage Brief",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "scene_id",
+    "learning_state",
+    "board_stage_doctrine",
+    "board_role",
+    "camera_mode",
+    "renderer_candidates",
+    "scene_language",
+    "accessibility",
+    "performance_budget",
+    "screenshot_requirements",
+    "visual_audit_questions"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20F_3d_board_stage_brief_v1" },
+    "renderer_candidates": { "type": "array", "items": { "type": "string" } },
+    "live_chatgpt_called": { "type": "boolean" },
+    "live_gemini_called": { "type": "boolean" },
+    "product_mission_executed": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

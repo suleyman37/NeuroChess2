@@ -9,7 +9,7 @@
   "degraded": false,
   "last_successful_micro_loop": "A2_R3H",
   "last_successful_commit": "fe71b38",
-  "recommended_next_automation_mission": "A21_FIRST_REAL_PRODUCT_SAFE_NIGHT_MODE_DYNAMIC",
+  "recommended_next_automation_mission": "A20G_DEV_ONLY_3D_BOARD_STAGE_PROTOTYPE",
   "product_checkpoint": "R3H complete, R3I not started",
   "evidence_policy_version": "A4A",
   "supervisor_digest_enabled": true,
@@ -236,5 +236,12 @@
   "anti_generic_saas_checklist_available": true,
   "game_like_ux_checklist_available": true,
   "desktop_command_center_checklist_available": true,
-  "design_intelligence_live_enforced": false
+  "design_intelligence_live_enforced": false,
+  "code_native_3d_board_stage_architecture_version": "A20F",
+  "neurochess_scene_language_available": true,
+  "visual_physics_available": true,
+  "board_stage_renderer_architecture_available": true,
+  "three_d_performance_budget_available": true,
+  "three_d_accessibility_fallback_available": true,
+  "code_native_3d_live_enforced": false
 }

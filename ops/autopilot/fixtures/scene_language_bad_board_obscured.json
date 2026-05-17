@@ -1,0 +1,35 @@
+{
+  "schema_version": "NC_A20F_scene_language_v1",
+  "scene_id": "a20f_bad_board_obscured",
+  "learning_state": "observe",
+  "board_role": "board can be obscured by cinematic fog",
+  "board_readability_rule": "Board can be hidden for atmosphere.",
+  "camera_mode": "locked_orthographic",
+  "atmosphere_family": "fog_showcase",
+  "reference_inspirations": ["none"],
+  "allowed_effects": ["board_obscuring_fog"],
+  "forbidden_effects": ["board_obscuring_fog"],
+  "artifacts": ["heavy_fog_layer"],
+  "motion_policy": {
+    "motion_meaning": "atmosphere first",
+    "max_duration_ms": 1000,
+    "interruptible": true
+  },
+  "performance_budget": {
+    "target_desktop_fps": 60,
+    "graceful_minimum_fps": 30,
+    "max_postprocess_passes": 2,
+    "max_dynamic_lights": 1,
+    "max_particle_systems": 2,
+    "reduced_motion_required": true,
+    "low_quality_fallback_required": true
+  },
+  "accessibility_mode": {
+    "reduced_motion_required": true,
+    "disable_postprocessing": true,
+    "high_contrast": true,
+    "fallback_mode": "2d_only_board_stage"
+  },
+  "screenshot_requirements": ["1366 desktop"],
+  "visual_audit_questions": ["Is the atmosphere strong?"]
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": "NC_A20F_scene_language_v1",
+  "scene_id": "a20f_feedback_miss",
+  "learning_state": "feedback_miss",
+  "board_role": "central stable readable board stage after a missed attempt",
+  "board_readability_rule": "Board remains central, stable, readable, and precise; if 3D reduces readability it recedes.",
+  "camera_mode": "fixed_perspective_low_motion",
+  "atmosphere_family": "brief_imbalance_then_clarity",
+  "reference_inspirations": ["into_the_breach", "orano", "raycast"],
+  "allowed_effects": ["decision_ring", "focus_halo", "subtle_grid"],
+  "forbidden_effects": ["meaningless_glow", "camera_spin", "board_obscuring_fog", "fake_xp_rank_transfer", "fake_neuroscience", "fake_elo", "mobile_layout"],
+  "artifacts": ["miss_marker", "reset_to_clarity_prompt"],
+  "motion_policy": {
+    "motion_meaning": "brief imbalance, never humiliation",
+    "max_duration_ms": 500,
+    "interruptible": true
+  },
+  "performance_budget": {
+    "target_desktop_fps": 60,
+    "graceful_minimum_fps": 30,
+    "max_postprocess_passes": 1,
+    "max_dynamic_lights": 1,
+    "max_particle_systems": 1,
+    "reduced_motion_required": true,
+    "low_quality_fallback_required": true
+  },
+  "accessibility_mode": {
+    "reduced_motion_required": true,
+    "disable_postprocessing": true,
+    "high_contrast": true,
+    "fallback_mode": "2d_only_board_stage"
+  },
+  "screenshot_requirements": ["1366 desktop", "1440 desktop", "feedback miss", "reset state"],
+  "visual_audit_questions": ["Does the miss state clarify rather than punish?", "Is the board still readable?"]
+}

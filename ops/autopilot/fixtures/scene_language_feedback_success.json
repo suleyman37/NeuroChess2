@@ -1,0 +1,35 @@
+{
+  "schema_version": "NC_A20F_scene_language_v1",
+  "scene_id": "a20f_feedback_success",
+  "learning_state": "feedback_success",
+  "board_role": "central stable readable board stage after earned feedback",
+  "board_readability_rule": "Board remains central, stable, readable, and precise; if 3D reduces readability it recedes.",
+  "camera_mode": "fixed_perspective_low_motion",
+  "atmosphere_family": "earned_stabilization",
+  "reference_inspirations": ["balatro", "linear", "igloo"],
+  "allowed_effects": ["stabilization_pulse", "line_trace_after_attempt", "material_depth"],
+  "forbidden_effects": ["meaningless_glow", "camera_spin", "board_obscuring_fog", "fake_xp_rank_transfer", "fake_neuroscience", "fake_elo", "mobile_layout"],
+  "artifacts": ["solution_trace_after_attempt", "stable_feedback_marker"],
+  "motion_policy": {
+    "motion_meaning": "short stabilization after effort",
+    "max_duration_ms": 650,
+    "interruptible": true
+  },
+  "performance_budget": {
+    "target_desktop_fps": 60,
+    "graceful_minimum_fps": 30,
+    "max_postprocess_passes": 1,
+    "max_dynamic_lights": 1,
+    "max_particle_systems": 1,
+    "reduced_motion_required": true,
+    "low_quality_fallback_required": true
+  },
+  "accessibility_mode": {
+    "reduced_motion_required": true,
+    "disable_postprocessing": true,
+    "high_contrast": true,
+    "fallback_mode": "2d_only_board_stage"
+  },
+  "screenshot_requirements": ["1366 desktop", "1440 desktop", "feedback success", "line trace after attempt"],
+  "visual_audit_questions": ["Is feedback earned and non-deceptive?", "Does the line trace appear only after attempt?"]
+}

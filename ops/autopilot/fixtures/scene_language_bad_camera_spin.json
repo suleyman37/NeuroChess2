@@ -1,0 +1,35 @@
+{
+  "schema_version": "NC_A20F_scene_language_v1",
+  "scene_id": "a20f_bad_camera_spin",
+  "learning_state": "observe",
+  "board_role": "central stable readable board stage",
+  "board_readability_rule": "Board remains central, stable, readable, and precise; if 3D reduces readability it recedes.",
+  "camera_mode": "dramatic_orbit_loop",
+  "atmosphere_family": "cinematic_spin",
+  "reference_inspirations": ["none"],
+  "allowed_effects": ["focus_halo"],
+  "forbidden_effects": ["camera_spin"],
+  "artifacts": ["spinning_camera_showcase"],
+  "motion_policy": {
+    "motion_meaning": "camera spectacle",
+    "max_duration_ms": 2000,
+    "interruptible": false
+  },
+  "performance_budget": {
+    "target_desktop_fps": 60,
+    "graceful_minimum_fps": 30,
+    "max_postprocess_passes": 1,
+    "max_dynamic_lights": 1,
+    "max_particle_systems": 0,
+    "reduced_motion_required": true,
+    "low_quality_fallback_required": true
+  },
+  "accessibility_mode": {
+    "reduced_motion_required": true,
+    "disable_postprocessing": true,
+    "high_contrast": true,
+    "fallback_mode": "2d_only_board_stage"
+  },
+  "screenshot_requirements": ["1366 desktop"],
+  "visual_audit_questions": ["Is the camera motion safe?"]
+}

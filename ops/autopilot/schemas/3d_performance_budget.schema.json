@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "3d_performance_budget.schema.json",
+  "title": "A20F 3D Performance Budget",
+  "type": "object",
+  "required": [
+    "target_desktop_fps",
+    "graceful_minimum_fps",
+    "max_postprocess_passes",
+    "max_dynamic_lights",
+    "max_particle_systems",
+    "reduced_motion_required",
+    "low_quality_fallback_required"
+  ],
+  "properties": {
+    "target_desktop_fps": { "type": "integer", "minimum": 30 },
+    "graceful_minimum_fps": { "type": "integer", "minimum": 15 },
+    "max_postprocess_passes": { "type": "integer", "maximum": 2 },
+    "max_dynamic_lights": { "type": "integer" },
+    "max_particle_systems": { "type": "integer", "maximum": 2 },
+    "reduced_motion_required": { "type": "boolean" },
+    "low_quality_fallback_required": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

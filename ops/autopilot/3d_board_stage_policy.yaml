@@ -1,0 +1,53 @@
+schema_version: A20F_3D_BOARD_STAGE_POLICY/1
+enabled: false
+live_enforced: false
+core_doctrine: "The 3D serves the chess decision. If 3D reduces board readability, it must recede."
+allowed_camera_modes:
+  - locked_orthographic
+  - subtle_parallax
+  - fixed_perspective_low_motion
+forbidden_camera_modes:
+  - free_camera_spin
+  - dramatic_orbit_loop
+  - zoom_jumps
+  - motion_sickness_camera
+allowed_effects:
+  - decision_ring
+  - line_trace_after_attempt
+  - subtle_grid
+  - artifact_fragment
+  - focus_halo
+  - stabilization_pulse
+  - replay_path
+  - memory_trace
+  - material_depth
+  - low_density_particles_only_if_meaningful
+forbidden_effects:
+  - meaningless_glow
+  - random_particles
+  - cyberpunk_by_default
+  - camera_spin
+  - board_obscuring_fog
+  - excessive_bloom
+  - motion_without_state
+  - decorative_shader_noise
+  - visual_effect_without_learning_meaning
+  - fake_xp_rank_transfer
+  - fake_neuroscience
+  - fake_elo
+  - mobile_layout
+performance_budget:
+  target_desktop_fps: 60
+  graceful_minimum_fps: 30
+  max_postprocess_passes: 2
+  max_particle_systems: 2
+accessibility_required:
+  reduced_motion: true
+  disable_postprocessing: true
+  high_contrast: true
+  two_d_only_fallback: true
+package_install_allowed: false
+spline_allowed: false
+unity_allowed: false
+godot_allowed: false
+external_assets_allowed: false

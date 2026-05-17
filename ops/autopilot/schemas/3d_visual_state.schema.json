@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "3d_visual_state.schema.json",
+  "title": "A20F 3D Visual State",
+  "type": "object",
+  "required": ["learning_state", "visual_response", "board_readability_rule"],
+  "properties": {
+    "learning_state": {
+      "enum": [
+        "observe",
+        "detect",
+        "try_before_feedback",
+        "feedback_success",
+        "feedback_miss",
+        "replay",
+        "explore",
+        "memory",
+        "transfer"
+      ]
+    },
+    "visual_response": { "type": "array", "items": { "type": "string" } },
+    "board_readability_rule": { "type": "string" }
+  },
+  "additionalProperties": true
+}

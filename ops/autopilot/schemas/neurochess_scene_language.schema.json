@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "neurochess_scene_language.schema.json",
+  "title": "A20F NeuroChess Scene Language",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "scene_id",
+    "learning_state",
+    "board_role",
+    "board_readability_rule",
+    "camera_mode",
+    "atmosphere_family",
+    "reference_inspirations",
+    "allowed_effects",
+    "forbidden_effects",
+    "artifacts",
+    "motion_policy",
+    "performance_budget",
+    "accessibility_mode",
+    "screenshot_requirements",
+    "visual_audit_questions"
+  ],
+  "properties": {
+    "schema_version": { "const": "NC_A20F_scene_language_v1" },
+    "learning_state": {
+      "enum": [
+        "observe",
+        "detect",
+        "try_before_feedback",
+        "feedback_success",
+        "feedback_miss",
+        "replay",
+        "explore",
+        "memory",
+        "transfer"
+      ]
+    },
+    "camera_mode": {
+      "enum": [
+        "locked_orthographic",
+        "subtle_parallax",
+        "fixed_perspective_low_motion",
+        "free_camera_spin",
+        "dramatic_orbit_loop",
+        "zoom_jumps",
+        "motion_sickness_camera"
+      ]
+    },
+    "performance_budget": { "$ref": "3d_performance_budget.schema.json" }
+  },
+  "additionalProperties": true
+}
