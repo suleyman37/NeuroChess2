@@ -1,0 +1,38 @@
+schema_version: A18E_bridge_availability_policy_v1
+enabled_live_enforcement: false
+required_before_chatgpt_call: true
+active_session_required: true
+project_name: NeuroChess Supervisor
+availability_states:
+  READY:
+    ready: true
+    recommended_action: CONTINUE
+  LOADING_INTERSTITIAL:
+    ready: false
+    stop_reason: STOP_PROJECT_LOADING_INTERSTITIAL
+    recommended_action: STOP_FOR_MANUAL_VERIFICATION
+  HUMAN_VERIFICATION_REQUIRED:
+    ready: false
+    stop_reason: STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED
+    recommended_action: STOP_FOR_MANUAL_VERIFICATION
+  COMPOSER_NOT_FOUND:
+    ready: false
+    stop_reason: STOP_COMPOSER_NOT_FOUND
+    recommended_action: STOP_FOR_READY_REPAIR
+  WRONG_PROJECT_OR_CONTEXT:
+    ready: false
+    stop_reason: STOP_WRONG_CHATGPT_PROJECT_CONTEXT
+    recommended_action: STOP_WRONG_CONTEXT
+  UNKNOWN_BLOCKED_STATE:
+    ready: false
+    stop_reason: STOP_BRIDGE_AVAILABILITY_UNKNOWN_BLOCKED
+    recommended_action: STOP_FOR_READY_REPAIR
+reload_policy:
+  loading_interstitial_max_reload_attempts: 1
+  human_verification_reload_attempts: 0
+forbidden:
+  automate_human_verification: true
+  automate_login_2fa_captcha_or_consent: true
+  click_i_am_human: true
+  random_clicks: true
+  generic_chatgpt_fallback: true

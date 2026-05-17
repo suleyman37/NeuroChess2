@@ -196,6 +196,11 @@ function detectLoadingOrInterstitial(title, pageText) {
   return /un instant|just a moment|one moment|checking your browser|v[ée]rification|chargement|loading|cloudflare|enable javascript|patientez/i.test(text);
 }
 
+function detectHumanVerification(title, pageText) {
+  const text = `${title || ""}\n${pageText || ""}`;
+  return /je\s+suis\s+humain|i\s+am\s+human|verify\s+you\s+are\s+human|human\s+verification|captcha|challenge|checking\s+your\s+browser|v[ée]rification\s+humaine|cloudflare/i.test(text);
+}
+
 function detectLoginState(pageText) {
   return /log in|sign up|connexion|connectez|se connecter|login|email address|mot de passe/i.test(pageText || "");
 }
@@ -210,6 +215,47 @@ async function countComposerLikeElements(page) {
   ).count().catch(() => 0);
 }
 
+function classifyBridgeAvailability(diagnostics) {
+  if (!diagnostics.projectContextVerified) {
+    return {
+      availability: "WRONG_PROJECT_OR_CONTEXT",
+      ready: false,
+      stopReason: "STOP_WRONG_CHATGPT_PROJECT_CONTEXT",
+      recommendedAction: "STOP_WRONG_CONTEXT"
+    };
+  }
+  if (diagnostics.humanVerificationDetected) {
+    return {
+      availability: "HUMAN_VERIFICATION_REQUIRED",
+      ready: false,
+      stopReason: "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED",
+      recommendedAction: "STOP_FOR_MANUAL_VERIFICATION"
+    };
+  }
+  if (diagnostics.loadingOrInterstitialDetected && diagnostics.composerLikeElementCount <= 0) {
+    return {
+      availability: "LOADING_INTERSTITIAL",
+      ready: false,
+      stopReason: "STOP_PROJECT_LOADING_INTERSTITIAL",
+      recommendedAction: "STOP_FOR_MANUAL_VERIFICATION"
+    };
+  }
+  if (diagnostics.composerLikeElementCount <= 0) {
+    return {
+      availability: "COMPOSER_NOT_FOUND",
+      ready: false,
+      stopReason: "STOP_COMPOSER_NOT_FOUND",
+      recommendedAction: "STOP_FOR_READY_REPAIR"
+    };
+  }
+  return {
+    availability: "READY",
+    ready: true,
+    stopReason: "",
+    recommendedAction: "CONTINUE"
+  };
+}
+
 async function collectPageDiagnostics(page, projectConfig, targetUrl) {
   const projectName = projectConfig.project_name || "NeuroChess Supervisor";
   const currentUrl = page.url();
@@ -217,19 +263,27 @@ async function collectPageDiagnostics(page, projectConfig, targetUrl) {
   const bodyText = await page.locator("body").textContent({ timeout: 5000 }).catch(() => "");
   const pageText = bodyText || "";
   const composerLikeCount = await countComposerLikeElements(page);
-  return {
+  const projectNameVisible = pageText.includes(projectName) || title.includes(projectName);
+  const projectUrlStable = Boolean(normalizeUrlForCompare(targetUrl) && normalizeUrlForCompare(currentUrl).startsWith(normalizeUrlForCompare(targetUrl)));
+  const diagnostics = {
     currentUrl,
     targetUrl,
     title,
     bodyTextLength: pageText.length,
     projectName,
-    projectNameVisible: pageText.includes(projectName) || title.includes(projectName),
-    projectUrlStable: Boolean(normalizeUrlForCompare(targetUrl) && normalizeUrlForCompare(currentUrl).startsWith(normalizeUrlForCompare(targetUrl))),
+    projectNameVisible,
+    projectUrlStable,
+    projectContextVerified: Boolean(projectNameVisible || projectUrlStable),
     loginStateDetected: detectLoginState(pageText),
+    humanVerificationDetected: detectHumanVerification(title, pageText),
     loadingOrInterstitialDetected: detectLoadingOrInterstitial(title, pageText),
     modalOrConsentDetected: detectModalOrConsent(pageText),
     composerLikeElementCount: composerLikeCount,
     sanitizedTextSampleStored: false
+  };
+  return {
+    ...diagnostics,
+    ...classifyBridgeAvailability(diagnostics)
   };
 }
 
@@ -260,6 +314,10 @@ async function waitForProjectReadySurface(page, projectConfig, targetUrl, outDir
   write(path.join(outDir, "project_ready_stage_initial.json"), JSON.stringify(latest, null, 2));
 
   while (Date.now() < deadline) {
+    if (latest.availability === "HUMAN_VERIFICATION_REQUIRED") {
+      write(path.join(outDir, "project_ready_stage_final.json"), JSON.stringify(latest, null, 2));
+      return latest;
+    }
     if (!latest.loadingOrInterstitialDetected || latest.composerLikeElementCount > 0) {
       write(path.join(outDir, "project_ready_stage_final.json"), JSON.stringify(latest, null, 2));
       return latest;
@@ -1074,11 +1132,26 @@ async function main() {
   if (projectMode) {
     const projectVerification = await verifyProjectContext(page, projectConfig, targetUrl, outDir);
     if (!projectVerification.ok) {
-      write(path.join(outDir, "bridge_error.md"), "PROJECT_CONTEXT_UNVERIFIED");
+      write(path.join(outDir, "bridge_error.md"), "STOP_WRONG_CHATGPT_PROJECT_CONTEXT");
+      write(path.join(outDir, "project_navigation.json"), JSON.stringify({
+        status: "fail",
+        reason: "STOP_WRONG_CHATGPT_PROJECT_CONTEXT",
+        legacy_reason: "PROJECT_CONTEXT_UNVERIFIED",
+        project_name: projectConfig.project_name || "NeuroChess Supervisor"
+      }, null, 2));
       await browser.close();
       process.exit(1);
     }
-    await waitForProjectReadySurface(page, projectConfig, targetUrl, outDir, bridgeConfig);
+    const availability = await waitForProjectReadySurface(page, projectConfig, targetUrl, outDir, bridgeConfig);
+    write(path.join(outDir, "bridge_availability.json"), JSON.stringify(availability, null, 2));
+    if (availability.availability !== "READY" && availability.availability !== "COMPOSER_NOT_FOUND") {
+      write(path.join(outDir, "current_url.txt"), availability.currentUrl || page.url());
+      await saveSanitizedDomSummary(page, outDir, "sanitized_dom_summary.json");
+      await page.screenshot({ path: path.join(outDir, "bridge_availability_blocked.png"), fullPage: true }).catch(() => {});
+      write(path.join(outDir, "bridge_error.md"), availability.stopReason || "STOP_BRIDGE_AVAILABILITY_UNKNOWN_BLOCKED");
+      await browser.close();
+      process.exit(1);
+    }
   }
 
   const composer = await findComposer(page, outDir);
@@ -1088,9 +1161,7 @@ async function main() {
     write(path.join(outDir, "current_url.txt"), diagnostics.currentUrl);
     await saveSanitizedDomSummary(page, outDir, "sanitized_dom_summary.json");
     await page.screenshot({ path: path.join(outDir, "composer_missing.png"), fullPage: true }).catch(() => {});
-    const reason = diagnostics.loadingOrInterstitialDetected
-      ? "STOP_PROJECT_LOADING_INTERSTITIAL"
-      : "ChatGPT composer not found. Log in manually with the dedicated Chrome profile, select the required model/mode, and retry.";
+    const reason = diagnostics.stopReason || "STOP_COMPOSER_NOT_FOUND";
     write(path.join(outDir, "bridge_error.md"), reason);
     await browser.close();
     process.exit(1);
