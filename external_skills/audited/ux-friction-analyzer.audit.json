@@ -1,0 +1,63 @@
+﻿{
+    "schema_version":  "A16K6_PRODUCT_UX_GAME_LIKE_SKILL_AUDIT/1",
+    "candidate":  "ux-friction-analyzer",
+    "source":  "https://skills.sh/erichowens/some_claude_skills/ux-friction-analyzer",
+    "raw_skill_url":  "https://raw.githubusercontent.com/erichowens/some_claude_skills/main/.claude/skills/ux-friction-analyzer/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:35:04.9380895+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\ux-friction-analyzer",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "mobile_first_primary_risk":  false,
+    "fake_progress_risk":  false,
+    "dark_pattern_risk":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "network fetch",
+                               "neurodivergent/psychology claims must stay evidence-safe and non-medical",
+                               "flow optimization must not become broad make-it-better UI work"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "design critique pattern",
+                            "skill authoring pattern",
+                            "cognitive load reduction",
+                            "one task at a time",
+                            "context preservation",
+                            "journey friction audit",
+                            "what should I do now clarity"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "skill authoring conventions",
+                                     "cognitive load reduction",
+                                     "one task at a time",
+                                     "context preservation",
+                                     "journey friction audit",
+                                     "what should I do now clarity"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "neurodivergent/psychology claims must stay evidence-safe and non-medical",
+                                    "flow optimization must not become broad make-it-better UI work"
+                                ],
+    "recommended_internal_skill_target":  "frontend-visual-review, neurochess-product-ux-critic, neurochess-desktop-game-like-interface-design",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract product, UX, learning-loop, and game-like engagement patterns only. Rewrite into NeuroChess-owned procedures for friction reduction, real-game learning, desktop-first interface clarity, honest feedback, active attempts, retention through real value, and anti-fake-progress checks. Do not execute scripts, install dependencies, activate the external skill, or authorize product changes.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

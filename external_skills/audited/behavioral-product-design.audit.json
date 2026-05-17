@@ -1,0 +1,61 @@
+﻿{
+    "schema_version":  "A16K6_PRODUCT_UX_GAME_LIKE_SKILL_AUDIT/1",
+    "candidate":  "behavioral-product-design",
+    "source":  "https://skills.sh/refoundai/lenny-skills/behavioral-product-design",
+    "raw_skill_url":  "https://raw.githubusercontent.com/refoundai/lenny-skills/main/skills/behavioral-product-design/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:35:03.7672615+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\behavioral-product-design",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  false,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "mobile_first_primary_risk":  false,
+    "fake_progress_risk":  false,
+    "dark_pattern_risk":  true,
+    "risk_level":  "medium",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "behavioral design must help players achieve goals, not manipulate them",
+                               "loss aversion and habit loops must not become punitive streak pressure"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "test-first pattern",
+                            "design critique pattern",
+                            "skill authoring pattern",
+                            "target behavior clarity",
+                            "barrier diagnosis",
+                            "habit loop cue routine reward",
+                            "celebration moments without dark patterns",
+                            "reduce friction for desired learning action"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "design review criteria",
+                                     "behavior-first testing guidance",
+                                     "skill authoring conventions",
+                                     "target behavior clarity",
+                                     "barrier diagnosis",
+                                     "habit loop cue routine reward",
+                                     "celebration moments without dark patterns",
+                                     "reduce friction for desired learning action"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "behavioral design must help players achieve goals, not manipulate them",
+                                    "loss aversion and habit loops must not become punitive streak pressure"
+                                ],
+    "recommended_internal_skill_target":  "neurochess-product-north-star, neurochess-desktop-game-like-interface-design, neurochess-learning-loop-accelerator",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract product, UX, learning-loop, and game-like engagement patterns only. Rewrite into NeuroChess-owned procedures for friction reduction, real-game learning, desktop-first interface clarity, honest feedback, active attempts, retention through real value, and anti-fake-progress checks. Do not execute scripts, install dependencies, activate the external skill, or authorize product changes.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

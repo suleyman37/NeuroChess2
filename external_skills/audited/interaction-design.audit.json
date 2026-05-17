@@ -1,0 +1,59 @@
+﻿{
+    "schema_version":  "A16K6_PRODUCT_UX_GAME_LIKE_SKILL_AUDIT/1",
+    "candidate":  "interaction-design",
+    "source":  "https://skills.sh/wshobson/agents/interaction-design",
+    "raw_skill_url":  "https://raw.githubusercontent.com/wshobson/agents/main/plugins/ui-design/skills/interaction-design/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:35:05.5104121+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\interaction-design",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  false,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  false,
+    "mobile_first_primary_risk":  false,
+    "fake_progress_risk":  false,
+    "dark_pattern_risk":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "interaction examples may include dependency/framework assumptions and must not authorize frontend code changes",
+                               "motion must be purposeful and screenshot-proven, not decorative"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "design critique pattern",
+                            "skill authoring pattern",
+                            "purposeful motion",
+                            "immediate feedback",
+                            "loading empty error state quality",
+                            "hover focus active states",
+                            "interruptible transitions and reduced motion support"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "design review criteria",
+                                     "skill authoring conventions",
+                                     "purposeful motion",
+                                     "immediate feedback",
+                                     "loading empty error state quality",
+                                     "hover focus active states",
+                                     "interruptible transitions and reduced motion support"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "interaction examples may include dependency/framework assumptions and must not authorize frontend code changes",
+                                    "motion must be purposeful and screenshot-proven, not decorative"
+                                ],
+    "recommended_internal_skill_target":  "neurochess-desktop-game-like-interface-design, frontend-visual-review, neurochess-learning-loop-accelerator",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract product, UX, learning-loop, and game-like engagement patterns only. Rewrite into NeuroChess-owned procedures for friction reduction, real-game learning, desktop-first interface clarity, honest feedback, active attempts, retention through real value, and anti-fake-progress checks. Do not execute scripts, install dependencies, activate the external skill, or authorize product changes.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

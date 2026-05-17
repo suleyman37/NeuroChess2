@@ -1,0 +1,66 @@
+﻿{
+    "schema_version":  "A16K6_PRODUCT_UX_GAME_LIKE_SKILL_AUDIT/1",
+    "candidate":  "jobs-to-be-done",
+    "source":  "https://skills.sh/wondelai/skills/jobs-to-be-done",
+    "raw_skill_url":  "https://raw.githubusercontent.com/wondelai/skills/main/jobs-to-be-done/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:35:02.0508598+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\jobs-to-be-done",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  false,
+    "conflicts_with_neurochess_rules":  true,
+    "mobile_first_primary_risk":  false,
+    "fake_progress_risk":  true,
+    "dark_pattern_risk":  false,
+    "risk_level":  "critical",
+    "recommended_verdict":  "QUARANTINE",
+    "dangerous_patterns":  [
+                               "network fetch",
+                               "JTBD scoring must not become marketing copy or fake progress claims",
+                               "customer job framing must be rewritten for chess learning and real-game progress"
+                           ],
+    "conflicts_with_neurochess":  [
+                                      "red-tier learning state conflict"
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "test-first pattern",
+                            "design critique pattern",
+                            "skill authoring pattern",
+                            "progress over feature framing",
+                            "hiring and firing product diagnosis",
+                            "player friction mapping",
+                            "non-obvious competition analysis",
+                            "job success over feature usage"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "behavior-first testing guidance",
+                                     "skill authoring conventions",
+                                     "progress over feature framing",
+                                     "hiring and firing product diagnosis",
+                                     "player friction mapping",
+                                     "non-obvious competition analysis",
+                                     "job success over feature usage"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "NeuroChess red-tier conflict",
+                                    "JTBD scoring must not become marketing copy or fake progress claims",
+                                    "customer job framing must be rewritten for chess learning and real-game progress"
+                                ],
+    "recommended_internal_skill_target":  "neurochess-product-north-star, neurochess-product-ux-critic, neurochess-learning-loop-accelerator",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract product, UX, learning-loop, and game-like engagement patterns only. Rewrite into NeuroChess-owned procedures for friction reduction, real-game learning, desktop-first interface clarity, honest feedback, active attempts, retention through real value, and anti-fake-progress checks. Do not execute scripts, install dependencies, activate the external skill, or authorize product changes.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}
