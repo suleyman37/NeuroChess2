@@ -1,0 +1,50 @@
+{
+  "schema_version": "A20N_limited_rehearsal_result_v1",
+  "mission": "A20N_LIMITED_3H_ALL_NIGHT_REHEARSAL",
+  "branch": "auto/a20n-limited-3h-all-night-rehearsal-20260518",
+  "source_branch": "auto/a20m-visual-court-and-all-night-readiness-gate-20260518",
+  "source_commit": "07bcd51",
+  "protected_road_branch": "road-to-V2",
+  "protected_road_expected_head": "7a71b0e",
+  "rehearsal_start": "2026-05-18T01:32:04+02:00",
+  "rehearsal_end_before_validation": "2026-05-18T01:35:25+02:00",
+  "rehearsal_duration_before_validation": "00:03:21",
+  "rehearsal_duration_within_180_minutes": true,
+  "full_a21_launched": false,
+  "full_night_mode_launched": false,
+  "all_night_run_started": false,
+  "road_to_v2_pushed": false,
+  "road_to_v2_merged": false,
+  "product_code_merged_to_road": false,
+  "child_branches_created": [],
+  "objectives_selected": [
+    "Creative Director And Public Teaser Standard",
+    "Rehearsal Evidence And Morning Decision"
+  ],
+  "deliverables_completed": [
+    "docs/design/NEUROCHESS_CREATIVE_DIRECTOR_GATE.md",
+    "docs/design/NORTH_STAR_PUBLIC_TEASER_STANDARD.md",
+    "docs/autopilot/A20N_LIMITED_3H_REHEARSAL_REPORT.md",
+    "docs/autopilot/A20N_REHEARSAL_MORNING_REPORT.md",
+    "docs/autopilot/A20N_NEXT_DECISION.md"
+  ],
+  "safety": {
+    "red_tier_incidents": 0,
+    "human_verification_encountered": false,
+    "bypass_attempted": false,
+    "backend_touched": false,
+    "package_files_touched": false,
+    "db_touched": false,
+    "training_items_writes": false,
+    "practice_attempts_writes": false,
+    "due_at_mutations": false,
+    "daily_plan_mutations": false,
+    "screenshots_committed": false,
+    "qa_artifacts_committed": false,
+    "external_assets_committed": false,
+    "live_chatgpt_called": false,
+    "live_gemini_called": false
+  },
+  "final_readiness_verdict": "GO_FOR_VISUAL_CREATIVE_DIRECTOR_HARDENING",
+  "recommended_next_mission": "A20O_NEUROCHESS_CREATIVE_DIRECTOR_AND_AWWWARDS_VISUAL_SYSTEM"
+}
