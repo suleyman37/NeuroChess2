@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NeuroChess Internal Skill Selection Input",
+  "type": "object",
+  "required": ["mission_id", "risk_tier", "work_type", "goal"],
+  "properties": {
+    "mission_id": { "type": "string" },
+    "risk_tier": { "type": "string" },
+    "work_type": { "type": "string" },
+    "goal": { "type": "string" },
+    "allowed_paths": { "type": "array", "items": { "type": "string" } },
+    "forbidden_paths": { "type": "array", "items": { "type": "string" } },
+    "planned_read_paths": { "type": "array", "items": { "type": "string" } },
+    "planned_write_paths": { "type": "array", "items": { "type": "string" } },
+    "lane": { "type": "string" },
+    "night_mode_phase": { "type": "string" }
+  },
+  "additionalProperties": true
+}

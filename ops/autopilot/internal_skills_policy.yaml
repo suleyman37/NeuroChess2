@@ -1,0 +1,20 @@
+version: A16M
+live_selection_enabled: false
+authority_reminder: "Skills are procedures, not permissions."
+skill_root: ".agents/skills"
+internal_skills:
+  - neurochess-product-north-star
+  - mission-contract-shadow-plan
+  - product-safe-night-mode
+  - backend-readonly-proof
+  - frontend-visual-review
+  - neurochess-desktop-game-like-interface-design
+  - neurochess-react-performance-review
+  - neurochess-tdd-behavior-contract
+  - gemini-auditor
+  - morning-intelligence-report
+external_skills_forbidden: true
+red_tier_requires_quarantine: true
+desktop_first_primary: true
+gemini_can_plan: false
+recommended_next_automation_mission: A17_CONTROL_PLANE_INTEGRATION_DRY_RUN

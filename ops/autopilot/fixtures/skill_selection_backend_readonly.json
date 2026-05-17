@@ -1,0 +1,12 @@
+{
+  "mission_id": "BACKEND_READONLY_ROUTE_TEST",
+  "risk_tier": "amber",
+  "work_type": "backend-readonly-only",
+  "lane": "product-sandbox",
+  "goal": "Add backend read-only route tests that prove no mutation for an existing exercise detail endpoint.",
+  "allowed_paths": ["backend/tests/**"],
+  "forbidden_paths": ["frontend/**", "docs/rebuild/**"],
+  "planned_read_paths": ["backend/neurochess/**", "backend/tests/**"],
+  "planned_write_paths": ["backend/tests/test_readonly_existing_exercise.py"],
+  "expected_changed_files": ["backend/tests/test_readonly_existing_exercise.py"]
+}

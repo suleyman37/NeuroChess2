@@ -1,0 +1,11 @@
+{
+  "mission_id": "UNSAFE_PRACTICE_WRITE",
+  "risk_tier": "green",
+  "work_type": "backend-readonly-only",
+  "lane": "product-sandbox",
+  "goal": "Touch Practice due_at and training_items to update scoring and XP rank Transfer state.",
+  "allowed_paths": ["backend/**"],
+  "forbidden_paths": ["frontend/**"],
+  "planned_read_paths": ["backend/neurochess/**"],
+  "planned_write_paths": ["backend/neurochess/practice.py"]
+}

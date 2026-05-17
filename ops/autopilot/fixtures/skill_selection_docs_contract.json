@@ -1,0 +1,11 @@
+{
+  "mission_id": "DOCS_CONTRACT_R3M",
+  "risk_tier": "green",
+  "work_type": "safe-contract-doc-only",
+  "lane": "docs",
+  "goal": "Create a product-facing read-only backend route contract for existing exercise detail.",
+  "allowed_paths": ["docs/autopilot/**"],
+  "forbidden_paths": ["frontend/**", "backend/**", "docs/rebuild/**"],
+  "planned_read_paths": ["docs/autopilot/NEUROCHESS_INTERNAL_SKILLS_PACK.md"],
+  "planned_write_paths": ["docs/autopilot/example_contract.md"]
+}

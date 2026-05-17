@@ -1,0 +1,12 @@
+{
+  "mission_id": "FRONTEND_DESKTOP_BOARD_UI",
+  "risk_tier": "amber",
+  "work_type": "frontend-readonly-only",
+  "lane": "product-sandbox",
+  "goal": "Review a desktop board-centered UI branch for CTA clarity, board visibility, and game-like interface feel.",
+  "allowed_paths": ["frontend/**"],
+  "forbidden_paths": ["backend/**", "docs/rebuild/**"],
+  "planned_read_paths": ["frontend/src/**"],
+  "planned_write_paths": ["frontend/src/review/DesktopBoardPanel.tsx"],
+  "expected_artifacts": ["screenshots", "contact_sheet", "visual_review_brief"]
+}

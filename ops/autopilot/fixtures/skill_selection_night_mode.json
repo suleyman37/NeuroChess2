@@ -1,0 +1,12 @@
+{
+  "mission_id": "NIGHT_MODE_DRAIN_REPORT",
+  "risk_tier": "green",
+  "work_type": "docs-only",
+  "lane": "night-mode",
+  "night_mode_phase": "DRAIN",
+  "goal": "Prepare Product-Safe Night Mode final report and morning review summary for product-safe pilot.",
+  "allowed_paths": ["docs/autopilot/**"],
+  "forbidden_paths": ["frontend/**", "backend/**"],
+  "planned_read_paths": ["docs/autopilot/**"],
+  "planned_write_paths": ["docs/autopilot/night_mode_report.md"]
+}

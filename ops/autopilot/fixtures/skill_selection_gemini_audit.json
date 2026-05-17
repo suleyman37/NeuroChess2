@@ -1,0 +1,12 @@
+{
+  "mission_id": "GEMINI_PROMPT_AUDIT_CANARY",
+  "risk_tier": "green",
+  "work_type": "autopilot-docs-only",
+  "lane": "audit",
+  "goal": "Dry-run Gemini audit selection while rejecting any Gemini as planner or Gemini generated Codex prompt behavior.",
+  "allowed_paths": ["docs/autopilot/**"],
+  "forbidden_paths": ["frontend/**", "backend/**"],
+  "planned_read_paths": ["docs/autopilot/GEMINI_DECISION_POLICY.md"],
+  "planned_write_paths": [],
+  "requested_skills": ["gemini-auditor"]
+}

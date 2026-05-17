@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NeuroChess Internal Skill Selection Output",
+  "type": "object",
+  "required": [
+    "selection_result",
+    "selected_skills",
+    "required_skills",
+    "optional_skills",
+    "rejected_skills",
+    "conflicts",
+    "authority_reminder",
+    "recommended_next_action"
+  ],
+  "properties": {
+    "selection_result": { "enum": ["PASS", "WARN", "FAIL"] },
+    "selected_skills": { "type": "array", "items": { "type": "string" } },
+    "required_skills": { "type": "array", "items": { "type": "string" } },
+    "optional_skills": { "type": "array", "items": { "type": "string" } },
+    "rejected_skills": { "type": "array", "items": { "type": "string" } },
+    "conflicts": { "type": "array", "items": { "type": "string" } },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "authority_reminder": { "const": "Skills are procedures, not permissions." },
+    "recommended_next_action": { "enum": ["CONTINUE", "REPAIR_SELECTION", "STOP"] }
+  },
+  "additionalProperties": true
+}

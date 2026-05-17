@@ -1,0 +1,11 @@
+{
+  "mission_id": "MIXED_FRONTEND_BACKEND",
+  "risk_tier": "amber",
+  "work_type": "test-only",
+  "lane": "product-sandbox",
+  "goal": "Modify frontend UI and backend route tests in one mission without fullstack sandbox approval.",
+  "allowed_paths": ["frontend/**", "backend/**"],
+  "forbidden_paths": ["docs/rebuild/**"],
+  "planned_read_paths": ["frontend/src/**", "backend/neurochess/**"],
+  "planned_write_paths": ["frontend/src/AppShell.tsx", "backend/tests/test_route.py"]
+}

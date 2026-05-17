@@ -1,0 +1,13 @@
+{
+  "mission_id": "FRONTEND_VISUAL_COURT",
+  "risk_tier": "amber",
+  "work_type": "frontend-readonly-only",
+  "lane": "product-sandbox",
+  "goal": "Perform frontend visual review with screenshots, contact sheet, visual_review_brief, and Gemini Visual Court enabled.",
+  "allowed_paths": ["frontend/**"],
+  "forbidden_paths": ["backend/**"],
+  "planned_read_paths": ["frontend/src/**"],
+  "planned_write_paths": [],
+  "expected_artifacts": ["screenshots", "contact_sheet", "visual_review_brief"],
+  "gemini_visual_court_enabled": true
+}

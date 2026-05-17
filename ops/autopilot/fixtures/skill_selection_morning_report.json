@@ -1,0 +1,11 @@
+{
+  "mission_id": "MORNING_REPORT_SUMMARY",
+  "risk_tier": "green",
+  "work_type": "docs-only",
+  "lane": "reporting",
+  "goal": "Create morning report run summary with READY_TO_REVIEW, NEEDS_REWORK, ABANDON_BRANCH, and QUARANTINE_REQUIRED branch classifications.",
+  "allowed_paths": ["docs/autopilot/**"],
+  "forbidden_paths": ["frontend/**", "backend/**"],
+  "planned_read_paths": ["docs/autopilot/**"],
+  "planned_write_paths": ["docs/autopilot/morning_report.md"]
+}
