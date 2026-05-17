@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "budget_quota_state.schema.json",
+  "title": "A20A Budget Quota State",
+  "type": "object",
+  "required": ["schema_version", "profile"],
+  "properties": {
+    "schema_version": { "const": "A20A_budget_quota_state_v1" },
+    "profile": { "type": "string" },
+    "wall_clock_minutes": { "type": "number" },
+    "missions_attempted": { "type": "number" },
+    "missions_succeeded": { "type": "number" },
+    "chatgpt_live_calls": { "type": "number" },
+    "gemini_live_calls": { "type": "number" },
+    "gemini_image_uploads": { "type": "number" },
+    "chatgpt_image_uploads": { "type": "number" },
+    "request_more_rounds": { "type": "number" },
+    "format_repair_attempts": { "type": "number" },
+    "prompt_bytes": { "type": "number" },
+    "response_bytes": { "type": "number" },
+    "branches_created": { "type": "number" },
+    "commits_created": { "type": "number" },
+    "pushes_attempted": { "type": "number" },
+    "screenshots_generated": { "type": "number" },
+    "contact_sheets_generated": { "type": "number" },
+    "evidence_artifacts_count": { "type": "number" },
+    "bridge_failures": { "type": "number" },
+    "visual_audits": { "type": "number" },
+    "strategic_pulse_calls": { "type": "number" }
+  },
+  "additionalProperties": true
+}

@@ -44,6 +44,7 @@ logs/
 ops/autopilot/evidence/generated/
 ops/autopilot/reports/*
 !ops/autopilot/reports/.gitkeep
+ops/autopilot/STOP_NOW
 ops/autopilot/runtime/**
 !ops/autopilot/runtime/.gitkeep
 ops/autopilot/local/*.local.json

@@ -1,0 +1,62 @@
+schema_version: A20A_LONG_RUN_SAFETY_POLICY/1
+policy_kernel:
+  description: Critical guardrail files that must not change during a long run.
+  files:
+    - ops/autopilot/red_tier_policy.yaml
+    - ops/autopilot/validate_red_tier_preflight.ps1
+    - ops/autopilot/mission_contract_policy.yaml
+    - ops/autopilot/build_mission_contract.ps1
+    - ops/autopilot/validate_mission_contract.ps1
+    - ops/autopilot/compare_mission_contract_to_result.ps1
+    - ops/autopilot/shadow_plan_policy.yaml
+    - ops/autopilot/parse_shadow_plan.ps1
+    - ops/autopilot/validate_shadow_plan.ps1
+    - ops/autopilot/compare_shadow_plan_to_contract.ps1
+    - ops/autopilot/prompt_firewall.ps1
+    - ops/autopilot/nc_mp2_policy.yaml
+    - ops/autopilot/normalize_nc_mp2.ps1
+    - ops/autopilot/lint_nc_mp2.ps1
+    - ops/autopilot/product_safe_night_mode_policy.yaml
+    - ops/autopilot/check_product_safe_night_mode_scope.ps1
+    - ops/autopilot/check_goldilocks_mission_scope.ps1
+    - ops/autopilot/night_mode_state_machine_policy.yaml
+    - ops/autopilot/evaluate_night_mode_phase.ps1
+    - ops/autopilot/control_plane_policy.yaml
+    - ops/autopilot/control_plane_state.ps1
+    - ops/autopilot/control_plane_events.ps1
+    - ops/autopilot/control_plane_lock.ps1
+    - ops/autopilot/product_intelligence_policy.yaml
+    - ops/autopilot/evaluate_product_impact.ps1
+    - ops/autopilot/bridge_availability_policy.yaml
+    - ops/autopilot/check_chatgpt_bridge_availability.ps1
+    - docs/autopilot/CHATGPT_HUMAN_VERIFICATION_GUARD.md
+    - docs/autopilot/BRIDGE_AVAILABILITY_GATE.md
+    - .agents/skills/product-safe-night-mode/SKILL.md
+    - .agents/skills/mission-contract-shadow-plan/SKILL.md
+    - .agents/skills/neurochess-security-repo-hygiene/SKILL.md
+budgets:
+  A20_5:
+    max_wall_clock_minutes: 180
+    max_chatgpt_calls: 40
+    max_gemini_calls: 20
+    max_image_uploads: 20
+    max_request_more_rounds: 6
+    max_format_repairs: 4
+    max_branches_created: 5
+    warn_at_percent: 80
+  A21:
+    max_wall_clock_minutes: 360
+    max_chatgpt_calls: 80
+    max_gemini_calls: 40
+    max_image_uploads: 40
+    max_request_more_rounds: 10
+    max_format_repairs: 6
+    max_branches_created: 8
+    warn_at_percent: 80
+runtime:
+  kill_switch_path: ops/autopilot/STOP_NOW
+  evidence_index_path: C:\Users\suley\Documents\Dev\NeuroChess_QA_Artifacts\autopilot\runtime\evidence_index.jsonl
+  report_root: C:\Users\suley\Documents\Dev\NeuroChess_QA_Artifacts\autopilot\runtime
+meta_fix:
+  max_count_a20_5: 0
+  max_count_a21_first_run: 0

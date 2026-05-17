@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kill_switch_state.schema.json",
+  "title": "A20A Kill Switch State",
+  "type": "object",
+  "required": ["kill_switch_present", "kill_switch_result", "recommended_action"],
+  "properties": {
+    "kill_switch_present": { "type": "boolean" },
+    "kill_switch_result": { "enum": ["CLEAR", "STOP_KILL_SWITCH_FILE"] },
+    "recommended_action": { "enum": ["CONTINUE", "DRAIN"] },
+    "kill_switch_path": { "type": "string" }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": "A20A_budget_quota_state_v1",
+  "profile": "A20_5",
+  "wall_clock_minutes": 25,
+  "missions_attempted": 2,
+  "missions_succeeded": 2,
+  "chatgpt_live_calls": 5,
+  "gemini_live_calls": 2,
+  "gemini_image_uploads": 1,
+  "chatgpt_image_uploads": 0,
+  "request_more_rounds": 1,
+  "format_repair_attempts": 0,
+  "branches_created": 1
+}

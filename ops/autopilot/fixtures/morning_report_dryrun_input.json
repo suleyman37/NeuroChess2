@@ -1,0 +1,36 @@
+{
+  "schema_version": "A20A_morning_report_dryrun_fixture_v1",
+  "run_id": "A20A_fixture",
+  "summary": "Fixture run used to verify morning report section generation.",
+  "branches": [
+    {
+      "name": "autopilot/fixture-backend",
+      "classification": "READY_TO_REVIEW"
+    }
+  ],
+  "commits": [
+    {
+      "sha": "abc1234",
+      "branch": "autopilot/fixture-backend",
+      "message": "Fixture commit"
+    }
+  ],
+  "e2e_deliverables": [
+    {
+      "id": "fixture-deliverable",
+      "status": "PASS",
+      "evidence_artifact_id": "fixture-report"
+    }
+  ],
+  "evidence": [
+    {
+      "artifact_id": "fixture-report",
+      "artifact_type": "report",
+      "artifact_path": "ops/autopilot/fixtures/morning_report_dryrun_input.json"
+    }
+  ],
+  "risks": [
+    "fixture risk"
+  ],
+  "recommended_next_action": "A20B_BRANCH_ORTHOGONALITY_AND_ENVIRONMENT_HYGIENE"
+}

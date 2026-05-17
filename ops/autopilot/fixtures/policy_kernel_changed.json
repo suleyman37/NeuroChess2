@@ -1,0 +1,28 @@
+{
+  "schema_version": "A20A_policy_kernel_manifest_v1",
+  "created_at": "2026-05-17T00:01:00Z",
+  "policy_path": "ops/autopilot/long_run_safety_policy.yaml",
+  "files": [
+    {
+      "path": "ops/autopilot/red_tier_policy.yaml",
+      "exists": true,
+      "hash": "HASH_CHANGED",
+      "size": 10,
+      "modified_utc": "2026-05-17T00:00:00Z"
+    },
+    {
+      "path": "ops/autopilot/mission_contract_policy.yaml",
+      "exists": true,
+      "hash": "HASH_B",
+      "size": 20,
+      "modified_utc": "2026-05-17T00:00:00Z"
+    },
+    {
+      "path": "ops/autopilot/new_policy_file.yaml",
+      "exists": true,
+      "hash": "HASH_NEW",
+      "size": 5,
+      "modified_utc": "2026-05-17T00:00:00Z"
+    }
+  ]
+}

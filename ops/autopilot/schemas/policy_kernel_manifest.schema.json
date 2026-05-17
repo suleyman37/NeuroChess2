@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "policy_kernel_manifest.schema.json",
+  "title": "A20A Policy Kernel Manifest",
+  "type": "object",
+  "required": ["schema_version", "created_at", "files"],
+  "properties": {
+    "schema_version": { "const": "A20A_policy_kernel_manifest_v1" },
+    "created_at": { "type": "string" },
+    "policy_path": { "type": "string" },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "exists", "hash", "size", "modified_utc"],
+        "properties": {
+          "path": { "type": "string" },
+          "exists": { "type": "boolean" },
+          "hash": { "type": "string" },
+          "size": { "type": "integer" },
+          "modified_utc": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": true
+}

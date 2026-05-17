@@ -9,7 +9,7 @@
   "degraded": false,
   "last_successful_micro_loop": "A2_R3H",
   "last_successful_commit": "fe71b38",
-  "recommended_next_automation_mission": "A19X_FULLSTACK_ENDURANCE_LIVE_PILOT",
+  "recommended_next_automation_mission": "A20B_BRANCH_ORTHOGONALITY_AND_ENVIRONMENT_HYGIENE",
   "product_checkpoint": "R3H complete, R3I not started",
   "evidence_policy_version": "A4A",
   "supervisor_digest_enabled": true,
@@ -194,5 +194,13 @@
   "single_process_live_loop_smoke_passed": false,
   "chatgpt_cdp_attach_mode_version": "A18I",
   "chatgpt_cdp_attach_available": true,
-  "manual_verified_browser_transport_available": true
+  "manual_verified_browser_transport_available": true,
+  "long_run_safety_guard_pack_version": "A20A",
+  "policy_kernel_freeze_available": true,
+  "budget_quota_meter_available": true,
+  "kill_switch_file_available": true,
+  "evidence_index_available": true,
+  "morning_report_dryrun_hook_available": true,
+  "meta_fix_max_count_for_a20_5": 0,
+  "meta_fix_max_count_for_a21_first_run": 0
 }
