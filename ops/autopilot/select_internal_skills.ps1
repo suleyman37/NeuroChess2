@@ -59,7 +59,8 @@ $writePaths = Get-Array $mission.planned_write_paths
 $expectedChanged = Get-Array $mission.expected_changed_files
 $artifacts = Get-Array $mission.expected_artifacts
 $requestedSkills = Get-Array $mission.requested_skills
-$allPaths = @($allowed + $forbidden + $readPaths + $writePaths + $expectedChanged)
+$activePaths = @($allowed + $readPaths + $writePaths + $expectedChanged)
+$allPaths = @($activePaths + $forbidden)
 $joinedText = @(
   [string]$mission.mission_id,
   $riskTier,
@@ -75,8 +76,8 @@ $joinedText = @(
 ) -join "`n"
 
 $hasWrites = ($writePaths.Count -gt 0) -or ($expectedChanged.Count -gt 0) -or ($workType -match 'docs-only|test-only|smoke-only|cleanup-only|frontend|backend')
-$hasBackend = ($workType -match 'backend') -or (Path-Match $allPaths '^(backend)([\\/]|$)|[\\/]backend([\\/]|$)')
-$hasFrontend = ($workType -match 'frontend') -or (Path-Match $allPaths '^(frontend)([\\/]|$)|[\\/]frontend([\\/]|$)')
+$hasBackend = ($workType -match 'backend') -or (Path-Match $activePaths '^(backend)([\\/]|$)|[\\/]backend([\\/]|$)')
+$hasFrontend = ($workType -match 'frontend') -or (Path-Match $activePaths '^(frontend)([\\/]|$)|[\\/]frontend([\\/]|$)')
 $testsInvolved = ($workType -match 'test') -or ($joinedText -match '(?i)\btest(s|ing)?\b|unittest|pytest|smoke')
 $screenshotsExpected = ($joinedText -match '(?i)screenshot|contact[_ -]?sheet|visual[_ -]?review[_ -]?brief')
 $geminiRequested = ($joinedText -match '(?i)gemini|visual court|long[- ]horizon critic|prompt auditor')
