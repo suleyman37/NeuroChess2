@@ -398,6 +398,16 @@ function validateReadyResponse(text, nonce) {
   return { ok, violations: ok ? [] : ["READY response missing required field"] };
 }
 
+function validateNonceDoneResponse(text, nonce, responseRoot) {
+  const raw = String(text || "");
+  const root = String(responseRoot || "NC_SUPERVISOR_RESPONSE");
+  const violations = [];
+  if (!raw.includes(`<${root} nonce="${nonce}">`)) violations.push(`missing ${root} root`);
+  if (!raw.includes(`<NC_DONE nonce="${nonce}">DONE</NC_DONE>`)) violations.push("missing nonce-bound DONE");
+  if (!raw.includes(`</${root}>`)) violations.push(`missing ${root} close`);
+  return { ok: violations.length === 0, violations };
+}
+
 async function waitForAssistantResponse(page, nonce, outDir, label, validator, timeoutMs) {
   const deadline = Date.now() + timeoutMs;
   let lastRaw = "";
@@ -655,6 +665,111 @@ async function runLive(args, outDir) {
   }
 }
 
+async function runLiveRequest(args, outDir) {
+  const endpoint = args.endpoint || "http://127.0.0.1:9222";
+  const requestPath = args.request;
+  const responseRoot = args["response-root"] || args.responseRoot || "NC_SUPERVISOR_RESPONSE";
+  const nonce = args.nonce || `A19X_CDP_${crypto.randomBytes(5).toString("hex").toUpperCase()}`;
+  const result = {
+    ...baseResult(outDir),
+    request_mode: true,
+    request_path_redacted: Boolean(requestPath),
+    request_result: "NOT_RUN",
+    response_root: responseRoot,
+    nonce
+  };
+  result.live_chatgpt_called = true;
+  if (!requestPath || !fs.existsSync(requestPath)) {
+    result.stop_reason = "STOP_CDP_REQUEST_FILE_MISSING";
+    result.final_verdict = result.stop_reason;
+    return result;
+  }
+  let browser = null;
+  let page = null;
+  const pageToken = crypto.randomBytes(8).toString("hex");
+  try {
+    const playwright = await loadPlaywright();
+    browser = await playwright.chromium.connectOverCDP(endpoint);
+    result.cdp_attached = true;
+    result.existing_chrome_reused = true;
+    const contexts = browser.contexts();
+    const pages = contexts.flatMap((context) => context.pages());
+    write(path.join(outDir, "cdp_pages.json"), JSON.stringify(pages.map((candidate, index) => ({
+      index,
+      url_redacted: true,
+      is_project_conversation: isProjectConversationUrl(candidate.url()),
+      conversation_id: conversationIdFromUrl(candidate.url()) || ""
+    })), null, 2));
+    page = pages.find((candidate) => isProjectConversationUrl(candidate.url()));
+    if (!page) {
+      result.stop_reason = "STOP_ACTIVE_SESSION_TAB_NOT_FOUND";
+      result.final_verdict = result.stop_reason;
+      return result;
+    }
+    page.__ncCdpAttachPageToken = pageToken;
+    result.existing_page_reused = true;
+    result.active_session_url_reuse = true;
+    const conversationIdBefore = conversationIdFromUrl(page.url());
+    result.conversation_id_before = conversationIdBefore || "unknown";
+    const availability = await requireReady(page, outDir, "before_request");
+    if (availability.availability !== "READY") {
+      result.stop_reason = availability.stopReason || "STOP_CHATGPT_READY_NOT_AVAILABLE";
+      result.final_verdict = result.stop_reason;
+      result.debug_paths.push(...(availability.diagnostic_paths || []));
+      return result;
+    }
+    const composer = await findComposer(page, path.join(outDir, "request_composer"));
+    if (!composer) {
+      result.stop_reason = "STOP_COMPOSER_NOT_FOUND";
+      result.final_verdict = result.stop_reason;
+      return result;
+    }
+    const request = fs.readFileSync(requestPath, "utf8").replaceAll("{{NONCE}}", nonce);
+    write(path.join(outDir, "cdp_request.md"), request);
+    const send = await sendPrompt(page, composer, request, nonce, path.join(outDir, "request_send"));
+    if (!send.ok) {
+      result.request_result = "SEND_FAIL";
+      result.stop_reason = send.reason;
+      result.final_verdict = "FAIL_CDP_REQUEST";
+      return result;
+    }
+    const response = await waitForAssistantResponse(
+      page,
+      nonce,
+      outDir,
+      "request",
+      (raw) => validateNonceDoneResponse(raw, nonce, responseRoot),
+      Number(args.timeoutMs || args.timeout || 600000)
+    );
+    if (!response.ok) {
+      result.request_result = "TIMEOUT";
+      result.stop_reason = response.reason || "STOP_TRANSPORT_ECHO_TIMEOUT";
+      result.final_verdict = "FAIL_CDP_REQUEST";
+      result.debug_paths.push(...(response.diagnostic_paths || []));
+      return result;
+    }
+    result.request_result = "PASS";
+    result.raw_response_paths.push(path.join(outDir, "request_raw_response.txt"));
+    const after = await requireReady(page, outDir, "after_request");
+    const conversationIdAfter = conversationIdFromUrl(page.url());
+    result.same_conversation_id = conversationIdBefore && conversationIdAfter && conversationIdBefore === conversationIdAfter ? "yes" : "unknown";
+    result.same_page_reuse = page.__ncCdpAttachPageToken === pageToken && !page.isClosed() ? "yes" : "unknown";
+    result.same_browser_reuse = browser.isConnected() ? "yes" : "unknown";
+    result.composer_available_after_request = after.availability === "READY";
+    result.final_verdict = "PASS_CDP_REQUEST";
+    return result;
+  } catch (error) {
+    result.stop_reason = result.cdp_attached ? error.message : "STOP_CDP_ATTACH_FAILED";
+    result.error = error.stack || error.message;
+    result.final_verdict = result.stop_reason === "STOP_CDP_ATTACH_FAILED" ? "STOP_CDP_ATTACH_FAILED" : "FAIL_CDP_REQUEST";
+    return result;
+  } finally {
+    if (page && !page.isClosed()) {
+      await page.screenshot({ path: path.join(outDir, "final_page.png"), fullPage: true }).catch(() => {});
+    }
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   const outDir = args.out || path.join(process.cwd(), "ops", "autopilot", "reports", "generated", "chatgpt_cdp_attach");
@@ -663,6 +778,8 @@ async function main() {
   try {
     if (args.fixture) {
       result = await runFixture(args, outDir);
+    } else if (args.live && args.request) {
+      result = await runLiveRequest(args, outDir);
     } else if (args.live) {
       result = await runLive(args, outDir);
     } else {
@@ -670,7 +787,7 @@ async function main() {
     }
     write(path.join(outDir, "cdp_attach_result.json"), JSON.stringify(result, null, 2));
     console.log(JSON.stringify(result, null, 2));
-    process.exit(result.final_verdict === "PASS_CDP_ATTACH_TRANSPORT" || result.final_verdict === "DRY_RUN_NO_BROWSER" ? 0 : 2);
+    process.exit(result.final_verdict === "PASS_CDP_ATTACH_TRANSPORT" || result.final_verdict === "PASS_CDP_REQUEST" || result.final_verdict === "DRY_RUN_NO_BROWSER" ? 0 : 2);
   } catch (error) {
     result = { ...baseResult(outDir), final_verdict: "FAIL_CDP_ATTACH_TRANSPORT", stop_reason: error.message, error: error.stack || error.message };
     write(path.join(outDir, "cdp_attach_result.json"), JSON.stringify(result, null, 2));
