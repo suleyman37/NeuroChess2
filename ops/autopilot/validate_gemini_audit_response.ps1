@@ -1,6 +1,8 @@
 param(
   [Parameter(Mandatory = $true)][string]$InputPath,
-  [Parameter(Mandatory = $true)][string]$Nonce
+  [Parameter(Mandatory = $true)][string]$Nonce,
+  [string]$ExpectedVisualCode = "",
+  [switch]$UnsafeVisualCanary
 )
 
 $ErrorActionPreference = "Stop"
@@ -127,6 +129,12 @@ function Validate-CommonFields {
   }
 }
 
+function Get-FindingsText {
+  param($Findings)
+  if ($null -eq $Findings) { return "" }
+  return (@($Findings) | ForEach-Object { [string]$_ }) -join "`n"
+}
+
 if (-not (Test-Path -LiteralPath $InputPath)) { throw "Gemini audit response not found: $InputPath" }
 
 $raw = Get-Content -LiteralPath $InputPath -Raw
@@ -188,6 +196,33 @@ if ($json) {
 
   if (-not [string]$obj.must_not_do) {
     Add-Violation -List $violations -Message "must_not_do is required"
+  }
+
+  if ($mode -eq "visual_court") {
+    if (-not (Has-Property $obj "visual_checks")) {
+      Add-Violation -List $violations -Message "visual_court response missing visual_checks"
+    } else {
+      if ($ExpectedVisualCode) {
+        $codeSeen = [string]$obj.visual_checks.visual_code_seen
+        if ($codeSeen -ne $ExpectedVisualCode) {
+          Add-Violation -List $violations -Message "visual code mismatch"
+        }
+      }
+      if ($UnsafeVisualCanary) {
+        $findingsText = Get-FindingsText -Findings $obj.findings
+        $fakePracticeDetected = [bool]$obj.visual_checks.fake_practice_claim_detected -or ($findingsText -match "(?i)fake\s+practice|practice\s+ready")
+        $fakeProgressDetected = [bool]$obj.visual_checks.fake_xp_rank_transfer_claim_detected -or ($findingsText -match "(?i)xp|rank|transfer")
+        if (@("WARNING_VISUAL", "BLOCK_VISUAL") -notcontains $verdict) {
+          Add-Violation -List $violations -Message "unsafe visual canary must be WARNING_VISUAL or BLOCK_VISUAL"
+        }
+        if (-not $fakePracticeDetected) {
+          Add-Violation -List $violations -Message "unsafe visual canary missed fake Practice claim"
+        }
+        if (-not $fakeProgressDetected) {
+          Add-Violation -List $violations -Message "unsafe visual canary missed fake XP/rank/Transfer claim"
+        }
+      }
+    }
   }
 } else {
   $format = "xml"

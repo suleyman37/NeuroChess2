@@ -1,0 +1,31 @@
+{
+  "schema": "NC_GEMINI_AUDIT_JSON/1",
+  "nonce": "THE_NONCE",
+  "mode": "visual_court",
+  "verdict": "BLOCK_VISUAL",
+  "scores": {
+    "scope_risk": 2,
+    "product_value": 1,
+    "safety_risk": 5,
+    "automation_drift_risk": 1,
+    "confidence": 0.95
+  },
+  "findings": [
+    "The image claims Practice ready without evidence.",
+    "The image claims XP and Transfer rank progress.",
+    "The Train now CTA is unsafe for a synthetic read-only canary."
+  ],
+  "visual_checks": {
+    "visual_code_seen": null,
+    "desktop_first_fit": false,
+    "primary_cta_safe": false,
+    "read_only_state_clear": false,
+    "fake_practice_claim_detected": true,
+    "fake_xp_rank_transfer_claim_detected": true,
+    "mobile_first_drift_detected": true
+  },
+  "required_action": "block_visual",
+  "must_not_do": "Do not generate a Codex prompt.",
+  "notes": "Fixture for unsafe visual canary.",
+  "done": "THE_NONCE"
+}

@@ -3,6 +3,7 @@ param(
   [switch]$Live,
   [string]$Fixture = "",
   [string]$RequestPath = "",
+  [string[]]$ImagePath = @(),
   [string]$OutDir = "",
   [string]$Nonce = "",
   [int]$TimeoutSeconds = 180,
@@ -30,6 +31,7 @@ $summary = [ordered]@{
   run_dir = $OutDir
   fixture = $Fixture
   request_path = $RequestPath
+  image_paths = @($ImagePath)
   profile_path = $ProfilePath
   browser_called = $false
   live_gemini_called = $false
@@ -69,6 +71,26 @@ if (-not $RequestPath -or -not (Test-Path -LiteralPath $RequestPath)) {
   exit 1
 }
 
+$imageManifestPath = ""
+if ($ImagePath.Count -gt 0) {
+  $resolvedImages = @()
+  foreach ($image in $ImagePath) {
+    if (-not (Test-Path -LiteralPath $image)) {
+      $summary.status = "fail"
+      $summary.reason = "IMAGE_FILE_MISSING"
+      $summary.missing_image = $image
+      $summary | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $OutDir "ask_gemini_web_summary.json") -Encoding UTF8
+      $summary | ConvertTo-Json -Depth 12
+      exit 1
+    }
+    $resolvedImages += (Resolve-Path -LiteralPath $image).Path
+  }
+  $imageManifestPath = Join-Path $OutDir "image_paths.json"
+  $imageManifestJson = "[`n" + (($resolvedImages | ForEach-Object { $_ | ConvertTo-Json }) -join ",`n") + "`n]"
+  $imageManifestJson | Set-Content -LiteralPath $imageManifestPath -Encoding UTF8
+  $summary.image_paths = @($resolvedImages)
+}
+
 $lockJson = & "$PSScriptRoot\check_chrome_profile_lock.ps1" -ProfilePath $ProfilePath -OutDir $OutDir -JsonOnly
 $lock = $lockJson | ConvertFrom-Json
 $summary.profile_lock = $lock
@@ -91,7 +113,19 @@ $previousNodePath = [string]$env:NODE_PATH
 if (Test-Path -LiteralPath $bundledNodeModules) {
   $env:NODE_PATH = if ([string]::IsNullOrWhiteSpace($previousNodePath)) { $bundledNodeModules } else { "$bundledNodeModules;$previousNodePath" }
 }
-& $nodeExe $bridgeScript --request "$RequestPath" --nonce "$Nonce" --out "$OutDir" --profile "$ProfilePath" --timeout "$TimeoutSeconds" --stability "$StabilitySeconds"
+$bridgeArgs = @(
+  $bridgeScript,
+  "--request", "$RequestPath",
+  "--nonce", "$Nonce",
+  "--out", "$OutDir",
+  "--profile", "$ProfilePath",
+  "--timeout", "$TimeoutSeconds",
+  "--stability", "$StabilitySeconds"
+)
+if ($imageManifestPath) {
+  $bridgeArgs += @("--imagesFile", "$imageManifestPath")
+}
+& $nodeExe @bridgeArgs
 $bridgeCode = $LASTEXITCODE
 $env:NODE_PATH = $previousNodePath
 if ($bridgeCode -ne 0) {

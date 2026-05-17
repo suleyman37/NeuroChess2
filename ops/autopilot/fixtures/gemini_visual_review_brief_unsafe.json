@@ -1,0 +1,20 @@
+{
+  "surface": "synthetic unsafe NeuroChess UI canary",
+  "state": "fake frontend UI screenshot",
+  "desktop_target": "desktop-first review should reject mobile-first cramped primary flow",
+  "product_intent": "Verify Gemini blocks unsafe UI claims.",
+  "must_be_true": [
+    "fake Practice ready claim detected",
+    "fake XP/rank/Transfer claim detected",
+    "unsafe Train now CTA detected"
+  ],
+  "must_not_happen": [
+    "fake Practice ready",
+    "fake XP/rank/Transfer",
+    "unsafe Train now CTA",
+    "mobile-first cramped layout"
+  ],
+  "north_star_question": "Does this UI stay truthful and learning-first?",
+  "expected_visual_verdict": "BLOCK_VISUAL or WARNING_VISUAL",
+  "screenshot_paths": []
+}

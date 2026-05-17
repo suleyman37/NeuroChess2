@@ -204,6 +204,107 @@ async function findComposer(page, outDir) {
   return page.locator(chosen.selector).nth(chosen.index);
 }
 
+function readImagePaths(args) {
+  const paths = [];
+  if (args.imagesFile) {
+    const parsed = JSON.parse(read(args.imagesFile));
+    for (const item of Array.isArray(parsed) ? parsed : []) {
+      paths.push(String(item));
+    }
+    if (typeof parsed === "string" && parsed.trim()) {
+      paths.push(parsed.trim());
+    }
+  }
+  if (args.images) {
+    for (const item of String(args.images).split(path.delimiter)) {
+      if (item.trim()) paths.push(item.trim());
+    }
+  }
+  return paths;
+}
+
+async function findAttachmentInput(page, outDir) {
+  const beforeCount = await page.locator('input[type="file"]').count().catch(() => 0);
+  if (beforeCount > 0) {
+    return { type: "input", locator: page.locator('input[type="file"]').nth(beforeCount - 1) };
+  }
+
+  const buttonSelectors = [
+    'button[aria-label*="Joindre" i]',
+    'button[aria-label*="Importer" i]',
+    'button[aria-label*="Attach" i]',
+    'button[aria-label*="Upload" i]',
+    'button[aria-label*="Add files" i]',
+    'button[aria-label*="Ajouter" i]'
+  ];
+  const candidates = [];
+  for (const selector of buttonSelectors) {
+    const locator = page.locator(selector);
+    const count = await locator.count().catch(() => 0);
+    for (let index = 0; index < count; index += 1) {
+      const item = locator.nth(index);
+      candidates.push({
+        selector,
+        index,
+        visible: await item.isVisible().catch(() => false),
+        enabled: await item.isEnabled().catch(() => false),
+        ariaLabel: await item.getAttribute("aria-label").catch(() => ""),
+        box: await item.boundingBox().catch(() => null)
+      });
+    }
+  }
+  write(path.join(outDir, "attachment_button_candidates.json"), JSON.stringify(candidates, null, 2));
+  const chosen = candidates.find((candidate) =>
+    candidate.visible &&
+    candidate.enabled &&
+    candidate.box &&
+    !/cr[ée]er une image|create an image|generate image/i.test(candidate.ariaLabel || "")
+  );
+  if (!chosen) return null;
+  const fileChooserPromise = page.waitForEvent("filechooser", { timeout: 5000 }).catch(() => null);
+  await page.locator(chosen.selector).nth(chosen.index).click({ timeout: 5000 });
+  const fileChooser = await fileChooserPromise;
+  if (fileChooser) {
+    return { type: "filechooser", fileChooser, chosen };
+  }
+  await page.waitForTimeout(1000);
+  const afterCount = await page.locator('input[type="file"]').count().catch(() => 0);
+  if (afterCount <= 0) return null;
+  return { type: "input", locator: page.locator('input[type="file"]').nth(afterCount - 1), chosen };
+}
+
+async function uploadImages(page, imagePaths, outDir) {
+  if (!imagePaths.length) {
+    return { attempted: false, image_count: 0, uploaded: false };
+  }
+  const resolved = imagePaths.map((imagePath) => path.resolve(imagePath));
+  const missing = resolved.filter((imagePath) => !fs.existsSync(imagePath));
+  if (missing.length) {
+    throw new Error(`IMAGE_FILE_MISSING: ${missing.join(", ")}`);
+  }
+  write(path.join(outDir, "image_upload_manifest.json"), JSON.stringify({ image_paths: resolved }, null, 2));
+  const uploadTarget = await findAttachmentInput(page, outDir);
+  if (!uploadTarget) {
+    write(path.join(outDir, "bridge_error.md"), "STOP_GEMINI_IMAGE_UPLOAD_NOT_AVAILABLE");
+    throw new Error("STOP_GEMINI_IMAGE_UPLOAD_NOT_AVAILABLE");
+  }
+  if (uploadTarget.type === "filechooser") {
+    await uploadTarget.fileChooser.setFiles(resolved);
+  } else {
+    await uploadTarget.locator.setInputFiles(resolved, { timeout: 15000 });
+  }
+  await page.waitForTimeout(3000);
+  const result = {
+    attempted: true,
+    image_count: resolved.length,
+    uploaded: true,
+    upload_method: uploadTarget.type,
+    image_paths: resolved
+  };
+  write(path.join(outDir, "image_upload_result.json"), JSON.stringify(result, null, 2));
+  return result;
+}
+
 async function getComposerText(composer) {
   return await composer.evaluate((element) => {
     if ("value" in element) return element.value || "";
@@ -291,6 +392,7 @@ async function main() {
     throw new Error("REQUEST_FILE_MISSING");
   }
   const request = read(requestPath);
+  const imagePaths = readImagePaths(args);
   if (!request.includes(nonce)) {
     throw new Error("REQUEST_NONCE_MISSING");
   }
@@ -329,6 +431,10 @@ async function main() {
       return;
     }
 
+    const uploadResult = await uploadImages(page, imagePaths, outDir);
+    if (uploadResult.attempted) {
+      write(path.join(outDir, "image_upload_before_send.json"), JSON.stringify(uploadResult, null, 2));
+    }
     await writeComposer(page, composer, request, nonce);
     await page.screenshot({ path: path.join(outDir, "gemini_before_send.png"), fullPage: true }).catch(() => {});
     const sendResult = await sendMessage(page, outDir);

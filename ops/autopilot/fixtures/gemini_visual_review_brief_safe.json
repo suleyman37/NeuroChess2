@@ -1,0 +1,19 @@
+{
+  "surface": "synthetic visual smoke",
+  "state": "non-product test image",
+  "desktop_target": "synthetic desktop-neutral image",
+  "product_intent": "Verify Gemini can read a visible visual code and respect strict JSON.",
+  "must_be_true": [
+    "visual code must be read exactly",
+    "strict JSON only"
+  ],
+  "must_not_happen": [
+    "MICRO_PROMPT",
+    "codex_prompt",
+    "implementation instructions"
+  ],
+  "north_star_question": "Does this audit mechanism help NeuroChess prove visual evidence truthfully before product work?",
+  "expected_visual_verdict": "PASS_VISUAL",
+  "expected_visual_code": "NC_GEM_VIS_TEST",
+  "screenshot_paths": []
+}
