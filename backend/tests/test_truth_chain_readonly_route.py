@@ -159,6 +159,33 @@ class TruthChainReadOnlyRouteTests(unittest.TestCase):
         self.assertEqual(second.status_code, 200)
         self.assertEqual(self._mutation_snapshot(), before)
 
+    def test_repeated_get_returns_stable_payload_and_preserves_state_snapshot(self) -> None:
+        game_id = self._create_finished_game()
+        _, first_moment_id = self._seed_review_moments(game_id, count=3)
+        training_item_id = self._seed_training_item(game_id, first_moment_id)
+        self._seed_daily_plan_item(training_item_id)
+        self._seed_review_practice_attempt(game_id, training_item_id)
+        before = self._mutation_snapshot()
+
+        responses = [
+            self.client.get(f"/games/{game_id}/truth-chain/moments")
+            for _ in range(3)
+        ]
+
+        for response in responses:
+            self.assertEqual(response.status_code, 200)
+        payloads = [response.json() for response in responses]
+        self.assertEqual(payloads[0], payloads[1])
+        self.assertEqual(payloads[1], payloads[2])
+        proof = payloads[-1]["readOnlyProof"]
+        self.assertEqual(proof["methodsAllowed"], ["GET"])
+        self.assertFalse(proof["writesPerformed"])
+        self.assertFalse(proof["trainingItemsCreated"])
+        self.assertFalse(proof["dailyPlanTouched"])
+        self.assertFalse(proof["dueAtTouched"])
+        self.assertFalse(proof["engineInvoked"])
+        self.assertEqual(self._mutation_snapshot(), before)
+
     def test_static_guard_keeps_readonly_route_and_service_away_from_writes(self) -> None:
         route_source = inspect.getsource(game_routes.get_truth_chain_moments)
         service_source = Path(inspect.getsourcefile(ReviewMomentsReadOnlyService) or "").read_text(
