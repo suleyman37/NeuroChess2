@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "design_candidate_score.schema.json",
+  "title": "A20G Design Candidate Score",
+  "type": "object",
+  "required": ["candidate_id", "design_score", "taste_proxy_score", "generic_saas_drift", "hard_gates_pass", "verdict", "reasons"],
+  "properties": {
+    "verdict": {
+      "enum": ["AUTO_PASS_DESIGN", "AUTO_WARNING_VISUAL_DEBT", "AUTO_BLOCK_GENERIC_UI", "AUTO_NO_WINNER"]
+    },
+    "runtime_user_input_required": { "const": false }
+  },
+  "additionalProperties": true
+}

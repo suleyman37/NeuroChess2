@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "design_jury_packet.schema.json",
+  "title": "A20G Design Jury Packet",
+  "type": "object",
+  "required": ["schema_version", "packet_id", "design_brief", "selected_references", "taste_proxy_summary", "visual_court_questions", "runtime_user_input_required"],
+  "properties": {
+    "schema_version": { "const": "A20G_design_jury_packet_v1" },
+    "runtime_user_input_required": { "const": false }
+  },
+  "additionalProperties": true
+}

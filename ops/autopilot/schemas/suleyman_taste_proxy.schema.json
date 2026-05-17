@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "suleyman_taste_proxy.schema.json",
+  "title": "A20G Suleyman Taste Proxy",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "proxy_id",
+    "positive_taste_signals",
+    "negative_taste_signals",
+    "reference_principles",
+    "thresholds",
+    "runtime_user_input_required"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20G_suleyman_taste_proxy_v1" },
+    "runtime_user_input_required": { "const": false }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "A20G_design_tournament_fixture_v1",
+  "thresholds": {
+    "clear_winner_margin": 10
+  },
+  "candidate_scores": [
+    {
+      "candidate_id": "strong_cockpit",
+      "design_score": 90,
+      "taste_proxy_score": 92,
+      "generic_saas_drift": 5,
+      "learning_loop_support_score": 90,
+      "hard_gates_pass": true,
+      "verdict": "AUTO_PASS_DESIGN"
+    },
+    {
+      "candidate_id": "safe_but_weaker",
+      "design_score": 82,
+      "taste_proxy_score": 77,
+      "generic_saas_drift": 18,
+      "learning_loop_support_score": 72,
+      "hard_gates_pass": true,
+      "verdict": "AUTO_PASS_DESIGN"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "design_tournament_result.schema.json",
+  "title": "A20G Design Tournament Result",
+  "type": "object",
+  "required": ["tournament_result", "winner_id", "ranking", "reasons", "runtime_user_input_required"],
+  "properties": {
+    "tournament_result": {
+      "enum": ["WINNER_SELECTED", "NO_WINNER", "BLOCK_GENERIC_UI", "NEEDS_HUMAN_REVIEW_AFTER_RUN"]
+    },
+    "runtime_user_input_required": { "const": false }
+  },
+  "additionalProperties": true
+}

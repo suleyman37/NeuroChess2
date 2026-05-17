@@ -1,0 +1,15 @@
+{
+  "schema_version": "A20G_design_jury_result_v1",
+  "provider": "Gemini Visual Court",
+  "verdict": "PASS_VISUAL",
+  "hard_gates": {
+    "cta_truthfulness": true,
+    "no_fake_gamification": true,
+    "no_fake_xp_rank_transfer": true,
+    "board_central": true,
+    "desktop_first": true,
+    "not_generic_saas": true
+  },
+  "notes": "Board is central, primary action is clear, and no fake progress claim is present.",
+  "runtime_user_input_required": false
+}

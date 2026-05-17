@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "design_jury_result.schema.json",
+  "title": "A20G Design Jury Result",
+  "type": "object",
+  "required": ["schema_version", "provider", "verdict", "hard_gates", "runtime_user_input_required"],
+  "properties": {
+    "schema_version": { "const": "A20G_design_jury_result_v1" },
+    "verdict": {
+      "enum": ["PASS_VISUAL", "WARNING_VISUAL", "BLOCK_VISUAL"]
+    },
+    "runtime_user_input_required": { "const": false }
+  },
+  "additionalProperties": true
+}

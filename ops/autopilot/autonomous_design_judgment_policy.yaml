@@ -1,0 +1,33 @@
+schema_version: A20G_AUTONOMOUS_DESIGN_JUDGMENT_POLICY/1
+enabled: false
+live_enforced: false
+runtime_user_design_approval_required: false
+allowed_runtime_states:
+  - AUTO_PASS_DESIGN
+  - AUTO_WARNING_VISUAL_DEBT
+  - AUTO_BLOCK_GENERIC_UI
+  - AUTO_NO_WINNER
+  - NEEDS_HUMAN_REVIEW_AFTER_RUN
+thresholds:
+  design_score_min: 80
+  taste_proxy_score_min: 75
+  generic_saas_drift_max: 25
+  cta_truthfulness_required: 100
+  no_fake_gamification_required: 100
+  clear_winner_margin: 10
+golden_screens:
+  - today_daily_command_center
+  - game_intake_import
+  - game_review
+  - decision_arena
+  - try_before_feedback
+  - feedback_replay
+  - explorer_alternative_line
+  - profile_memory_of_progress
+  - three_d_board_stage_decision_arena_prototype
+primary_visual_judge: Gemini Visual Court
+secondary_visual_judge: ChatGPT Visual Court
+post_run_calibration_only: true
+live_chatgpt_called: false
+live_gemini_called: false
+product_mission_executed: false
