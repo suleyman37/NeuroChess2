@@ -14,6 +14,8 @@ type ScenePreset = {
   label: string;
   shortLabel: string;
   headline: string;
+  stageCue: string;
+  boardSignal: string;
   atmosphere: string;
   accent: string;
   board_role: string;
@@ -28,6 +30,8 @@ const SCENE_PRESETS: Record<StageState, ScenePreset> = {
     label: "Observe",
     shortLabel: "Observe",
     headline: "Stable read of the position",
+    stageCue: "Calm scan",
+    boardSignal: "The position rests as the artifact.",
     atmosphere: "quiet technical field",
     accent: "#69e8ff",
     board_role: "central_artifact",
@@ -40,6 +44,8 @@ const SCENE_PRESETS: Record<StageState, ScenePreset> = {
     label: "Try before feedback",
     shortLabel: "Try",
     headline: "Contained tension, no answer trace",
+    stageCue: "Hold the tension",
+    boardSignal: "Decision pressure gathers without revealing the line.",
     atmosphere: "compressed decision pressure",
     accent: "#f6c766",
     board_role: "decision_arena",
@@ -52,6 +58,8 @@ const SCENE_PRESETS: Record<StageState, ScenePreset> = {
     label: "Feedback success",
     shortLabel: "Success",
     headline: "Decision stabilizes after effort",
+    stageCue: "Stabilize",
+    boardSignal: "The attempted line resolves into a controlled trace.",
     atmosphere: "earned stabilization",
     accent: "#61e6a7",
     board_role: "confirmed_decision_artifact",
@@ -64,6 +72,8 @@ const SCENE_PRESETS: Record<StageState, ScenePreset> = {
     label: "Feedback miss",
     shortLabel: "Miss",
     headline: "Brief imbalance, then clarity reset",
+    stageCue: "Reset to clarity",
+    boardSignal: "The field tilts once, then points back to the decision.",
     atmosphere: "corrective pressure",
     accent: "#ff7b91",
     board_role: "resettable_learning_field",
@@ -76,6 +86,8 @@ const SCENE_PRESETS: Record<StageState, ScenePreset> = {
     label: "Replay",
     shortLabel: "Replay",
     headline: "Guided line after feedback",
+    stageCue: "Replay the path",
+    boardSignal: "A guided trace appears only after feedback.",
     atmosphere: "traceable memory path",
     accent: "#9b8cff",
     board_role: "replay_path_surface",
@@ -190,6 +202,7 @@ export function BoardStagePrototype() {
         <div>
           <p className="a20h-kicker">DEV-only prototype</p>
           <h1>NeuroChess Board Stage</h1>
+          <p className="a20h-stage-thesis">Desktop decision cockpit, board-first and code-native.</p>
         </div>
         <div className="a20h-stage-status" data-testid="a20h-state-summary">
           <span>{preset.label}</span>
@@ -218,6 +231,10 @@ export function BoardStagePrototype() {
         </aside>
 
         <div className="a20h-stage-core" data-testid="a20h-stage-core">
+          <div className="a20h-core-caption" data-testid="a20h-state-cue">
+            <span>{preset.stageCue}</span>
+            <strong>{preset.boardSignal}</strong>
+          </div>
           <div className="a20h-stage-depth" aria-hidden="true">
             <span className="a20h-depth-line a20h-depth-line-1" />
             <span className="a20h-depth-line a20h-depth-line-2" />
@@ -231,6 +248,10 @@ export function BoardStagePrototype() {
           {effectsEnabled ? <StageEffects state={stageState} /> : null}
           <div className="a20h-board-plane" data-testid="a20h-board-plane">
             <div className="a20h-board-frame">
+              <div className="a20h-artifact-label" aria-hidden="true">
+                <span>{preset.shortLabel}</span>
+                <strong>central artifact</strong>
+              </div>
               <div
                 className="a20h-board"
                 data-testid="a20h-board"
@@ -263,7 +284,11 @@ export function BoardStagePrototype() {
                 <svg className="a20h-board-trace" viewBox="0 0 800 800" aria-hidden="true">
                   <circle className="a20h-decision-ring" cx="450" cy="450" r="84" />
                   <path className="a20h-candidate-path" d="M450 650 C460 540 480 430 560 320" />
+                  <path className="a20h-reset-path" d="M540 385 C500 430 458 465 404 486" />
                   <path className="a20h-replay-path" d="M250 650 C340 545 450 430 560 320" />
+                  <circle className="a20h-replay-node a20h-replay-node-start" cx="250" cy="650" r="13" />
+                  <circle className="a20h-replay-node a20h-replay-node-mid" cx="450" cy="430" r="13" />
+                  <circle className="a20h-replay-node a20h-replay-node-end" cx="560" cy="320" r="13" />
                 </svg>
               </div>
             </div>
@@ -321,9 +346,13 @@ export function BoardStagePrototype() {
 function StageEffects({ state }: { state: StageState }) {
   return (
     <div className="a20h-stage-effects" data-testid="a20h-stage-effects" aria-hidden="true">
+      <span className="a20h-state-field" />
       <span className="a20h-artifact-fragment a20h-fragment-1" />
       <span className="a20h-artifact-fragment a20h-fragment-2" />
       <span className="a20h-artifact-fragment a20h-fragment-3" />
+      <span className="a20h-field-node a20h-field-node-1" />
+      <span className="a20h-field-node a20h-field-node-2" />
+      <span className="a20h-field-node a20h-field-node-3" />
       <span className="a20h-focus-column" />
       <svg className="a20h-state-vector" viewBox="0 0 900 520">
         <path

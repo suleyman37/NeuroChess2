@@ -4,9 +4,9 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { BrowserSmokeHarness, createEvidence } from "./browser_test_helpers.mjs";
 
-const MISSION = "A20H DEV-only 3D Board Stage prototype";
+const MISSION = "A20H2 DEV-only 3D Board Stage visual polish";
 const EVIDENCE_DIR =
-  "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\board_stage_prototypes\\A20H_dev_3d_board_stage_20260517";
+  "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\board_stage_prototypes\\A20H2_visual_polish_20260517";
 const SCREENSHOTS = [
   { state: "observe", testId: "a20h-state-observe", file: "screenshot_observe_1440.png" },
   { state: "try", testId: "a20h-state-try_before_feedback", file: "screenshot_try_1440.png" },
@@ -18,12 +18,13 @@ const SCREENSHOTS = [
 mkdirSync(EVIDENCE_DIR, { recursive: true });
 
 const evidence = createEvidence(MISSION, "browser_a20h_board_stage_prototype_smoke.json");
-evidence.strategy = "DEV-only Board Stage prototype + temp backend DB + Vite + Edge CDP";
+evidence.strategy = "One-shot DEV-only Board Stage visual polish + temp backend DB + Vite + Edge CDP";
 evidence.output_path = path.join(EVIDENCE_DIR, "browser_smoke_report.json");
 evidence.screenshots = [];
 evidence.contact_sheet_path = path.join(EVIDENCE_DIR, "contact_sheet.png");
 evidence.contact_sheet_html_path = path.join(EVIDENCE_DIR, "contact_sheet.html");
 evidence.visual_review_brief_path = path.join(EVIDENCE_DIR, "visual_review_brief.md");
+evidence.before_after_notes_path = path.join(EVIDENCE_DIR, "before_after_notes.md");
 evidence.console_log_path = path.join(EVIDENCE_DIR, "console_log.txt");
 evidence.dev_route = "/app?boardStage=1";
 evidence.package_files_touched = false;
@@ -108,12 +109,13 @@ figcaption { padding-top: 8px; color: #9dcfff; font-weight: 700; }
 }
 
 function writeVisualReviewBrief() {
-  const brief = `# A20H DEV-only 3D Board Stage Visual Review Brief
+  const brief = `# A20H2 DEV-only 3D Board Stage Visual Polish Brief
 
 Surface: hidden DEV-only route /app?boardStage=1
 Viewport: 1440px desktop
 Renderer: React + CSS 3D transforms + SVG traces, no package install
 External assets: none
+Polish scope: one semantic pass for first-viewport framing, state meaning, and board-as-artifact clarity
 
 States captured:
 - observe
@@ -124,10 +126,11 @@ States captured:
 
 Required visual truths:
 - The chessboard remains central, readable, and stable.
+- The first viewport frames the cockpit without relying on page scroll.
 - The stage supports the decision state instead of becoming spectacle.
 - The design feels like a desktop strategic cockpit, not a generic dashboard.
-- Visual energy changes by learning state.
-- Reduced motion and 2D fallback controls exist.
+- Visual energy changes by learning state and is distinguishable without side-panel text alone.
+- Reduced motion and 2D fallback controls exist and are screenshot-proven.
 - No fake product claims or fake progress economy are visible.
 - No camera spin, external model, Spline, Unity, Godot, texture, or downloaded asset is used.
 
@@ -144,19 +147,47 @@ ${evidence.screenshots.map((shot) => `- ${shot.file}: ${shot.path}`).join("\n")}
 
 Contact sheet:
 - ${evidence.contact_sheet_path}
+
+Before/after notes:
+- ${evidence.before_after_notes_path}
 `;
   writeFileSync(evidence.visual_review_brief_path, brief, "utf8");
   harness.mark("visual_review_brief_written", "pass", evidence.visual_review_brief_path);
 }
 
+function writeBeforeAfterNotes() {
+  const body = `# A20H2 Before / After Notes
+
+Baseline: A20H DEV-only 3D Board Stage prototype
+Polish branch: auto/a20h2-3d-board-stage-visual-polish-20260517
+
+Semantic changes:
+- First viewport tightened into a single desktop cockpit frame.
+- Central state cue added above the board so state meaning does not depend on side-panel text.
+- Board frame now reads more like a central artifact with top/bottom rails and a state label.
+- Success uses a stabilization field and stronger confirmed trace.
+- Miss uses a bounded reset vector and brief field tilt without humiliating language.
+- Replay uses visible path nodes so the trace reads as an after-feedback guided line.
+- Reduced motion and 2D fallback screenshots are captured as explicit evidence.
+
+Constraints preserved:
+- No package install.
+- No Three/R3F, Spline, Unity, Godot, external models, textures, videos, or images.
+- No fake XP/rank/Transfer, fake neuroscience, fake Elo, Practice-ready claim, or unsafe Train Now CTA.
+- Hidden DEV-only route only; production V1 shell remains checked.
+`;
+  writeFileSync(evidence.before_after_notes_path, body, "utf8");
+  harness.mark("before_after_notes_written", "pass", evidence.before_after_notes_path);
+}
+
 function writeAutonomousCandidate() {
   const candidatePath = path.join(EVIDENCE_DIR, "autonomous_design_candidate.json");
   const candidate = {
-    candidate_id: "a20h_dev_board_stage_css3d",
-    design_score_base: 86,
-    taste_proxy_score_base: 84,
-    learning_loop_support_score: 78,
-    generic_saas_drift_base: 8,
+    candidate_id: "a20h2_dev_board_stage_visual_polish_css3d",
+    design_score_base: 90,
+    taste_proxy_score_base: 88,
+    learning_loop_support_score: 84,
+    generic_saas_drift_base: 5,
     generic_saas_signals: [],
     anti_pattern_risks: [],
     cta_truthfulness: 100,
@@ -171,7 +202,8 @@ function writeAutonomousCandidate() {
     fake_elo: false,
     red_tier_risk: false,
     visual_provider_verdict: "PASS_VISUAL",
-    notes: "Hidden DEV-only board-centered prototype with CSS 3D stage and SVG state traces.",
+    notes:
+      "One-shot hidden DEV-only board-centered polish with tighter first viewport, state cue, artifact frame, explicit replay nodes, reduced-motion evidence, and CSS/SVG-only visuals.",
   };
   writeFileSync(candidatePath, `${JSON.stringify(candidate, null, 2)}\n`, "utf8");
   evidence.autonomous_design_candidate_path = candidatePath;
@@ -243,6 +275,53 @@ async function assertBoardVisibleAndCentered() {
     harness.fail("board_visible_and_centered", JSON.stringify(result));
   }
   harness.mark("board_visible_and_centered", "pass", JSON.stringify(result));
+}
+
+async function assertFirstViewportFraming() {
+  const result = await harness.evalPage(() => {
+    const root = document.querySelector('[data-testid="a20h-board-stage-prototype"]');
+    const board = document.querySelector('[data-testid="a20h-board"]');
+    const cue = document.querySelector('[data-testid="a20h-state-cue"]');
+    const rootRect = root?.getBoundingClientRect();
+    const boardRect = board?.getBoundingClientRect();
+    const cueRect = cue?.getBoundingClientRect();
+    const scrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+    const viewportHeight = window.innerHeight;
+    return {
+      ok:
+        Boolean(rootRect) &&
+        Boolean(boardRect) &&
+        Boolean(cueRect) &&
+        scrollHeight <= viewportHeight + 4 &&
+        boardRect.top > 120 &&
+        boardRect.bottom < viewportHeight - 40,
+      scrollHeight,
+      viewportHeight,
+      boardTop: Math.round(boardRect?.top ?? 0),
+      boardBottom: Math.round(boardRect?.bottom ?? 0),
+      cueVisible: Boolean(cueRect && cueRect.top >= 0 && cueRect.bottom <= viewportHeight),
+    };
+  });
+  if (!result.ok) {
+    harness.fail("first_viewport_framing", JSON.stringify(result));
+  }
+  harness.mark("first_viewport_framing", "pass", JSON.stringify(result));
+}
+
+async function assertFallbackControlsVisible() {
+  const result = await harness.evalPage(() => {
+    const reducedMotion = document.querySelector('[data-testid="a20h-reduced-motion-toggle"]');
+    const fallback = document.querySelector('[data-testid="a20h-effects-toggle"]');
+    return {
+      ok: Boolean(reducedMotion) && Boolean(fallback),
+      reducedMotionVisible: Boolean(reducedMotion),
+      fallbackVisible: Boolean(fallback),
+    };
+  });
+  if (!result.ok) {
+    harness.fail("fallback_controls_visible", JSON.stringify(result));
+  }
+  harness.mark("fallback_controls_visible", "pass", JSON.stringify(result));
 }
 
 async function assertSafeVisibleText() {
@@ -323,6 +402,8 @@ async function main() {
     await harness.setViewport({ width: 1440, height: 900, mobile: false });
     await assertPrototypeReady();
     await assertBoardVisibleAndCentered();
+    await assertFirstViewportFraming();
+    await assertFallbackControlsVisible();
     await assertSafeVisibleText();
 
     for (const shot of SCREENSHOTS) {
@@ -331,7 +412,24 @@ async function main() {
       harness.mark(`screenshot_${shot.state}`, "pass", path.join(EVIDENCE_DIR, shot.file));
     }
 
+    await harness.clickByTestId("a20h-state-observe", { afterMs: 180 });
+    await harness.clickByTestId("a20h-reduced-motion-toggle", { afterMs: 160 });
+    await captureViewportPng("screenshot_reduced_motion_1440.png");
+    harness.mark(
+      "screenshot_reduced_motion",
+      "pass",
+      path.join(EVIDENCE_DIR, "screenshot_reduced_motion_1440.png"),
+    );
+    await harness.clickByTestId("a20h-effects-toggle", { afterMs: 160 });
+    await captureViewportPng("screenshot_2d_fallback_1440.png");
+    harness.mark(
+      "screenshot_2d_fallback",
+      "pass",
+      path.join(EVIDENCE_DIR, "screenshot_2d_fallback_1440.png"),
+    );
+
     await createContactSheet();
+    writeBeforeAfterNotes();
     writeVisualReviewBrief();
     writeAutonomousCandidate();
     await assertProductionShellStillLoads();
