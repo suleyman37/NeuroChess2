@@ -1,0 +1,63 @@
+﻿{
+    "schema_version":  "A16K5_SECURITY_REPO_HYGIENE_SKILL_AUDIT/1",
+    "candidate":  "supply-chain-guard",
+    "source":  "https://github.com/davila7/claude-code-templates/tree/main/cli-tool/components/skills/security/supply-chain-guard",
+    "raw_skill_url":  "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/skills/security/supply-chain-guard/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:25:39.4230215+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\supply-chain-guard",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "dependency install",
+                               "secrets or environment access",
+                               "supply-chain guidance must not run remote scripts or install dependencies",
+                               "package and lockfile changes require explicit mission authorization"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "design critique pattern",
+                            "skill authoring pattern",
+                            "scope discipline pattern",
+                            "no curl pipe shell rule",
+                            "dependency provenance review",
+                            "mutable remote instruction warning",
+                            "package change scrutiny",
+                            "external code quarantine pattern"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "design review criteria",
+                                     "scope and path guardrails",
+                                     "skill authoring conventions",
+                                     "no curl pipe shell rule",
+                                     "dependency provenance review",
+                                     "mutable remote instruction warning",
+                                     "package change scrutiny",
+                                     "external code quarantine pattern"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "script execution or install steps",
+                                    "supply-chain guidance must not run remote scripts or install dependencies",
+                                    "package and lockfile changes require explicit mission authorization"
+                                ],
+    "recommended_internal_skill_target":  "neurochess-supply-chain-skill-audit, external-skills-intake-process, product-safe-night-mode",
+    "extraction_target":  "frontend-visual-review",
+    "adaptation_notes":  "Extract security and repo-hygiene patterns only. Rewrite into NeuroChess-owned procedures for explicit staging, destructive command denial, secret hygiene, supply-chain quarantine, CI permission review, prompt-injection detection, and PowerShell command safety. Do not execute external scripts, install dependencies, alter workflows, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

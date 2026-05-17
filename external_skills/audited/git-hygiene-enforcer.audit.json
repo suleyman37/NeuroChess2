@@ -1,0 +1,65 @@
+﻿{
+    "schema_version":  "A16K5_SECURITY_REPO_HYGIENE_SKILL_AUDIT/1",
+    "candidate":  "git-hygiene-enforcer",
+    "source":  "https://skills.sh/patricio0312rev/skills/git-hygiene-enforcer",
+    "raw_skill_url":  "https://raw.githubusercontent.com/patricio0312rev/skills/main/foundation/git-hygiene-enforcer/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:25:38.2467381+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\git-hygiene-enforcer",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  true,
+    "prompt_injection_risk":  true,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "critical",
+    "recommended_verdict":  "REJECT",
+    "dangerous_patterns":  [
+                               "force push",
+                               "network fetch",
+                               "dependency install",
+                               "secrets or environment access",
+                               "contains bypass and force-push guidance that conflicts with NeuroChess git discipline",
+                               "contains broad setup guidance for hooks, CI, and repo files outside this mission"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "skill authoring pattern",
+                            "scope discipline pattern",
+                            "explicit staging discipline",
+                            "branch protection reminders",
+                            "precheck and postcheck culture",
+                            "gitignore hygiene",
+                            "commit atomicity patterns"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "scope and path guardrails",
+                                     "skill authoring conventions",
+                                     "explicit staging discipline",
+                                     "branch protection reminders",
+                                     "precheck and postcheck culture",
+                                     "gitignore hygiene",
+                                     "commit atomicity patterns"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "script execution or install steps",
+                                    "destructive Git or filesystem commands",
+                                    "contains bypass and force-push guidance that conflicts with NeuroChess git discipline",
+                                    "contains broad setup guidance for hooks, CI, and repo files outside this mission"
+                                ],
+    "recommended_internal_skill_target":  "mission-contract-shadow-plan, product-safe-night-mode, neurochess-security-repo-hygiene",
+    "extraction_target":  "react-performance-review",
+    "adaptation_notes":  "Extract security and repo-hygiene patterns only. Rewrite into NeuroChess-owned procedures for explicit staging, destructive command denial, secret hygiene, supply-chain quarantine, CI permission review, prompt-injection detection, and PowerShell command safety. Do not execute external scripts, install dependencies, alter workflows, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

@@ -1,0 +1,53 @@
+﻿{
+    "schema_version":  "A16K5_SECURITY_REPO_HYGIENE_SKILL_AUDIT/1",
+    "candidate":  "powershell-windows",
+    "source":  "https://skills.sh/davila7/claude-code-templates/powershell-windows",
+    "raw_skill_url":  "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/skills/development/powershell-windows/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:25:39.9913085+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\powershell-windows",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  false,
+    "destructive_command_risk":  true,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "secrets or environment access",
+                               "PowerShell patterns must not authorize encoded commands, broad deletion, or cross-shell destructive composition"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "skill authoring pattern",
+                            "PowerShell command safety",
+                            "Join-Path and LiteralPath discipline",
+                            "ASCII-only script output",
+                            "null-check patterns",
+                            "Windows shell quoting caution"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "skill authoring conventions",
+                                     "PowerShell command safety",
+                                     "Join-Path and LiteralPath discipline",
+                                     "ASCII-only script output",
+                                     "null-check patterns",
+                                     "Windows shell quoting caution"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "PowerShell patterns must not authorize encoded commands, broad deletion, or cross-shell destructive composition"
+                                ],
+    "recommended_internal_skill_target":  "mission-contract-shadow-plan, neurochess-security-repo-hygiene",
+    "extraction_target":  "mission-contract-shadow-plan",
+    "adaptation_notes":  "Extract security and repo-hygiene patterns only. Rewrite into NeuroChess-owned procedures for explicit staging, destructive command denial, secret hygiene, supply-chain quarantine, CI permission review, prompt-injection detection, and PowerShell command safety. Do not execute external scripts, install dependencies, alter workflows, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

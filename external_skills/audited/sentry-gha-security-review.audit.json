@@ -1,0 +1,62 @@
+﻿{
+    "schema_version":  "A16K5_SECURITY_REPO_HYGIENE_SKILL_AUDIT/1",
+    "candidate":  "sentry-gha-security-review",
+    "source":  "https://skills.sh/getsentry/skills/gha-security-review",
+    "raw_skill_url":  "https://raw.githubusercontent.com/getsentry/skills/main/skills/gha-security-review/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:25:36.4871572+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\sentry-gha-security-review",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "high",
+    "recommended_verdict":  "ADAPT_TO_INTERNAL",
+    "dangerous_patterns":  [
+                               "network fetch",
+                               "secrets or environment access",
+                               "broad improvement language",
+                               "GitHub workflow changes must not occur without a dedicated CI mission",
+                               "CI security review must remain audit-only during Night Mode bootstrap"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "skill authoring pattern",
+                            "scope discipline pattern",
+                            "GitHub Actions permission review",
+                            "script injection checks",
+                            "secrets exposure prevention",
+                            "pull_request_target caution",
+                            "workflow pinning review"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "scope and path guardrails",
+                                     "skill authoring conventions",
+                                     "GitHub Actions permission review",
+                                     "script injection checks",
+                                     "secrets exposure prevention",
+                                     "pull_request_target caution",
+                                     "workflow pinning review"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "GitHub workflow changes must not occur without a dedicated CI mission",
+                                    "CI security review must remain audit-only during Night Mode bootstrap"
+                                ],
+    "recommended_internal_skill_target":  "product-safe-night-mode, morning-intelligence-report, neurochess-security-repo-hygiene",
+    "extraction_target":  "gemini-auditor",
+    "adaptation_notes":  "Extract security and repo-hygiene patterns only. Rewrite into NeuroChess-owned procedures for explicit staging, destructive command denial, secret hygiene, supply-chain quarantine, CI permission review, prompt-injection detection, and PowerShell command safety. Do not execute external scripts, install dependencies, alter workflows, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

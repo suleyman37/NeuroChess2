@@ -1,0 +1,59 @@
+﻿{
+    "schema_version":  "A16K5_SECURITY_REPO_HYGIENE_SKILL_AUDIT/1",
+    "candidate":  "prompt-guard",
+    "source":  "https://skills.sh/seojoonkim/prompt-guard/prompt-guard",
+    "raw_skill_url":  "https://raw.githubusercontent.com/seojoonkim/prompt-guard/main/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:25:37.6704584+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\prompt-guard",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  true,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  false,
+    "risk_level":  "critical",
+    "recommended_verdict":  "QUARANTINE",
+    "dangerous_patterns":  [
+                               "destructive file deletion",
+                               "network fetch",
+                               "secrets or environment access",
+                               "optional APIs and bundled pattern engines must not be installed or called in this mission",
+                               "prompt-injection tooling must be adapted as policy, not executed as external code"
+                           ],
+    "conflicts_with_neurochess":  [
+
+                                  ],
+    "useful_patterns":  [
+                            "skill authoring pattern",
+                            "prompt injection taxonomy",
+                            "skill weaponization detection",
+                            "secret exfiltration pattern awareness",
+                            "policy bypass detection",
+                            "offline pattern-review concept"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "skill authoring conventions",
+                                     "prompt injection taxonomy",
+                                     "skill weaponization detection",
+                                     "secret exfiltration pattern awareness",
+                                     "policy bypass detection",
+                                     "offline pattern-review concept"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "destructive Git or filesystem commands",
+                                    "optional APIs and bundled pattern engines must not be installed or called in this mission",
+                                    "prompt-injection tooling must be adapted as policy, not executed as external code"
+                                ],
+    "recommended_internal_skill_target":  "external-skills-intake-process, mission-contract-shadow-plan, neurochess-supply-chain-skill-audit",
+    "extraction_target":  "mission-contract-shadow-plan",
+    "adaptation_notes":  "Extract security and repo-hygiene patterns only. Rewrite into NeuroChess-owned procedures for explicit staging, destructive command denial, secret hygiene, supply-chain quarantine, CI permission review, prompt-injection detection, and PowerShell command safety. Do not execute external scripts, install dependencies, alter workflows, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

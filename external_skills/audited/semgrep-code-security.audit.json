@@ -1,0 +1,58 @@
+﻿{
+    "schema_version":  "A16K5_SECURITY_REPO_HYGIENE_SKILL_AUDIT/1",
+    "candidate":  "semgrep-code-security",
+    "source":  "https://skills.sh/semgrep/skills/code-security",
+    "raw_skill_url":  "https://raw.githubusercontent.com/semgrep/skills/main/skills/code-security/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:25:35.8827941+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\semgrep-code-security",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  false,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  true,
+    "risk_level":  "critical",
+    "recommended_verdict":  "QUARANTINE",
+    "dangerous_patterns":  [
+                               "secrets or environment access",
+                               "security examples must not become direct permission to edit product code or install scanners",
+                               "dependency and SAST tooling requires a dedicated mission"
+                           ],
+    "conflicts_with_neurochess":  [
+                                      "red-tier learning state conflict"
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "skill authoring pattern",
+                            "secure code review categories",
+                            "command injection avoidance",
+                            "hardcoded secret detection",
+                            "GitHub Actions script injection awareness",
+                            "OWASP-style checklist patterns"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "skill authoring conventions",
+                                     "secure code review categories",
+                                     "command injection avoidance",
+                                     "hardcoded secret detection",
+                                     "GitHub Actions script injection awareness",
+                                     "OWASP-style checklist patterns"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "NeuroChess red-tier conflict",
+                                    "security examples must not become direct permission to edit product code or install scanners",
+                                    "dependency and SAST tooling requires a dedicated mission"
+                                ],
+    "recommended_internal_skill_target":  "mission-contract-shadow-plan, neurochess-security-repo-hygiene, neurochess-supply-chain-skill-audit",
+    "extraction_target":  "react-performance-review",
+    "adaptation_notes":  "Extract security and repo-hygiene patterns only. Rewrite into NeuroChess-owned procedures for explicit staging, destructive command denial, secret hygiene, supply-chain quarantine, CI permission review, prompt-injection detection, and PowerShell command safety. Do not execute external scripts, install dependencies, alter workflows, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}

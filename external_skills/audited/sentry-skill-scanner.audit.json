@@ -1,0 +1,66 @@
+﻿{
+    "schema_version":  "A16K5_SECURITY_REPO_HYGIENE_SKILL_AUDIT/1",
+    "candidate":  "sentry-skill-scanner",
+    "source":  "https://github.com/getsentry/skills/tree/main/skills/skill-scanner",
+    "raw_skill_url":  "https://raw.githubusercontent.com/getsentry/skills/main/skills/skill-scanner/SKILL.md",
+    "fetched":  "yes",
+    "fetched_at":  "2026-05-17T03:25:37.0751813+02:00",
+    "raw_quarantine_path":  "external_skills\\quarantine\\sentry-skill-scanner",
+    "has_skill_md":  true,
+    "has_scripts":  false,
+    "network_fetch_risk":  true,
+    "destructive_command_risk":  false,
+    "prompt_injection_risk":  false,
+    "secrets_env_access_risk":  true,
+    "conflicts_with_neurochess_rules":  true,
+    "risk_level":  "critical",
+    "recommended_verdict":  "QUARANTINE",
+    "dangerous_patterns":  [
+                               "network fetch",
+                               "dependency install",
+                               "secrets or environment access",
+                               "skill scanning must not activate or rewrite external skills",
+                               "scanner findings must not weaken Control Plane authority"
+                           ],
+    "conflicts_with_neurochess":  [
+                                      "red-tier learning state conflict"
+                                  ],
+    "useful_patterns":  [
+                            "checklist or review procedure",
+                            "test-first pattern",
+                            "skill authoring pattern",
+                            "scope discipline pattern",
+                            "malicious skill detection",
+                            "external skill review checklist",
+                            "prompt injection detection",
+                            "tool and script risk review",
+                            "audit-before-activation pattern"
+                        ],
+    "extracted_reusable_ideas":  [
+                                     "checklist structure",
+                                     "behavior-first testing guidance",
+                                     "scope and path guardrails",
+                                     "skill authoring conventions",
+                                     "malicious skill detection",
+                                     "external skill review checklist",
+                                     "prompt injection detection",
+                                     "tool and script risk review",
+                                     "audit-before-activation pattern"
+                                 ],
+    "unsafe_parts_to_discard":  [
+                                    "network or remote fetch content",
+                                    "script execution or install steps",
+                                    "NeuroChess red-tier conflict",
+                                    "skill scanning must not activate or rewrite external skills",
+                                    "scanner findings must not weaken Control Plane authority"
+                                ],
+    "recommended_internal_skill_target":  "external-skills-intake-process, neurochess-supply-chain-skill-audit, mission-contract-shadow-plan",
+    "extraction_target":  "tdd-behavior-contract",
+    "adaptation_notes":  "Extract security and repo-hygiene patterns only. Rewrite into NeuroChess-owned procedures for explicit staging, destructive command denial, secret hygiene, supply-chain quarantine, CI permission review, prompt-injection detection, and PowerShell command safety. Do not execute external scripts, install dependencies, alter workflows, or activate the external skill.",
+    "scripts_executed":  false,
+    "external_skill_activated":  false,
+    "product_mission_executed":  false,
+    "live_chatgpt_called":  false,
+    "live_gemini_called":  false,
+    "live_network_call_scope":  "fetch SKILL.md only"
+}
