@@ -9,7 +9,7 @@
   "degraded": false,
   "last_successful_micro_loop": "A2_R3H",
   "last_successful_commit": "fe71b38",
-  "recommended_next_automation_mission": "A18G_REPAIR_PERSISTENT_CHATGPT_TRANSPORT",
+  "recommended_next_automation_mission": "A18H_REPAIR_SINGLE_PROCESS_LIVE_LOOP_CONTROLLER",
   "product_checkpoint": "R3H complete, R3I not started",
   "evidence_policy_version": "A4A",
   "supervisor_digest_enabled": true,
@@ -189,5 +189,7 @@
   "persistent_chatgpt_transport_available": true,
   "same_page_reuse_proven": false,
   "same_browser_reuse_proven": false,
-  "active_session_url_reuse_available": true
+  "active_session_url_reuse_available": true,
+  "single_process_live_loop_controller_version": "A18H",
+  "single_process_live_loop_smoke_passed": false
 }
