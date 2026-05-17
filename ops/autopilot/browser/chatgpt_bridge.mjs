@@ -89,6 +89,10 @@ function valuesFromArg(value) {
     .filter(Boolean);
 }
 
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
 function isAcceptedChatGptUrl(value) {
   return /^https:\/\/(chatgpt\.com|chat\.openai\.com)\//.test(String(value || ""));
 }
@@ -160,6 +164,102 @@ async function verifyProjectContext(page, projectConfig, targetUrl, outDir) {
   };
   write(path.join(outDir, "project_context_verification.json"), JSON.stringify(result, null, 2));
   return result;
+}
+
+function detectLoadingOrInterstitial(title, pageText) {
+  const text = `${title || ""}\n${pageText || ""}`;
+  return /un instant|just a moment|one moment|checking your browser|v[ée]rification|chargement|loading|cloudflare|enable javascript|patientez/i.test(text);
+}
+
+function detectLoginState(pageText) {
+  return /log in|sign up|connexion|connectez|se connecter|login|email address|mot de passe/i.test(pageText || "");
+}
+
+function detectModalOrConsent(pageText) {
+  return /cookie|consent|privacy|accept all|tout accepter|captcha|verify you are human|human verification/i.test(pageText || "");
+}
+
+async function countComposerLikeElements(page) {
+  return await page.locator(
+    '[data-testid="composer"] [contenteditable="true"], [contenteditable="true"][data-lexical-editor="true"], #prompt-textarea, div.ProseMirror[contenteditable="true"], [contenteditable="true"][role="textbox"], textarea'
+  ).count().catch(() => 0);
+}
+
+async function collectPageDiagnostics(page, projectConfig, targetUrl) {
+  const projectName = projectConfig.project_name || "NeuroChess Supervisor";
+  const currentUrl = page.url();
+  const title = await page.title().catch(() => "");
+  const bodyText = await page.locator("body").textContent({ timeout: 5000 }).catch(() => "");
+  const pageText = bodyText || "";
+  const composerLikeCount = await countComposerLikeElements(page);
+  return {
+    currentUrl,
+    targetUrl,
+    title,
+    bodyTextLength: pageText.length,
+    projectName,
+    projectNameVisible: pageText.includes(projectName) || title.includes(projectName),
+    projectUrlStable: Boolean(normalizeUrlForCompare(targetUrl) && normalizeUrlForCompare(currentUrl).startsWith(normalizeUrlForCompare(targetUrl))),
+    loginStateDetected: detectLoginState(pageText),
+    loadingOrInterstitialDetected: detectLoadingOrInterstitial(title, pageText),
+    modalOrConsentDetected: detectModalOrConsent(pageText),
+    composerLikeElementCount: composerLikeCount,
+    sanitizedTextSampleStored: false
+  };
+}
+
+async function saveSanitizedDomSummary(page, outDir, fileName) {
+  const summary = await page.evaluate(() => {
+    const safeText = (value) => String(value || "").replace(/\s+/g, " ").trim().slice(0, 100);
+    return Array.from(document.querySelectorAll("main, header, nav, [role], button, textarea, [contenteditable], input"))
+      .slice(0, 120)
+      .map((element) => ({
+        tagName: element.tagName,
+        idPresent: Boolean(element.id),
+        classSample: String(element.className || "").slice(0, 120),
+        role: element.getAttribute("role") || "",
+        ariaLabel: safeText(element.getAttribute("aria-label") || ""),
+        dataTestId: element.getAttribute("data-testid") || "",
+        contentEditable: element.getAttribute("contenteditable") || "",
+        textSample: safeText(element.innerText || element.textContent || "")
+      }));
+  }).catch((error) => ({ error: error.message }));
+  write(path.join(outDir, fileName), JSON.stringify(summary, null, 2));
+  return summary;
+}
+
+async function waitForProjectReadySurface(page, projectConfig, targetUrl, outDir, bridgeConfig) {
+  const timeoutMs = Number(bridgeConfig.project_ready_timeout_seconds || 25) * 1000;
+  const deadline = Date.now() + timeoutMs;
+  let latest = await collectPageDiagnostics(page, projectConfig, targetUrl);
+  write(path.join(outDir, "project_ready_stage_initial.json"), JSON.stringify(latest, null, 2));
+
+  while (Date.now() < deadline) {
+    if (!latest.loadingOrInterstitialDetected || latest.composerLikeElementCount > 0) {
+      write(path.join(outDir, "project_ready_stage_final.json"), JSON.stringify(latest, null, 2));
+      return latest;
+    }
+    await page.waitForTimeout(1000);
+    latest = await collectPageDiagnostics(page, projectConfig, targetUrl);
+  }
+
+  await page.screenshot({ path: path.join(outDir, "project_loading_before_reload.png"), fullPage: true }).catch(() => {});
+  write(path.join(outDir, "project_loading_interstitial_detected.json"), JSON.stringify(latest, null, 2));
+
+  const reloadResult = { attempted: true, ok: false, error: "" };
+  try {
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.waitForTimeout(5000);
+    reloadResult.ok = true;
+  } catch (error) {
+    reloadResult.error = error.message;
+  }
+  write(path.join(outDir, "project_loading_reload_result.json"), JSON.stringify(reloadResult, null, 2));
+
+  latest = await collectPageDiagnostics(page, projectConfig, targetUrl);
+  write(path.join(outDir, "project_ready_stage_after_reload.json"), JSON.stringify(latest, null, 2));
+  await page.screenshot({ path: path.join(outDir, "project_loading_after_reload.png"), fullPage: true }).catch(() => {});
+  return latest;
 }
 
 async function getComposerText(composer) {
@@ -313,7 +413,15 @@ async function loadPlaywright() {
     // Continue to explicit NODE_PATH probing below.
   }
 
-  const searchPaths = (process.env.NODE_PATH || "").split(path.delimiter).filter(Boolean);
+  const bundledRuntimeNodeModules = process.env.USERPROFILE
+    ? path.join(process.env.USERPROFILE, ".cache", "codex-runtimes", "codex-primary-runtime", "dependencies", "node", "node_modules")
+    : "";
+  const nodeExecutableModuleRoot = path.resolve(path.dirname(process.execPath), "..", "node_modules");
+  const searchPaths = unique([
+    ...(process.env.NODE_PATH || "").split(path.delimiter),
+    nodeExecutableModuleRoot,
+    bundledRuntimeNodeModules
+  ]);
   for (const moduleRoot of searchPaths) {
     try {
       return requireFromHere(path.join(moduleRoot, "playwright"));
@@ -931,11 +1039,20 @@ async function main() {
       await browser.close();
       process.exit(1);
     }
+    await waitForProjectReadySurface(page, projectConfig, targetUrl, outDir, bridgeConfig);
   }
 
   const composer = await findComposer(page, outDir);
   if (!composer) {
-    write(path.join(outDir, "bridge_error.md"), "ChatGPT composer not found. Log in manually with the dedicated Chrome profile, select the required model/mode, and retry.");
+    const diagnostics = await collectPageDiagnostics(page, projectConfig, targetUrl);
+    write(path.join(outDir, "composer_missing_diagnostics.json"), JSON.stringify(diagnostics, null, 2));
+    write(path.join(outDir, "current_url.txt"), diagnostics.currentUrl);
+    await saveSanitizedDomSummary(page, outDir, "sanitized_dom_summary.json");
+    await page.screenshot({ path: path.join(outDir, "composer_missing.png"), fullPage: true }).catch(() => {});
+    const reason = diagnostics.loadingOrInterstitialDetected
+      ? "STOP_PROJECT_LOADING_INTERSTITIAL"
+      : "ChatGPT composer not found. Log in manually with the dedicated Chrome profile, select the required model/mode, and retry.";
+    write(path.join(outDir, "bridge_error.md"), reason);
     await browser.close();
     process.exit(1);
   }
