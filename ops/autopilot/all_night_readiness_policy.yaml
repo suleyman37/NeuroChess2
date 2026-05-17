@@ -1,0 +1,73 @@
+schema_version: A20M_all_night_readiness_policy_v1
+mission: A20M_VISUAL_COURT_AND_ALL_NIGHT_READINESS_GATE
+allowed_readiness_verdicts:
+  - GO_FOR_ALL_NIGHT_PRODUCT_SAFE_RUN
+  - GO_FOR_LIMITED_3H_REHEARSAL
+  - GO_FOR_DOCS_AND_FRONTEND_DEV_ONLY_REHEARSAL
+  - NO_GO_VISUAL_SYSTEM_TOO_FRAGILE
+  - NO_GO_OBJECTIVE_RESERVOIR_TOO_WEAK
+  - NO_GO_POLICY_RISK
+  - NO_GO_INSUFFICIENT_EVIDENCE
+selected_readiness_verdict: GO_FOR_LIMITED_3H_REHEARSAL
+selected_next_mission: A20N_LIMITED_3H_ALL_NIGHT_REHEARSAL
+visual_classification: REVOLUTIONARY_CANDIDATE_CONFIRMED_FOR_HUMAN_REVIEW
+runtime_user_approval_required: false
+live_chatgpt_called: false
+live_gemini_called: false
+product_mission_executed: false
+required_policy_docs:
+  - docs/autopilot/POLICY_KERNEL_FREEZE.md
+  - docs/autopilot/BUDGET_QUOTA_METER.md
+  - docs/autopilot/KILL_SWITCH_FILE_PROTOCOL.md
+  - docs/autopilot/EVIDENCE_INDEX_PROTOCOL.md
+  - docs/autopilot/BRANCH_ORTHOGONALITY_POLICY.md
+  - docs/autopilot/ENVIRONMENT_HYGIENE_PROTOCOL.md
+  - docs/autopilot/VISUAL_HALTING_LIMIT.md
+  - docs/autopilot/OBJECTIVE_RESERVOIR_PROTOCOL.md
+  - docs/autopilot/PRODUCTIVE_TIME_GOVERNOR.md
+  - docs/autopilot/MARGINAL_VALUE_GATE.md
+  - docs/autopilot/DRAIN_PERMIT_POLICY.md
+required_visual_docs:
+  - docs/autopilot/STRICT_CHESSBOARD_FIDELITY_GATE.md
+  - docs/autopilot/ANTI_SPOILER_VISUAL_STATE_GATE.md
+  - docs/autopilot/PRODUCT_GRADE_VISUAL_CLASSIFICATION.md
+  - docs/autopilot/PREMIUM_GAME_CHANGER_DESIGN_GATE.md
+  - docs/autopilot/CHEAP_UI_AND_DEV_HUD_REJECTION_POLICY.md
+  - docs/design/SACRED_BOARD_CONTRACT.md
+  - docs/design/NEUROCHESS_VISUAL_AMBITION_FRAMEWORK.md
+  - docs/design/BOARD_STAGE_ZONES_AND_FREEDOM_MODEL.md
+hard_restrictions:
+  - do_not_launch_a21
+  - do_not_launch_night_mode
+  - do_not_start_all_night_run
+  - do_not_push_road_to_v2
+  - do_not_merge_to_road_to_v2
+  - do_not_mutate_backend_product_data
+  - do_not_touch_package_files
+  - do_not_commit_screenshots_or_qa_artifacts
+  - do_not_bypass_human_verification
+  - deterministic_hard_gates_override_gemini_or_autonomous_scores
+future_a21_allowed_lanes:
+  - Visual/product DEV-only prototypes
+  - Frontend read-only UX improvements behind dev flags
+  - Browser smoke/evidence strengthening
+  - Documentation of product decisions
+  - Static tests/gates
+  - Read-only backend proof routes/tests only if no red-tier mutation
+  - QA artifact generation outside repo
+  - Design contract hardening
+future_a21_forbidden_lanes:
+  - active Practice mutation
+  - due_at changes
+  - Daily Plan mutation
+  - training_items writes
+  - practice_attempts writes
+  - scoring/result writes
+  - DB migrations
+  - package changes
+  - production V1 behavior changes
+  - auto-merge to road-to-V2
+  - fake XP/rank/Elo/Transfer
+  - live LLM coach integration
+  - Candidate Trainer
+  - user-facing fake neuroscience
