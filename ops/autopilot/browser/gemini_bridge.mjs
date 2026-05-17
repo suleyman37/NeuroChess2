@@ -223,6 +223,59 @@ function readImagePaths(args) {
   return paths;
 }
 
+async function collectUploadActionCandidates(page, outDir, fileName) {
+  const selectors = [
+    '[role="menuitem"]',
+    'button',
+    'div[role="button"]',
+    '[aria-label]'
+  ];
+  const candidates = [];
+  for (const selector of selectors) {
+    const locator = page.locator(selector);
+    const count = await locator.count().catch(() => 0);
+    for (let index = 0; index < count; index += 1) {
+      const item = locator.nth(index);
+      const meta = await item.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        return {
+          tagName: element.tagName,
+          role: element.getAttribute("role") || "",
+          ariaLabel: element.getAttribute("aria-label") || "",
+          textSample: (element.innerText || element.textContent || "").slice(0, 160),
+          rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+          display: style.display,
+          visibility: style.visibility,
+          opacity: style.opacity
+        };
+      }).catch((error) => ({ error: error.message }));
+      const visible = await item.isVisible().catch(() => false);
+      const enabled = await item.isEnabled().catch(() => false);
+      candidates.push({ selector, index, visible, enabled, ...meta });
+    }
+  }
+  write(path.join(outDir, fileName), JSON.stringify(candidates, null, 2));
+  return candidates;
+}
+
+function isDeviceUploadCandidate(candidate) {
+  const label = `${candidate.ariaLabel || ""}\n${candidate.textSample || ""}`;
+  const uploadLike = /(upload|attach|browse|choose file|choose image|select file|importer|joindre|t[eé]l[eé]verser|fichier|ordinateur|computer|appareil|device)/i.test(label);
+  const explicitDevice = /(from computer|from device|computer|device|ordinateur|appareil|t[eé]l[eé]verser|upload file|choose file|select file|importer .*fichier)/i.test(label);
+  const disallowed = /(ouvrir le menu|open menu|cr.{0,3}er une image|create an image|generate image|google drive|drive|photos|camera|microphone)/i.test(label);
+  return Boolean(
+    candidate.visible &&
+    candidate.enabled &&
+    candidate.rect &&
+    candidate.rect.width > 5 &&
+    candidate.rect.height > 5 &&
+    uploadLike &&
+    explicitDevice &&
+    !disallowed
+  );
+}
+
 async function findAttachmentInput(page, outDir) {
   const beforeCount = await page.locator('input[type="file"]').count().catch(() => 0);
   if (beforeCount > 0) {
@@ -268,6 +321,22 @@ async function findAttachmentInput(page, outDir) {
     return { type: "filechooser", fileChooser, chosen };
   }
   await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(outDir, "attachment_menu_after_click.png"), fullPage: true }).catch(() => {});
+  const menuCandidates = await collectUploadActionCandidates(page, outDir, "attachment_menu_candidates.json");
+  const menuChoice = menuCandidates.find(isDeviceUploadCandidate);
+  if (menuChoice) {
+    const menuFileChooserPromise = page.waitForEvent("filechooser", { timeout: 5000 }).catch(() => null);
+    await page.locator(menuChoice.selector).nth(menuChoice.index).click({ timeout: 5000 });
+    const menuFileChooser = await menuFileChooserPromise;
+    if (menuFileChooser) {
+      return { type: "filechooser_menu", fileChooser: menuFileChooser, chosen, menuChoice };
+    }
+    await page.waitForTimeout(1000);
+    const menuInputCount = await page.locator('input[type="file"]').count().catch(() => 0);
+    if (menuInputCount > 0) {
+      return { type: "input_menu", locator: page.locator('input[type="file"]').nth(menuInputCount - 1), chosen, menuChoice };
+    }
+  }
   const afterCount = await page.locator('input[type="file"]').count().catch(() => 0);
   if (afterCount <= 0) return null;
   return { type: "input", locator: page.locator('input[type="file"]').nth(afterCount - 1), chosen };
@@ -288,7 +357,7 @@ async function uploadImages(page, imagePaths, outDir) {
     write(path.join(outDir, "bridge_error.md"), "STOP_GEMINI_IMAGE_UPLOAD_NOT_AVAILABLE");
     throw new Error("STOP_GEMINI_IMAGE_UPLOAD_NOT_AVAILABLE");
   }
-  if (uploadTarget.type === "filechooser") {
+  if (uploadTarget.type === "filechooser" || uploadTarget.type === "filechooser_menu") {
     await uploadTarget.fileChooser.setFiles(resolved);
   } else {
     await uploadTarget.locator.setInputFiles(resolved, { timeout: 15000 });

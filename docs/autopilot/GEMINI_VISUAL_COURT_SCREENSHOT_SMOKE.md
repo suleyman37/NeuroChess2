@@ -40,3 +40,17 @@ Forbidden:
 The safe image should return `PASS_VISUAL` and echo the visible code. The unsafe
 canary should return `WARNING_VISUAL` or `BLOCK_VISUAL` and identify fake
 Practice plus fake XP/rank/Transfer claims.
+
+## Upload Strategy
+
+The bridge uses bounded, deterministic upload paths only:
+
+- existing `input[type=file]`;
+- direct file chooser from the visible import/attach button;
+- menu-triggered file chooser from an explicit device/file upload item such as
+  `Importer des fichiers`.
+
+It records `attachment_button_candidates.json`,
+`attachment_menu_candidates.json`, and `attachment_menu_after_click.png` when
+the upload path needs diagnosis. It must not random-click, automate login, or
+accept a visual verdict without real image evidence.

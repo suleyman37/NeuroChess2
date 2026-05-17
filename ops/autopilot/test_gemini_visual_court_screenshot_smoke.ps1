@@ -82,6 +82,9 @@ $bridgeSource = Get-Content -LiteralPath $bridgePath -Raw
 $askSource = Get-Content -LiteralPath $askScript -Raw
 Assert-True ($bridgeSource.Contains("setInputFiles")) "Gemini bridge should support screenshot upload"
 Assert-True ($bridgeSource.Contains("imagesFile")) "Gemini bridge should accept image manifest"
+Assert-True ($bridgeSource.Contains("attachment_menu_candidates.json")) "Gemini bridge should capture upload menu diagnostics"
+Assert-True ($bridgeSource.Contains("filechooser_menu")) "Gemini bridge should support menu-triggered file chooser upload"
+Assert-True ($bridgeSource.Contains("importer .*fichier")) "Gemini bridge should recognize French file import menu items"
 Assert-True ($askSource.Contains("ImagePath")) "ask_gemini_web should expose ImagePath"
 Assert-True ($bridgeSource -notmatch "(?i)chatgpt\.com|ChatGPTSupervisorChromeProfile|ask_chatgpt") "Gemini bridge must not call ChatGPT"
 Assert-True ($bridgeSource -notmatch "(?is)codex_prompt\s*:") "Gemini bridge must not generate codex_prompt"

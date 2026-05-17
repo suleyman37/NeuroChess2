@@ -49,3 +49,29 @@ Failure reason:
 Next action:
 
 - `A18F_REPAIR_GEMINI_VISUAL_COURT_SCREENSHOT_SMOKE`
+
+## A18F2 Result
+
+A18F2 repaired the Gemini image upload path and passed the bounded live visual
+smoke:
+
+- Gemini composer was available;
+- the `Importer un fichier` button opened an upload menu;
+- the bridge selected the explicit `Importer des fichiers` menu item;
+- Playwright received the menu-triggered file chooser;
+- the synthetic safe image uploaded successfully;
+- Gemini read the visible code exactly;
+- strict JSON validation passed;
+- the unsafe synthetic UI canary returned `BLOCK_VISUAL`;
+- fake Practice and fake XP/rank/Transfer claims were detected;
+- Gemini did not produce `MICRO_PROMPT` or `codex_prompt`;
+- ChatGPT live was not called;
+- no product mission executed.
+
+Final A18F2 verdict:
+
+- `PASS_GEMINI_VISUAL_COURT_SCREENSHOT_SMOKE`
+
+Next action:
+
+- `A19X_FULLSTACK_ENDURANCE_LIVE_PILOT`
