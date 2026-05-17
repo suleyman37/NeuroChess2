@@ -116,6 +116,7 @@ import {
 import { DecisionLabPreview } from "./v2/review-lab/DecisionLabPreview";
 import { V2VisionApp } from "./v2/product-vision/V2VisionApp";
 import { RexApp } from "./rex/RexApp";
+import { StrictBoardStageTournament } from "./dev/board-stage-strict/StrictBoardStageTournament";
 
 type BusyState = "idle" | "new-game" | "move" | "finish" | "load-game";
 type PositionMode = "LIVE" | "HISTORICAL" | "REVIEW";
@@ -378,6 +379,14 @@ function isRexDevRoute(): boolean {
   return window.location.pathname === "/app" && params.get("rex") === "1";
 }
 
+function isStrictBoardStageDevRoute(): boolean {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return false;
+  }
+  const params = new URLSearchParams(window.location.search);
+  return window.location.pathname === "/app" && params.get("boardStageStrict") === "1";
+}
+
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<NeuroChessRoute>(() =>
     normalizeRoute(readCurrentPath()),
@@ -389,6 +398,9 @@ export default function App() {
     isV2VisionDevRoute(),
   );
   const [showRexPreview, setShowRexPreview] = useState(() => isRexDevRoute());
+  const [showStrictBoardStagePreview, setShowStrictBoardStagePreview] = useState(() =>
+    isStrictBoardStageDevRoute(),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -399,6 +411,7 @@ export default function App() {
       setShowDecisionLabPreview(isDecisionLabDevRoute());
       setShowV2VisionPreview(isV2VisionDevRoute());
       setShowRexPreview(isRexDevRoute());
+      setShowStrictBoardStagePreview(isStrictBoardStageDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -448,6 +461,10 @@ export default function App() {
 
   if (showRexPreview) {
     return <RexApp />;
+  }
+
+  if (showStrictBoardStagePreview) {
+    return <StrictBoardStageTournament />;
   }
 
   if (currentRoute === "/app") {
