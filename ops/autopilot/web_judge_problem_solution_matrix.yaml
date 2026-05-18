@@ -1,0 +1,100 @@
+schema_version: web_judge_problem_solution_matrix_v1
+problems:
+  - status_code: CDP_UNREACHABLE
+    detection_method: "127.0.0.1:9222 refused /json/version"
+    action: "Launch or attach Chrome with remote debugging port 9222, then verify /json/version."
+    forbidden_action: "Do not kill user Chrome processes."
+    retry_limit: 1
+    email: false
+    stop_status: CDP_SESSION_UNAVAILABLE
+  - status_code: AUTH_OR_CONSENT_WALL
+    detection_method: "Auth, login, or consent markers are visible."
+    action: "Keep browser open, email user, wait for manual action, poll ResumeCheck."
+    forbidden_action: "Do not click consent/login controls or enter credentials."
+    retry_limit: 0
+    email: true
+    stop_status: WAITING_FOR_HUMAN_ACTION
+  - status_code: HUMAN_VERIFICATION_REQUIRED
+    detection_method: "CAPTCHA, I am human, or human verification markers are visible."
+    action: "Keep browser open, email user, wait for manual action."
+    forbidden_action: "Do not automate human verification."
+    retry_limit: 0
+    email: true
+    stop_status: WAITING_FOR_HUMAN_ACTION
+  - status_code: TWO_FACTOR_REQUIRED
+    detection_method: "2FA marker or secondary auth screen appears."
+    action: "Email user and wait."
+    forbidden_action: "Do not enter 2FA codes."
+    retry_limit: 0
+    email: true
+    stop_status: WAITING_FOR_HUMAN_ACTION
+  - status_code: CHATGPT_CONVERSATION_TOO_LONG
+    detection_method: "message_count_sent >= 35"
+    action: "Rotate to next available discussion and bootstrap before send."
+    forbidden_action: "Do not send to exhausted discussion."
+    retry_limit: 0
+    email: true_if_pool_exhausted
+    stop_status: CHATGPT_POOL_EXHAUSTED
+  - status_code: CHATGPT_DISCUSSION_NOT_BOOTSTRAPPED
+    detection_method: "bootstrap_sent is false"
+    action: "Send compact bootstrap before normal message."
+    forbidden_action: "Do not send normal prompt first."
+    retry_limit: 1
+    email: false
+    stop_status: BOOTSTRAP_REQUIRED
+  - status_code: EMAIL_SECRET_CACHE_MISSING
+    detection_method: "No NC_ALERT_SMTP_PASSWORD env var and no DPAPI cache."
+    action: "Prompt once unless NoPrompt, then store encrypted cache."
+    forbidden_action: "Do not print or commit password."
+    retry_limit: 1
+    email: false
+    stop_status: EMAIL_SECRET_CACHE_MISSING
+  - status_code: OPERATOR_PROMPT_LEAK
+    detection_method: "Script asks for EvidencePath, OutputPath, ArtifactPath, URL, or counter."
+    action: "Fail tests and route through resolver/state."
+    forbidden_action: "Do not prompt for low-level parameters."
+    retry_limit: 0
+    email: false
+    stop_status: OPERATOR_PROMPT_LEAK_DETECTED
+  - status_code: UPLOAD_ATTACHMENT_NOT_CONFIRMED
+    detection_method: "File input set but no attachment signal."
+    action: "Stop before send and report capability."
+    forbidden_action: "Do not send text-only visual prompt."
+    retry_limit: 0
+    email: false
+    stop_status: CHATGPT_ATTACHMENT_NOT_CONFIRMED
+  - status_code: JSON_INVALID
+    detection_method: "Judge output fails schema/contract validation."
+    action: "Request one JSON-only correction maximum."
+    forbidden_action: "Do not clamp scores or accept placeholder JSON."
+    retry_limit: 1
+    email: false
+    stop_status: JSON_INVALID
+  - status_code: SESSION_CLOSED
+    detection_method: "CDP target disappears."
+    action: "Attempt safe reattach once; email user if auth-related."
+    forbidden_action: "Do not loop indefinitely or kill browser."
+    retry_limit: 1
+    email: conditional
+    stop_status: SESSION_CLOSED
+  - status_code: PAGE_NOT_EXPECTED_DISCUSSION
+    detection_method: "Current URL does not match active discussion URL."
+    action: "Navigate to active URL if safe; otherwise email user."
+    forbidden_action: "Do not print private URL or use wrong discussion."
+    retry_limit: 1
+    email: conditional
+    stop_status: PAGE_NOT_EXPECTED_DISCUSSION
+  - status_code: MESSAGE_SEND_FAILED
+    detection_method: "Prompt not submitted or no response."
+    action: "Retry once, then stop with reason."
+    forbidden_action: "Do not keep retrying."
+    retry_limit: 1
+    email: false
+    stop_status: MESSAGE_SEND_FAILED
+  - status_code: GEMINI_DISABLED_NO_URL
+    detection_method: "Gemini mode requested without URL."
+    action: "Mark Gemini disabled or request setup; do not block ChatGPT."
+    forbidden_action: "Do not invent a Gemini URL."
+    retry_limit: 0
+    email: optional
+    stop_status: GEMINI_DISABLED_NO_URL

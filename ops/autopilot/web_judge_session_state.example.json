@@ -1,0 +1,40 @@
+{
+  "status": "INITIALIZED",
+  "created_at": "2026-05-18T00:00:00.0000000Z",
+  "updated_at": "2026-05-18T00:00:00.0000000Z",
+  "chatgpt": {
+    "pool": [
+      {
+        "label": "A",
+        "url": "PRIVATE_LOCAL_ONLY_URL",
+        "message_count_sent": 0,
+        "bootstrap_sent": false,
+        "status": "ACTIVE"
+      }
+    ],
+    "current_label": "A",
+    "rotation_threshold_messages": 35,
+    "rotation_required": false,
+    "last_human_action_required_at": null,
+    "last_email_alert_status": null
+  },
+  "gemini": {
+    "enabled": false,
+    "url": null,
+    "message_count_sent": 0,
+    "rotation_threshold_messages": 35,
+    "last_human_action_required_at": null,
+    "last_email_alert_status": null
+  },
+  "cdp": {
+    "endpoint": "http://127.0.0.1:9222",
+    "reachable": false,
+    "browser_launched_by_codex": false,
+    "browser_should_remain_open": true
+  },
+  "email": {
+    "recipient": "suley37550@gmail.com",
+    "secret_cache_status": "UNKNOWN"
+  },
+  "problem_solution_log": []
+}

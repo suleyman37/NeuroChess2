@@ -1,0 +1,21 @@
+{
+  "schema_version": "web_judge_conversation_pool_local_v1",
+  "current_label": "A",
+  "rotation_threshold_messages": 35,
+  "pool": [
+    {
+      "label": "A",
+      "url": "https://chatgpt.com/g/PROJECT_SLUG/c/PRIVATE_CONVERSATION_ID_A",
+      "message_count_sent": 0,
+      "bootstrap_sent": false,
+      "status": "ACTIVE"
+    },
+    {
+      "label": "B",
+      "url": "https://chatgpt.com/g/PROJECT_SLUG/c/PRIVATE_CONVERSATION_ID_B",
+      "message_count_sent": 0,
+      "bootstrap_sent": false,
+      "status": "AVAILABLE"
+    }
+  ]
+}
