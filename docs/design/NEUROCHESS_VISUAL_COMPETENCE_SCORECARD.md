@@ -248,3 +248,43 @@ Required proof to reach 18:
 - merge them with hard-gate evidence;
 - produce a Creative Director verdict without treating missing, partial, or
   timeout output as PASS.
+
+## A20U Update
+
+Estimated score after A20U: 17.5/20.
+
+Why:
+
+- A20U hardened the live judge capture path with explicit Gemini and ChatGPT
+  capture wrappers, a shared normalizer, and a fixture-only hardening test.
+- Gemini was genuinely called with A20P visual evidence and returned raw
+  screenshot-grounded critique.
+- The new normalizer extracted the nested Gemini judge JSON from the raw browser
+  text and repaired transport-level Windows path escaping for parsing only.
+- Validation correctly rejected the normalized Gemini output because it returned
+  out-of-range judge scores: `awwwards_app_craft_score` above 60 and
+  `visual_competence_score` above 20.
+- ChatGPT capture remained blocked before send because the upload-capable web
+  bridge is disabled and no approved screenshot/contact-sheet upload lane is
+  enabled.
+- No valid real judge output was merged with hard-gate evidence.
+
+Why this is still not 18/20:
+
+- Gemini produced a real response, but not a valid judge output.
+- ChatGPT did not receive visual evidence.
+- No Creative Director verdict was generated from valid real external judges.
+- Missing, invalid, or timeout output was not converted into PASS.
+
+Required proof to reach 18:
+
+- enable an approved ChatGPT visual upload lane or an equivalent safe visual
+  evidence channel;
+- obtain valid screenshot-referenced Gemini and ChatGPT JSON outputs;
+- reject any generic, placeholder, or out-of-range output;
+- merge valid judge outputs with hard gates;
+- produce a Creative Director verdict without weakening chess fidelity or
+  anti-spoiler vetoes.
+
+19/20 remains blocked until repeated screenshot-to-patch wins succeed with
+human-calibrated visual review.

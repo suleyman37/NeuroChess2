@@ -25,6 +25,17 @@ function Has-AnyScreenshot {
     return (($items | Where-Object { $_ -match '\.(png|jpg|jpeg|webp|avif)$' }) | Measure-Object).Count -gt 0
 }
 
+function Test-NumberRange {
+    param($Value, [double]$Min, [double]$Max)
+    if ($null -eq $Value -or [string]::IsNullOrWhiteSpace([string]$Value)) { return $true }
+    try {
+        $number = [double]$Value
+    } catch {
+        return $false
+    }
+    return ($number -ge $Min -and $number -le $Max)
+}
+
 if ([string]::IsNullOrWhiteSpace($OutPath)) {
     $OutPath = Join-Path ([System.IO.Path]::GetTempPath()) ("visual_judge_validation_" + [System.Guid]::NewGuid().ToString("N") + ".json")
 }
@@ -100,10 +111,12 @@ if ($JudgeType -in @("gemini", "chatgpt") -and -not (Has-AnyScreenshot $json.scr
 if ($JudgeType -eq "gemini") {
     if (-not ($json.gemini_visual_verdict -or $json.verdict)) { $missing += "gemini_visual_verdict" }
     if (-not $json.public_screenshot_level) { $missing += "public_screenshot_level" }
+    if (-not $json.PSObject.Properties.Name.Contains("fatal_defects")) { $missing += "fatal_defects" }
 }
 
 if ($JudgeType -eq "chatgpt") {
     if (-not ($json.chatgpt_art_direction_verdict -or $json.product_direction_verdict)) { $missing += "chatgpt_art_direction_verdict" }
+    if (@(To-StringArray $json.top_defects).Count -eq 0) { $missing += "top_defects" }
 }
 
 if ($JudgeType -eq "codex") {
@@ -158,6 +171,14 @@ if ($json.text_only_overapproval -eq $true) {
 
 if ($json.self_approval -eq $true -or $json.codex_self_congratulatory -eq $true) {
     $invalid += "codex_self_congratulatory_output"
+}
+
+if (-not (Test-NumberRange -Value $json.awwwards_app_craft_score -Min 0 -Max 60)) {
+    $invalid += "awwwards_app_craft_score_out_of_range"
+}
+
+if (-not (Test-NumberRange -Value $json.visual_competence_score -Min 0 -Max 20)) {
+    $invalid += "visual_competence_score_out_of_range"
 }
 
 if ($missing.Count -gt 0) {

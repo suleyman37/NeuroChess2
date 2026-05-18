@@ -1,0 +1,33 @@
+{
+  "schema_version": "A20U_visual_judge_capture_score_result_v1",
+  "mission_id": "A20U_VISUAL_JUDGE_CAPTURE_HARDENING",
+  "previous_score": 17.5,
+  "new_score_estimate": 17.5,
+  "reached_18": false,
+  "final_verdict": "CHATGPT_VISUAL_CAPTURE_LANE_MISSING",
+  "artifact_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_court_bridge\\A20U_visual_judge_capture_hardening_20260518\\",
+  "evidence_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_training\\A20P_screenshot_to_patch_a20l_20260518\\",
+  "capture_results": {
+    "gemini": "RAW_CAPTURED_NORMALIZED_BUT_INVALID_SCORES",
+    "chatgpt": "CHATGPT_VISUAL_CAPTURE_LANE_MISSING"
+  },
+  "validation_results": {
+    "gemini": "INVALID_OUTPUT",
+    "chatgpt": "MISSING_INPUT"
+  },
+  "merge_executed": false,
+  "creative_director_verdict_generated": false,
+  "next_prompt_generated_from_real_judges": false,
+  "a21_visual_lane_blocked": true,
+  "why_not_18": [
+    "Gemini returned real screenshot-grounded raw output, but normalized validation rejected out-of-range judge scores.",
+    "ChatGPT capture did not have an approved enabled screenshot/contact-sheet upload lane, so no ChatGPT visual review was attempted.",
+    "No valid real judge output was merged with hard-gate evidence."
+  ],
+  "recommended_next_mission": "A20V_CHATGPT_VISUAL_UPLOAD_LANE_IMPLEMENTATION",
+  "live_gemini_called_by_codex": true,
+  "live_chatgpt_called_by_codex": false,
+  "fixtures_used_as_real_outputs": false,
+  "credentials_touched": false,
+  "bypass_attempted": false
+}
