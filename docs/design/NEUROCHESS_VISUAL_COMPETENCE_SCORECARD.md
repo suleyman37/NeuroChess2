@@ -111,3 +111,42 @@ A20Q may update the score only under these constraints:
 - placeholder praise is never design proof;
 - 19/20 remains impossible until multiple screenshot-to-patch loops succeed
   with human-calibrated review.
+
+## A20R Update
+
+Estimated score after A20R: 17.5/20.
+
+Why:
+
+- A20R ran the Visual Court Bridge against real A20P evidence in
+  `MANUAL_PACKET_MODE`.
+- A20R generated the Gemini, ChatGPT, Codex, and Creative Director packet files
+  for manual import.
+- A20R attempted the safe live readiness path only through the approved script,
+  which stopped with `SAFE_LIVE_READONLY_MODE_NOT_CONFIGURED_USE_MANUAL_PACKET_MODE`.
+- No live Gemini or ChatGPT call was made.
+- No real manually imported Gemini or ChatGPT judge output was present.
+- The bridge recorded Gemini, ChatGPT, and Codex judge inputs as
+  `MISSING_INPUT`, not PASS.
+- A20P hard gates remained green from the existing evidence packet.
+
+Why this is not 18/20:
+
+- A20R did not validate real Gemini output.
+- A20R did not validate real ChatGPT output.
+- A20R did not merge real external judge disagreement into a Creative Director
+  verdict.
+- The Creative Director verdict for the bridge run stayed
+  `INSUFFICIENT_VISUAL_EVIDENCE` because missing judges are not proof.
+
+Required proof to reach 18:
+
+- import real Gemini and ChatGPT JSON outputs for A20P evidence, or run an
+  approved safe live read-only bridge without login, CAPTCHA, 2FA, consent, or
+  human-verification bypass;
+- validate both outputs against the Visual Court schemas;
+- merge them with the hard-gate packet;
+- produce a useful Creative Director verdict that preserves hard-gate vetoes.
+
+19/20 remains blocked until multiple screenshot-to-patch loops succeed with
+human-calibrated visual review.

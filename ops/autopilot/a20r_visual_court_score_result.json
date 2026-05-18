@@ -1,0 +1,33 @@
+{
+  "schema_version": "A20R_visual_court_score_result_v1",
+  "mission_id": "A20R_LIVE_VISUAL_COURT_SAFE_RUN",
+  "previous_score": 17.5,
+  "new_score_estimate": 17.5,
+  "reached_18": false,
+  "final_verdict": "VISUAL_COURT_MANUAL_PACKET_READY_SCORE_17_5",
+  "evidence_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_training\\A20P_screenshot_to_patch_a20l_20260518\\",
+  "artifact_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_court_bridge\\A20R_real_visual_court_safe_run_20260518\\",
+  "bridge_mode_attempted": "MANUAL_PACKET_MODE",
+  "safe_live_probe_result": "SAFE_LIVE_READONLY_MODE_NOT_CONFIGURED_USE_MANUAL_PACKET_MODE",
+  "live_gemini_called": false,
+  "live_chatgpt_called": false,
+  "real_gemini_imported": false,
+  "real_chatgpt_imported": false,
+  "judge_validation": {
+    "gemini": "MISSING_INPUT",
+    "chatgpt": "MISSING_INPUT",
+    "codex": "MISSING_INPUT",
+    "hard_gate": "VALID_OUTPUT"
+  },
+  "hard_gate_status": "PASS_HARD_GATES",
+  "chess_arbiter_verdict": "CHESS_FIDELITY_PASS",
+  "anti_generic_verdict": "PASS_NON_GENERIC",
+  "creative_director_final_verdict": "INSUFFICIENT_VISUAL_EVIDENCE",
+  "why_not_18": [
+    "No real Gemini judge output was imported or validated.",
+    "No real ChatGPT judge output was imported or validated.",
+    "No real external judge disagreement was merged into a Creative Director verdict."
+  ],
+  "next_required_proof": "Import real Gemini and ChatGPT JSON outputs, validate both, merge them with hard gates, and produce a useful Creative Director verdict.",
+  "recommended_next_mission": "A20S_MANUAL_IMPORT_REAL_JUDGES_FOR_VISUAL_COURT"
+}
