@@ -49,7 +49,7 @@ try {
             -SecretPath $secretPath `
             -SecretTextForTest $fakeSecret
     }
-    Assert-True ($set.status -eq "EMAIL_SECRET_CACHE_STORED") "secret was not stored"
+    Assert-True ($set.status -eq "SECRET_STORED") "secret was not stored"
     Assert-True (Test-Path -LiteralPath $secretPath -PathType Leaf) "secret cache file missing"
     $secretFileText = Get-Content -LiteralPath $secretPath -Raw
     Assert-True ($secretFileText -notmatch [regex]::Escape($fakeSecret)) "plaintext secret appeared in cache file"
@@ -59,7 +59,7 @@ try {
             -Action Test `
             -SecretPath $secretPath
     }
-    Assert-True ($test.status -eq "EMAIL_SECRET_CACHE_VALID") "stored secret did not validate"
+    Assert-True ($test.status -eq "SECRET_AVAILABLE") "stored secret did not validate"
 
     $setupMissingPath = Join-Path $TempRoot "setup_missing.json"
     $missing = Invoke-JsonCommand {
@@ -69,7 +69,23 @@ try {
             -NoPrompt `
             -ResultPath $setupMissingPath
     }
-    Assert-True ($missing.status -eq "EMAIL_ALERT_NOT_CONFIGURED") "NoPrompt missing cache should not prompt or hang"
+    Assert-True ($missing.status -eq "EMAIL_SECRET_CACHE_MISSING") "NoPrompt missing cache should not prompt or hang"
+
+    Clear-EmailEnv
+    $envSecretPath = Join-Path $TempRoot "env_import.secret.dpapi.json"
+    [Environment]::SetEnvironmentVariable("NC_ALERT_SMTP_PASSWORD", $fakeSecret, "Process")
+    $envImportPath = Join-Path $TempRoot "env_import_setup.json"
+    $envImport = Invoke-JsonCommand {
+        & (Join-Path $RepoRoot "ops\autopilot\setup_email_alert_env.ps1") `
+            -UseStoredSecret `
+            -SecretPath $envSecretPath `
+            -NoPrompt `
+            -ResultPath $envImportPath
+    }
+    Assert-True ($envImport.status -eq "EMAIL_ALERT_ENV_IMPORTED_TO_CACHE_READY") "env secret was not imported into cache"
+    Assert-True ((Test-Path -LiteralPath $envSecretPath -PathType Leaf)) "env import did not create cache"
+    Assert-True ((Get-Content -LiteralPath $envSecretPath -Raw) -notmatch [regex]::Escape($fakeSecret)) "env import cache leaked plaintext"
+    Assert-True ((Get-Content -LiteralPath $envImportPath -Raw) -notmatch [regex]::Escape($fakeSecret)) "env import result leaked plaintext"
 
     Clear-EmailEnv
     $setupResultPath = Join-Path $TempRoot "setup_result.json"
@@ -105,9 +121,11 @@ try {
 
     [ordered]@{
         status = "pass"
-        tests = 8
+        tests = 10
         fake_secret_stored = $true
         stored_file_omits_plaintext = $true
+        env_secret_imports_to_cache = $true
+        env_import_result_omits_plaintext = $true
         no_prompt_never_hangs = $true
         setup_loads_cache = $true
         send_script_can_use_stored_secret_env = $true

@@ -62,6 +62,7 @@ try {
             -ArtifactPath $TempRoot `
             -PauseStatePath (Join-Path $TempRoot "pause_state.json") `
             -LocalConfigPath (Join-Path $TempRoot "missing.local.json") `
+            -EmailSecretPath (Join-Path $TempRoot "missing.secret.dpapi.json") `
             -ResultPath $missingResultPath `
             -NoPasswordPrompt
     }

@@ -413,6 +413,40 @@ function Invoke-EmailSetup {
     Convert-JsonOutput -Output $output
 }
 
+function Invoke-EmailPreflight {
+    $resultPath = Join-Path $ArtifactPath "email_preflight_result.json"
+    $args = @(
+        "-MissionId", $MissionId,
+        "-ArtifactPath", $ArtifactPath,
+        "-ResultPath", $resultPath
+    )
+    if ($DryRun) { $args += "-DryRun" }
+    if ($NoPrompt) { $args += "-NoPrompt" }
+    $output = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "ensure_email_alert_ready.ps1") @args 2>&1
+    $exit = $LASTEXITCODE
+    $preflight = if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
+        Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+    } else {
+        Convert-JsonOutput -Output $output
+    }
+    $preflight | Add-Member -NotePropertyName exit_code -NotePropertyValue $exit -Force
+    return $preflight
+}
+
+function Stop-IfEmailPreflightFailed {
+    param($Preflight)
+    if ([int]$Preflight.exit_code -ne 0 -or [string]$Preflight.status -notin @("EMAIL_PREFLIGHT_READY", "EMAIL_SECRET_CACHE_CREATED_AND_READY")) {
+        Emit-Result -Payload ([ordered]@{
+            status = "EMAIL_PREFLIGHT_FAILED"
+            email_preflight_status = [string]$Preflight.status
+            email_preflight_exit_code = [int]$Preflight.exit_code
+            private_urls_redacted = $true
+            live_browser_started = $false
+            bypass_attempted = $false
+        }) -ExitCode 10 -ArtifactName "auth_wall_preflight_result.json"
+    }
+}
+
 function Invoke-EnsureCdp {
     param($State)
     if ($DryRun) {
@@ -465,26 +499,35 @@ switch ($Mode) {
     }
     "Setup" {
         $state = Load-Or-InitializeState
-        $email = Invoke-EmailSetup
+        $email = Invoke-EmailPreflight
+        Stop-IfEmailPreflightFailed -Preflight $email
         $state.email.secret_cache_status = [string]$email.status
         $cdp = Invoke-EnsureCdp -State $state
         Save-StateAndPool -State $state
         $result = Get-RedactedStatus -State $state -Status "SETUP_COMPLETE"
         $result.email_secret_status = [string]$email.status
+        $result.email_preflight_status = [string]$email.status
         $result.cdp_status = [string]$cdp.status
         Emit-Result -Payload $result
     }
     "EnsureSessions" {
         $state = Load-Or-InitializeState
+        $email = Invoke-EmailPreflight
+        Stop-IfEmailPreflightFailed -Preflight $email
+        $state.email.secret_cache_status = [string]$email.status
         $cdp = Invoke-EnsureCdp -State $state
         Save-StateAndPool -State $state
         $result = Get-RedactedStatus -State $state -Status "SESSIONS_ENSURED"
+        $result.email_preflight_status = [string]$email.status
         $result.cdp_status = [string]$cdp.status
         $result.gemini_status = if ([bool]$state.gemini.enabled) { "GEMINI_OPTIONAL_CONFIGURED" } else { "GEMINI_DISABLED" }
         Emit-Result -Payload $result
     }
     "SendBootstrap" {
         $state = Load-Or-InitializeState
+        $email = Invoke-EmailPreflight
+        Stop-IfEmailPreflightFailed -Preflight $email
+        $state.email.secret_cache_status = [string]$email.status
         $rotation = Invoke-RotateIfNeeded -State $state -EmailIfExhausted
         if ([string]$rotation.status -eq "CHATGPT_POOL_EXHAUSTED") {
             Save-StateAndPool -State $state
@@ -508,6 +551,9 @@ switch ($Mode) {
             }) -ExitCode 2
         }
         $state = Load-Or-InitializeState
+        $email = Invoke-EmailPreflight
+        Stop-IfEmailPreflightFailed -Preflight $email
+        $state.email.secret_cache_status = [string]$email.status
         $rotation = Invoke-RotateIfNeeded -State $state -EmailIfExhausted
         if ([string]$rotation.status -eq "CHATGPT_POOL_EXHAUSTED") {
             Save-StateAndPool -State $state
@@ -555,6 +601,9 @@ switch ($Mode) {
     }
     "SendGemini" {
         $state = Load-Or-InitializeState
+        $email = Invoke-EmailPreflight
+        Stop-IfEmailPreflightFailed -Preflight $email
+        $state.email.secret_cache_status = [string]$email.status
         if (-not [string]::IsNullOrWhiteSpace($GeminiUrl)) {
             $state.gemini.enabled = $true
             $state.gemini.url = $GeminiUrl
@@ -575,17 +624,55 @@ switch ($Mode) {
     "PauseForHuman" {
         $state = Load-Or-InitializeState
         $state.chatgpt.last_human_action_required_at = (Get-Date).ToString("o")
-        $state.chatgpt.last_email_alert_status = if ($DryRun) { "EMAIL_ALERT_DRY_RUN" } else { "EMAIL_ALERT_PENDING" }
-        Save-StateAndPool -State $state
-        $event = [ordered]@{
-            status = "WAITING_FOR_HUMAN_ACTION"
-            reason = if ([string]::IsNullOrWhiteSpace($ProblemCode)) { "HUMAN_VERIFICATION_REQUIRED" } else { $ProblemCode }
-            email_alert_status = $state.chatgpt.last_email_alert_status
-            browser_should_remain_open = $true
-            bypass_attempted = $false
-            clicked_verification = $false
+        $reasonValue = if ([string]::IsNullOrWhiteSpace($ProblemCode)) { "HUMAN_VERIFICATION_REQUIRED" } else { $ProblemCode }
+        if ($DryRun) {
+            $state.chatgpt.last_email_alert_status = "EMAIL_ALERT_DRY_RUN"
+            Save-StateAndPool -State $state
+            $event = [ordered]@{
+                status = "WAITING_FOR_HUMAN_ACTION"
+                reason = $reasonValue
+                email_alert_status = $state.chatgpt.last_email_alert_status
+                browser_should_remain_open = $true
+                bypass_attempted = $false
+                clicked_verification = $false
+            }
+            Write-JsonFile -Path (Join-Path $ArtifactPath "email_event_samples.json") -Payload $event
+            Emit-Result -Payload $event
         }
+        $email = Invoke-EmailPreflight
+        Stop-IfEmailPreflightFailed -Preflight $email
+        $pauseStatePath = Join-Path $PSScriptRoot "runtime\web_judge_human_pause_state.json"
+        $pauseResultPath = Join-Path $ArtifactPath "email_event_samples.json"
+        $pauseOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "human_verification_pause_resume_gate.ps1") `
+            -Mode PauseAndAlert `
+            -ServiceName ChatGPT `
+            -MissionId $MissionId `
+            -Reason $reasonValue `
+            -ArtifactPath $ArtifactPath `
+            -PauseStatePath $pauseStatePath `
+            -ResultPath $pauseResultPath 2>&1
+        $pauseExit = $LASTEXITCODE
+        $event = if (Test-Path -LiteralPath $pauseResultPath -PathType Leaf) {
+            Get-Content -LiteralPath $pauseResultPath -Raw | ConvertFrom-Json
+        } else {
+            Convert-JsonOutput -Output $pauseOutput
+        }
+        if ([string]$event.email_alert_status -ne "EMAIL_ALERT_SENT") {
+            $state.chatgpt.last_email_alert_status = [string]$event.email_alert_status
+            Save-StateAndPool -State $state
+            Emit-Result -Payload ([ordered]@{
+                status = "AUTH_WALL_EMAIL_FAILED"
+                reason = $reasonValue
+                email_alert_status = [string]$event.email_alert_status
+                pause_exit_code = $pauseExit
+                browser_should_remain_open = $true
+                bypass_attempted = $false
+                clicked_verification = $false
+            }) -ExitCode 11
+        }
+        $state.chatgpt.last_email_alert_status = [string]$event.email_alert_status
         Write-JsonFile -Path (Join-Path $ArtifactPath "email_event_samples.json") -Payload $event
+        Save-StateAndPool -State $state
         Emit-Result -Payload $event
     }
     "ResumeCheck" {

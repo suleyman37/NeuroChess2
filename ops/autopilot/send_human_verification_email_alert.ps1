@@ -15,7 +15,8 @@ param(
     [switch]$DryRun,
     [switch]$MockSmtpSuccess,
     [switch]$NoPasswordPrompt,
-    [string]$BodyOverride = ""
+    [string]$BodyOverride = "",
+    [string]$SubjectOverride = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -61,13 +62,13 @@ $setupScript = Join-Path $PSScriptRoot "setup_email_alert_env.ps1"
 if (Test-Path -LiteralPath $setupScript -PathType Leaf) {
     $setupParams = @{
         UseStoredSecret = $true
-        NoPrompt = $true
+        SaveSecretLocal = $true
+    }
+    if ($NoPasswordPrompt -or $DryRun -or $MockSmtpSuccess) {
+        $setupParams.NoPrompt = $true
     }
     if (-not [string]::IsNullOrWhiteSpace($EmailSecretPath)) {
         $setupParams.SecretPath = $EmailSecretPath
-    }
-    if ($SaveSecretLocal) {
-        $setupParams.SaveSecretLocal = $true
     }
     try {
         & $setupScript @setupParams | Out-Null
@@ -118,6 +119,9 @@ $timestamp = (Get-Date).ToString("o")
 $subject = "$SubjectPrefix Human verification required - $ServiceName automation paused"
 if ($MissionId -match "TEST") {
     $subject = "$SubjectPrefix Test email alert - human verification gate"
+}
+if (-not [string]::IsNullOrWhiteSpace($SubjectOverride)) {
+    $subject = $SubjectOverride
 }
 
 $safePageUrl = if ([string]::IsNullOrWhiteSpace($PageUrl)) { "not provided" } else { "provided by caller; redacted in logs" }

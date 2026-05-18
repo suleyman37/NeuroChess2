@@ -118,7 +118,7 @@ try {
 
     $setup = Invoke-Orchestrator -Arguments @("-Mode", "Setup", "-DryRun", "-NoPrompt")
     Assert-True ($setup.status -eq "SETUP_COMPLETE") "setup dry run failed"
-    Assert-True ($setup.email_secret_status -in @("EMAIL_ALERT_NOT_CONFIGURED", "EMAIL_ALERT_STORED_SECRET_READY", "EMAIL_ALERT_ENV_READY")) "unexpected email status"
+    Assert-True ($setup.email_secret_status -in @("EMAIL_PREFLIGHT_READY", "EMAIL_SECRET_CACHE_CREATED_AND_READY")) "unexpected email status"
 
     $bootstrapPath = Join-Path $ArtifactPath "bootstrap_context_sample.md"
     $bootstrapResult = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $RepoRoot "ops\autopilot\build_web_judge_bootstrap_context.ps1") `

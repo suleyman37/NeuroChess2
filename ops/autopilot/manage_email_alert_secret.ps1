@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("Set", "Test", "Clear", "Status")]
+    [ValidateSet("Set", "ImportFromEnv", "Get", "Test", "Clear", "Status")]
     [string]$Action = "Status",
     [string]$SecretPath = "",
     [switch]$NoPrompt,
@@ -52,6 +52,13 @@ function Test-SecretEnvelope {
     return ($null -ne $secure -and $secure.Length -gt 0)
 }
 
+function Save-Secret {
+    param([string]$Path, [securestring]$Secret)
+    Ensure-ParentDirectory -Path $Path
+    $envelope = New-SecretEnvelope -Secret $Secret
+    $envelope | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $Path -Encoding UTF8
+}
+
 if ([string]::IsNullOrWhiteSpace($SecretPath)) {
     $SecretPath = Get-DefaultSecretPath
 }
@@ -80,19 +87,51 @@ try {
         "Test" {
             $envelope = Read-SecretEnvelope -Path $SecretPath
             if (Test-SecretEnvelope -Envelope $envelope) {
-                $base.status = "EMAIL_SECRET_CACHE_VALID"
+                $base.status = "SECRET_AVAILABLE"
+                $base.legacy_status = "EMAIL_SECRET_CACHE_VALID"
                 Write-Json $base
                 exit 0
             }
-            $base.status = "EMAIL_SECRET_CACHE_INVALID_OR_MISSING"
+            $base.status = "SECRET_INVALID"
+            $base.legacy_status = "EMAIL_SECRET_CACHE_INVALID_OR_MISSING"
             Write-Json $base
             exit 2
+        }
+        "Get" {
+            $envelope = Read-SecretEnvelope -Path $SecretPath
+            if (Test-SecretEnvelope -Envelope $envelope) {
+                $base.status = "SECRET_AVAILABLE"
+                $base.secure_value_available = $true
+                $base.secret_value_printed = $false
+                Write-Json $base
+                exit 0
+            }
+            $base.status = "SECRET_INVALID"
+            $base.secure_value_available = $false
+            Write-Json $base
+            exit 2
+        }
+        "ImportFromEnv" {
+            $envSecret = [Environment]::GetEnvironmentVariable("NC_ALERT_SMTP_PASSWORD", "Process")
+            if ([string]::IsNullOrWhiteSpace($envSecret)) {
+                $base.status = "SECRET_ENV_MISSING"
+                Write-Json $base
+                exit 3
+            }
+            $secure = ConvertTo-SecureString -String $envSecret -AsPlainText -Force
+            Save-Secret -Path $SecretPath -Secret $secure
+            $base.status = "SECRET_IMPORTED_TO_CACHE"
+            $base.secret_file_exists = $true
+            $base.env_secret_value_printed = $false
+            Write-Json $base
+            exit 0
         }
         "Clear" {
             if (Test-Path -LiteralPath $SecretPath -PathType Leaf) {
                 Remove-Item -LiteralPath $SecretPath -Force
             }
-            $base.status = "EMAIL_SECRET_CACHE_CLEARED"
+            $base.status = "SECRET_CLEARED"
+            $base.legacy_status = "EMAIL_SECRET_CACHE_CLEARED"
             $base.secret_file_exists = $false
             Write-Json $base
             exit 0
@@ -109,10 +148,9 @@ try {
                 Write-Json $base
                 exit 3
             }
-            Ensure-ParentDirectory -Path $SecretPath
-            $envelope = New-SecretEnvelope -Secret $secure
-            $envelope | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $SecretPath -Encoding UTF8
-            $base.status = "EMAIL_SECRET_CACHE_STORED"
+            Save-Secret -Path $SecretPath -Secret $secure
+            $base.status = "SECRET_STORED"
+            $base.legacy_status = "EMAIL_SECRET_CACHE_STORED"
             $base.secret_file_exists = $true
             Write-Json $base
             exit 0

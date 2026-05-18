@@ -71,6 +71,16 @@ function Save-StoredSecret {
     } | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $Path -Encoding UTF8
 }
 
+function Test-StoredSecret {
+    param([string]$Path)
+    try {
+        $secure = Load-StoredSecret -Path $Path
+        return ($secure -and $secure.Length -gt 0)
+    } catch {
+        return $false
+    }
+}
+
 function Set-DefaultEnvIfMissing {
     param([string]$Name, [string]$Value)
     if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($Name, "Process"))) {
@@ -122,7 +132,7 @@ if ($ClearStoredSecret) {
 }
 
 if ($Status) {
-    $base.status = if ($base.secret_cache_exists) { "EMAIL_SECRET_CACHE_PRESENT" } else { "EMAIL_SECRET_CACHE_MISSING" }
+    $base.status = if ($base.secret_cache_exists -and (Test-StoredSecret -Path $SecretPath)) { "EMAIL_SECRET_CACHE_PRESENT" } else { "EMAIL_SECRET_CACHE_MISSING" }
     $base.smtp_password_configured = -not [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable("NC_ALERT_SMTP_PASSWORD", "Process"))
     Write-Result -Payload $base -ExitCode 0
     return
@@ -130,8 +140,16 @@ if ($Status) {
 
 $envPassword = [Environment]::GetEnvironmentVariable("NC_ALERT_SMTP_PASSWORD", "Process")
 if (-not [string]::IsNullOrWhiteSpace($envPassword)) {
-    $base.status = "EMAIL_ALERT_ENV_READY"
-    $base.password_source = "env"
+    $secureFromEnv = ConvertTo-SecureString -String $envPassword -AsPlainText -Force
+    Save-StoredSecret -Path $SecretPath -Secret $secureFromEnv
+    $secureFromCache = Load-StoredSecret -Path $SecretPath
+    [Environment]::SetEnvironmentVariable("NC_ALERT_SMTP_PASSWORD", (Convert-SecureStringToPlainText -Secure $secureFromCache), "Process")
+    $base.status = "EMAIL_ALERT_ENV_IMPORTED_TO_CACHE_READY"
+    $base.password_source = "env_imported_to_dpapi"
+    $base.secret_cache_exists = $true
+    $base.secret_cache_used = $true
+    $base.secret_imported_from_env = $true
+    $base.secret_saved_local = $true
     $base.smtp_password_configured = $true
     Write-Result -Payload $base -ExitCode 0
     return
@@ -165,19 +183,18 @@ if (-not [string]::IsNullOrWhiteSpace($SecretTextForTest)) {
 
 if ($secure -and $secure.Length -gt 0) {
     [Environment]::SetEnvironmentVariable("NC_ALERT_SMTP_PASSWORD", (Convert-SecureStringToPlainText -Secure $secure), "Process")
-    if ($SaveSecretLocal -or $base.password_prompted_securely -or -not [string]::IsNullOrWhiteSpace($SecretTextForTest)) {
-        Save-StoredSecret -Path $SecretPath -Secret $secure
-        $base.secret_saved_local = $true
-        $base.secret_cache_exists = $true
-    }
-    $base.status = if ($base.password_prompted_securely) { "EMAIL_ALERT_PROMPTED_SECRET_READY" } else { "EMAIL_ALERT_TEST_SECRET_READY" }
+    Save-StoredSecret -Path $SecretPath -Secret $secure
+    $base.secret_saved_local = $true
+    $base.secret_cache_exists = $true
+    $base.status = if ($base.password_prompted_securely) { "EMAIL_SECRET_CACHE_CREATED" } else { "EMAIL_ALERT_TEST_SECRET_READY" }
     $base.password_source = if ($base.password_prompted_securely) { "secure_prompt" } else { "test_parameter" }
     $base.smtp_password_configured = $true
     Write-Result -Payload $base -ExitCode 0
     return
 }
 
-$base.status = "EMAIL_ALERT_NOT_CONFIGURED"
+$base.status = "EMAIL_SECRET_CACHE_MISSING"
+$base.legacy_status = "EMAIL_ALERT_NOT_CONFIGURED"
 $base.missing_config_keys = @("smtp_password")
 Write-Result -Payload $base -ExitCode 10
 return
