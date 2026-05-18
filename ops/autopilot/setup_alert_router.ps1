@@ -113,12 +113,12 @@ function Send-NtfyTest {
     $topicValue = [string]$Config.ntfy.topic
     $uri = "$serverValue/$topicValue"
     $headers = @{
-        Title = "[NeuroChess] iPhone alert router test"
+        Title = "NeuroChess alert test"
         Priority = [string]$Config.ntfy.priority
         Tags = "warning,chess,computer"
     }
     try {
-        $response = Invoke-WebRequest -Method Post -Uri $uri -Headers $headers -Body "NeuroChess ntfy iPhone alert router test." -TimeoutSec $TimeoutSeconds -UseBasicParsing
+        $response = Invoke-WebRequest -Method Post -Uri $uri -Headers $headers -Body "If you see this on iPhone, NeuroChess ntfy alerts are working." -TimeoutSec $TimeoutSeconds -UseBasicParsing
         return [ordered]@{
             status = "ALERT_SENT_NTFY"
             http_status = [int]$response.StatusCode
