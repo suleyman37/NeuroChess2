@@ -288,3 +288,46 @@ Required proof to reach 18:
 
 19/20 remains blocked until repeated screenshot-to-patch wins succeed with
 human-calibrated visual review.
+
+## A20V Update
+
+Estimated score after A20V: 17.5/20.
+
+Why:
+
+- A20V implemented the explicit ChatGPT visual upload wrapper contract:
+  `SAFE_LIVE_READONLY_MODE`, contact sheet attachment input, bounded wait,
+  one optional JSON-only correction, raw response capture, normalization, and
+  strict validation.
+- The wrapper refuses text-only visual review and stops before any browser send
+  unless the approved ChatGPT web bridge is enabled.
+- The low-level bridge already contains attachment mechanics, but tracked
+  configuration still has `chatgpt_web_bridge.enabled=false`.
+- The bounded A20V attempt supplied the A20P contact sheet to the wrapper, but
+  no live ChatGPT call was made because the approved upload lane is unavailable.
+- Optional A20U Gemini raw revalidation still rejects the provider output for
+  out-of-range scores.
+
+Why this is still not 18/20:
+
+- ChatGPT did not receive visual evidence.
+- Gemini remains invalid under strict validation.
+- No valid real external judge output was merged with hard-gate evidence.
+- No Creative Director verdict was generated from real judge evidence.
+
+Strategy decision:
+
+- Stop generic live judge capture hardening.
+- Use the offline Visual Training Gym or a local/human visual review fallback
+  until an explicitly approved visual upload lane exists.
+
+Required proof to reach 18:
+
+- valid screenshot-referenced ChatGPT output;
+- valid screenshot-referenced Gemini output or an explicitly accepted
+  equivalent judge source;
+- merge with hard gates;
+- Creative Director verdict with no missing or invalid judge inputs.
+
+19/20 remains blocked until repeated screenshot-to-patch wins succeed with
+human-calibrated visual review.

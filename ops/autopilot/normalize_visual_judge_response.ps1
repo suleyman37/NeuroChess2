@@ -216,23 +216,44 @@ foreach ($candidateText in @(Get-JsonObjectTexts -Text $raw)) {
 }
 
 $normalized = $false
+$candidateExtracted = $false
+$candidatePath = $null
 if ($null -ne $selected) {
+    $candidateExtracted = $true
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $OutPath) | Out-Null
-    $selected | ConvertTo-Json -Depth 40 | Set-Content -LiteralPath $OutPath -Encoding UTF8
-    $normalized = $true
+    $candidatePath = Join-Path (Split-Path -Parent $OutPath) ("candidate_" + [System.IO.Path]::GetFileName($OutPath))
+    $selected | ConvertTo-Json -Depth 40 | Set-Content -LiteralPath $candidatePath -Encoding UTF8
 }
 
 $validation = $null
-if ($normalized -and -not [string]::IsNullOrWhiteSpace($ValidationOutPath)) {
-    & (Join-Path $PSScriptRoot "validate_visual_judge_output.ps1") -InputPath $OutPath -JudgeType $JudgeType -OutPath $ValidationOutPath | Out-Null
+if ($candidateExtracted -and -not [string]::IsNullOrWhiteSpace($ValidationOutPath)) {
+    & (Join-Path $PSScriptRoot "validate_visual_judge_output.ps1") -InputPath $candidatePath -JudgeType $JudgeType -OutPath $ValidationOutPath | Out-Null
     $validation = Get-Content -LiteralPath $ValidationOutPath -Raw | ConvertFrom-Json
+    if ($validation.validation_result -eq "VALID_OUTPUT") {
+        Move-Item -LiteralPath $candidatePath -Destination $OutPath -Force
+        $candidatePath = $null
+        $normalized = $true
+    }
+}
+
+if ($candidatePath -and (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
+    Remove-Item -LiteralPath $candidatePath -Force
+}
+
+$normalizationResult = "NO_VALID_JUDGE_JSON_FOUND"
+if ($normalized) {
+    $normalizationResult = "NORMALIZED_JSON_WRITTEN"
+} elseif ($candidateExtracted -and $validation -and $validation.validation_result -ne "VALID_OUTPUT") {
+    $normalizationResult = "NORMALIZED_JSON_REJECTED_BY_VALIDATION"
+} elseif ($candidateExtracted -and [string]::IsNullOrWhiteSpace($ValidationOutPath)) {
+    $normalizationResult = "VALIDATION_REQUIRED_FOR_NORMALIZED_JSON"
 }
 
 $report = [ordered]@{
     schema_version = "A20U_visual_judge_normalization_report_v1"
     raw_path = $RawPath
     judge_type = $JudgeType
-    normalization_result = if ($normalized) { "NORMALIZED_JSON_WRITTEN" } else { "NO_VALID_JUDGE_JSON_FOUND" }
+    normalization_result = $normalizationResult
     normalized_output_path = if ($normalized) { $OutPath } else { $null }
     selected_source = $selectedSource
     extraction_attempts = @($attempts)

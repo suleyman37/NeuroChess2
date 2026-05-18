@@ -1371,6 +1371,15 @@ async function main() {
   const config = loadEffectiveConfig(configPath);
   config.__config_path = configPath;
   const bridgeConfig = config.chatgpt_web_bridge || {};
+  if (args["max-wait-seconds"] || args.maxWaitSeconds) {
+    bridgeConfig.max_wait_seconds = Number(args["max-wait-seconds"] || args.maxWaitSeconds);
+  }
+  if (args["upload-timeout-seconds"] || args.uploadTimeoutSeconds) {
+    bridgeConfig.upload_phase_timeout_seconds = Number(args["upload-timeout-seconds"] || args.uploadTimeoutSeconds);
+  }
+  if (args["response-stability-seconds"] || args.responseStabilitySeconds) {
+    bridgeConfig.response_stability_seconds = Number(args["response-stability-seconds"] || args.responseStabilitySeconds);
+  }
   const projectConfig = config.chatgpt_project || {};
 
   if (!live) {

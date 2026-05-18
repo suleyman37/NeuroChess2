@@ -1,0 +1,33 @@
+{
+  "schema_version": "A20V_chatgpt_capture_score_result_v1",
+  "mission_id": "A20V_CHATGPT_VISUAL_UPLOAD_LANE_IMPLEMENTATION",
+  "previous_score": 17.5,
+  "new_score_estimate": 17.5,
+  "reached_18": false,
+  "final_verdict": "CHATGPT_VISUAL_UPLOAD_LANE_UNAVAILABLE",
+  "artifact_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_court_bridge\\A20V_chatgpt_visual_upload_lane_20260518\\",
+  "evidence_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_training\\A20P_screenshot_to_patch_a20l_20260518\\",
+  "capture_results": {
+    "chatgpt": "UPLOAD_LANE_UNAVAILABLE",
+    "gemini": "REVALIDATED_INVALID_OUTPUT"
+  },
+  "validation_results": {
+    "chatgpt": "MISSING_INPUT",
+    "gemini": "INVALID_OUTPUT"
+  },
+  "merge_executed": false,
+  "creative_director_verdict_generated": false,
+  "a21_visual_lane_blocked": true,
+  "why_not_18": [
+    "ChatGPT visual upload lane is unavailable because the approved web bridge is disabled.",
+    "No live ChatGPT visual evidence was submitted.",
+    "A20U Gemini raw revalidation remains invalid because provider scores are out of range.",
+    "No valid real external judge merge occurred."
+  ],
+  "recommended_next_mission": "A20W_STOP_LIVE_JUDGE_CAPTURE_AND_USE_OFFLINE_VISUAL_GYM",
+  "live_chatgpt_called_by_codex": false,
+  "live_gemini_called_by_codex": false,
+  "fixtures_used_as_real_outputs": false,
+  "credentials_touched": false,
+  "bypass_attempted": false
+}
