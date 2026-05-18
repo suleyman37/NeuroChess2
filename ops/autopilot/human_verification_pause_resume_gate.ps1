@@ -12,6 +12,8 @@ param(
     [string]$VerificationMarkerPath = "",
     [string]$ResultPath = "",
     [string]$EmailLocalConfigPath = "",
+    [switch]$ChatGPTResumeProbe,
+    [string]$ResumeProbeOutPath = "",
     [switch]$EmailDryRun,
     [switch]$MockEmailSuccess,
     [switch]$SessionClosed
@@ -83,6 +85,9 @@ if ($Mode -eq "PauseAndAlert") {
     if (-not [string]::IsNullOrWhiteSpace($VerificationMarkerPath)) {
         $resumeCommand += " -VerificationMarkerPath `"$VerificationMarkerPath`""
     }
+    if ($ChatGPTResumeProbe) {
+        $resumeCommand += " -ChatGPTResumeProbe"
+    }
 
     $state = [ordered]@{
         schema_version = "A20AA_human_verification_pause_state_v1"
@@ -98,6 +103,7 @@ if ($Mode -eq "PauseAndAlert") {
         user_action_required = "Complete verification manually in the open Chrome window, then run ResumeCheck. Do not close Chrome."
         email_alert_status = "NOT_ATTEMPTED"
         resume_check_command = $resumeCommand
+        chatgpt_resume_probe_enabled = [bool]$ChatGPTResumeProbe
         artifact_path = $ArtifactPath
         page_url_redacted = -not [string]::IsNullOrWhiteSpace($PageUrl)
         browser_profile_redacted = $true
@@ -151,6 +157,7 @@ if ($Mode -eq "PauseAndAlert") {
         automation_paused = $true
         resume_check_command = $resumeCommand
         timeout_minutes = $TimeoutMinutes
+        chatgpt_resume_probe_enabled = [bool]$ChatGPTResumeProbe
         artifact_path = $ArtifactPath
         bypass_attempted = $false
         clicked_verification = $false
@@ -188,6 +195,32 @@ if ($Mode -eq "ResumeCheck") {
     } elseif (-not [string]::IsNullOrWhiteSpace($VerificationMarkerPath) -and (Test-Path -LiteralPath $VerificationMarkerPath -PathType Leaf)) {
         $status = "STILL_WAITING_FOR_HUMAN"
         $exitCode = 2
+    } elseif ($ChatGPTResumeProbe) {
+        if ([string]::IsNullOrWhiteSpace($ResumeProbeOutPath)) {
+            $ResumeProbeOutPath = Join-Path $ArtifactPath "resume_probe"
+        }
+        New-Item -ItemType Directory -Force -Path $ResumeProbeOutPath | Out-Null
+        $nodeExe = "node"
+        $bundledNode = "C:\Users\suley\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe"
+        if (Test-Path -LiteralPath $bundledNode -PathType Leaf) { $nodeExe = $bundledNode }
+        $probeScript = Join-Path $PSScriptRoot "browser\chatgpt_file_input_visual_probe.mjs"
+        $probeOutput = & $nodeExe $probeScript --resumeCheckOnly --out $ResumeProbeOutPath 2>&1
+        $probeResultPath = Join-Path $ResumeProbeOutPath "probe_result.json"
+        $probeResult = Read-JsonIfExists -Path $probeResultPath
+        $probeStatus = if ($probeResult) { [string]$probeResult.status } else { "UNKNOWN_STATE" }
+        if ($probeStatus -eq "RESUME_READY") {
+            $status = "RESUME_READY"
+            $exitCode = 0
+        } elseif ($probeStatus -eq "STILL_WAITING_FOR_HUMAN" -or $probeStatus -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED") {
+            $status = "STILL_WAITING_FOR_HUMAN"
+            $exitCode = 2
+        } elseif ($probeStatus -eq "SESSION_CLOSED" -or $probeStatus -eq "CHATGPT_SAFE_SESSION_UNAVAILABLE") {
+            $status = "SESSION_CLOSED"
+            $exitCode = 3
+        } else {
+            $status = "UNKNOWN_STATE"
+            $exitCode = 5
+        }
     } else {
         $status = "RESUME_READY"
         $exitCode = 0
@@ -204,6 +237,10 @@ if ($Mode -eq "ResumeCheck") {
         automation_paused = ($status -ne "RESUME_READY")
         timeout_at = $state.timeout_at
         artifact_path = $state.artifact_path
+        chatgpt_resume_probe_enabled = [bool]$ChatGPTResumeProbe
+        resume_probe_out_path = if ($ChatGPTResumeProbe) { $ResumeProbeOutPath } else { $null }
+        resume_probe_status = if ($ChatGPTResumeProbe -and $probeResult) { [string]$probeResult.status } else { $null }
+        resume_probe_output_redacted = if ($ChatGPTResumeProbe) { ($probeOutput -join "`n") } else { "" }
         bypass_attempted = $false
         clicked_verification = $false
     }

@@ -35,15 +35,18 @@ try {
     Assert-True ($captureSource -match "UploadAdapter") "capture script missing upload adapter parameter"
     Assert-True ($captureSource -match "RequireAttachmentConfirmation") "capture script missing attachment confirmation gate"
     Assert-True ($captureSource -match "RequireImageAwareCanary") "capture script missing canary gate"
-    Assert-True ($captureSource -match 'capture_result -ne "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED"') "attachment gate must preserve human-verification safety stop"
+    Assert-True ($captureSource -match "HumanVerificationPauseResumeEnabled") "capture script missing human resume flag"
+    Assert-True ($captureSource -match "C10_CHATGPT_VALID_CANARY_JSON_CAPTURED") "capture script missing C10 canary success status"
+    Assert-True ($captureSource -match "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -and $captureSource -match "HUMAN_VERIFICATION_EMAIL_SENT_TIMEOUT_EXPIRED") "attachment gate must preserve human-verification safety stops"
     Assert-True ($probeSource -match "connectOverCDP") "file input probe must reuse existing CDP browser"
     Assert-True ($probeSource -notmatch "launchPersistentContext") "file input probe must avoid persistent context launch"
     Assert-True ($probeSource -match 'input\[type="file"\]') "file input probe must query file inputs"
     Assert-True ($probeSource -match "setInputFiles") "file input probe must use Playwright file input assignment"
+    Assert-True ($probeSource -match "resumeCheckOnly") "file input probe must support read-only resume checks"
 
     [ordered]@{
         status = "pass"
-        tests = 13
+        tests = 16
         disabled_bridge_returns_upload_lane_unavailable = $true
         live_chatgpt_called = $false
         product_mission_executed = $false

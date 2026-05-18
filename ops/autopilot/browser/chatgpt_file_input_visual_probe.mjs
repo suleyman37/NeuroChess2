@@ -399,14 +399,15 @@ async function main() {
 
   const promptPath = args.prompt;
   const attachmentPath = args.attachment ? path.resolve(String(args.attachment)) : "";
-  if (!promptPath || !fs.existsSync(promptPath)) {
+  const resumeCheckOnly = Boolean(args.resumeCheckOnly);
+  if (!resumeCheckOnly && (!promptPath || !fs.existsSync(promptPath))) {
     result.status = "PROMPT_FILE_MISSING";
     result.stop_reason = "PROMPT_FILE_MISSING";
     write(path.join(outDir, "probe_result.json"), JSON.stringify(result, null, 2));
     console.log(JSON.stringify(result, null, 2));
     process.exit(2);
   }
-  if (!attachmentPath || !fs.existsSync(attachmentPath)) {
+  if (!resumeCheckOnly && (!attachmentPath || !fs.existsSync(attachmentPath))) {
     result.status = "ATTACHMENT_FILE_MISSING";
     result.stop_reason = "ATTACHMENT_FILE_MISSING";
     write(path.join(outDir, "probe_result.json"), JSON.stringify(result, null, 2));
@@ -432,7 +433,7 @@ async function main() {
     const page = pages.find((candidate) => isProjectConversationUrl(candidate.url())) ||
       pages.find((candidate) => isChatGptUrl(candidate.url()));
     if (!page) {
-      result.status = "CHATGPT_SAFE_SESSION_UNAVAILABLE";
+      result.status = resumeCheckOnly ? "SESSION_CLOSED" : "CHATGPT_SAFE_SESSION_UNAVAILABLE";
       result.stop_reason = "CHATGPT_PAGE_NOT_FOUND";
       write(path.join(outDir, "probe_result.json"), JSON.stringify(result, null, 2));
       console.log(JSON.stringify(result, null, 2));
@@ -442,7 +443,7 @@ async function main() {
     const diagnostics = await collectSafePageDiagnostics(page);
     write(path.join(outDir, "safe_session_diagnostics.json"), JSON.stringify(diagnostics, null, 2));
     if (diagnostics.human_verification_detected || diagnostics.login_detected || diagnostics.consent_detected) {
-      result.status = diagnostics.human_verification_detected ? "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" : "CHATGPT_SAFE_SESSION_UNAVAILABLE";
+      result.status = resumeCheckOnly ? "STILL_WAITING_FOR_HUMAN" : (diagnostics.human_verification_detected ? "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" : "CHATGPT_SAFE_SESSION_UNAVAILABLE");
       result.stop_reason = diagnostics.human_verification_detected ? "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" : "LOGIN_OR_CONSENT_REQUIRED";
       write(path.join(outDir, "probe_result.json"), JSON.stringify(result, null, 2));
       console.log(JSON.stringify(result, null, 2));
@@ -459,6 +460,14 @@ async function main() {
     }
     result.composer_found = true;
     result.highest_capability = "C3_CHATGPT_TEXT_INPUT_VISIBLE";
+
+    if (resumeCheckOnly) {
+      result.status = "RESUME_READY";
+      result.stop_reason = "";
+      write(path.join(outDir, "probe_result.json"), JSON.stringify(result, null, 2));
+      console.log(JSON.stringify(result, null, 2));
+      process.exit(0);
+    }
 
     const promptText = read(promptPath);
     const composerText = await writeComposer(page, composer, promptText);

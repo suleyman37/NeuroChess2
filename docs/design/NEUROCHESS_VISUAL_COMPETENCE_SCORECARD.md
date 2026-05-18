@@ -289,6 +289,52 @@ Required proof to reach 18:
 19/20 remains blocked until repeated screenshot-to-patch wins succeed with
 human-calibrated visual review.
 
+## A20AC Update
+
+Estimated score after A20AC: 17.5/20.
+
+Why:
+
+- A20AC generated a harmless visual-only ChatGPT canary externally and kept the
+  hidden canary code out of the prompt text.
+- The ChatGPT file-input lane reused the CDP attach path and stopped safely at
+  `STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED`.
+- The human-verification pause/resume gate sent a real email alert to the
+  configured Gmail recipient, recorded `browser_should_remain_open: true`, and
+  did not click or bypass verification.
+- The read-only resume probe polled for 30 minutes and returned
+  `TIMEOUT_EXPIRED` while ChatGPT still reported the verification/auth wall.
+- Because the canary never reached file-input discovery, attachment
+  confirmation, prompt send, or image-aware response, the A20P contact sheet was
+  not submitted to ChatGPT.
+
+Why this is still not 18/20:
+
+- C2 CDP attach plus email alert is not visual upload proof.
+- No C7 attachment confirmation, C8 image prompt send, C9 image-aware response,
+  or C10 valid canary JSON occurred.
+- No valid A20P ChatGPT visual judge JSON was captured.
+- Gemini remains invalid or missing for a two-judge real Visual Court merge.
+
+Strategy decision:
+
+- Do not bypass the human-verification wall.
+- Stop live ChatGPT visual capture attempts unless a verification-cleared
+  session is explicitly available before the run.
+- Use the offline Visual Gym or a human-calibrated local visual review path for
+  the next visual lane.
+
+Required proof to reach 18:
+
+- confirmed ChatGPT image attachment and image-aware canary response;
+- valid screenshot-referenced A20P ChatGPT judge JSON;
+- valid Gemini or equivalent external judge output;
+- Visual Court merge and Creative Director verdict based only on valid real
+  judge evidence.
+
+19/20 remains blocked until repeated screenshot-to-patch wins succeed with
+human-calibrated visual review.
+
 ## A20Z Update
 
 Estimated score after A20Z: 17.5/20.

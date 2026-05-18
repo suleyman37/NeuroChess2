@@ -17,7 +17,10 @@ param(
     [string]$UploadAdapter = "AUTO",
     [switch]$RequireAttachmentConfirmation,
     [switch]$RequireImageAwareCanary,
-    [string]$CanaryCode = ""
+    [string]$CanaryCode = "",
+    [switch]$HumanVerificationPauseResumeEnabled,
+    [int]$TimeoutMinutes = 30,
+    [int]$ResumePollSeconds = 15
 )
 
 $ErrorActionPreference = "Stop"
@@ -202,20 +205,28 @@ function Invoke-HumanVerificationPauseGate {
         [string]$ServiceName,
         [string]$MissionIdValue,
         [string]$ReasonValue,
-        [string]$ArtifactRoot
+        [string]$ArtifactRoot,
+        [int]$TimeoutMinutesValue,
+        [switch]$EnableChatGPTResumeProbe
     )
     $gateResultPath = Join-Path $ArtifactRoot "human_verification_pause_gate_result.json"
     $pauseStatePath = Join-Path $PSScriptRoot "runtime\human_verification_pause_state.json"
-    $gateOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "human_verification_pause_resume_gate.ps1") `
-        -Mode PauseAndAlert `
-        -ServiceName $ServiceName `
-        -MissionId $MissionIdValue `
-        -Reason $ReasonValue `
-        -BrowserProfile "redacted" `
-        -ArtifactPath $ArtifactRoot `
-        -PauseStatePath $pauseStatePath `
-        -TimeoutMinutes 30 `
-        -ResultPath $gateResultPath 2>&1
+    $gateArgs = @(
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-File", (Join-Path $PSScriptRoot "human_verification_pause_resume_gate.ps1"),
+        "-Mode", "PauseAndAlert",
+        "-ServiceName", $ServiceName,
+        "-MissionId", $MissionIdValue,
+        "-Reason", $ReasonValue,
+        "-BrowserProfile", "redacted",
+        "-ArtifactPath", $ArtifactRoot,
+        "-PauseStatePath", $pauseStatePath,
+        "-TimeoutMinutes", ([string]$TimeoutMinutesValue),
+        "-ResultPath", $gateResultPath
+    )
+    if ($EnableChatGPTResumeProbe) { $gateArgs += "-ChatGPTResumeProbe" }
+    $gateOutput = & powershell @gateArgs 2>&1
     $exit = $LASTEXITCODE
     $result = if (Test-Path -LiteralPath $gateResultPath -PathType Leaf) {
         Get-Content -LiteralPath $gateResultPath -Raw | ConvertFrom-Json
@@ -228,6 +239,121 @@ function Invoke-HumanVerificationPauseGate {
         result_path = $gateResultPath
         pause_state_path = $pauseStatePath
         result = $result
+    }
+}
+
+function Invoke-HumanVerificationResumeWait {
+    param(
+        [string]$PauseStatePath,
+        [string]$ArtifactRoot,
+        [int]$TimeoutMinutesValue,
+        [int]$PollSeconds
+    )
+    $timelinePath = Join-Path $ArtifactRoot "human_resume_timeline.json"
+    $deadline = (Get-Date).AddMinutes($TimeoutMinutesValue)
+    $events = @()
+    $attempt = 0
+    if ($PollSeconds -lt 1) { $PollSeconds = 1 }
+
+    while ((Get-Date) -le $deadline) {
+        $attempt += 1
+        $resumeResultPath = Join-Path $ArtifactRoot ("human_resume_check_{0}.json" -f $attempt)
+        $resumeProbeOut = Join-Path $ArtifactRoot ("human_resume_probe_{0}" -f $attempt)
+        $resumeOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "human_verification_pause_resume_gate.ps1") `
+            -Mode ResumeCheck `
+            -PauseStatePath $PauseStatePath `
+            -ResultPath $resumeResultPath `
+            -ChatGPTResumeProbe `
+            -ResumeProbeOutPath $resumeProbeOut 2>&1
+        $exit = $LASTEXITCODE
+        $result = if (Test-Path -LiteralPath $resumeResultPath -PathType Leaf) {
+            Get-Content -LiteralPath $resumeResultPath -Raw | ConvertFrom-Json
+        } else {
+            $null
+        }
+        $status = if ($result) { [string]$result.status } else { "UNKNOWN_STATE" }
+        $events += [ordered]@{
+            attempt = $attempt
+            checked_at = (Get-Date).ToString("o")
+            status = $status
+            exit_code = $exit
+            result_path = $resumeResultPath
+            probe_out_path = $resumeProbeOut
+            output_redacted = ($resumeOutput -join "`n")
+        }
+        Write-Json -Path $timelinePath -Payload ([ordered]@{
+            schema_version = "A20AC_human_resume_timeline_v1"
+            status = $status
+            timeout_minutes = $TimeoutMinutesValue
+            poll_seconds = $PollSeconds
+            events = @($events)
+        })
+
+        if ($status -in @("RESUME_READY", "SESSION_CLOSED", "TIMEOUT_EXPIRED", "UNKNOWN_STATE")) {
+            return [ordered]@{
+                status = $status
+                exit_code = $exit
+                result_path = $resumeResultPath
+                timeline_path = $timelinePath
+                probe_out_path = $resumeProbeOut
+                events = @($events)
+            }
+        }
+        Start-Sleep -Seconds $PollSeconds
+    }
+
+    Write-Json -Path $timelinePath -Payload ([ordered]@{
+        schema_version = "A20AC_human_resume_timeline_v1"
+        status = "TIMEOUT_EXPIRED"
+        timeout_minutes = $TimeoutMinutesValue
+        poll_seconds = $PollSeconds
+        events = @($events)
+    })
+    [ordered]@{
+        status = "TIMEOUT_EXPIRED"
+        exit_code = 4
+        result_path = $null
+        timeline_path = $timelinePath
+        probe_out_path = $null
+        events = @($events)
+    }
+}
+
+function Update-SummaryFromFileInputBridge {
+    param(
+        $Summary,
+        $Bridge,
+        [string]$RawPathValue,
+        [string]$RawDirValue,
+        [string]$AttemptLabel
+    )
+    $probe = $Bridge.result
+    $Summary.chatgpt_bridge_exit_code = $Bridge.exit_code
+    $Summary.chatgpt_bridge_stdout = $Bridge.stdout
+    $Summary.file_input_probe_result_path = $Bridge.result_path
+    $Summary.attachment_confirmation_path = $Bridge.attachment_confirmation_path
+    $Summary.file_input_selector_audit_path = $Bridge.file_input_selector_audit_path
+    if ($probe) {
+        $Summary.live_chatgpt_called = [bool]$probe.live_chatgpt_called
+        $Summary.cdp_attach_used = [bool]$probe.cdp_attached
+        $Summary.persistent_context_avoided = [bool]$probe.cdp_attached
+        $Summary.highest_capability = [string]$probe.highest_capability
+        $Summary.human_verification_encountered = ([string]$probe.status -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -or [string]$probe.stop_reason -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED")
+        $Summary.file_input_adapter_result = if ([bool]$probe.file_input_found) { "FOUND" } else { "NOT_FOUND" }
+        $Summary.image_attachment_confirmed = [bool]$probe.attachment_confirmed
+        $Summary.upload_control_status = if ([bool]$probe.file_input_found) { "FILE_INPUT_FOUND" } else { "FILE_INPUT_NOT_FOUND" }
+        $Summary.capture_result = [string]$probe.status
+        $Summary.stop_reason = [string]$probe.stop_reason
+    } else {
+        $Summary.capture_result = "NO_RESPONSE_CAPTURED"
+        $Summary.stop_reason = "file input probe did not produce probe_result.json"
+    }
+    if ($Bridge.raw_path) {
+        Copy-Item -LiteralPath $Bridge.raw_path -Destination $RawPathValue -Force
+        Copy-Item -LiteralPath $Bridge.raw_path -Destination (Join-Path $RawDirValue ("chatgpt_raw_response_{0}.txt" -f $AttemptLabel)) -Force
+        $Summary.raw_output_path = $RawPathValue
+    } elseif ($Bridge.partial_path) {
+        Copy-Item -LiteralPath $Bridge.partial_path -Destination (Join-Path $RawDirValue ("chatgpt_partial_response_{0}.txt" -f $AttemptLabel)) -Force
     }
 }
 
@@ -384,6 +510,9 @@ $summary = [ordered]@{
     upload_adapter = $UploadAdapter
     require_attachment_confirmation = [bool]$RequireAttachmentConfirmation
     require_image_aware_canary = [bool]$RequireImageAwareCanary
+    human_verification_pause_resume_enabled = [bool]$HumanVerificationPauseResumeEnabled
+    timeout_minutes = $TimeoutMinutes
+    resume_poll_seconds = $ResumePollSeconds
     cdp_attach_used = $false
     persistent_context_avoided = $false
     highest_capability = "C0_REPO_AND_CONFIG_FOUND"
@@ -404,6 +533,9 @@ $summary = [ordered]@{
     human_verification_gate_status = "NOT_TRIGGERED"
     human_verification_pause_state_path = $null
     human_verification_email_alert_status = "NOT_TRIGGERED"
+    human_resume_status = "NOT_TRIGGERED"
+    human_resume_timeline_path = $null
+    human_resume_retry_attempted = $false
     live_chatgpt_called = $false
     live_gemini_called = $false
     product_mission_executed = $false
@@ -432,35 +564,69 @@ if ($RawFixturePath) {
         $summary.upload_control_status = "PROBED_BY_CDP_FILE_INPUT"
         $liveOut = Join-Path $OutputPath "live_file_input_attempt_1"
         $bridge = Invoke-ChatGptFileInputProbe -PromptFile $requestPath -Attachment $resolvedAttachments[0] -OutDir $liveOut -WaitSeconds $MaxWaitSeconds
-        $probe = $bridge.result
-        $summary.chatgpt_bridge_exit_code = $bridge.exit_code
-        $summary.chatgpt_bridge_stdout = $bridge.stdout
-        $summary.file_input_probe_result_path = $bridge.result_path
-        $summary.attachment_confirmation_path = $bridge.attachment_confirmation_path
-        $summary.file_input_selector_audit_path = $bridge.file_input_selector_audit_path
-        if ($probe) {
-            $summary.live_chatgpt_called = [bool]$probe.live_chatgpt_called
-            $summary.cdp_attach_used = [bool]$probe.cdp_attached
-            $summary.persistent_context_avoided = [bool]$probe.cdp_attached
-            $summary.highest_capability = [string]$probe.highest_capability
-            $summary.human_verification_encountered = ([string]$probe.status -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -or [string]$probe.stop_reason -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED")
-            $summary.file_input_adapter_result = if ([bool]$probe.file_input_found) { "FOUND" } else { "NOT_FOUND" }
-            $summary.image_attachment_confirmed = [bool]$probe.attachment_confirmed
-            $summary.upload_control_status = if ([bool]$probe.file_input_found) { "FILE_INPUT_FOUND" } else { "FILE_INPUT_NOT_FOUND" }
-            $summary.capture_result = [string]$probe.status
-            $summary.stop_reason = [string]$probe.stop_reason
-        } else {
-            $summary.capture_result = "NO_RESPONSE_CAPTURED"
-            $summary.stop_reason = "file input probe did not produce probe_result.json"
+        Update-SummaryFromFileInputBridge -Summary $summary -Bridge $bridge -RawPathValue $rawPath -RawDirValue $rawDir -AttemptLabel "attempt_1"
+
+        if (($summary.capture_result -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -or $summary.stop_reason -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED") -and $HumanVerificationPauseResumeEnabled) {
+            $summary.human_verification_encountered = $true
+            $pause = Invoke-HumanVerificationPauseGate `
+                -ServiceName "ChatGPT" `
+                -MissionIdValue $MissionId `
+                -ReasonValue "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" `
+                -ArtifactRoot $OutputPath `
+                -TimeoutMinutesValue $TimeoutMinutes `
+                -EnableChatGPTResumeProbe
+            $summary.human_verification_gate_status = if ($pause.result) { [string]$pause.result.status } else { "PAUSE_GATE_FAILED" }
+            $summary.human_verification_pause_state_path = $pause.pause_state_path
+            $summary.human_verification_pause_gate_result_path = $pause.result_path
+            $summary.human_verification_pause_gate_exit_code = $pause.exit_code
+            if ($pause.result) {
+                $summary.human_verification_email_alert_status = [string]$pause.result.email_alert_status
+            } else {
+                $summary.human_verification_email_alert_status = "EMAIL_ALERT_SEND_FAILED"
+            }
+
+            if ($summary.human_verification_email_alert_status -ne "EMAIL_ALERT_SENT") {
+                $summary.capture_result = "HUMAN_VERIFICATION_EMAIL_FAILED"
+                $summary.stop_reason = "HUMAN_VERIFICATION_EMAIL_FAILED"
+            } else {
+                $resume = Invoke-HumanVerificationResumeWait `
+                    -PauseStatePath $pause.pause_state_path `
+                    -ArtifactRoot $OutputPath `
+                    -TimeoutMinutesValue $TimeoutMinutes `
+                    -PollSeconds $ResumePollSeconds
+                $summary.human_resume_status = [string]$resume.status
+                $summary.human_resume_timeline_path = $resume.timeline_path
+                $summary.human_resume_result_path = $resume.result_path
+                if ($resume.status -eq "RESUME_READY") {
+                    $summary.human_resume_retry_attempted = $true
+                    $liveOut = Join-Path $OutputPath "live_file_input_attempt_2_after_human_resume"
+                    $bridge = Invoke-ChatGptFileInputProbe -PromptFile $requestPath -Attachment $resolvedAttachments[0] -OutDir $liveOut -WaitSeconds $MaxWaitSeconds
+                    Update-SummaryFromFileInputBridge -Summary $summary -Bridge $bridge -RawPathValue $rawPath -RawDirValue $rawDir -AttemptLabel "attempt_2_after_human_resume"
+                    if ($summary.capture_result -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -or $summary.stop_reason -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED") {
+                        $summary.capture_result = "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED_UNRESUMED"
+                        $summary.stop_reason = "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED_UNRESUMED"
+                    }
+                } elseif ($resume.status -eq "TIMEOUT_EXPIRED") {
+                    $summary.capture_result = "HUMAN_VERIFICATION_EMAIL_SENT_TIMEOUT_EXPIRED"
+                    $summary.stop_reason = "HUMAN_VERIFICATION_EMAIL_SENT_TIMEOUT_EXPIRED"
+                } elseif ($resume.status -eq "SESSION_CLOSED") {
+                    $summary.capture_result = "HUMAN_VERIFICATION_EMAIL_SENT_SESSION_CLOSED"
+                    $summary.stop_reason = "HUMAN_VERIFICATION_EMAIL_SENT_SESSION_CLOSED"
+                } else {
+                    $summary.capture_result = "HUMAN_VERIFICATION_EMAIL_SENT_UNKNOWN_STATE"
+                    $summary.stop_reason = "HUMAN_VERIFICATION_EMAIL_SENT_UNKNOWN_STATE"
+                }
+            }
         }
-        if ($bridge.raw_path) {
-            Copy-Item -LiteralPath $bridge.raw_path -Destination $rawPath -Force
-            Copy-Item -LiteralPath $bridge.raw_path -Destination (Join-Path $rawDir "chatgpt_raw_response_attempt_1.txt") -Force
-            $summary.raw_output_path = $rawPath
-        } elseif ($bridge.partial_path) {
-            Copy-Item -LiteralPath $bridge.partial_path -Destination (Join-Path $rawDir "chatgpt_partial_response_attempt_1.txt") -Force
-        }
-        if ($RequireAttachmentConfirmation -and -not [bool]$summary.image_attachment_confirmed -and $summary.capture_result -ne "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED") {
+
+        if ($RequireAttachmentConfirmation -and -not [bool]$summary.image_attachment_confirmed -and $summary.capture_result -notin @(
+            "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED",
+            "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED_UNRESUMED",
+            "HUMAN_VERIFICATION_EMAIL_FAILED",
+            "HUMAN_VERIFICATION_EMAIL_SENT_TIMEOUT_EXPIRED",
+            "HUMAN_VERIFICATION_EMAIL_SENT_SESSION_CLOSED",
+            "HUMAN_VERIFICATION_EMAIL_SENT_UNKNOWN_STATE"
+        )) {
             $summary.capture_result = if ($summary.capture_result -eq "CHATGPT_FILE_INPUT_NOT_FOUND") { "CHATGPT_FILE_INPUT_NOT_FOUND" } else { "CHATGPT_ATTACHMENT_NOT_CONFIRMED" }
             $summary.stop_reason = $summary.capture_result
         }
@@ -527,9 +693,14 @@ if ((Test-Path -LiteralPath $rawPath -PathType Leaf) -and $RequireImageAwareCana
         $summary.normalization_result = "CANARY_JSON_INVALID"
     }
     $summary.canary_code_mentioned = [bool]$canaryMentioned
-    if ($canaryMentioned) {
+    $summary.canary_json_valid = [bool]$canaryJson
+    if ($canaryMentioned -and $canaryJson) {
+        $summary.capture_result = "C10_CHATGPT_VALID_CANARY_JSON_CAPTURED"
+        $summary.validation_result = "PASS_CANARY_JSON"
+        $summary.highest_capability = "C10_CHATGPT_VALID_CANARY_JSON_CAPTURED"
+    } elseif ($canaryMentioned) {
         $summary.capture_result = "C9_CHATGPT_IMAGE_AWARE_RESPONSE_CAPTURED"
-        $summary.validation_result = "PASS_IMAGE_AWARENESS"
+        $summary.validation_result = "PASS_IMAGE_AWARENESS_JSON_INVALID"
         $summary.highest_capability = "C9_CHATGPT_IMAGE_AWARE_RESPONSE_CAPTURED"
     } else {
         $summary.capture_result = "CHATGPT_TEXT_ONLY_INVALID_FOR_VISUAL_JUDGE"
@@ -610,9 +781,9 @@ Required wrapper:
     }
 }
 
-if ($summary.capture_result -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -or $summary.stop_reason -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED") {
+if (($summary.capture_result -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -or $summary.stop_reason -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED") -and -not $HumanVerificationPauseResumeEnabled) {
     $summary.human_verification_encountered = $true
-    $pause = Invoke-HumanVerificationPauseGate -ServiceName "ChatGPT" -MissionIdValue $MissionId -ReasonValue "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -ArtifactRoot $OutputPath
+    $pause = Invoke-HumanVerificationPauseGate -ServiceName "ChatGPT" -MissionIdValue $MissionId -ReasonValue "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -ArtifactRoot $OutputPath -TimeoutMinutesValue 30
     $summary.human_verification_gate_status = if ($pause.result) { [string]$pause.result.status } else { "PAUSE_GATE_FAILED" }
     $summary.human_verification_pause_state_path = $pause.pause_state_path
     $summary.human_verification_pause_gate_result_path = $pause.result_path
@@ -636,10 +807,17 @@ $summary | ConvertTo-Json -Depth 40
 
 switch ($summary.capture_result) {
     "CHATGPT_CAPTURED_VALID_JSON" { exit 0 }
+    "C10_CHATGPT_VALID_CANARY_JSON_CAPTURED" { exit 0 }
+    "C9_CHATGPT_IMAGE_AWARE_RESPONSE_CAPTURED" { exit 2 }
     "UPLOAD_LANE_UNAVAILABLE" { exit 3 }
     "SAFE_SESSION_UNAVAILABLE" { exit 4 }
     "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" { exit 5 }
+    "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED_UNRESUMED" { exit 5 }
     "WAITING_FOR_HUMAN_VERIFICATION_EMAIL_SENT" { exit 5 }
     "WAITING_FOR_HUMAN_VERIFICATION_EMAIL_FAILED" { exit 6 }
+    "HUMAN_VERIFICATION_EMAIL_FAILED" { exit 6 }
+    "HUMAN_VERIFICATION_EMAIL_SENT_TIMEOUT_EXPIRED" { exit 5 }
+    "HUMAN_VERIFICATION_EMAIL_SENT_SESSION_CLOSED" { exit 5 }
+    "HUMAN_VERIFICATION_EMAIL_SENT_UNKNOWN_STATE" { exit 5 }
     default { exit 2 }
 }

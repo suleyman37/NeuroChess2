@@ -1,0 +1,31 @@
+{
+  "schema_version": "A20AC_human_resumed_chatgpt_canary_score_result_v1",
+  "mission_id": "A20AC_HUMAN_RESUMED_CHATGPT_VISUAL_CANARY_PROOF",
+  "previous_score": 17.5,
+  "new_score": 17.5,
+  "highest_capability": "C2_CDP_ATTACH",
+  "human_verification_encountered": true,
+  "email_alert_sent": true,
+  "manual_resume_result": "TIMEOUT_EXPIRED",
+  "canary_generated": true,
+  "canary_code_hidden_from_prompt": true,
+  "c6_file_input_found": false,
+  "c7_attachment_confirmed": false,
+  "c8_prompt_sent": false,
+  "c9_image_aware_response": false,
+  "c10_valid_canary_json": false,
+  "c11_a20p_valid_visual_judge_json": false,
+  "c12_visual_court_merge": false,
+  "a20p_run_executed": false,
+  "reached_18": false,
+  "score_reason": "The real email alert worked and the resume loop waited safely, but ChatGPT human verification did not clear within the 30 minute timeout. No image attachment, image prompt, image-aware response, valid A20P judge JSON, or Visual Court merge occurred.",
+  "what_remains_for_18": [
+    "ChatGPT session must become usable after manual verification before timeout.",
+    "The canary image must be attached through input[type=file] and confirmed before send.",
+    "ChatGPT must return image-aware JSON proving it saw the hidden visual code.",
+    "A20P contact sheet must produce valid Minimal Visual Judge Contract V2 JSON.",
+    "A valid Gemini or equivalent external judge output is still required for 18/20."
+  ],
+  "final_verdict": "HUMAN_VERIFICATION_EMAIL_SENT_TIMEOUT_EXPIRED",
+  "recommended_next_mission": "A20AD_STOP_LIVE_CAPTURE_AND_USE_OFFLINE_VISUAL_GYM"
+}

@@ -150,12 +150,17 @@ try {
 
     $captureSource = Get-Content -LiteralPath (Join-Path $RepoRoot "ops\autopilot\capture_chatgpt_visual_judge.ps1") -Raw
     Assert-True ($captureSource -match "Invoke-HumanVerificationPauseGate") "ChatGPT capture script missing pause gate integration"
+    Assert-True ($captureSource -match "HumanVerificationPauseResumeEnabled") "ChatGPT capture script missing human resume switch"
+    Assert-True ($captureSource -match "Invoke-HumanVerificationResumeWait") "ChatGPT capture script missing resume polling"
+    Assert-True ($captureSource -match "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED_UNRESUMED") "ChatGPT capture script missing unresumed verification stop"
     Assert-True ($captureSource -match "WAITING_FOR_HUMAN_VERIFICATION_EMAIL_SENT") "capture script missing email-sent wait status"
     Assert-True ($captureSource -match "WAITING_FOR_HUMAN_VERIFICATION_EMAIL_FAILED") "capture script missing email-failed wait status"
 
     $gateSource = Get-Content -LiteralPath (Join-Path $RepoRoot "ops\autopilot\human_verification_pause_resume_gate.ps1") -Raw
     $emailSource = Get-Content -LiteralPath (Join-Path $RepoRoot "ops\autopilot\send_human_verification_email_alert.ps1") -Raw
     Assert-True ($gateSource -notmatch 'Click\(') "pause gate contains click automation"
+    Assert-True ($gateSource -match "ChatGPTResumeProbe") "pause gate missing read-only ChatGPT resume probe"
+    Assert-True ($gateSource -match "resumeCheckOnly") "pause gate does not call read-only resume probe"
     Assert-True ($emailSource -match 'smtp_password_printed\s*=\s*\$false') "email script does not explicitly record password redaction"
     Assert-True ($emailSource -match 'Read-Host "Enter Gmail app password for NeuroChess email alerts" -AsSecureString') "email script missing secure local password prompt"
     Assert-True ($emailSource -match 'suley37550@gmail.com') "email script missing default Gmail address"
@@ -166,7 +171,7 @@ try {
 
     [ordered]@{
         status = "pass"
-        tests = 17
+        tests = 22
         pause_state_created = $true
         email_dry_run_payload_created = $true
         missing_smtp_returns_not_configured = $true
