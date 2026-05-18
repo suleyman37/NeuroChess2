@@ -1,0 +1,19 @@
+{
+  "schema_version": "A20X_live_visual_judge_recovery_score_result_v1",
+  "mission_id": "A20X_DECISIVE_LIVE_VISUAL_JUDGE_RECOVERY_EXPERIMENT",
+  "previous_score": 17.5,
+  "new_score_estimate": 17.5,
+  "score_changed": false,
+  "final_verdict": "STOP_LIVE_CAPTURE_AND_USE_OFFLINE_VISUAL_GYM",
+  "reason": "Gemini live output reached the enum-first v2 shape but failed strict validation because top_strengths and top_defects contained placeholder critique text. ChatGPT mission-scoped visual probe could not attach evidence or capture a response because the browser/session context closed before upload adapters ran. No valid real visual judge output was available for merge.",
+  "gemini_status": "INVALID_OUTPUT_PLACEHOLDER_CRITIQUE_TEXT",
+  "chatgpt_status": "NO_RESPONSE_CAPTURED_NO_IMAGE_ATTACHMENT_CONFIRMED",
+  "merge_status": "SKIPPED_NO_VALID_REAL_JUDGE_OUTPUTS",
+  "evidence_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_training\\A20P_screenshot_to_patch_a20l_20260518",
+  "artifact_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_court_bridge\\A20X_decisive_live_visual_judge_recovery_20260518",
+  "next_required_proof": "Use offline Visual Gym or a manual/human calibration path unless a new approved live visual evidence channel is explicitly provided; do not keep generic live capture hardening loops.",
+  "live_chatgpt_called": true,
+  "live_gemini_called": true,
+  "human_verification_encountered": false,
+  "bypass_attempted": false
+}

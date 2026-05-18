@@ -11,7 +11,8 @@ param(
     [string]$RawFixturePath = "",
     [string]$Nonce = "",
     [int]$MaxWaitSeconds = 900,
-    [string]$AllowOneJsonCorrection = "true"
+    [string]$AllowOneJsonCorrection = "true",
+    [switch]$AllowChatGPTVisualProbe
 )
 
 $ErrorActionPreference = "Stop"
@@ -102,12 +103,12 @@ function Invoke-Normalization {
 
 function Get-CaptureResultFromValidation {
     param($Validation, $NormalizationResult)
-    if ($Validation -and $Validation.validation_result -eq "VALID_OUTPUT") { return "CAPTURED_VALID_JSON" }
+    if ($Validation -and $Validation.validation_result -eq "VALID_OUTPUT") { return "CHATGPT_CAPTURED_VALID_JSON" }
     if ($Validation -and ($Validation.placeholder_praise_detected -eq $true -or $Validation.generic_praise_detected -eq $true)) {
-        return "CAPTURED_GENERIC_OR_PLACEHOLDER"
+        return "CHATGPT_CAPTURED_INVALID_JSON"
     }
-    if ($NormalizationResult -eq "NO_VALID_JUDGE_JSON_FOUND") { return "CAPTURED_INVALID_JSON" }
-    if ($Validation -and $Validation.validation_result -eq "INVALID_OUTPUT") { return "CAPTURED_INVALID_JSON" }
+    if ($NormalizationResult -eq "NO_VALID_JUDGE_JSON_FOUND") { return "CHATGPT_CAPTURED_INVALID_JSON" }
+    if ($Validation -and $Validation.validation_result -eq "INVALID_OUTPUT") { return "CHATGPT_CAPTURED_INVALID_JSON" }
     return "NO_RESPONSE_CAPTURED"
 }
 
@@ -175,6 +176,7 @@ $allowCorrection = ([string]$AllowOneJsonCorrection).ToLowerInvariant() -in @("t
 $configPath = Join-Path $PSScriptRoot "config.json"
 $config = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
 $bridgeConfig = $config.chatgpt_web_bridge
+$probeEnabled = ([bool]$bridgeConfig.enabled -or [bool]$AllowChatGPTVisualProbe)
 $localState = Get-SanitizedLocalConfigState -Root $PSScriptRoot
 $profileState = Get-ProfileLockState -BridgeConfig $bridgeConfig
 
@@ -202,41 +204,58 @@ Mission: $MissionId
 Nonce: $Nonce
 Evidence path: $EvidencePath
 
-Use only the attached A20P contact sheet/screenshots and the visual packet
-context. Do not infer visual evidence from text-only file names. Return strict
-JSON only, no markdown.
+Use only the attached A20P contact sheet and the visual packet context. Do not
+infer visual evidence from text-only file names. If no image/contact sheet is
+actually attached and visible to you, set evidence_seen to false.
+
+Return exactly one XML response block with strict JSON inside, no markdown:
+
+<NC_VISUAL_JUDGE_RESPONSE nonce="$Nonce">
+{
+  "contract_version": "minimal_visual_judge_v2",
+  "judge": "chatgpt_product_art_director",
+  "evidence_seen": true,
+  "evidence_files": [
+    "generation_1_patch/contact_sheet_generation_1_states.png"
+  ],
+  "screenshot_references": [
+    "contact_sheet_generation_1_states: observe board and phase rail",
+    "contact_sheet_generation_1_states: try-before-feedback board state",
+    "contact_sheet_generation_1_states: feedback success and miss states"
+  ],
+  "hard_gate_observations": {
+    "board_readability": "PASS",
+    "anti_spoiler": "PASS",
+    "piece_readability": "PASS",
+    "board_pollution": "PASS"
+  },
+  "public_screenshot_level": "PUBLIC_TEASER_READY_WITH_CAVEATS",
+  "awwwards_app_craft_level": "PREMIUM_DIRECTION",
+  "visual_competence_level": "PREMIUM_WITH_SUPERVISION",
+  "top_strengths": [
+    "Replace with a concrete visible strength from the contact sheet.",
+    "Replace with a second concrete visible strength from the contact sheet.",
+    "Replace with a third concrete visible strength from the contact sheet."
+  ],
+  "top_defects": [
+    "Replace with a concrete visible defect from the contact sheet.",
+    "Replace with a second concrete visible defect from the contact sheet.",
+    "Replace with a third concrete visible defect from the contact sheet."
+  ],
+  "fatal_defects": [],
+  "recommended_action": "HUMAN_REVIEW_REQUIRED"
+}
+<NC_DONE nonce="$Nonce">DONE</NC_DONE>
+</NC_VISUAL_JUDGE_RESPONSE>
 
 $prompt
 
-Required JSON:
-{
-  "mission_id": "$MissionId",
-  "evidence_path": "$EvidencePath",
-  "screenshot_set": [
-    "generation_1_patch/contact_sheet_generation_1_states.png",
-    "generation_1_patch/contact_sheet_before_after_a20l_vs_a20p.png"
-  ],
-  "chatgpt_art_direction_verdict": "PRODUCT_GRADE_WITH_DEBT",
-  "public_screenshot_level": "PUBLIC_TEASER_READY_WITH_CAVEATS",
-  "top_strengths": [],
-  "top_defects": [],
-  "awwwards_app_craft_score": 0,
-  "visual_competence_score": 17,
-  "required_patch": "One concrete next visual action or human review.",
-  "allowed_next_action": "human_review_or_second_patch",
-  "blocked_reasons": [],
-  "live_chatgpt_called": true,
-  "live_gemini_called": false,
-  "product_mission_executed": false,
-  "done": "$Nonce"
-}
-
 Rules:
-- Include concrete screenshot-grounded strengths and defects.
+- Include at least three concrete screenshot-grounded strengths and defects.
 - Do not approve without visible screenshot evidence.
 - Hard gates have veto.
 - No generic praise.
-- Scores must stay inside documented ranges.
+- No numeric scores, percentages, or 0-100 ratings.
 "@ | Set-Content -LiteralPath $requestPath -Encoding UTF8
 
 $reportPath = Join-Path $OutputPath "chatgpt_capture_report.json"
@@ -246,7 +265,7 @@ $validationPath = Join-Path $validatedDir "chatgpt_validation.json"
 $normalizationReportPath = Join-Path $OutputPath "chatgpt_normalization_report.json"
 
 $summary = [ordered]@{
-    schema_version = "A20V_chatgpt_visual_upload_capture_report_v1"
+    schema_version = "A20X_chatgpt_visual_upload_probe_report_v1"
     mission_id = $MissionId
     evidence_path = $EvidencePath
     output_path = $OutputPath
@@ -259,13 +278,18 @@ $summary = [ordered]@{
     attachment_count = $resolvedAttachments.Count
     attachment_paths_redacted = $true
     chatgpt_web_bridge_enabled = [bool]$bridgeConfig.enabled
+    mission_scoped_visual_probe_override = [bool]$AllowChatGPTVisualProbe
     chatgpt_bridge_script_exists = Test-Path -LiteralPath (Join-Path $PSScriptRoot "browser\chatgpt_bridge.mjs") -PathType Leaf
     local_project_url_configured = $localState.local_project_url_configured
     local_active_session_configured = $localState.local_active_session_configured
     profile_path_redacted = $true
     profile_locked = [bool]$profileState.locked
-    approved_upload_lane_available = ([bool]$bridgeConfig.enabled -and $resolvedAttachments.Count -gt 0)
+    approved_upload_lane_available = ($probeEnabled -and $resolvedAttachments.Count -gt 0)
     upload_control_status = "NOT_PROBED"
+    file_input_adapter_result = "NOT_ATTEMPTED"
+    clipboard_image_paste_adapter_result = "NOT_ATTEMPTED"
+    drag_drop_adapter_result = "NOT_ATTEMPTED"
+    image_attachment_confirmed = $false
     capture_result = "NOT_RUN"
     stop_reason = ""
     raw_output_path = $null
@@ -289,7 +313,7 @@ if ($RawFixturePath) {
     $summary.capture_result = "RAW_FIXTURE_CAPTURED"
     $summary.raw_output_path = $rawPath
 } elseif ($Mode -eq "SAFE_LIVE_READONLY_MODE") {
-    if (-not [bool]$bridgeConfig.enabled) {
+    if (-not $probeEnabled) {
         $summary.capture_result = "UPLOAD_LANE_UNAVAILABLE"
         $summary.stop_reason = "chatgpt_web_bridge.enabled=false"
     } elseif ($resolvedAttachments.Count -eq 0) {
@@ -315,16 +339,34 @@ if ($RawFixturePath) {
                 $summary.human_verification_encountered = $true
                 $summary.capture_result = "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED"
             } elseif ($bridge.bridge_error -match "UPLOAD|ATTACHMENT|file chooser") {
-                $summary.capture_result = "UPLOAD_LANE_UNAVAILABLE"
+                $summary.capture_result = "CHATGPT_FILE_INPUT_ADAPTER_FAILED"
+                $summary.file_input_adapter_result = "FAILED"
+                $summary.clipboard_image_paste_adapter_result = "NOT_IMPLEMENTED"
+                $summary.drag_drop_adapter_result = "NOT_IMPLEMENTED"
             } elseif ($bridge.bridge_error -match "Timed out|DONE|timeout") {
-                $summary.capture_result = "TIMEOUT_OR_DONE_MISSING"
+                $summary.capture_result = "CHATGPT_RESPONSE_TIMEOUT"
             } else {
                 $summary.capture_result = "NO_RESPONSE_CAPTURED"
             }
         } elseif ($bridge.exit_code -eq 0 -and $bridge.raw_path) {
             $summary.capture_result = "RAW_RESPONSE_CAPTURED"
+            $summary.file_input_adapter_result = "ATTACHMENT_CONFIRMED_BY_BRIDGE"
+            $summary.image_attachment_confirmed = $true
         } else {
             $summary.capture_result = "NO_RESPONSE_CAPTURED"
+        }
+
+        $uploadResultPath = Join-Path $liveOut "upload_result.json"
+        if (Test-Path -LiteralPath $uploadResultPath -PathType Leaf) {
+            $uploadResult = Get-Content -LiteralPath $uploadResultPath -Raw | ConvertFrom-Json
+            $summary.upload_result_path = $uploadResultPath
+            $summary.upload_result_ok = [bool]$uploadResult.ok
+            if ($uploadResult.ok -eq $true) {
+                $summary.file_input_adapter_result = [string]$uploadResult.strategy
+                $summary.image_attachment_confirmed = $true
+            } elseif ($summary.file_input_adapter_result -eq "NOT_ATTEMPTED") {
+                $summary.file_input_adapter_result = "FAILED"
+            }
         }
     }
 } else {
@@ -345,16 +387,17 @@ if (Test-Path -LiteralPath $rawPath -PathType Leaf) {
     if (Test-Path -LiteralPath $normalizedPath -PathType Leaf) {
         $summary.normalized_output_path = $normalizedPath
     }
-    if ($summary.capture_result -in @("RAW_RESPONSE_CAPTURED", "RAW_FIXTURE_CAPTURED", "CAPTURED_INVALID_JSON", "NO_RESPONSE_CAPTURED")) {
+    if ($summary.capture_result -in @("RAW_RESPONSE_CAPTURED", "RAW_FIXTURE_CAPTURED", "CHATGPT_CAPTURED_INVALID_JSON", "NO_RESPONSE_CAPTURED")) {
         $summary.capture_result = Get-CaptureResultFromValidation -Validation $normalization.validation -NormalizationResult $summary.normalization_result
     }
 
-    if ($summary.capture_result -ne "CAPTURED_VALID_JSON" -and $allowCorrection -and $Mode -eq "SAFE_LIVE_READONLY_MODE" -and $summary.live_chatgpt_called -eq $true -and -not $summary.human_verification_encountered) {
+    if ($summary.capture_result -ne "CHATGPT_CAPTURED_VALID_JSON" -and $allowCorrection -and $Mode -eq "SAFE_LIVE_READONLY_MODE" -and $summary.live_chatgpt_called -eq $true -and -not $summary.human_verification_encountered) {
         $repairRequestPath = Join-Path $OutputPath "chatgpt_visual_judge_json_correction_request.md"
         $validationText = if (Test-Path -LiteralPath $validationPath -PathType Leaf) { Get-Content -LiteralPath $validationPath -Raw } else { "No validation report." }
         $rawText = Get-Content -LiteralPath $rawPath -Raw
 @"
-Return strict JSON only for the same NeuroChess visual judge request.
+Return the corrected minimal_visual_judge_v2 JSON for the same NeuroChess
+visual judge request, wrapped exactly in the required XML response block.
 
 Nonce: $Nonce
 
@@ -365,7 +408,13 @@ Previous raw response:
 $rawText
 
 Do not add prose. Do not change the evidence basis. Use the attached A20P
-contact sheet/screenshots only. Scores must stay inside documented ranges.
+contact sheet only. Do not use numeric scores, percentages, or 0-100 ratings.
+
+Required wrapper:
+<NC_VISUAL_JUDGE_RESPONSE nonce="$Nonce">
+{ "contract_version": "minimal_visual_judge_v2" }
+<NC_DONE nonce="$Nonce">DONE</NC_DONE>
+</NC_VISUAL_JUDGE_RESPONSE>
 "@ | Set-Content -LiteralPath $repairRequestPath -Encoding UTF8
 
         $repairOut = Join-Path $OutputPath "live_attempt_2_json_correction"
@@ -400,7 +449,7 @@ Write-Json $reportPath $summary
 $summary | ConvertTo-Json -Depth 40
 
 switch ($summary.capture_result) {
-    "CAPTURED_VALID_JSON" { exit 0 }
+    "CHATGPT_CAPTURED_VALID_JSON" { exit 0 }
     "UPLOAD_LANE_UNAVAILABLE" { exit 3 }
     "SAFE_SESSION_UNAVAILABLE" { exit 4 }
     "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" { exit 5 }

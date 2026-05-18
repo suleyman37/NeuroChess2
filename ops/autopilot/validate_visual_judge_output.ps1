@@ -25,6 +25,79 @@ function Has-AnyScreenshot {
     return (($items | Where-Object { $_ -match '\.(png|jpg|jpeg|webp|avif)$' }) | Measure-Object).Count -gt 0
 }
 
+function Test-HasProperty {
+    param($Object, [string]$Name)
+    return ($null -ne $Object -and $Object.PSObject.Properties.Name -contains $Name)
+}
+
+function Test-InEnum {
+    param([string]$Value, [string[]]$Allowed)
+    return (-not [string]::IsNullOrWhiteSpace($Value) -and $Allowed -contains $Value)
+}
+
+function Test-ConcreteList {
+    param($Value, [int]$MinCount)
+    $items = @(To-StringArray $Value | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($items.Count -lt $MinCount) { return $false }
+    $generic = @(
+        "looks great",
+        "strong visuals",
+        "nice design",
+        "good job",
+        "overall good",
+        "premium and polished",
+        "very good",
+        "well designed"
+    )
+    $placeholders = @(
+        "replace with",
+        "placeholder",
+        "todo",
+        "example strength",
+        "example defect",
+        "concrete visible strength",
+        "concrete visible defect"
+    )
+    foreach ($item in $items) {
+        $lower = $item.ToLowerInvariant()
+        if ($item.Length -lt 12) { return $false }
+        foreach ($placeholder in $placeholders) {
+            if ($lower -match [regex]::Escape($placeholder)) {
+                return $false
+            }
+        }
+        foreach ($phrase in $generic) {
+            if ($lower -eq $phrase -or $lower -match ("^" + [regex]::Escape($phrase) + "\.?$")) {
+                return $false
+            }
+        }
+    }
+    return $true
+}
+
+function Test-ContainsPlaceholderText {
+    param($Value)
+    $items = @(To-StringArray $Value | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $placeholders = @(
+        "replace with",
+        "placeholder",
+        "todo",
+        "example strength",
+        "example defect",
+        "concrete visible strength",
+        "concrete visible defect"
+    )
+    foreach ($item in $items) {
+        $lower = $item.ToLowerInvariant()
+        foreach ($placeholder in $placeholders) {
+            if ($lower -match [regex]::Escape($placeholder)) {
+                return $true
+            }
+        }
+    }
+    return $false
+}
+
 function Test-NumberRange {
     param($Value, [double]$Min, [double]$Max)
     if ($null -eq $Value -or [string]::IsNullOrWhiteSpace([string]$Value)) { return $true }
@@ -88,7 +161,9 @@ try {
 }
 
 if ($JudgeType -eq "auto") {
-    if ($json.gemini_visual_verdict -or $json.verdict -or $json.prototype_grade) { $JudgeType = "gemini" }
+    if ([string]$json.contract_version -eq "minimal_visual_judge_v2" -and [string]$json.judge -match "^gemini_") { $JudgeType = "gemini" }
+    elseif ([string]$json.contract_version -eq "minimal_visual_judge_v2" -and [string]$json.judge -match "^chatgpt_") { $JudgeType = "chatgpt" }
+    elseif ($json.gemini_visual_verdict -or $json.verdict -or $json.prototype_grade) { $JudgeType = "gemini" }
     elseif ($json.chatgpt_art_direction_verdict -or $json.product_direction_verdict) { $JudgeType = "chatgpt" }
     elseif ($json.codex_feasibility_verdict -or $json.patch_options) { $JudgeType = "codex" }
     elseif ($json.hard_gate_status -or $json.chess_arbiter_verdict) { $JudgeType = "hard_gate" }
@@ -97,6 +172,167 @@ if ($JudgeType -eq "auto") {
 
 $invalid = @()
 $missing = @()
+
+if ([string]$json.contract_version -eq "minimal_visual_judge_v2") {
+    $hardGateEnum = @("PASS", "MINOR_DEBT", "FAIL", "NOT_EVALUATED")
+    $publicLevelEnum = @(
+        "INTERNAL_ONLY",
+        "INTERNAL_NORTH_STAR_CANDIDATE",
+        "PUBLIC_TEASER_READY_WITH_CAVEATS",
+        "PUBLIC_TEASER_READY",
+        "HERO_SCREENSHOT_READY"
+    )
+    $craftEnum = @(
+        "WEAK_PROTOTYPE",
+        "DECENT_APP_UI",
+        "PREMIUM_DIRECTION",
+        "AWWWARDS_INSPIRED_APP_CRAFT",
+        "SIGNATURE_NEUROCHESS_SCREEN"
+    )
+    $competenceEnum = @(
+        "UNSAFE",
+        "FILTERS_FAILURES",
+        "SAFE_PROTOTYPE",
+        "PREMIUM_WITH_SUPERVISION",
+        "LIMITED_AUTONOMOUS_VISUAL_LANE_READY",
+        "STRONG_AUTONOMOUS_WITH_HUMAN_REVIEW"
+    )
+    $actionEnum = @(
+        "ACCEPT_WITH_CAVEATS",
+        "PATCH_AGAIN",
+        "PIECE_IDENTITY_WORK",
+        "FEEDBACK_LANGUAGE_WORK",
+        "HUMAN_REVIEW_REQUIRED",
+        "REJECT",
+        "INSUFFICIENT_EVIDENCE"
+    )
+
+    foreach ($field in @(
+        "contract_version",
+        "judge",
+        "evidence_seen",
+        "evidence_files",
+        "screenshot_references",
+        "hard_gate_observations",
+        "public_screenshot_level",
+        "awwwards_app_craft_level",
+        "visual_competence_level",
+        "top_strengths",
+        "top_defects",
+        "fatal_defects",
+        "recommended_action"
+    )) {
+        if (-not (Test-HasProperty $json $field)) { $missing += $field }
+    }
+
+    $judgeValue = [string]$json.judge
+    if ($JudgeType -eq "gemini" -and $judgeValue -ne "gemini_visual_perceiver") {
+        $invalid += "judge_type_mismatch"
+    }
+    if ($JudgeType -eq "chatgpt" -and $judgeValue -ne "chatgpt_product_art_director") {
+        $invalid += "judge_type_mismatch"
+    }
+    if ($judgeValue -notin @("gemini_visual_perceiver", "chatgpt_product_art_director")) {
+        $invalid += "invalid_judge_enum"
+    }
+
+    if ($json.evidence_seen -ne $true) {
+        $invalid += "evidence_not_seen"
+        if ($JudgeType -eq "chatgpt") { $invalid += "text_only_visual_review" }
+    }
+
+    $evidenceFiles = To-StringArray $json.evidence_files
+    $screenshotRefs = To-StringArray $json.screenshot_references
+    if (-not (Has-AnyScreenshot $evidenceFiles)) { $missing += "evidence_files_with_image" }
+    if ($screenshotRefs.Count -eq 0) { $missing += "screenshot_references" }
+
+    if (-not (Test-HasProperty $json "hard_gate_observations")) {
+        $missing += "hard_gate_observations"
+    } else {
+        foreach ($gateField in @("board_readability", "anti_spoiler", "piece_readability", "board_pollution")) {
+            $gateValue = [string]$json.hard_gate_observations.$gateField
+            if (-not (Test-InEnum -Value $gateValue -Allowed $hardGateEnum)) {
+                $invalid += "invalid_hard_gate_observation_$gateField"
+            }
+        }
+    }
+
+    if (-not (Test-InEnum -Value ([string]$json.public_screenshot_level) -Allowed $publicLevelEnum)) {
+        $invalid += "invalid_public_screenshot_level"
+    }
+    if (-not (Test-InEnum -Value ([string]$json.awwwards_app_craft_level) -Allowed $craftEnum)) {
+        $invalid += "invalid_awwwards_app_craft_level"
+    }
+    if (-not (Test-InEnum -Value ([string]$json.visual_competence_level) -Allowed $competenceEnum)) {
+        $invalid += "invalid_visual_competence_level"
+    }
+    if (-not (Test-InEnum -Value ([string]$json.recommended_action) -Allowed $actionEnum)) {
+        $invalid += "invalid_recommended_action"
+    }
+
+    $placeholderPraise = $false
+    if ($raw -match "\bPASS\|MINOR_DEBT\|FAIL\|NOT_EVALUATED\b" -or
+        $raw -match "gemini_visual_perceiver\|chatgpt_product_art_director" -or
+        $raw -match "INTERNAL_ONLY\|INTERNAL_NORTH_STAR_CANDIDATE" -or
+        $raw -match "WEAK_PROTOTYPE\|DECENT_APP_UI" -or
+        $raw -match "ACCEPT_WITH_CAVEATS\|PATCH_AGAIN" -or
+        $json.placeholder_level -eq $true) {
+        $placeholderPraise = $true
+        $invalid += "placeholder_enum_text"
+    }
+
+    $strengths = To-StringArray $json.top_strengths
+    $defects = To-StringArray $json.top_defects
+    $genericPraise = $false
+    if (Test-ContainsPlaceholderText $strengths -or Test-ContainsPlaceholderText $defects) {
+        $placeholderPraise = $true
+        $invalid += "placeholder_critique_text"
+    }
+    if (-not (Test-ConcreteList -Value $strengths -MinCount 3)) {
+        $genericPraise = $true
+        $invalid += "insufficient_concrete_strengths"
+    }
+    if (-not (Test-ConcreteList -Value $defects -MinCount 3)) {
+        $genericPraise = $true
+        $invalid += "insufficient_concrete_defects"
+    }
+
+    $publicReadyWithoutScreens = $false
+    if (([string]$json.public_screenshot_level -match "PUBLIC_TEASER_READY|HERO_SCREENSHOT_READY") -and $screenshotRefs.Count -eq 0) {
+        $publicReadyWithoutScreens = $true
+        $invalid += "public_ready_claim_without_screenshot_reference"
+    }
+
+    if ($json.text_only_overapproval -eq $true) {
+        $invalid += "text_only_overapproval"
+    }
+
+    if ($missing.Count -gt 0) {
+        $invalid += "missing_required_fields"
+    }
+
+    $validation = if ($invalid.Count -eq 0) { "VALID_OUTPUT" } else { "INVALID_OUTPUT" }
+    $result = [ordered]@{
+        schema_version = "A20X_visual_judge_output_validation_v2"
+        contract_version = "minimal_visual_judge_v2"
+        judge_type = $JudgeType
+        input_path = $InputPath
+        validation_result = $validation
+        invalid_reasons = @($invalid | Select-Object -Unique)
+        missing_fields = @($missing | Select-Object -Unique)
+        placeholder_praise_detected = $placeholderPraise
+        generic_praise_detected = $genericPraise
+        public_ready_without_screenshots = $publicReadyWithoutScreens
+        normalized_output_path = if ($validation -eq "VALID_OUTPUT") { $InputPath } else { $null }
+        live_chatgpt_called = $false
+        live_gemini_called = $false
+        product_mission_executed = $false
+        runtime_user_approval_required = $false
+    }
+    Write-Json $OutPath $result
+    $result | ConvertTo-Json -Depth 20
+    exit 0
+}
 
 foreach ($field in @("mission_id", "evidence_path")) {
     if (-not $json.PSObject.Properties.Name.Contains($field) -or [string]::IsNullOrWhiteSpace([string]$json.$field)) {

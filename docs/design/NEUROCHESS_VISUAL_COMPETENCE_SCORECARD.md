@@ -331,3 +331,50 @@ Required proof to reach 18:
 
 19/20 remains blocked until repeated screenshot-to-patch wins succeed with
 human-calibrated visual review.
+
+## A20X Update
+
+Estimated score after A20X: 17.5/20.
+
+Why:
+
+- A20X created the Minimal Visual Judge Contract V2, an enum-first contract
+  with no aggregate numeric judge scores.
+- A20X updated live capture, normalization, validation, and merge compatibility
+  so v2 outputs can be accepted only when they are screenshot-referenced,
+  concrete, non-placeholder, and based on real visual evidence.
+- Gemini was genuinely called with the A20P contact sheet and returned a
+  parseable v2-shaped payload.
+- Strict validation correctly rejected the Gemini payload because its
+  `top_strengths` and `top_defects` still contained template placeholder
+  critique text instead of concrete visual observations.
+- ChatGPT was probed through the mission-scoped visual flag, but the
+  browser/session context closed before any upload adapter could confirm image
+  attachment or capture a response.
+- No text-only ChatGPT response was counted as visual review.
+- No valid real judge output was merged into a Creative Director verdict.
+
+Why this is still not 18/20:
+
+- Gemini did not provide valid concrete visual critique.
+- ChatGPT did not receive confirmed visual evidence.
+- No real valid Gemini plus ChatGPT judge merge occurred.
+- Missing, placeholder, or unconfirmed live output was not converted into PASS.
+
+Strategy decision:
+
+- Stop generic live visual judge capture hardening.
+- Continue with the offline Visual Training Gym, a local visual review fallback,
+  or a separate human-calibrated manual path unless a new approved visual
+  evidence channel is explicitly provided.
+
+Required proof to reach 18:
+
+- at least one safe, valid, screenshot-referenced external judge output with no
+  placeholder critique; and
+- ideally both Gemini and ChatGPT valid outputs merged with hard-gate evidence;
+  and
+- a Creative Director verdict generated from valid real judge evidence only.
+
+19/20 remains blocked until repeated screenshot-to-patch wins succeed with
+human-calibrated visual review.

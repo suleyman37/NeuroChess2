@@ -23,6 +23,31 @@ function As-StringArray {
     return @([string]$Value)
 }
 
+function Map-CraftLevel {
+    param([string]$Level)
+    switch ($Level) {
+        "WEAK_PROTOTYPE" { return 18 }
+        "DECENT_APP_UI" { return 32 }
+        "PREMIUM_DIRECTION" { return 42 }
+        "AWWWARDS_INSPIRED_APP_CRAFT" { return 50 }
+        "SIGNATURE_NEUROCHESS_SCREEN" { return 56 }
+        default { return $null }
+    }
+}
+
+function Map-CompetenceLevel {
+    param([string]$Level)
+    switch ($Level) {
+        "UNSAFE" { return 8 }
+        "FILTERS_FAILURES" { return 12 }
+        "SAFE_PROTOTYPE" { return 16 }
+        "PREMIUM_WITH_SUPERVISION" { return 17 }
+        "LIMITED_AUTONOMOUS_VISUAL_LANE_READY" { return 18 }
+        "STRONG_AUTONOMOUS_WITH_HUMAN_REVIEW" { return 18 }
+        default { return $null }
+    }
+}
+
 $gemini = Read-JsonOrMissing -Path $GeminiPath -Name "gemini"
 $chatgpt = Read-JsonOrMissing -Path $ChatGptPath -Name "chatgpt"
 $codex = Read-JsonOrMissing -Path $CodexPath -Name "codex"
@@ -52,15 +77,22 @@ $competenceScore = 14
 
 foreach ($source in $sources) {
     $blockedReasons += As-StringArray $source.blocked_reasons
+    $blockedReasons += As-StringArray $source.fatal_defects
     $topDefects += As-StringArray $source.top_defects
     $topStrengths += As-StringArray $source.top_strengths
     $screenshotSet += As-StringArray $source.screenshot_set
+    $screenshotSet += As-StringArray $source.evidence_files
+    $screenshotSet += As-StringArray $source.screenshot_references
     if ($source.hard_gate_status) { $hardGateStatus = [string]$source.hard_gate_status }
     if ($source.chess_arbiter_verdict) { $chessVerdict = [string]$source.chess_arbiter_verdict }
     if ($source.anti_generic_verdict) { $antiGenericVerdict = [string]$source.anti_generic_verdict }
     if ($source.public_screenshot_level) { $publicLevel = [string]$source.public_screenshot_level }
     if ($source.awwwards_app_craft_score) { $craftScore = [int]$source.awwwards_app_craft_score }
     if ($source.visual_competence_score) { $competenceScore = [int]$source.visual_competence_score }
+    $mappedCraft = Map-CraftLevel -Level ([string]$source.awwwards_app_craft_level)
+    if ($null -ne $mappedCraft) { $craftScore = [int]$mappedCraft }
+    $mappedCompetence = Map-CompetenceLevel -Level ([string]$source.visual_competence_level)
+    if ($null -ne $mappedCompetence) { $competenceScore = [int]$mappedCompetence }
 }
 
 $hardGateText = (($hardGateStatus, $chessVerdict, ($blockedReasons -join " ")) -join " ").ToUpperInvariant()
@@ -71,7 +103,7 @@ $hardGateOverride = (
     $hardGateText -match "PRE_FEEDBACK_HINT"
 )
 
-$geminiVerdict = if ($gemini.gemini_visual_verdict) { [string]$gemini.gemini_visual_verdict } elseif ($gemini.verdict) { [string]$gemini.verdict } else { [string]$gemini.status }
+$geminiVerdict = if ($gemini.gemini_visual_verdict) { [string]$gemini.gemini_visual_verdict } elseif ($gemini.verdict) { [string]$gemini.verdict } elseif ([string]$gemini.judge -eq "gemini_visual_perceiver") { [string]$gemini.recommended_action } else { [string]$gemini.status }
 $genericPraiseInsufficient = $false
 if ($geminiVerdict -match "PASS" -and (@(As-StringArray $gemini.concrete_strengths).Count -eq 0) -and (@(As-StringArray $gemini.top_strengths).Count -eq 0)) {
     $genericPraiseInsufficient = $true
@@ -84,7 +116,7 @@ $summary = [ordered]@{
     hard_gate_status = $hardGateStatus
     chess_arbiter_verdict = $chessVerdict
     gemini_visual_verdict = $geminiVerdict
-    chatgpt_art_direction_verdict = if ($chatgpt.chatgpt_art_direction_verdict) { [string]$chatgpt.chatgpt_art_direction_verdict } else { [string]$chatgpt.status }
+    chatgpt_art_direction_verdict = if ($chatgpt.chatgpt_art_direction_verdict) { [string]$chatgpt.chatgpt_art_direction_verdict } elseif ([string]$chatgpt.judge -eq "chatgpt_product_art_director") { [string]$chatgpt.recommended_action } else { [string]$chatgpt.status }
     anti_generic_verdict = $antiGenericVerdict
     codex_feasibility_verdict = if ($codex.codex_feasibility_verdict) { [string]$codex.codex_feasibility_verdict } else { [string]$codex.status }
     creative_director_final_verdict = "PENDING"

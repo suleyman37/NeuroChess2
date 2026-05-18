@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Minimal Visual Judge Contract V2",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "judge",
+    "evidence_seen",
+    "evidence_files",
+    "screenshot_references",
+    "hard_gate_observations",
+    "public_screenshot_level",
+    "awwwards_app_craft_level",
+    "visual_competence_level",
+    "top_strengths",
+    "top_defects",
+    "fatal_defects",
+    "recommended_action"
+  ],
+  "properties": {
+    "contract_version": { "const": "minimal_visual_judge_v2" },
+    "judge": {
+      "enum": [
+        "gemini_visual_perceiver",
+        "chatgpt_product_art_director"
+      ]
+    },
+    "evidence_seen": { "type": "boolean" },
+    "evidence_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "screenshot_references": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "hard_gate_observations": {
+      "type": "object",
+      "required": [
+        "board_readability",
+        "anti_spoiler",
+        "piece_readability",
+        "board_pollution"
+      ],
+      "properties": {
+        "board_readability": { "$ref": "#/$defs/hard_gate_level" },
+        "anti_spoiler": { "$ref": "#/$defs/hard_gate_level" },
+        "piece_readability": { "$ref": "#/$defs/hard_gate_level" },
+        "board_pollution": { "$ref": "#/$defs/hard_gate_level" }
+      },
+      "additionalProperties": false
+    },
+    "public_screenshot_level": {
+      "enum": [
+        "INTERNAL_ONLY",
+        "INTERNAL_NORTH_STAR_CANDIDATE",
+        "PUBLIC_TEASER_READY_WITH_CAVEATS",
+        "PUBLIC_TEASER_READY",
+        "HERO_SCREENSHOT_READY"
+      ]
+    },
+    "awwwards_app_craft_level": {
+      "enum": [
+        "WEAK_PROTOTYPE",
+        "DECENT_APP_UI",
+        "PREMIUM_DIRECTION",
+        "AWWWARDS_INSPIRED_APP_CRAFT",
+        "SIGNATURE_NEUROCHESS_SCREEN"
+      ]
+    },
+    "visual_competence_level": {
+      "enum": [
+        "UNSAFE",
+        "FILTERS_FAILURES",
+        "SAFE_PROTOTYPE",
+        "PREMIUM_WITH_SUPERVISION",
+        "LIMITED_AUTONOMOUS_VISUAL_LANE_READY",
+        "STRONG_AUTONOMOUS_WITH_HUMAN_REVIEW"
+      ]
+    },
+    "top_strengths": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string", "minLength": 12 }
+    },
+    "top_defects": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string", "minLength": 12 }
+    },
+    "fatal_defects": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "recommended_action": {
+      "enum": [
+        "ACCEPT_WITH_CAVEATS",
+        "PATCH_AGAIN",
+        "PIECE_IDENTITY_WORK",
+        "FEEDBACK_LANGUAGE_WORK",
+        "HUMAN_REVIEW_REQUIRED",
+        "REJECT",
+        "INSUFFICIENT_EVIDENCE"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "hard_gate_level": {
+      "enum": [
+        "PASS",
+        "MINOR_DEBT",
+        "FAIL",
+        "NOT_EVALUATED"
+      ]
+    }
+  }
+}

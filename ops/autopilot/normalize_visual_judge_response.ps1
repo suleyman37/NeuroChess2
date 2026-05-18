@@ -147,6 +147,12 @@ function Repair-JsonTextForParsing {
 function Get-CandidatePayload {
     param($Json, [string]$ExpectedJudge)
 
+    if (Test-HasProperty $Json "contract_version" -and [string]$Json.contract_version -eq "minimal_visual_judge_v2") {
+        if ($ExpectedJudge -eq "auto") { return $Json }
+        if ($ExpectedJudge -eq "gemini" -and [string]$Json.judge -eq "gemini_visual_perceiver") { return $Json }
+        if ($ExpectedJudge -eq "chatgpt" -and [string]$Json.judge -eq "chatgpt_product_art_director") { return $Json }
+    }
+
     if ($ExpectedJudge -eq "gemini") {
         if (Test-HasProperty $Json "visual_judge_output") { return $Json.visual_judge_output }
         if (Test-HasProperty $Json "judge_output") { return $Json.judge_output }

@@ -64,7 +64,14 @@ codex_prompt. Do not give generic praise.
 
 $basePrompt
 
-Return strict JSON only. The outer transport object must use this exact shape:
+Return strict JSON only. No markdown. No prose.
+
+The nested visual_judge_output must use the minimal_visual_judge_v2 contract.
+It has no aggregate numeric scores, no percentages, and no 0-100 scores. The
+outer transport scores below are fixed safety wrapper fields only, not visual
+judgment fields.
+
+The outer transport object must use this exact shape:
 
 {
   "schema": "NC_GEMINI_AUDIT_JSON/1",
@@ -92,35 +99,49 @@ Return strict JSON only. The outer transport object must use this exact shape:
     "screenshot_evidence_used": true
   },
   "visual_judge_output": {
-    "mission_id": "$MissionId",
-    "evidence_path": "$EvidencePath",
-    "screenshot_set": [
-      "generation_1_patch/contact_sheet_generation_1_states.png",
-      "generation_1_patch/contact_sheet_before_after_a20l_vs_a20p.png"
+    "contract_version": "minimal_visual_judge_v2",
+    "judge": "gemini_visual_perceiver",
+    "evidence_seen": true,
+    "evidence_files": [
+      "generation_1_patch/contact_sheet_generation_1_states.png"
     ],
-    "gemini_visual_verdict": "WARNING_VISUAL_WITH_CONCRETE_DEBT",
+    "screenshot_references": [
+      "contact_sheet_generation_1_states: observe board and phase rail",
+      "contact_sheet_generation_1_states: try-before-feedback board state",
+      "contact_sheet_generation_1_states: feedback success and miss states"
+    ],
+    "hard_gate_observations": {
+      "board_readability": "PASS",
+      "anti_spoiler": "PASS",
+      "piece_readability": "PASS",
+      "board_pollution": "PASS"
+    },
     "public_screenshot_level": "PUBLIC_TEASER_READY_WITH_CAVEATS",
-    "concrete_strengths": [],
-    "concrete_weaknesses": [],
+    "awwwards_app_craft_level": "PREMIUM_DIRECTION",
+    "visual_competence_level": "PREMIUM_WITH_SUPERVISION",
+    "top_strengths": [
+      "Replace with a concrete visible strength from the contact sheet.",
+      "Replace with a second concrete visible strength from the contact sheet.",
+      "Replace with a third concrete visible strength from the contact sheet."
+    ],
+    "top_defects": [
+      "Replace with a concrete visible defect from the contact sheet.",
+      "Replace with a second concrete visible defect from the contact sheet.",
+      "Replace with a third concrete visible defect from the contact sheet."
+    ],
     "fatal_defects": [],
-    "top_defects": [],
-    "top_strengths": [],
-    "blocked_reasons": [],
-    "awwwards_app_craft_score": 0,
-    "visual_competence_score": 17,
-    "allowed_next_action": "human_review_or_second_patch",
-    "live_gemini_called": true,
-    "live_chatgpt_called": false,
-    "product_mission_executed": false
+    "recommended_action": "HUMAN_REVIEW_REQUIRED"
   },
   "done": "$Nonce"
 }
 
 Rules:
 - Replace placeholder values with concrete screenshot-grounded judgment.
-- Include at least one concrete strength and one concrete weakness.
+- Include at least three concrete strengths and three concrete defects.
 - Include fatal_defects even when it is an empty array.
 - Keep board fidelity and anti-spoiler concerns explicit.
+- Do not output awwwards_app_craft_score, visual_competence_score, percentages,
+  or any 0-100 score inside visual_judge_output.
 - Set done exactly to "$Nonce".
 "@
 $request | Set-Content -LiteralPath $requestPath -Encoding UTF8
@@ -132,7 +153,7 @@ $validationPath = Join-Path $validatedDir "gemini_validation.json"
 $normalizationReportPath = Join-Path $OutputPath "gemini_normalization_report.json"
 
 $summary = [ordered]@{
-    schema_version = "A20U_gemini_capture_report_v1"
+    schema_version = "A20X_gemini_enum_capture_report_v1"
     mission_id = $MissionId
     evidence_path = $EvidencePath
     output_path = $OutputPath
@@ -224,6 +245,12 @@ if (Test-Path -LiteralPath $rawPath -PathType Leaf) {
         $validation = Get-Content -LiteralPath $validationPath -Raw | ConvertFrom-Json
         $summary.validation_result = $validation.validation_result
         $summary.validation_path = $validationPath
+        $summary["validation_invalid_reasons"] = @($validation.invalid_reasons)
+        if ($validation.validation_result -eq "VALID_OUTPUT") {
+            $summary.capture_result = "GEMINI_CAPTURED_VALID_JSON"
+        } elseif ($validation.validation_result -eq "INVALID_OUTPUT") {
+            $summary.capture_result = "GEMINI_CAPTURED_INVALID_OUTPUT"
+        }
     }
     if (Test-Path -LiteralPath $normalizedPath) {
         $summary.normalized_output_path = $normalizedPath
