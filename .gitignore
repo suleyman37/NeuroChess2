@@ -48,6 +48,9 @@ ops/autopilot/STOP_NOW
 ops/autopilot/runtime/**
 !ops/autopilot/runtime/.gitkeep
 ops/autopilot/local/*.local.json
+ops/autopilot/local/*.secret.dpapi.json
+ops/autopilot/local/chatgpt-cdp-profile/**
+ops/autopilot/local/chrome-profile*/**
 external_skills/quarantine/**
 !external_skills/quarantine/.gitkeep
 external_skills/audited/raw/**

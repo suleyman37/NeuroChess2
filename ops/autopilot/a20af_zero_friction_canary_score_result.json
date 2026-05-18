@@ -1,0 +1,10 @@
+﻿{
+    "schema_version":  "A20AF_zero_friction_canary_score_result_v1",
+    "previous_score":  17.5,
+    "new_score":  17.5,
+    "reached_18":  false,
+    "highest_capability":  "C5_LOCAL_CANARY_IMAGE_GENERATED",
+    "canary_passed":  false,
+    "no_a20p_and_no_gemini_valid":  true,
+    "no_claim_of_19":  true
+}

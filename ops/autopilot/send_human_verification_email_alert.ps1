@@ -9,6 +9,9 @@ param(
     [string]$SubjectPrefix = "[NeuroChess]",
     [string]$ResultPath = "",
     [string]$LocalConfigPath = "",
+    [string]$EmailSecretPath = "",
+    [switch]$UseStoredSecret,
+    [switch]$SaveSecretLocal,
     [switch]$DryRun,
     [switch]$MockSmtpSuccess,
     [switch]$NoPasswordPrompt,
@@ -52,6 +55,25 @@ if ([string]::IsNullOrWhiteSpace($LocalConfigPath)) {
 }
 if ([string]::IsNullOrWhiteSpace($ResultPath)) {
     $ResultPath = Join-Path ([System.IO.Path]::GetTempPath()) ("neurochess_email_alert_" + [guid]::NewGuid().ToString("N") + ".json")
+}
+
+$setupScript = Join-Path $PSScriptRoot "setup_email_alert_env.ps1"
+if (Test-Path -LiteralPath $setupScript -PathType Leaf) {
+    $setupParams = @{
+        UseStoredSecret = $true
+        NoPrompt = $true
+    }
+    if (-not [string]::IsNullOrWhiteSpace($EmailSecretPath)) {
+        $setupParams.SecretPath = $EmailSecretPath
+    }
+    if ($SaveSecretLocal) {
+        $setupParams.SaveSecretLocal = $true
+    }
+    try {
+        & $setupScript @setupParams | Out-Null
+    } catch {
+        # The direct email path below will still report missing SMTP config.
+    }
 }
 
 $localConfig = $null

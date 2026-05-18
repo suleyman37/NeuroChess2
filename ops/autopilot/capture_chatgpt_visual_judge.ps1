@@ -1,7 +1,7 @@
 param(
     [string]$MissionId = "A20V_CHATGPT_VISUAL_UPLOAD_LANE_IMPLEMENTATION",
-    [Parameter(Mandatory = $true)][string]$EvidencePath,
-    [Parameter(Mandatory = $true)][string]$OutputPath,
+    [string]$EvidencePath = "",
+    [string]$OutputPath = "",
     [string]$PromptPath = "",
     [string]$ContactSheetPath = "",
     [string[]]$AttachmentPath = @(),
@@ -370,6 +370,37 @@ function Get-FirstJsonObjectFromText {
     } catch {
         return $null
     }
+}
+
+$missingParameters = @()
+if ([string]::IsNullOrWhiteSpace($EvidencePath)) { $missingParameters += "EvidencePath" }
+if ([string]::IsNullOrWhiteSpace($OutputPath)) { $missingParameters += "OutputPath" }
+if ($missingParameters.Count -gt 0) {
+    $fallbackOutputPath = if (-not [string]::IsNullOrWhiteSpace($OutputPath)) {
+        $OutputPath
+    } else {
+        Join-Path ([System.IO.Path]::GetTempPath()) ("neurochess_chatgpt_capture_missing_params_" + [guid]::NewGuid().ToString("N"))
+    }
+    New-Item -ItemType Directory -Force -Path $fallbackOutputPath | Out-Null
+    $paramReportPath = Join-Path $fallbackOutputPath "chatgpt_capture_report.json"
+    $paramSummary = [ordered]@{
+        schema_version = "A20AF_chatgpt_capture_parameter_guard_v1"
+        mission_id = $MissionId
+        capture_result = "PARAMETER_REQUIRED"
+        stop_reason = "Required non-interactive parameters missing: " + ($missingParameters -join ", ")
+        missing_parameters = @($missingParameters)
+        evidence_path = $EvidencePath
+        output_path = $OutputPath
+        interactive_prompt_used = $false
+        operator_prompt_leak_detected = $false
+        live_chatgpt_called = $false
+        live_gemini_called = $false
+        product_mission_executed = $false
+        bypass_attempted = $false
+    }
+    Write-Json -Path $paramReportPath -Payload $paramSummary
+    $paramSummary | ConvertTo-Json -Depth 20
+    exit 12
 }
 
 New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
