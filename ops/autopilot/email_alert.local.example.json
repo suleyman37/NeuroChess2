@@ -1,9 +1,9 @@
 {
-  "to": "suleyman.bulut.pro@gmail.com",
-  "from": "YOUR_SENDER_EMAIL",
+  "to": "suley37550@gmail.com",
+  "from": "suley37550@gmail.com",
   "smtp_host": "smtp.gmail.com",
   "smtp_port": "587",
-  "smtp_user": "YOUR_SENDER_EMAIL",
+  "smtp_user": "suley37550@gmail.com",
   "smtp_password": "YOUR_APP_PASSWORD_OR_SMTP_PASSWORD",
   "smtp_use_ssl": "true"
 }

@@ -52,37 +52,33 @@ Priority order:
    `ops/autopilot/local/email_alert.local.json`.
 3. Dry-run file output for tests only.
 
-Required environment variables:
+The public Gmail defaults are now automatic:
 
-- `NC_ALERT_EMAIL_TO`
-- `NC_ALERT_EMAIL_FROM`
-- `NC_ALERT_SMTP_HOST`
-- `NC_ALERT_SMTP_PORT`
-- `NC_ALERT_SMTP_USER`
+- `NC_ALERT_EMAIL_TO=suley37550@gmail.com`
+- `NC_ALERT_EMAIL_FROM=suley37550@gmail.com`
+- `NC_ALERT_SMTP_HOST=smtp.gmail.com`
+- `NC_ALERT_SMTP_PORT=587`
+- `NC_ALERT_SMTP_USER=suley37550@gmail.com`
+- `NC_ALERT_SMTP_USE_SSL=true`
+
+Required secret:
+
 - `NC_ALERT_SMTP_PASSWORD`
-- `NC_ALERT_SMTP_USE_SSL`
 
 Setup example:
 
 ```powershell
-$env:NC_ALERT_EMAIL_TO="suleyman.bulut.pro@gmail.com"
-$env:NC_ALERT_EMAIL_FROM="YOUR_SENDER_EMAIL"
-$env:NC_ALERT_SMTP_HOST="smtp.gmail.com"
-$env:NC_ALERT_SMTP_PORT="587"
-$env:NC_ALERT_SMTP_USER="YOUR_SENDER_EMAIL"
 $env:NC_ALERT_SMTP_PASSWORD="YOUR_APP_PASSWORD_OR_SMTP_PASSWORD"
-$env:NC_ALERT_SMTP_USE_SSL="true"
 ```
 
 No real values were committed.
 
 ## 6. Real Email Test Result
 
-Result: `EMAIL_ALERT_NOT_CONFIGURED`.
+Result before this defaults follow-up: `EMAIL_ALERT_NOT_CONFIGURED`.
 
-All required SMTP environment variables were absent and no
-`ops/autopilot/local/email_alert.local.json` file was present. No SMTP password
-was printed. No real email was sent.
+SMTP password was absent and no `ops/autopilot/local/email_alert.local.json`
+file was present. No SMTP password was printed. No real email was sent.
 
 Because email is not configured, the final verdict cannot be
 `HUMAN_VERIFICATION_EMAIL_GATE_READY`.

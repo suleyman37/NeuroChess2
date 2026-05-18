@@ -24,20 +24,33 @@ That folder is gitignored except for `.gitkeep`.
 
 ## Email Configuration
 
-Preferred configuration is environment variables:
+The non-secret Gmail SMTP defaults are applied automatically:
+
+- `NC_ALERT_EMAIL_TO=suley37550@gmail.com`
+- `NC_ALERT_EMAIL_FROM=suley37550@gmail.com`
+- `NC_ALERT_SMTP_HOST=smtp.gmail.com`
+- `NC_ALERT_SMTP_PORT=587`
+- `NC_ALERT_SMTP_USER=suley37550@gmail.com`
+- `NC_ALERT_SMTP_USE_SSL=true`
+
+Only the Gmail app password is secret.
+
+For the current terminal session, set only:
 
 ```powershell
-$env:NC_ALERT_EMAIL_TO="suleyman.bulut.pro@gmail.com"
-$env:NC_ALERT_EMAIL_FROM="YOUR_SENDER_EMAIL"
-$env:NC_ALERT_SMTP_HOST="smtp.gmail.com"
-$env:NC_ALERT_SMTP_PORT="587"
-$env:NC_ALERT_SMTP_USER="YOUR_SENDER_EMAIL"
 $env:NC_ALERT_SMTP_PASSWORD="YOUR_APP_PASSWORD_OR_SMTP_PASSWORD"
-$env:NC_ALERT_SMTP_USE_SSL="true"
 ```
 
-For the current terminal session only, paste those commands into PowerShell
-with real values. Do not commit the values.
+If `NC_ALERT_SMTP_PASSWORD` is missing during a real email send, the script
+prompts locally:
+
+```powershell
+Read-Host "Enter Gmail app password for NeuroChess email alerts" -AsSecureString
+```
+
+Paste the Gmail app password manually into the terminal. It must belong to
+`suley37550@gmail.com`. The password is not echoed, not printed, not written to
+tracked files, and not committed.
 
 An optional gitignored local config can be created from the committed template:
 

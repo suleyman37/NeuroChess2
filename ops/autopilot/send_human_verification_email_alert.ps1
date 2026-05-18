@@ -11,6 +11,7 @@ param(
     [string]$LocalConfigPath = "",
     [switch]$DryRun,
     [switch]$MockSmtpSuccess,
+    [switch]$NoPasswordPrompt,
     [string]$BodyOverride = ""
 )
 
@@ -37,13 +38,13 @@ function Redact-Email {
 }
 
 function Get-ConfigValue {
-    param($Config, [string]$EnvName, [string]$ConfigName)
+    param($Config, [string]$EnvName, [string]$ConfigName, [string]$DefaultValue = "")
     $envValue = [Environment]::GetEnvironmentVariable($EnvName)
     if (-not [string]::IsNullOrWhiteSpace($envValue)) { return $envValue }
     if ($Config -and $Config.PSObject.Properties.Name -contains $ConfigName) {
         return [string]$Config.$ConfigName
     }
-    return ""
+    return $DefaultValue
 }
 
 if ([string]::IsNullOrWhiteSpace($LocalConfigPath)) {
@@ -58,20 +59,38 @@ if (Test-Path -LiteralPath $LocalConfigPath -PathType Leaf) {
     $localConfig = Get-Content -LiteralPath $LocalConfigPath -Raw | ConvertFrom-Json
 }
 
+$defaults = [ordered]@{
+    to = "suley37550@gmail.com"
+    from = "suley37550@gmail.com"
+    smtp_host = "smtp.gmail.com"
+    smtp_port = "587"
+    smtp_user = "suley37550@gmail.com"
+    smtp_use_ssl = "true"
+}
+
 $settings = [ordered]@{
-    to = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_EMAIL_TO" -ConfigName "to"
-    from = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_EMAIL_FROM" -ConfigName "from"
-    smtp_host = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_SMTP_HOST" -ConfigName "smtp_host"
-    smtp_port = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_SMTP_PORT" -ConfigName "smtp_port"
-    smtp_user = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_SMTP_USER" -ConfigName "smtp_user"
+    to = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_EMAIL_TO" -ConfigName "to" -DefaultValue $defaults.to
+    from = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_EMAIL_FROM" -ConfigName "from" -DefaultValue $defaults.from
+    smtp_host = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_SMTP_HOST" -ConfigName "smtp_host" -DefaultValue $defaults.smtp_host
+    smtp_port = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_SMTP_PORT" -ConfigName "smtp_port" -DefaultValue $defaults.smtp_port
+    smtp_user = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_SMTP_USER" -ConfigName "smtp_user" -DefaultValue $defaults.smtp_user
     smtp_password = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_SMTP_PASSWORD" -ConfigName "smtp_password"
-    smtp_use_ssl = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_SMTP_USE_SSL" -ConfigName "smtp_use_ssl"
+    smtp_use_ssl = Get-ConfigValue -Config $localConfig -EnvName "NC_ALERT_SMTP_USE_SSL" -ConfigName "smtp_use_ssl" -DefaultValue $defaults.smtp_use_ssl
 }
 
 $missing = @()
-foreach ($key in @("to", "from", "smtp_host", "smtp_port", "smtp_user", "smtp_password", "smtp_use_ssl")) {
+foreach ($key in @("to", "from", "smtp_host", "smtp_port", "smtp_user", "smtp_use_ssl")) {
     if ([string]::IsNullOrWhiteSpace([string]$settings[$key])) { $missing += $key }
 }
+
+$securePassword = $null
+if (-not [string]::IsNullOrWhiteSpace([string]$settings.smtp_password)) {
+    $securePassword = ConvertTo-SecureString -String ([string]$settings.smtp_password) -AsPlainText -Force
+} elseif (-not $DryRun -and -not $MockSmtpSuccess -and -not $NoPasswordPrompt) {
+    $securePassword = Read-Host "Enter Gmail app password for NeuroChess email alerts" -AsSecureString
+}
+$securePasswordProvided = ($null -ne $securePassword -and $securePassword.Length -gt 0)
+if (-not $securePasswordProvided) { $missing += "smtp_password" }
 
 $timestamp = (Get-Date).ToString("o")
 $subject = "$SubjectPrefix Human verification required - $ServiceName automation paused"
@@ -132,7 +151,9 @@ $baseResult = [ordered]@{
     smtp_port_configured = -not [string]::IsNullOrWhiteSpace([string]$settings.smtp_port)
     smtp_user_configured = -not [string]::IsNullOrWhiteSpace([string]$settings.smtp_user)
     smtp_password_configured = -not [string]::IsNullOrWhiteSpace([string]$settings.smtp_password)
+    smtp_password_prompted_securely = ($securePasswordProvided -and [string]::IsNullOrWhiteSpace([string]$settings.smtp_password))
     smtp_use_ssl_configured = -not [string]::IsNullOrWhiteSpace([string]$settings.smtp_use_ssl)
+    default_gmail_settings_applied = $true
     missing_config_keys = $missing
     dry_run = [bool]$DryRun
     mock_smtp = [bool]$MockSmtpSuccess
@@ -184,7 +205,7 @@ try {
 
     $client = New-Object System.Net.Mail.SmtpClient([string]$settings.smtp_host, $port)
     $client.EnableSsl = $enableSsl
-    $client.Credentials = [System.Net.NetworkCredential]::new([string]$settings.smtp_user, [string]$settings.smtp_password)
+    $client.Credentials = [System.Net.NetworkCredential]::new([string]$settings.smtp_user, $securePassword)
     $client.Send($message)
     $message.Dispose()
     $client.Dispose()

@@ -62,10 +62,14 @@ try {
             -ArtifactPath $TempRoot `
             -PauseStatePath (Join-Path $TempRoot "pause_state.json") `
             -LocalConfigPath (Join-Path $TempRoot "missing.local.json") `
-            -ResultPath $missingResultPath
+            -ResultPath $missingResultPath `
+            -NoPasswordPrompt
     }
     Assert-True ($missing.status -eq "EMAIL_ALERT_NOT_CONFIGURED") "missing SMTP config was not detected"
-    Assert-True (($missing.missing_config_keys | Measure-Object).Count -ge 7) "missing config keys were incomplete"
+    Assert-True (($missing.missing_config_keys | Measure-Object).Count -eq 1) "only SMTP password should be missing when Gmail defaults apply"
+    Assert-True (($missing.missing_config_keys | Select-Object -First 1) -eq "smtp_password") "missing key should be smtp_password"
+    Assert-True ($missing.default_gmail_settings_applied -eq $true) "Gmail defaults were not applied"
+    Assert-True ($missing.email_to_redacted -eq "s***@gmail.com") "default recipient was not applied"
 
     $dryRunResultPath = Join-Path $TempRoot "dry_run_email_result.json"
     $dryRun = Invoke-JsonCommand {
@@ -153,6 +157,8 @@ try {
     $emailSource = Get-Content -LiteralPath (Join-Path $RepoRoot "ops\autopilot\send_human_verification_email_alert.ps1") -Raw
     Assert-True ($gateSource -notmatch 'Click\(') "pause gate contains click automation"
     Assert-True ($emailSource -match 'smtp_password_printed\s*=\s*\$false') "email script does not explicitly record password redaction"
+    Assert-True ($emailSource -match 'Read-Host "Enter Gmail app password for NeuroChess email alerts" -AsSecureString') "email script missing secure local password prompt"
+    Assert-True ($emailSource -match 'suley37550@gmail.com') "email script missing default Gmail address"
     Assert-True (($gateSource + $emailSource) -notmatch "SUPER_SECRET_A20AA_TEST") "test secret appeared in source"
 
     $localStatus = & git -C $RepoRoot status --short -- ops/autopilot/local
@@ -160,10 +166,12 @@ try {
 
     [ordered]@{
         status = "pass"
-        tests = 14
+        tests = 17
         pause_state_created = $true
         email_dry_run_payload_created = $true
         missing_smtp_returns_not_configured = $true
+        gmail_defaults_applied = $true
+        secure_password_prompt_supported = $true
         mock_smtp_success = $true
         secrets_redacted = $true
         pause_mode_never_clicks_verification = $true
