@@ -197,6 +197,40 @@ function Invoke-ChatGptFileInputProbe {
     }
 }
 
+function Invoke-HumanVerificationPauseGate {
+    param(
+        [string]$ServiceName,
+        [string]$MissionIdValue,
+        [string]$ReasonValue,
+        [string]$ArtifactRoot
+    )
+    $gateResultPath = Join-Path $ArtifactRoot "human_verification_pause_gate_result.json"
+    $pauseStatePath = Join-Path $PSScriptRoot "runtime\human_verification_pause_state.json"
+    $gateOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "human_verification_pause_resume_gate.ps1") `
+        -Mode PauseAndAlert `
+        -ServiceName $ServiceName `
+        -MissionId $MissionIdValue `
+        -Reason $ReasonValue `
+        -BrowserProfile "redacted" `
+        -ArtifactPath $ArtifactRoot `
+        -PauseStatePath $pauseStatePath `
+        -TimeoutMinutes 30 `
+        -ResultPath $gateResultPath 2>&1
+    $exit = $LASTEXITCODE
+    $result = if (Test-Path -LiteralPath $gateResultPath -PathType Leaf) {
+        Get-Content -LiteralPath $gateResultPath -Raw | ConvertFrom-Json
+    } else {
+        $null
+    }
+    [ordered]@{
+        exit_code = $exit
+        output_redacted = ($gateOutput -join "`n")
+        result_path = $gateResultPath
+        pause_state_path = $pauseStatePath
+        result = $result
+    }
+}
+
 function Get-FirstJsonObjectFromText {
     param([string]$Text)
     $candidate = [string]$Text
@@ -367,6 +401,9 @@ $summary = [ordered]@{
     normalization_result = "NOT_RUN"
     validation_result = "NOT_RUN"
     validation_invalid_reasons = @()
+    human_verification_gate_status = "NOT_TRIGGERED"
+    human_verification_pause_state_path = $null
+    human_verification_email_alert_status = "NOT_TRIGGERED"
     live_chatgpt_called = $false
     live_gemini_called = $false
     product_mission_executed = $false
@@ -406,6 +443,7 @@ if ($RawFixturePath) {
             $summary.cdp_attach_used = [bool]$probe.cdp_attached
             $summary.persistent_context_avoided = [bool]$probe.cdp_attached
             $summary.highest_capability = [string]$probe.highest_capability
+            $summary.human_verification_encountered = ([string]$probe.status -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -or [string]$probe.stop_reason -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED")
             $summary.file_input_adapter_result = if ([bool]$probe.file_input_found) { "FOUND" } else { "NOT_FOUND" }
             $summary.image_attachment_confirmed = [bool]$probe.attachment_confirmed
             $summary.upload_control_status = if ([bool]$probe.file_input_found) { "FILE_INPUT_FOUND" } else { "FILE_INPUT_NOT_FOUND" }
@@ -572,6 +610,27 @@ Required wrapper:
     }
 }
 
+if ($summary.capture_result -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -or $summary.stop_reason -eq "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED") {
+    $summary.human_verification_encountered = $true
+    $pause = Invoke-HumanVerificationPauseGate -ServiceName "ChatGPT" -MissionIdValue $MissionId -ReasonValue "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" -ArtifactRoot $OutputPath
+    $summary.human_verification_gate_status = if ($pause.result) { [string]$pause.result.status } else { "PAUSE_GATE_FAILED" }
+    $summary.human_verification_pause_state_path = $pause.pause_state_path
+    $summary.human_verification_pause_gate_result_path = $pause.result_path
+    $summary.human_verification_pause_gate_exit_code = $pause.exit_code
+    if ($pause.result) {
+        $summary.human_verification_email_alert_status = [string]$pause.result.email_alert_status
+    } else {
+        $summary.human_verification_email_alert_status = "EMAIL_ALERT_SEND_FAILED"
+    }
+    if ($summary.human_verification_email_alert_status -eq "EMAIL_ALERT_SENT") {
+        $summary.capture_result = "WAITING_FOR_HUMAN_VERIFICATION_EMAIL_SENT"
+        $summary.stop_reason = "WAITING_FOR_HUMAN_VERIFICATION_EMAIL_SENT"
+    } else {
+        $summary.capture_result = "WAITING_FOR_HUMAN_VERIFICATION_EMAIL_FAILED"
+        $summary.stop_reason = "WAITING_FOR_HUMAN_VERIFICATION_EMAIL_FAILED"
+    }
+}
+
 Write-Json $reportPath $summary
 $summary | ConvertTo-Json -Depth 40
 
@@ -580,5 +639,7 @@ switch ($summary.capture_result) {
     "UPLOAD_LANE_UNAVAILABLE" { exit 3 }
     "SAFE_SESSION_UNAVAILABLE" { exit 4 }
     "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED" { exit 5 }
+    "WAITING_FOR_HUMAN_VERIFICATION_EMAIL_SENT" { exit 5 }
+    "WAITING_FOR_HUMAN_VERIFICATION_EMAIL_FAILED" { exit 6 }
     default { exit 2 }
 }

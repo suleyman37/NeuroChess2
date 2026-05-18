@@ -1,0 +1,213 @@
+param(
+    [ValidateSet("DetectOnly", "PauseAndAlert", "ResumeCheck", "TestSimulation")]
+    [string]$Mode = "DetectOnly",
+    [string]$ServiceName = "ChatGPT",
+    [string]$MissionId = "UNKNOWN_MISSION",
+    [string]$Reason = "Human verification required",
+    [string]$BrowserProfile = "redacted",
+    [string]$PageUrl = "",
+    [string]$ArtifactPath = "",
+    [string]$PauseStatePath = "",
+    [int]$TimeoutMinutes = 30,
+    [string]$VerificationMarkerPath = "",
+    [string]$ResultPath = "",
+    [string]$EmailLocalConfigPath = "",
+    [switch]$EmailDryRun,
+    [switch]$MockEmailSuccess,
+    [switch]$SessionClosed
+)
+
+$ErrorActionPreference = "Stop"
+
+function Write-Json {
+    param([string]$Path, $Payload)
+    $dir = Split-Path -Parent $Path
+    if (-not [string]::IsNullOrWhiteSpace($dir)) {
+        New-Item -ItemType Directory -Force -Path $dir | Out-Null
+    }
+    $Payload | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $Path -Encoding UTF8
+}
+
+function Read-JsonIfExists {
+    param([string]$Path)
+    if (Test-Path -LiteralPath $Path -PathType Leaf) {
+        return (Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json)
+    }
+    return $null
+}
+
+if ([string]::IsNullOrWhiteSpace($PauseStatePath)) {
+    $PauseStatePath = Join-Path $PSScriptRoot "runtime\human_verification_pause_state.json"
+}
+if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
+    $ArtifactPath = Split-Path -Parent $PauseStatePath
+}
+if ([string]::IsNullOrWhiteSpace($ResultPath)) {
+    $ResultPath = Join-Path $ArtifactPath "human_verification_pause_gate_result.json"
+}
+
+New-Item -ItemType Directory -Force -Path $ArtifactPath | Out-Null
+
+if ($Mode -eq "TestSimulation") {
+    $Mode = "PauseAndAlert"
+    $EmailDryRun = $true
+    if ([string]::IsNullOrWhiteSpace($Reason)) {
+        $Reason = "Test simulation marker: STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED"
+    }
+}
+
+$detected = $Reason -match "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED|human verification|captcha|2FA|consent|I am human|verification"
+
+if ($Mode -eq "DetectOnly") {
+    $result = [ordered]@{
+        schema_version = "A20AA_human_verification_pause_gate_result_v1"
+        mode = "DetectOnly"
+        status = if ($detected) { "HUMAN_VERIFICATION_DETECTED" } else { "NO_HUMAN_VERIFICATION_DETECTED" }
+        service = $ServiceName
+        mission_id = $MissionId
+        reason = $Reason
+        browser_should_remain_open = $true
+        automation_paused = $detected
+        bypass_attempted = $false
+        clicked_verification = $false
+    }
+    Write-Json -Path $ResultPath -Payload $result
+    $result | ConvertTo-Json -Depth 20
+    if ($detected) { exit 5 } else { exit 0 }
+}
+
+if ($Mode -eq "PauseAndAlert") {
+    $detectedAt = Get-Date
+    $timeoutAt = $detectedAt.AddMinutes($TimeoutMinutes)
+    $resumeCommand = "powershell -ExecutionPolicy Bypass -File `"$PSCommandPath`" -Mode ResumeCheck -PauseStatePath `"$PauseStatePath`""
+    if (-not [string]::IsNullOrWhiteSpace($VerificationMarkerPath)) {
+        $resumeCommand += " -VerificationMarkerPath `"$VerificationMarkerPath`""
+    }
+
+    $state = [ordered]@{
+        schema_version = "A20AA_human_verification_pause_state_v1"
+        status = "WAITING_FOR_HUMAN_VERIFICATION"
+        service = $ServiceName
+        mission_id = $MissionId
+        reason = $Reason
+        detected_at = $detectedAt.ToString("o")
+        timeout_at = $timeoutAt.ToString("o")
+        timeout_minutes = $TimeoutMinutes
+        browser_should_remain_open = $true
+        automation_paused = $true
+        user_action_required = "Complete verification manually in the open Chrome window, then run ResumeCheck. Do not close Chrome."
+        email_alert_status = "NOT_ATTEMPTED"
+        resume_check_command = $resumeCommand
+        artifact_path = $ArtifactPath
+        page_url_redacted = -not [string]::IsNullOrWhiteSpace($PageUrl)
+        browser_profile_redacted = $true
+        bypass_attempted = $false
+        clicked_verification = $false
+    }
+    Write-Json -Path $PauseStatePath -Payload $state
+
+    $emailResultPath = Join-Path $ArtifactPath "human_verification_email_alert_result.json"
+    $emailArgs = @(
+        "-ExecutionPolicy", "Bypass",
+        "-File", (Join-Path $PSScriptRoot "send_human_verification_email_alert.ps1"),
+        "-ServiceName", $ServiceName,
+        "-MissionId", $MissionId,
+        "-Reason", $Reason,
+        "-BrowserProfile", $BrowserProfile,
+        "-ArtifactPath", $ArtifactPath,
+        "-PauseStatePath", $PauseStatePath,
+        "-ResultPath", $emailResultPath
+    )
+    if (-not [string]::IsNullOrWhiteSpace($PageUrl)) {
+        $emailArgs += @("-PageUrl", $PageUrl)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($EmailLocalConfigPath)) {
+        $emailArgs += @("-LocalConfigPath", $EmailLocalConfigPath)
+    }
+    if ($EmailDryRun) { $emailArgs += "-DryRun" }
+    if ($MockEmailSuccess) { $emailArgs += "-MockSmtpSuccess" }
+
+    $emailOutput = & powershell @emailArgs 2>&1
+    $emailExit = $LASTEXITCODE
+    $emailResult = Read-JsonIfExists -Path $emailResultPath
+    $emailStatus = if ($emailResult) { [string]$emailResult.status } else { "EMAIL_ALERT_SEND_FAILED" }
+
+    $state.email_alert_status = $emailStatus
+    $state.email_alert_result_path = $emailResultPath
+    Write-Json -Path $PauseStatePath -Payload $state
+
+    $result = [ordered]@{
+        schema_version = "A20AA_human_verification_pause_gate_result_v1"
+        mode = "PauseAndAlert"
+        status = "WAITING_FOR_HUMAN_VERIFICATION"
+        service = $ServiceName
+        mission_id = $MissionId
+        reason = $Reason
+        pause_state_path = $PauseStatePath
+        email_alert_status = $emailStatus
+        email_exit_code = $emailExit
+        email_output_redacted = ($emailOutput -join "`n")
+        browser_should_remain_open = $true
+        automation_paused = $true
+        resume_check_command = $resumeCommand
+        timeout_minutes = $TimeoutMinutes
+        artifact_path = $ArtifactPath
+        bypass_attempted = $false
+        clicked_verification = $false
+    }
+    Write-Json -Path $ResultPath -Payload $result
+    $result | ConvertTo-Json -Depth 30
+    if ($emailStatus -eq "EMAIL_ALERT_SENT" -or $emailStatus -eq "EMAIL_ALERT_DRY_RUN") { exit 0 }
+    if ($emailStatus -eq "EMAIL_ALERT_NOT_CONFIGURED") { exit 10 }
+    exit 11
+}
+
+if ($Mode -eq "ResumeCheck") {
+    $state = Read-JsonIfExists -Path $PauseStatePath
+    if (-not $state) {
+        $result = [ordered]@{
+            schema_version = "A20AA_human_verification_pause_gate_result_v1"
+            mode = "ResumeCheck"
+            status = "UNKNOWN_STATE"
+            pause_state_path = $PauseStatePath
+            bypass_attempted = $false
+            clicked_verification = $false
+        }
+        Write-Json -Path $ResultPath -Payload $result
+        $result | ConvertTo-Json -Depth 20
+        exit 5
+    }
+
+    $timeoutAt = [datetime]::Parse([string]$state.timeout_at, $null, [System.Globalization.DateTimeStyles]::RoundtripKind)
+    if ($SessionClosed) {
+        $status = "SESSION_CLOSED"
+        $exitCode = 3
+    } elseif ((Get-Date) -gt $timeoutAt) {
+        $status = "TIMEOUT_EXPIRED"
+        $exitCode = 4
+    } elseif (-not [string]::IsNullOrWhiteSpace($VerificationMarkerPath) -and (Test-Path -LiteralPath $VerificationMarkerPath -PathType Leaf)) {
+        $status = "STILL_WAITING_FOR_HUMAN"
+        $exitCode = 2
+    } else {
+        $status = "RESUME_READY"
+        $exitCode = 0
+    }
+
+    $result = [ordered]@{
+        schema_version = "A20AA_human_verification_pause_gate_result_v1"
+        mode = "ResumeCheck"
+        status = $status
+        service = $state.service
+        mission_id = $state.mission_id
+        pause_state_path = $PauseStatePath
+        browser_should_remain_open = $true
+        automation_paused = ($status -ne "RESUME_READY")
+        timeout_at = $state.timeout_at
+        artifact_path = $state.artifact_path
+        bypass_attempted = $false
+        clicked_verification = $false
+    }
+    Write-Json -Path $ResultPath -Payload $result
+    $result | ConvertTo-Json -Depth 20
+    exit $exitCode
+}

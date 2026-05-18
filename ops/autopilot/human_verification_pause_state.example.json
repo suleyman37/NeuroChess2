@@ -1,0 +1,18 @@
+{
+  "schema_version": "A20AA_human_verification_pause_state_v1",
+  "status": "WAITING_FOR_HUMAN_VERIFICATION",
+  "service": "ChatGPT",
+  "mission_id": "A20AA_EXAMPLE",
+  "reason": "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED",
+  "detected_at": "2026-05-18T12:00:00.0000000+02:00",
+  "timeout_at": "2026-05-18T12:30:00.0000000+02:00",
+  "timeout_minutes": 30,
+  "browser_should_remain_open": true,
+  "automation_paused": true,
+  "user_action_required": "Complete verification manually in the open Chrome window, then run ResumeCheck. Do not close Chrome.",
+  "email_alert_status": "EMAIL_ALERT_NOT_CONFIGURED",
+  "resume_check_command": "powershell -ExecutionPolicy Bypass -File ops/autopilot/human_verification_pause_resume_gate.ps1 -Mode ResumeCheck -PauseStatePath ops/autopilot/runtime/human_verification_pause_state.json",
+  "artifact_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\example",
+  "bypass_attempted": false,
+  "clicked_verification": false
+}

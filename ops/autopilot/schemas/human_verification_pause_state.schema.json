@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/schemas/human_verification_pause_state.schema.json",
+  "title": "NeuroChess Human Verification Pause State",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "status",
+    "service",
+    "mission_id",
+    "reason",
+    "detected_at",
+    "browser_should_remain_open",
+    "automation_paused",
+    "user_action_required",
+    "email_alert_status",
+    "resume_check_command",
+    "timeout_minutes",
+    "artifact_path"
+  ],
+  "properties": {
+    "schema_version": { "const": "A20AA_human_verification_pause_state_v1" },
+    "status": { "const": "WAITING_FOR_HUMAN_VERIFICATION" },
+    "service": { "type": "string", "minLength": 1 },
+    "mission_id": { "type": "string", "minLength": 1 },
+    "reason": { "type": "string", "minLength": 1 },
+    "detected_at": { "type": "string", "format": "date-time" },
+    "timeout_at": { "type": "string", "format": "date-time" },
+    "browser_should_remain_open": { "const": true },
+    "automation_paused": { "const": true },
+    "user_action_required": { "type": "string", "minLength": 1 },
+    "email_alert_status": {
+      "enum": [
+        "NOT_ATTEMPTED",
+        "EMAIL_ALERT_SENT",
+        "EMAIL_ALERT_DRY_RUN",
+        "EMAIL_ALERT_NOT_CONFIGURED",
+        "EMAIL_ALERT_SEND_FAILED"
+      ]
+    },
+    "resume_check_command": { "type": "string", "minLength": 1 },
+    "timeout_minutes": { "type": "integer", "minimum": 1 },
+    "artifact_path": { "type": "string", "minLength": 1 },
+    "bypass_attempted": { "const": false },
+    "clicked_verification": { "const": false }
+  },
+  "additionalProperties": true
+}
