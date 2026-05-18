@@ -1,0 +1,17 @@
+{
+  "mission_id": "A20Q_PLACEHOLDER_GEMINI",
+  "evidence_path": "fixture/a20p",
+  "screenshot_set": [
+    "generation_1_patch/contact_sheet_generation_1_states.png"
+  ],
+  "verdict": "PASS_VISUAL|WARNING_VISUAL|BLOCK_VISUAL",
+  "strongest_variant": "Precision Cockpit|Atmospheric Artifact|Feedback Arena|NO_WINNER",
+  "public_screenshot_level": "PUBLIC_TEASER_READY",
+  "concrete_strengths": [],
+  "concrete_weaknesses": [],
+  "fatal_defects": [],
+  "placeholder_level": true,
+  "live_chatgpt_called": false,
+  "live_gemini_called": false,
+  "product_mission_executed": false
+}

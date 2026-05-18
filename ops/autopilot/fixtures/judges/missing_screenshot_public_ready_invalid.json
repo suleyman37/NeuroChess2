@@ -1,0 +1,17 @@
+{
+  "mission_id": "A20Q_PUBLIC_READY_NO_SCREENSHOT",
+  "evidence_path": "fixture/a20p",
+  "screenshot_set": [],
+  "gemini_visual_verdict": "PASS_VISUAL",
+  "public_screenshot_level": "PUBLIC_TEASER_READY",
+  "concrete_strengths": [
+    "states are described as clean"
+  ],
+  "concrete_weaknesses": [
+    "no screenshot reference was provided"
+  ],
+  "fatal_defects": [],
+  "live_chatgpt_called": false,
+  "live_gemini_called": false,
+  "product_mission_executed": false
+}

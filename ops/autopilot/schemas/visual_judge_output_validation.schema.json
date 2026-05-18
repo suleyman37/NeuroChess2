@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NeuroChess Visual Judge Output Validation",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "judge_type",
+    "input_path",
+    "validation_result",
+    "invalid_reasons",
+    "missing_fields",
+    "placeholder_praise_detected",
+    "generic_praise_detected",
+    "public_ready_without_screenshots",
+    "live_chatgpt_called",
+    "live_gemini_called",
+    "product_mission_executed"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "judge_type": { "type": "string" },
+    "input_path": { "type": "string" },
+    "validation_result": {
+      "enum": ["VALID_OUTPUT", "INVALID_OUTPUT", "MISSING_INPUT"]
+    },
+    "invalid_reasons": { "type": "array", "items": { "type": "string" } },
+    "missing_fields": { "type": "array", "items": { "type": "string" } },
+    "placeholder_praise_detected": { "type": "boolean" },
+    "generic_praise_detected": { "type": "boolean" },
+    "public_ready_without_screenshots": { "type": "boolean" },
+    "normalized_output_path": { "type": ["string", "null"] },
+    "live_chatgpt_called": { "type": "boolean" },
+    "live_gemini_called": { "type": "boolean" },
+    "product_mission_executed": { "type": "boolean" },
+    "runtime_user_approval_required": { "type": "boolean" }
+  }
+}

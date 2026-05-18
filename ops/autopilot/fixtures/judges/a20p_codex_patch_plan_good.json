@@ -1,0 +1,58 @@
+{
+  "mission_id": "A20P_SCREENSHOT_TO_PATCH_REAL_RUN_ON_A20L",
+  "evidence_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_training\\A20P_screenshot_to_patch_a20l_20260518\\",
+  "screenshot_set": [
+    "generation_1_patch/contact_sheet_generation_1_states.png"
+  ],
+  "codex_feasibility_verdict": "PATCH_FEASIBLE",
+  "public_screenshot_level": "PUBLIC_TEASER_READY_WITH_CAVEATS",
+  "top_strengths": [
+    "DEV-only route isolated",
+    "browser smoke proves board geometry",
+    "no backend or package files required"
+  ],
+  "top_defects": [
+    "feedback trace identity still shallow",
+    "piece identity has not had its own visual pass"
+  ],
+  "patch_options": [
+    {
+      "id": "patch_a",
+      "name": "feedback language refinement",
+      "risk": "low",
+      "files_likely_touched": [
+        "frontend/src/dev/board-stage-north-star/NorthStarBoardStage.tsx",
+        "frontend/src/dev/board-stage-north-star/NorthStarBoardStage.css"
+      ],
+      "tests_required": [
+        "browser_a20p_screenshot_to_patch_smoke.mjs"
+      ],
+      "expected_visual_delta": "small_to_meaningful"
+    },
+    {
+      "id": "patch_b",
+      "name": "piece identity pass",
+      "risk": "medium",
+      "files_likely_touched": [
+        "frontend/src/dev/board-stage-north-star/NorthStarBoardStage.tsx",
+        "frontend/src/dev/board-stage-north-star/NorthStarBoardStage.css"
+      ],
+      "tests_required": [
+        "board geometry and readability smoke"
+      ],
+      "expected_visual_delta": "meaningful_if_readability_preserved"
+    },
+    {
+      "id": "patch_c",
+      "name": "human visual review before patch",
+      "risk": "low",
+      "files_likely_touched": [],
+      "tests_required": [],
+      "expected_visual_delta": "none_until_review"
+    }
+  ],
+  "allowed_next_action": "select_visual_patch_plan",
+  "live_chatgpt_called": false,
+  "live_gemini_called": false,
+  "product_mission_executed": false
+}

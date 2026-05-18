@@ -1,0 +1,24 @@
+{
+  "mission_id": "A20Q_HARD_GATE_FAIL_WITH_PRAISE",
+  "evidence_path": "fixture/a20p",
+  "screenshot_set": [
+    "generation_1_patch/contact_sheet_generation_1_states.png"
+  ],
+  "hard_gate_status": "BLOCK_CHESS_FIDELITY",
+  "chess_arbiter_verdict": "BLOCK_CHESS_FIDELITY",
+  "gemini_visual_verdict": "PASS_VISUAL",
+  "public_screenshot_level": "PUBLIC_TEASER_READY",
+  "top_strengths": [
+    "appears premium at a glance"
+  ],
+  "top_defects": [
+    "board pollution detected"
+  ],
+  "blocked_reasons": [
+    "board_pollution",
+    "chess_fidelity_fail"
+  ],
+  "live_chatgpt_called": false,
+  "live_gemini_called": false,
+  "product_mission_executed": false
+}

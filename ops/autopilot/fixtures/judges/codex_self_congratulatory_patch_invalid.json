@@ -1,0 +1,25 @@
+{
+  "mission_id": "A20Q_CODEX_SELF_APPROVAL",
+  "evidence_path": "fixture/a20p",
+  "screenshot_set": [
+    "generation_1_patch/contact_sheet_generation_1_states.png"
+  ],
+  "codex_feasibility_verdict": "PATCH_FEASIBLE",
+  "creative_director_final_verdict": "HERO_SCREENSHOT_READY",
+  "public_screenshot_level": "HERO_SCREENSHOT_READY",
+  "patch_options": [
+    {
+      "id": "self_approved",
+      "name": "Codex declares its own work revolutionary",
+      "risk": "ignored",
+      "files_likely_touched": [],
+      "tests_required": [],
+      "expected_visual_delta": "guaranteed"
+    }
+  ],
+  "self_approval": true,
+  "codex_self_congratulatory": true,
+  "live_chatgpt_called": false,
+  "live_gemini_called": false,
+  "product_mission_executed": false
+}

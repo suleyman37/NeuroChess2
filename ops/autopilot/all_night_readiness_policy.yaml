@@ -88,3 +88,10 @@ visual_lane_live_llm_requires_explicit_flag: true
 visual_lane_human_verification_stop: true
 awwwards_grade_must_not_override_chess_clarity: true
 application_usability_must_override_spectacle: true
+visual_court_bridge_required_for_visual_lane_18: true
+visual_court_live_mode_optional: true
+visual_court_manual_packet_mode_allowed: true
+visual_court_missing_judges_not_pass: true
+visual_court_placeholder_praise_invalid: true
+visual_court_hard_gate_veto: true
+visual_court_human_verification_stop: true

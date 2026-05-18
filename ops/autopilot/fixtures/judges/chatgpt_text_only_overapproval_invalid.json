@@ -1,0 +1,16 @@
+{
+  "mission_id": "A20Q_TEXT_ONLY_CHATGPT",
+  "evidence_path": "fixture/a20p",
+  "screenshot_set": [],
+  "chatgpt_art_direction_verdict": "PUBLIC_TEASER_READY",
+  "public_screenshot_level": "PUBLIC_TEASER_READY",
+  "top_strengths": [
+    "overall good"
+  ],
+  "top_defects": [],
+  "awwwards_app_craft_score": 52,
+  "text_only_overapproval": true,
+  "live_chatgpt_called": false,
+  "live_gemini_called": false,
+  "product_mission_executed": false
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NeuroChess Visual Court Safety Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "mode",
+    "live_mode_optional",
+    "live_chatgpt_called",
+    "live_gemini_called",
+    "human_verification_encountered",
+    "bypass_attempted",
+    "credentials_automated",
+    "captcha_bypass_attempted",
+    "road_to_v2_pushed",
+    "road_to_v2_merged",
+    "a21_launched",
+    "night_mode_launched",
+    "product_mission_executed"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "mode": { "type": "string" },
+    "live_mode_optional": { "type": "boolean" },
+    "live_chatgpt_called": { "type": "boolean" },
+    "live_gemini_called": { "type": "boolean" },
+    "human_verification_encountered": { "type": "boolean" },
+    "bypass_attempted": { "type": "boolean" },
+    "credentials_automated": { "type": "boolean" },
+    "captcha_bypass_attempted": { "type": "boolean" },
+    "road_to_v2_pushed": { "type": "boolean" },
+    "road_to_v2_merged": { "type": "boolean" },
+    "a21_launched": { "type": "boolean" },
+    "night_mode_launched": { "type": "boolean" },
+    "product_mission_executed": { "type": "boolean" },
+    "safety_stop": { "type": ["string", "null"] }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "mission_id": "A20P_SCREENSHOT_TO_PATCH_REAL_RUN_ON_A20L",
+  "evidence_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_training\\A20P_screenshot_to_patch_a20l_20260518\\",
+  "screenshot_set": [
+    "generation_1_patch/contact_sheet_generation_1_states.png",
+    "generation_1_patch/contact_sheet_before_after_a20l_vs_a20p.png"
+  ],
+  "chatgpt_art_direction_verdict": "PRODUCT_GRADE_WITH_DEBT",
+  "public_screenshot_level": "PUBLIC_TEASER_READY_WITH_CAVEATS",
+  "top_strengths": [
+    "clearer public composition",
+    "board remains the hero",
+    "teaser mode removes internal side panels"
+  ],
+  "top_defects": [
+    "feedback trace needs stronger NeuroChess identity",
+    "phase rail is credible but not unforgettable",
+    "human review remains required"
+  ],
+  "awwwards_app_craft_score": 45,
+  "required_patch": "Second pass should focus on feedback language or piece identity, not more chrome.",
+  "allowed_next_action": "human_review_or_second_patch",
+  "live_chatgpt_called": false,
+  "live_gemini_called": false,
+  "product_mission_executed": false
+}

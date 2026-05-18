@@ -94,3 +94,20 @@ Required proof to reach 18:
   missing judges as PASS;
 - run at least one additional focused patch or human-reviewed visual decision
   that improves a real screenshot without hard-gate regression.
+
+## A20Q Scoring Rule
+
+A20P establishes the current score at 17/20.
+
+A20Q may update the score only under these constraints:
+
+- if A20Q creates a functioning bridge in fixture/manual mode but no live or
+  manually imported real judge outputs are used, the score can become 17.5/20;
+- if A20Q safely uses live or manually imported Gemini and ChatGPT outputs on
+  A20P evidence, validates them, merges them, applies hard-gate vetoes, and
+  produces a Creative Director verdict, the score can become 18/20;
+- if A20Q only creates docs and no working bridge test, the score remains 17/20;
+- missing judge input is never PASS;
+- placeholder praise is never design proof;
+- 19/20 remains impossible until multiple screenshot-to-patch loops succeed
+  with human-calibrated review.

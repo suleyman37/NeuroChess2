@@ -1,0 +1,37 @@
+{
+  "mission_id": "A20P_SCREENSHOT_TO_PATCH_REAL_RUN_ON_A20L",
+  "evidence_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_training\\A20P_screenshot_to_patch_a20l_20260518\\",
+  "screenshot_set": [
+    "generation_1_patch/contact_sheet_generation_1_states.png",
+    "generation_1_patch/contact_sheet_before_after_a20l_vs_a20p.png",
+    "generation_1_patch/a20p_observe_1440.png"
+  ],
+  "gemini_visual_verdict": "WARNING_VISUAL_WITH_CONCRETE_DEBT",
+  "public_screenshot_level": "PUBLIC_TEASER_READY_WITH_CAVEATS",
+  "concrete_strengths": [
+    "The board is centered and reads as a square 8x8 artifact.",
+    "The teaser rail is visually secondary to the board.",
+    "Observe and try states do not show a move-like trace."
+  ],
+  "concrete_weaknesses": [
+    "The post-feedback trace is still functional rather than signature-grade.",
+    "The phase rail still feels early-product rather than final public UI."
+  ],
+  "fatal_defects": [],
+  "top_strengths": [
+    "board_centered",
+    "prototype_residue_reduced",
+    "pre_feedback_clean"
+  ],
+  "top_defects": [
+    "feedback_trace_language_not_final",
+    "human_review_required"
+  ],
+  "blocked_reasons": [],
+  "awwwards_app_craft_score": 45,
+  "visual_competence_score": 17,
+  "allowed_next_action": "patch_or_human_review",
+  "live_chatgpt_called": false,
+  "live_gemini_called": false,
+  "product_mission_executed": false
+}
