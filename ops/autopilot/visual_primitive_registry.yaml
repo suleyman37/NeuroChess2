@@ -1,0 +1,179 @@
+schema_version: A20O_visual_primitive_registry_v1
+mission: A20O_NEUROCHESS_VISUAL_TRAINING_SYSTEM
+principle: Strict board, rich world.
+zones:
+  BoardCore:
+    freedom_score: 0
+    allowed_primitives:
+      - PieceIdentity
+    forbidden_primitives:
+      - DecorativeDiagonalOverBoard
+      - BoardFog
+      - RandomParticlesOnBoard
+      - PreFeedbackArrow
+      - PreFeedbackDestinationGlow
+      - CyberGridOnSquares
+      - FloatingDevLabel
+      - GenericGlowBlob
+      - DebugHUDPanel
+    allowed_states:
+      - observe
+      - try_before_feedback
+      - feedback_success
+      - feedback_miss
+      - replay
+    may_cross_board_core: false
+    can_imply_move: false
+    requires_post_feedback: false
+  BoardOverlayPedagogical:
+    freedom_score: 70
+    before_feedback_freedom_score: 0
+    allowed_primitives:
+      - PostFeedbackTrace
+      - CorrectionReorientationTrace
+      - ReplayMemoryPath
+    forbidden_primitives:
+      - PreFeedbackArrow
+      - PreFeedbackDestinationGlow
+      - DecorativeDiagonalOverBoard
+      - BoardFog
+    allowed_states:
+      - feedback_success
+      - feedback_miss
+      - replay
+    may_cross_board_core: true
+    can_imply_move: true
+    requires_post_feedback: true
+  BoardFrame:
+    freedom_score: 35
+    allowed_primitives:
+      - BoardFrame
+      - BoardRimLight
+      - DecisionTensionRing
+      - MaterialDepth
+    forbidden_primitives:
+      - PreFeedbackArrow
+      - PreFeedbackDestinationGlow
+      - RandomParticlesOnBoard
+      - DebugHUDPanel
+    allowed_states:
+      - observe
+      - try_before_feedback
+      - feedback_success
+      - feedback_miss
+      - replay
+    may_cross_board_core: false
+    can_imply_move: false
+    requires_post_feedback: false
+  SurroundingStage:
+    freedom_score: 90
+    allowed_primitives:
+      - StateAtmosphere
+      - MemoryRail
+      - MaterialDepth
+      - SpatialPanel
+      - LivingChamberElement
+      - ProductBadge
+    forbidden_primitives:
+      - BoardFog
+      - GenericGlowBlob
+      - FloatingDevLabel
+      - LandingPageHeroShell
+      - ScrollStorytellingLayer
+    allowed_states:
+      - observe
+      - try_before_feedback
+      - feedback_success
+      - feedback_miss
+      - replay
+    may_cross_board_core: false
+    can_imply_move: false
+    requires_post_feedback: false
+  CockpitPanels:
+    freedom_score: 60
+    allowed_primitives:
+      - TacticalPanel
+      - ProductBadge
+      - SpatialPanel
+    forbidden_primitives:
+      - DebugHUDPanel
+      - FakeXPWidget
+      - FakeEloWidget
+      - FloatingDevLabel
+    allowed_states:
+      - observe
+      - try_before_feedback
+      - feedback_success
+      - feedback_miss
+      - replay
+    may_cross_board_core: false
+    can_imply_move: false
+    requires_post_feedback: false
+  FeedbackLayer:
+    freedom_score: 80
+    allowed_primitives:
+      - PostFeedbackTrace
+      - CorrectionReorientationTrace
+      - MotionPulse
+    forbidden_primitives:
+      - FakeXPWidget
+      - FakeEloWidget
+      - PreFeedbackArrow
+      - PreFeedbackDestinationGlow
+    allowed_states:
+      - feedback_success
+      - feedback_miss
+    may_cross_board_core: true
+    can_imply_move: true
+    requires_post_feedback: true
+  ReplayMemoryLayer:
+    freedom_score: 75
+    allowed_primitives:
+      - ReplayMemoryPath
+      - MemoryRail
+      - MotionPulse
+    forbidden_primitives:
+      - PreFeedbackArrow
+      - PreFeedbackDestinationGlow
+      - DebugHUDPanel
+    allowed_states:
+      - replay
+    may_cross_board_core: true
+    can_imply_move: true
+    requires_post_feedback: true
+  MotionLayer:
+    freedom_score: 65
+    allowed_primitives:
+      - MotionPulse
+      - StateAtmosphere
+      - DecisionTensionRing
+    forbidden_primitives:
+      - RandomParticlesOnBoard
+      - GenericGlowBlob
+      - ScrollStorytellingLayer
+    allowed_states:
+      - observe
+      - try_before_feedback
+      - feedback_success
+      - feedback_miss
+      - replay
+    may_cross_board_core: false
+    can_imply_move: false
+    requires_post_feedback: false
+forbidden_primitives:
+  - DecorativeDiagonalOverBoard
+  - BoardFog
+  - RandomParticlesOnBoard
+  - PreFeedbackArrow
+  - PreFeedbackDestinationGlow
+  - CyberGridOnSquares
+  - FloatingDevLabel
+  - GenericGlowBlob
+  - DebugHUDPanel
+  - FakeXPWidget
+  - FakeEloWidget
+  - LandingPageHeroShell
+  - ScrollStorytellingLayer
+live_chatgpt_called: false
+live_gemini_called: false
+product_mission_executed: false

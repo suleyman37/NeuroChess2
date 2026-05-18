@@ -71,3 +71,20 @@ future_a21_forbidden_lanes:
   - live LLM coach integration
   - Candidate Trainer
   - user-facing fake neuroscience
+visual_director_required_for_visual_lane: true
+visual_training_system_required_for_visual_lane: true
+visual_lane_minimum_competence_score: 18
+visual_lane_requires_sacred_board_contract: true
+visual_lane_requires_public_screenshot_standard: true
+visual_lane_requires_screenshot_to_patch_loop: true
+visual_lane_requires_taste_ledger: true
+visual_lane_requires_failure_gallery: true
+visual_lane_blocks_on_chess_fidelity_fail: true
+visual_lane_blocks_on_pre_feedback_hint: true
+visual_lane_blocks_on_generic_glow_overuse: true
+visual_lane_cannot_claim_game_changer_without_visual_court: true
+visual_lane_default_live_llm_calls: false
+visual_lane_live_llm_requires_explicit_flag: true
+visual_lane_human_verification_stop: true
+awwwards_grade_must_not_override_chess_clarity: true
+application_usability_must_override_spectacle: true
