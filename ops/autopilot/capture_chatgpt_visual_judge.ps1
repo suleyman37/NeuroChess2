@@ -12,7 +12,12 @@ param(
     [string]$Nonce = "",
     [int]$MaxWaitSeconds = 900,
     [string]$AllowOneJsonCorrection = "true",
-    [switch]$AllowChatGPTVisualProbe
+    [switch]$AllowChatGPTVisualProbe,
+    [ValidateSet("AUTO", "FILE_INPUT")]
+    [string]$UploadAdapter = "AUTO",
+    [switch]$RequireAttachmentConfirmation,
+    [switch]$RequireImageAwareCanary,
+    [string]$CanaryCode = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -157,6 +162,56 @@ function Invoke-ChatGptBridge {
     }
 }
 
+function Invoke-ChatGptFileInputProbe {
+    param(
+        [string]$PromptFile,
+        [string]$Attachment,
+        [string]$OutDir,
+        [int]$WaitSeconds
+    )
+    New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+    $bundledNode = "C:\Users\suley\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe"
+    $nodeExe = if (Test-Path -LiteralPath $bundledNode) { $bundledNode } else { "node" }
+    $probeScript = Join-Path $PSScriptRoot "browser\chatgpt_file_input_visual_probe.mjs"
+    $probeOutput = & $nodeExe $probeScript `
+        --prompt $PromptFile `
+        --attachment $Attachment `
+        --out $OutDir `
+        --maxWaitSeconds ([string]$WaitSeconds) 2>&1
+    $exit = $LASTEXITCODE
+    $resultPath = Join-Path $OutDir "probe_result.json"
+    $result = if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
+        Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+    } else {
+        $null
+    }
+    [ordered]@{
+        exit_code = $exit
+        stdout = ($probeOutput -join "`n")
+        result_path = $resultPath
+        result = $result
+        raw_path = if (Test-Path -LiteralPath (Join-Path $OutDir "raw_response.txt") -PathType Leaf) { Join-Path $OutDir "raw_response.txt" } else { $null }
+        partial_path = if (Test-Path -LiteralPath (Join-Path $OutDir "partial_response.txt") -PathType Leaf) { Join-Path $OutDir "partial_response.txt" } else { $null }
+        attachment_confirmation_path = if (Test-Path -LiteralPath (Join-Path $OutDir "attachment_confirmation.json") -PathType Leaf) { Join-Path $OutDir "attachment_confirmation.json" } else { $null }
+        file_input_selector_audit_path = if (Test-Path -LiteralPath (Join-Path $OutDir "file_input_selector_audit.json") -PathType Leaf) { Join-Path $OutDir "file_input_selector_audit.json" } else { $null }
+    }
+}
+
+function Get-FirstJsonObjectFromText {
+    param([string]$Text)
+    $candidate = [string]$Text
+    $fence = [regex]::Match($candidate, '```(?:json)?\s*(\{[\s\S]*?\})\s*```', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    if ($fence.Success) { $candidate = $fence.Groups[1].Value }
+    $start = $candidate.IndexOf("{")
+    $end = $candidate.LastIndexOf("}")
+    if ($start -lt 0 -or $end -le $start) { return $null }
+    try {
+        return ($candidate.Substring($start, $end - $start + 1) | ConvertFrom-Json)
+    } catch {
+        return $null
+    }
+}
+
 New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 $parentOut = Split-Path -Parent $OutputPath
 $rawDir = Join-Path $parentOut "raw_outputs"
@@ -260,8 +315,16 @@ Rules:
 
 $reportPath = Join-Path $OutputPath "chatgpt_capture_report.json"
 $rawPath = Join-Path $rawDir "chatgpt_raw_response.txt"
-$normalizedPath = Join-Path $normalizedDir "chatgpt_art_direction_review.json"
-$validationPath = Join-Path $validatedDir "chatgpt_validation.json"
+$normalizedPath = if ($RequireImageAwareCanary) {
+    Join-Path $normalizedDir "canary_response.json"
+} else {
+    Join-Path $normalizedDir "chatgpt_art_direction_review.json"
+}
+$validationPath = if ($RequireImageAwareCanary) {
+    Join-Path $validatedDir "canary_validation.json"
+} else {
+    Join-Path $validatedDir "chatgpt_validation.json"
+}
 $normalizationReportPath = Join-Path $OutputPath "chatgpt_normalization_report.json"
 
 $summary = [ordered]@{
@@ -284,6 +347,12 @@ $summary = [ordered]@{
     local_active_session_configured = $localState.local_active_session_configured
     profile_path_redacted = $true
     profile_locked = [bool]$profileState.locked
+    upload_adapter = $UploadAdapter
+    require_attachment_confirmation = [bool]$RequireAttachmentConfirmation
+    require_image_aware_canary = [bool]$RequireImageAwareCanary
+    cdp_attach_used = $false
+    persistent_context_avoided = $false
+    highest_capability = "C0_REPO_AND_CONFIG_FOUND"
     approved_upload_lane_available = ($probeEnabled -and $resolvedAttachments.Count -gt 0)
     upload_control_status = "NOT_PROBED"
     file_input_adapter_result = "NOT_ATTEMPTED"
@@ -319,9 +388,44 @@ if ($RawFixturePath) {
     } elseif ($resolvedAttachments.Count -eq 0) {
         $summary.capture_result = "UPLOAD_LANE_UNAVAILABLE"
         $summary.stop_reason = "no contact sheet or screenshot attachment supplied"
-    } elseif ($profileState.locked -eq $true -and $bridgeConfig.profile_lock_preflight -eq $true) {
+    } elseif ($profileState.locked -eq $true -and $bridgeConfig.profile_lock_preflight -eq $true -and $UploadAdapter -ne "FILE_INPUT") {
         $summary.capture_result = "SAFE_SESSION_UNAVAILABLE"
         $summary.stop_reason = "chatgpt chrome profile appears locked"
+    } elseif ($UploadAdapter -eq "FILE_INPUT") {
+        $summary.upload_control_status = "PROBED_BY_CDP_FILE_INPUT"
+        $liveOut = Join-Path $OutputPath "live_file_input_attempt_1"
+        $bridge = Invoke-ChatGptFileInputProbe -PromptFile $requestPath -Attachment $resolvedAttachments[0] -OutDir $liveOut -WaitSeconds $MaxWaitSeconds
+        $probe = $bridge.result
+        $summary.chatgpt_bridge_exit_code = $bridge.exit_code
+        $summary.chatgpt_bridge_stdout = $bridge.stdout
+        $summary.file_input_probe_result_path = $bridge.result_path
+        $summary.attachment_confirmation_path = $bridge.attachment_confirmation_path
+        $summary.file_input_selector_audit_path = $bridge.file_input_selector_audit_path
+        if ($probe) {
+            $summary.live_chatgpt_called = [bool]$probe.live_chatgpt_called
+            $summary.cdp_attach_used = [bool]$probe.cdp_attached
+            $summary.persistent_context_avoided = [bool]$probe.cdp_attached
+            $summary.highest_capability = [string]$probe.highest_capability
+            $summary.file_input_adapter_result = if ([bool]$probe.file_input_found) { "FOUND" } else { "NOT_FOUND" }
+            $summary.image_attachment_confirmed = [bool]$probe.attachment_confirmed
+            $summary.upload_control_status = if ([bool]$probe.file_input_found) { "FILE_INPUT_FOUND" } else { "FILE_INPUT_NOT_FOUND" }
+            $summary.capture_result = [string]$probe.status
+            $summary.stop_reason = [string]$probe.stop_reason
+        } else {
+            $summary.capture_result = "NO_RESPONSE_CAPTURED"
+            $summary.stop_reason = "file input probe did not produce probe_result.json"
+        }
+        if ($bridge.raw_path) {
+            Copy-Item -LiteralPath $bridge.raw_path -Destination $rawPath -Force
+            Copy-Item -LiteralPath $bridge.raw_path -Destination (Join-Path $rawDir "chatgpt_raw_response_attempt_1.txt") -Force
+            $summary.raw_output_path = $rawPath
+        } elseif ($bridge.partial_path) {
+            Copy-Item -LiteralPath $bridge.partial_path -Destination (Join-Path $rawDir "chatgpt_partial_response_attempt_1.txt") -Force
+        }
+        if ($RequireAttachmentConfirmation -and -not [bool]$summary.image_attachment_confirmed -and $summary.capture_result -ne "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED") {
+            $summary.capture_result = if ($summary.capture_result -eq "CHATGPT_FILE_INPUT_NOT_FOUND") { "CHATGPT_FILE_INPUT_NOT_FOUND" } else { "CHATGPT_ATTACHMENT_NOT_CONFIRMED" }
+            $summary.stop_reason = $summary.capture_result
+        }
     } else {
         $summary.upload_control_status = "PROBED_BY_CHATGPT_BRIDGE"
         $liveOut = Join-Path $OutputPath "live_attempt_1"
@@ -373,7 +477,30 @@ if ($RawFixturePath) {
     $summary.capture_result = "LIVE_NOT_REQUESTED"
 }
 
-if (Test-Path -LiteralPath $rawPath -PathType Leaf) {
+if ((Test-Path -LiteralPath $rawPath -PathType Leaf) -and $RequireImageAwareCanary) {
+    $rawText = Get-Content -LiteralPath $rawPath -Raw
+    $canaryMentioned = (-not [string]::IsNullOrWhiteSpace($CanaryCode) -and $rawText -match [regex]::Escape($CanaryCode))
+    $canaryJson = Get-FirstJsonObjectFromText -Text $rawText
+    if ($canaryJson) {
+        $canaryJson | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $normalizedPath -Encoding UTF8
+        $summary.normalized_output_path = $normalizedPath
+        $summary.normalization_result = "CANARY_JSON_EXTRACTED"
+    } else {
+        $summary.normalization_result = "CANARY_JSON_INVALID"
+    }
+    $summary.canary_code_mentioned = [bool]$canaryMentioned
+    if ($canaryMentioned) {
+        $summary.capture_result = "C9_CHATGPT_IMAGE_AWARE_RESPONSE_CAPTURED"
+        $summary.validation_result = "PASS_IMAGE_AWARENESS"
+        $summary.highest_capability = "C9_CHATGPT_IMAGE_AWARE_RESPONSE_CAPTURED"
+    } else {
+        $summary.capture_result = "CHATGPT_TEXT_ONLY_INVALID_FOR_VISUAL_JUDGE"
+        $summary.validation_result = "INVALID_CANARY_RESPONSE"
+        if ([bool]$summary.image_attachment_confirmed) {
+            $summary.highest_capability = "C8_CHATGPT_IMAGE_PROMPT_SENT"
+        }
+    }
+} elseif (Test-Path -LiteralPath $rawPath -PathType Leaf) {
     $normalization = Invoke-Normalization -RawPath $rawPath -NormalizedPath $normalizedPath -ReportPath $normalizationReportPath -ValidationPath $validationPath
     $summary.normalizer_output = $normalization.normalizer_output
     if ($normalization.normalization) {

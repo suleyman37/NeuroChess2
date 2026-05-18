@@ -289,6 +289,52 @@ Required proof to reach 18:
 19/20 remains blocked until repeated screenshot-to-patch wins succeed with
 human-calibrated visual review.
 
+## A20Z Update
+
+Estimated score after A20Z: 17.5/20.
+
+Why:
+
+- A20Z restored the targeted ChatGPT `input[type=file]` lane in the Visual
+  Court wrapper by reusing the historical CDP attach shape and avoiding the
+  unstable `launchPersistentContext` path.
+- A harmless canary image and hidden visual-only canary prompt were generated
+  externally, outside the repo, before any A20P evidence could be sent.
+- The Stage 1 canary probe reached CDP attach against an existing Chrome
+  session but stopped on the required human-verification safety gate before
+  composer access, file input discovery, attachment confirmation, prompt send,
+  or response capture.
+- Because the canary did not prove image awareness, the A20P contact sheet was
+  not submitted to ChatGPT.
+- No ChatGPT Minimal Visual Judge Contract V2 JSON was captured, validated, or
+  merged into the Visual Court.
+
+Why this is still not 18/20:
+
+- C2 CDP attach is not visual upload proof.
+- No C7 attachment confirmation, C8 image prompt send, C9 image-aware response,
+  or C10 valid visual judge JSON occurred.
+- Gemini remains invalid or missing for the real judge merge.
+- A20P evidence was protected by the canary gate and was not sent after the
+  human-verification stop.
+
+Strategy decision:
+
+- Do not bypass the human-verification wall.
+- Stop live ChatGPT visual capture attempts for now and use the offline Visual
+  Gym or a separate human-calibrated review path.
+
+Required proof to reach 18:
+
+- valid, screenshot-referenced ChatGPT visual judge JSON from a confirmed image
+  attachment;
+- valid Gemini or equivalent real external judge output;
+- merge with hard gates and a Creative Director verdict based only on valid
+  real judge evidence.
+
+19/20 remains blocked until repeated screenshot-to-patch wins succeed with
+human-calibrated visual review.
+
 ## A20V Update
 
 Estimated score after A20V: 17.5/20.

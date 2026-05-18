@@ -30,13 +30,26 @@ try {
     Assert-True ($capture.attachment_count -eq 1) "contact sheet parameter was not counted"
     Assert-True ($capture.stop_reason -eq "chatgpt_web_bridge.enabled=false") "unexpected stop reason"
 
+    $captureSource = Get-Content -LiteralPath (Join-Path $RepoRoot "ops\autopilot\capture_chatgpt_visual_judge.ps1") -Raw
+    $probeSource = Get-Content -LiteralPath (Join-Path $RepoRoot "ops\autopilot\browser\chatgpt_file_input_visual_probe.mjs") -Raw
+    Assert-True ($captureSource -match "UploadAdapter") "capture script missing upload adapter parameter"
+    Assert-True ($captureSource -match "RequireAttachmentConfirmation") "capture script missing attachment confirmation gate"
+    Assert-True ($captureSource -match "RequireImageAwareCanary") "capture script missing canary gate"
+    Assert-True ($captureSource -match 'capture_result -ne "STOP_MANUAL_HUMAN_VERIFICATION_REQUIRED"') "attachment gate must preserve human-verification safety stop"
+    Assert-True ($probeSource -match "connectOverCDP") "file input probe must reuse existing CDP browser"
+    Assert-True ($probeSource -notmatch "launchPersistentContext") "file input probe must avoid persistent context launch"
+    Assert-True ($probeSource -match 'input\[type="file"\]') "file input probe must query file inputs"
+    Assert-True ($probeSource -match "setInputFiles") "file input probe must use Playwright file input assignment"
+
     [ordered]@{
         status = "pass"
-        tests = 5
+        tests = 13
         disabled_bridge_returns_upload_lane_unavailable = $true
         live_chatgpt_called = $false
         product_mission_executed = $false
         browser_required = $false
+        cdp_file_input_probe_present = $true
+        persistent_context_avoided = $true
     } | ConvertTo-Json -Depth 10
 } finally {
     if (Test-Path -LiteralPath $TempRoot) {
