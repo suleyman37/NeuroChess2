@@ -150,3 +150,35 @@ Required proof to reach 18:
 
 19/20 remains blocked until multiple screenshot-to-patch loops succeed with
 human-calibrated visual review.
+
+## A20S Update
+
+Estimated score after A20S Phase 1: 17.5/20.
+
+Why:
+
+- A20S generated a manual real-judge import packet for A20P evidence.
+- A20S created exact operator instructions and exact save paths for Gemini and
+  ChatGPT strict JSON outputs.
+- A20S validated the expected import paths and recorded both required judge
+  files as `MISSING_INPUT`.
+- No live Gemini or ChatGPT call was made by Codex.
+- No fixture output was treated as real judge evidence.
+- No Creative Director acceptance was generated from missing judge inputs.
+
+Why this is not 18/20:
+
+- real Gemini output was not present;
+- real ChatGPT output was not present;
+- no real external judge outputs were validated, merged, or used to synthesize
+  a Creative Director verdict.
+
+Required proof to reach 18:
+
+- save real Gemini JSON to the A20S `real_judge_inputs` folder;
+- save real ChatGPT JSON to the A20S `real_judge_inputs` folder;
+- rerun A20S Phase 2 validation and merge;
+- reject any generic, placeholder, or screenshot-free judge output;
+- produce a useful Creative Director verdict with hard-gate vetoes preserved.
+
+The A21 visual lane remains blocked until that proof exists.

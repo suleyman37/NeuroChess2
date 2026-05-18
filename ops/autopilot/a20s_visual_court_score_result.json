@@ -1,0 +1,34 @@
+{
+  "schema_version": "A20S_visual_court_score_result_v1",
+  "mission_id": "A20S_MANUAL_IMPORT_REAL_JUDGES_FOR_VISUAL_COURT",
+  "phase": "PHASE_1_PACKET_GENERATION",
+  "previous_score": 17.5,
+  "new_score_estimate": 17.5,
+  "reached_18": false,
+  "final_verdict": "WAITING_FOR_REAL_JUDGE_IMPORTS_SCORE_17_5",
+  "artifact_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_court_bridge\\A20S_manual_import_real_judges_20260518\\",
+  "evidence_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_training\\A20P_screenshot_to_patch_a20l_20260518\\",
+  "required_inputs": {
+    "gemini_visual_observation": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_court_bridge\\A20S_manual_import_real_judges_20260518\\real_judge_inputs\\gemini_visual_observation.json",
+    "chatgpt_art_direction_review": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_court_bridge\\A20S_manual_import_real_judges_20260518\\real_judge_inputs\\chatgpt_art_direction_review.json"
+  },
+  "real_gemini_present": false,
+  "real_chatgpt_present": false,
+  "validation_results": {
+    "gemini": "MISSING_INPUT",
+    "chatgpt": "MISSING_INPUT",
+    "codex": "MISSING_INPUT"
+  },
+  "merge_executed": false,
+  "creative_director_acceptance_generated": false,
+  "a21_visual_lane_blocked": true,
+  "why_not_18": [
+    "Real Gemini JSON was not present.",
+    "Real ChatGPT JSON was not present.",
+    "No external judge outputs were validated or merged."
+  ],
+  "recommended_next_action": "USER_IMPORT_REAL_GEMINI_AND_CHATGPT_OUTPUTS_THEN_RERUN_A20S_PHASE_2",
+  "live_chatgpt_called_by_codex": false,
+  "live_gemini_called_by_codex": false,
+  "bypass_attempted": false
+}
