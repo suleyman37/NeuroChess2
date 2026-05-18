@@ -1,11 +1,11 @@
 {
-  "schema_version": "A20S_visual_court_score_result_v1",
-  "mission_id": "A20S_MANUAL_IMPORT_REAL_JUDGES_FOR_VISUAL_COURT",
-  "phase": "PHASE_1_PACKET_GENERATION",
+  "schema_version": "A20S_visual_court_score_result_v2",
+  "mission_id": "A20S_PHASE2_REAL_JUDGE_MERGE_FOR_VISUAL_COURT",
+  "phase": "PHASE_2_REAL_JUDGE_MERGE_ATTEMPT",
   "previous_score": 17.5,
   "new_score_estimate": 17.5,
   "reached_18": false,
-  "final_verdict": "WAITING_FOR_REAL_JUDGE_IMPORTS_SCORE_17_5",
+  "final_verdict": "STILL_WAITING_FOR_REAL_JUDGE_IMPORTS",
   "artifact_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_court_bridge\\A20S_manual_import_real_judges_20260518\\",
   "evidence_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_training\\A20P_screenshot_to_patch_a20l_20260518\\",
   "required_inputs": {
@@ -21,14 +21,16 @@
   },
   "merge_executed": false,
   "creative_director_acceptance_generated": false,
+  "next_prompt_generated_from_real_judges": false,
   "a21_visual_lane_blocked": true,
   "why_not_18": [
-    "Real Gemini JSON was not present.",
-    "Real ChatGPT JSON was not present.",
-    "No external judge outputs were validated or merged."
+    "Real Gemini JSON was still not present in the expected real_judge_inputs folder.",
+    "Real ChatGPT JSON was still not present in the expected real_judge_inputs folder.",
+    "Phase 2 stopped before merge rather than treating missing inputs as evidence."
   ],
-  "recommended_next_action": "USER_IMPORT_REAL_GEMINI_AND_CHATGPT_OUTPUTS_THEN_RERUN_A20S_PHASE_2",
+  "recommended_next_action": "A20T_VISUAL_JUDGE_OUTPUT_QUALITY_HARDENING",
   "live_chatgpt_called_by_codex": false,
   "live_gemini_called_by_codex": false,
+  "fixtures_used_as_real_outputs": false,
   "bypass_attempted": false
 }

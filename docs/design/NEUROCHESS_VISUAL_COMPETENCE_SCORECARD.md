@@ -182,3 +182,36 @@ Required proof to reach 18:
 - produce a useful Creative Director verdict with hard-gate vetoes preserved.
 
 The A21 visual lane remains blocked until that proof exists.
+
+## A20S Phase 2 Update
+
+Estimated score after A20S Phase 2: 17.5/20.
+
+Why:
+
+- A20S Phase 2 checked the required `real_judge_inputs` folder for the real
+  Gemini and ChatGPT Visual Court outputs.
+- Both required files were missing.
+- The mission stopped before merge, before Creative Director acceptance, and
+  before any score increase.
+- Missing real judge input was not converted into PASS.
+- Fixture outputs were not treated as real judge evidence.
+
+Why this is not 18/20:
+
+- real Gemini output was not validated;
+- real ChatGPT output was not validated;
+- no real external judge disagreement was merged into a Creative Director
+  verdict.
+
+Required proof to reach 18:
+
+- place real Gemini JSON at the expected A20S `real_judge_inputs` path;
+- place real ChatGPT JSON at the expected A20S `real_judge_inputs` path;
+- validate both outputs as concrete, screenshot-referenced, non-placeholder
+  judge evidence;
+- merge them with hard-gate evidence;
+- produce a Creative Director verdict that preserves hard-gate vetoes.
+
+19/20 remains blocked until repeated screenshot-to-patch wins are reviewed
+against human-calibrated visual judgment.
