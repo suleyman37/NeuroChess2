@@ -45,6 +45,20 @@ function Read-JsonFile {
     return $null
 }
 
+function Set-ObjectField {
+    param($Object, [string]$Name, $Value)
+    if ($null -eq $Object) { return }
+    if ($Object -is [hashtable] -or $Object -is [System.Collections.Specialized.OrderedDictionary]) {
+        $Object[$Name] = $Value
+        return
+    }
+    if ($Object.PSObject.Properties.Name -contains $Name) {
+        $Object.$Name = $Value
+    } else {
+        $Object | Add-Member -NotePropertyName $Name -NotePropertyValue $Value -Force
+    }
+}
+
 function Emit-Result {
     param([object]$Payload, [int]$ExitCode = 0, [string]$ArtifactName = "")
     if (-not [string]::IsNullOrWhiteSpace($ArtifactName)) {
@@ -253,12 +267,14 @@ function Get-RedactedStatus {
 function Get-ProblemMatrix {
     @(
         @{ code = "CDP_UNREACHABLE"; action = "launch_or_attach_chrome_cdp"; forbidden = "kill_user_browser"; retry_limit = 1; email = $false; stop_status = "CDP_SESSION_UNAVAILABLE" },
-        @{ code = "AUTH_OR_CONSENT_WALL"; action = "email_pause_resume"; forbidden = "click_or_enter_credentials"; retry_limit = 0; email = $true; stop_status = "WAITING_FOR_HUMAN_ACTION" },
-        @{ code = "HUMAN_VERIFICATION_REQUIRED"; action = "email_pause_resume"; forbidden = "automate_human_verification"; retry_limit = 0; email = $true; stop_status = "WAITING_FOR_HUMAN_ACTION" },
-        @{ code = "TWO_FACTOR_REQUIRED"; action = "email_pause_resume"; forbidden = "enter_2fa_code"; retry_limit = 0; email = $true; stop_status = "WAITING_FOR_HUMAN_ACTION" },
-        @{ code = "CHATGPT_CONVERSATION_TOO_LONG"; action = "rotate_discussion"; forbidden = "send_to_exhausted_discussion"; retry_limit = 0; email = "if_pool_exhausted"; stop_status = "CHATGPT_POOL_EXHAUSTED" },
+        @{ code = "AUTH_OR_CONSENT_WALL"; action = "ntfy_alert_pause_resume"; forbidden = "click_or_enter_credentials"; retry_limit = 0; email = "gmail_fallback_only"; stop_status = "WAITING_FOR_HUMAN_ACTION" },
+        @{ code = "HUMAN_VERIFICATION_REQUIRED"; action = "ntfy_alert_pause_resume"; forbidden = "automate_human_verification"; retry_limit = 0; email = "gmail_fallback_only"; stop_status = "WAITING_FOR_HUMAN_ACTION" },
+        @{ code = "CAPTCHA_REQUIRED"; action = "ntfy_alert_pause_resume"; forbidden = "solve_or_click_captcha"; retry_limit = 0; email = "gmail_fallback_only"; stop_status = "WAITING_FOR_HUMAN_ACTION" },
+        @{ code = "TWO_FACTOR_REQUIRED"; action = "ntfy_alert_pause_resume"; forbidden = "enter_2fa_code"; retry_limit = 0; email = "gmail_fallback_only"; stop_status = "WAITING_FOR_HUMAN_ACTION" },
+        @{ code = "CHATGPT_CONVERSATION_TOO_LONG"; action = "rotate_discussion_or_ntfy_user"; forbidden = "send_to_exhausted_discussion"; retry_limit = 0; email = "gmail_fallback_only_if_enabled"; stop_status = "CHATGPT_POOL_EXHAUSTED" },
         @{ code = "CHATGPT_DISCUSSION_NOT_BOOTSTRAPPED"; action = "send_bootstrap_first"; forbidden = "send_normal_prompt_first"; retry_limit = 1; email = $false; stop_status = "BOOTSTRAP_REQUIRED" },
-        @{ code = "EMAIL_SECRET_CACHE_MISSING"; action = "prompt_once_store_dpapi"; forbidden = "print_or_commit_password"; retry_limit = 1; email = $false; stop_status = "EMAIL_SECRET_CACHE_MISSING" },
+        @{ code = "EMAIL_PREFLIGHT_FAILED"; action = "record_gmail_fallback_unavailable_but_continue_if_ntfy_ready"; forbidden = "block_live_flow_when_ntfy_ready"; retry_limit = 0; email = "fallback_disabled_by_default"; stop_status = "GMAIL_FALLBACK_UNAVAILABLE" },
+        @{ code = "ALERT_DELIVERY_FAILED"; action = "stop_live_action"; forbidden = "proceed_without_human_alert"; retry_limit = 0; email = "fallback_only_if_enabled"; stop_status = "ALERT_DELIVERY_FAILED" },
         @{ code = "OPERATOR_PROMPT_LEAK"; action = "fail_and_route_through_resolver"; forbidden = "ask_low_level_parameters"; retry_limit = 0; email = $false; stop_status = "OPERATOR_PROMPT_LEAK_DETECTED" },
         @{ code = "UPLOAD_ATTACHMENT_NOT_CONFIRMED"; action = "stop_before_send"; forbidden = "send_text_only_visual_prompt"; retry_limit = 0; email = $false; stop_status = "CHATGPT_ATTACHMENT_NOT_CONFIRMED" },
         @{ code = "JSON_INVALID"; action = "one_json_correction"; forbidden = "clamp_or_accept_placeholder"; retry_limit = 1; email = $false; stop_status = "JSON_INVALID" },
@@ -447,6 +463,53 @@ function Stop-IfEmailPreflightFailed {
     }
 }
 
+function Invoke-AlertRouterPreflight {
+    $resultPath = Join-Path $ArtifactPath "alert_router_status.json"
+    if ($DryRun) {
+        $payload = [ordered]@{
+            status = "ALERT_ROUTER_DRY_RUN_READY"
+            exit_code = 0
+            primary_channel = "ntfy"
+            ntfy_enabled = $true
+            gmail_fallback_enabled = $false
+            private_topic_printed = $false
+            secrets_redacted = $true
+            dry_run = $true
+        }
+        Write-JsonFile -Path $resultPath -Payload $payload
+        return [pscustomobject]$payload
+    }
+    $args = @(
+        "-Action", "Status",
+        "-ResultPath", $resultPath,
+        "-NoPrompt"
+    )
+    $output = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "setup_alert_router.ps1") @args 2>&1
+    $exit = $LASTEXITCODE
+    $alert = if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
+        Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+    } else {
+        Convert-JsonOutput -Output $output
+    }
+    $alert | Add-Member -NotePropertyName exit_code -NotePropertyValue $exit -Force
+    return $alert
+}
+
+function Stop-IfAlertRouterFailed {
+    param($Alert)
+    if ([int]$Alert.exit_code -ne 0 -or [string]$Alert.status -notin @("ALERT_ROUTER_READY", "ALERT_ROUTER_NTFY_CONFIGURED", "ALERT_ROUTER_DRY_RUN_READY")) {
+        Emit-Result -Payload ([ordered]@{
+            status = "ALERT_ROUTER_NOT_CONFIGURED"
+            alert_router_status = [string]$Alert.status
+            alert_router_exit_code = [int]$Alert.exit_code
+            gmail_preflight_required = $false
+            private_urls_redacted = $true
+            live_browser_started = $false
+            bypass_attempted = $false
+        }) -ExitCode 10 -ArtifactName "auth_wall_preflight_result.json"
+    }
+}
+
 function Invoke-EnsureCdp {
     param($State)
     if ($DryRun) {
@@ -499,35 +562,43 @@ switch ($Mode) {
     }
     "Setup" {
         $state = Load-Or-InitializeState
-        $email = Invoke-EmailPreflight
-        Stop-IfEmailPreflightFailed -Preflight $email
-        $state.email.secret_cache_status = [string]$email.status
+        $alert = Invoke-AlertRouterPreflight
+        Stop-IfAlertRouterFailed -Alert $alert
+        $state.email.secret_cache_status = [string]$alert.status
+        Set-ObjectField -Object $state.email -Name "alert_router_status" -Value ([string]$alert.status)
+        Set-ObjectField -Object $state.email -Name "primary_channel" -Value ([string]$alert.primary_channel)
         $cdp = Invoke-EnsureCdp -State $state
         Save-StateAndPool -State $state
         $result = Get-RedactedStatus -State $state -Status "SETUP_COMPLETE"
-        $result.email_secret_status = [string]$email.status
-        $result.email_preflight_status = [string]$email.status
+        $result.alert_router_status = [string]$alert.status
+        $result.email_preflight_status = "GMAIL_NOT_REQUIRED_WHEN_NTFY_READY"
+        $result.gmail_blocks_live_flow = $false
         $result.cdp_status = [string]$cdp.status
         Emit-Result -Payload $result
     }
     "EnsureSessions" {
         $state = Load-Or-InitializeState
-        $email = Invoke-EmailPreflight
-        Stop-IfEmailPreflightFailed -Preflight $email
-        $state.email.secret_cache_status = [string]$email.status
+        $alert = Invoke-AlertRouterPreflight
+        Stop-IfAlertRouterFailed -Alert $alert
+        $state.email.secret_cache_status = [string]$alert.status
+        Set-ObjectField -Object $state.email -Name "alert_router_status" -Value ([string]$alert.status)
+        Set-ObjectField -Object $state.email -Name "primary_channel" -Value ([string]$alert.primary_channel)
         $cdp = Invoke-EnsureCdp -State $state
         Save-StateAndPool -State $state
         $result = Get-RedactedStatus -State $state -Status "SESSIONS_ENSURED"
-        $result.email_preflight_status = [string]$email.status
+        $result.alert_router_status = [string]$alert.status
+        $result.email_preflight_status = "GMAIL_NOT_REQUIRED_WHEN_NTFY_READY"
+        $result.gmail_blocks_live_flow = $false
         $result.cdp_status = [string]$cdp.status
         $result.gemini_status = if ([bool]$state.gemini.enabled) { "GEMINI_OPTIONAL_CONFIGURED" } else { "GEMINI_DISABLED" }
         Emit-Result -Payload $result
     }
     "SendBootstrap" {
         $state = Load-Or-InitializeState
-        $email = Invoke-EmailPreflight
-        Stop-IfEmailPreflightFailed -Preflight $email
-        $state.email.secret_cache_status = [string]$email.status
+        $alert = Invoke-AlertRouterPreflight
+        Stop-IfAlertRouterFailed -Alert $alert
+        $state.email.secret_cache_status = [string]$alert.status
+        Set-ObjectField -Object $state.email -Name "alert_router_status" -Value ([string]$alert.status)
         $rotation = Invoke-RotateIfNeeded -State $state -EmailIfExhausted
         if ([string]$rotation.status -eq "CHATGPT_POOL_EXHAUSTED") {
             Save-StateAndPool -State $state
@@ -551,9 +622,10 @@ switch ($Mode) {
             }) -ExitCode 2
         }
         $state = Load-Or-InitializeState
-        $email = Invoke-EmailPreflight
-        Stop-IfEmailPreflightFailed -Preflight $email
-        $state.email.secret_cache_status = [string]$email.status
+        $alert = Invoke-AlertRouterPreflight
+        Stop-IfAlertRouterFailed -Alert $alert
+        $state.email.secret_cache_status = [string]$alert.status
+        Set-ObjectField -Object $state.email -Name "alert_router_status" -Value ([string]$alert.status)
         $rotation = Invoke-RotateIfNeeded -State $state -EmailIfExhausted
         if ([string]$rotation.status -eq "CHATGPT_POOL_EXHAUSTED") {
             Save-StateAndPool -State $state
@@ -601,9 +673,10 @@ switch ($Mode) {
     }
     "SendGemini" {
         $state = Load-Or-InitializeState
-        $email = Invoke-EmailPreflight
-        Stop-IfEmailPreflightFailed -Preflight $email
-        $state.email.secret_cache_status = [string]$email.status
+        $alert = Invoke-AlertRouterPreflight
+        Stop-IfAlertRouterFailed -Alert $alert
+        $state.email.secret_cache_status = [string]$alert.status
+        Set-ObjectField -Object $state.email -Name "alert_router_status" -Value ([string]$alert.status)
         if (-not [string]::IsNullOrWhiteSpace($GeminiUrl)) {
             $state.gemini.enabled = $true
             $state.gemini.url = $GeminiUrl
@@ -627,10 +700,12 @@ switch ($Mode) {
         $reasonValue = if ([string]::IsNullOrWhiteSpace($ProblemCode)) { "HUMAN_VERIFICATION_REQUIRED" } else { $ProblemCode }
         if ($DryRun) {
             $state.chatgpt.last_email_alert_status = "EMAIL_ALERT_DRY_RUN"
+            Set-ObjectField -Object $state.chatgpt -Name "last_alert_router_status" -Value "ALERT_DRY_RUN"
             Save-StateAndPool -State $state
             $event = [ordered]@{
                 status = "WAITING_FOR_HUMAN_ACTION"
                 reason = $reasonValue
+                alert_status = "ALERT_DRY_RUN"
                 email_alert_status = $state.chatgpt.last_email_alert_status
                 browser_should_remain_open = $true
                 bypass_attempted = $false
@@ -639,8 +714,9 @@ switch ($Mode) {
             Write-JsonFile -Path (Join-Path $ArtifactPath "email_event_samples.json") -Payload $event
             Emit-Result -Payload $event
         }
-        $email = Invoke-EmailPreflight
-        Stop-IfEmailPreflightFailed -Preflight $email
+        $alert = Invoke-AlertRouterPreflight
+        Stop-IfAlertRouterFailed -Alert $alert
+        Set-ObjectField -Object $state.email -Name "alert_router_status" -Value ([string]$alert.status)
         $pauseStatePath = Join-Path $PSScriptRoot "runtime\web_judge_human_pause_state.json"
         $pauseResultPath = Join-Path $ArtifactPath "email_event_samples.json"
         $pauseOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "human_verification_pause_resume_gate.ps1") `
@@ -650,6 +726,7 @@ switch ($Mode) {
             -Reason $reasonValue `
             -ArtifactPath $ArtifactPath `
             -PauseStatePath $pauseStatePath `
+            -AlertRouterEnabled `
             -ResultPath $pauseResultPath 2>&1
         $pauseExit = $LASTEXITCODE
         $event = if (Test-Path -LiteralPath $pauseResultPath -PathType Leaf) {
@@ -657,12 +734,15 @@ switch ($Mode) {
         } else {
             Convert-JsonOutput -Output $pauseOutput
         }
-        if ([string]$event.email_alert_status -ne "EMAIL_ALERT_SENT") {
+        $eventAlertStatus = if ($event.PSObject.Properties.Name -contains "alert_status") { [string]$event.alert_status } else { [string]$event.email_alert_status }
+        if ($eventAlertStatus -notin @("ALERT_SENT_NTFY", "ALERT_SENT_GMAIL_FALLBACK", "EMAIL_ALERT_SENT")) {
             $state.chatgpt.last_email_alert_status = [string]$event.email_alert_status
+            Set-ObjectField -Object $state.chatgpt -Name "last_alert_router_status" -Value $eventAlertStatus
             Save-StateAndPool -State $state
             Emit-Result -Payload ([ordered]@{
-                status = "AUTH_WALL_EMAIL_FAILED"
+                status = "AUTH_WALL_ALERT_FAILED"
                 reason = $reasonValue
+                alert_status = $eventAlertStatus
                 email_alert_status = [string]$event.email_alert_status
                 pause_exit_code = $pauseExit
                 browser_should_remain_open = $true
@@ -671,6 +751,7 @@ switch ($Mode) {
             }) -ExitCode 11
         }
         $state.chatgpt.last_email_alert_status = [string]$event.email_alert_status
+        Set-ObjectField -Object $state.chatgpt -Name "last_alert_router_status" -Value $eventAlertStatus
         Write-JsonFile -Path (Join-Path $ArtifactPath "email_event_samples.json") -Payload $event
         Save-StateAndPool -State $state
         Emit-Result -Payload $event

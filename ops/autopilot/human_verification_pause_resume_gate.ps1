@@ -16,7 +16,9 @@ param(
     [string]$ResumeProbeOutPath = "",
     [switch]$EmailDryRun,
     [switch]$MockEmailSuccess,
-    [switch]$SessionClosed
+    [switch]$SessionClosed,
+    [switch]$AlertRouterEnabled,
+    [string]$AlertRouterConfigPath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -112,34 +114,69 @@ if ($Mode -eq "PauseAndAlert") {
     }
     Write-Json -Path $PauseStatePath -Payload $state
 
-    $emailResultPath = Join-Path $ArtifactPath "human_verification_email_alert_result.json"
-    $emailArgs = @(
-        "-ExecutionPolicy", "Bypass",
-        "-File", (Join-Path $PSScriptRoot "send_human_verification_email_alert.ps1"),
-        "-ServiceName", $ServiceName,
-        "-MissionId", $MissionId,
-        "-Reason", $Reason,
-        "-BrowserProfile", $BrowserProfile,
-        "-ArtifactPath", $ArtifactPath,
-        "-PauseStatePath", $PauseStatePath,
-        "-ResultPath", $emailResultPath
-    )
-    if (-not [string]::IsNullOrWhiteSpace($PageUrl)) {
-        $emailArgs += @("-PageUrl", $PageUrl)
-    }
-    if (-not [string]::IsNullOrWhiteSpace($EmailLocalConfigPath)) {
-        $emailArgs += @("-LocalConfigPath", $EmailLocalConfigPath)
-    }
-    if ($EmailDryRun) { $emailArgs += "-DryRun" }
-    if ($MockEmailSuccess) { $emailArgs += "-MockSmtpSuccess" }
+    $emailStatus = "NOT_ATTEMPTED"
+    $emailExit = 0
+    $emailOutput = @()
+    $alertStatus = "NOT_ATTEMPTED"
+    $alertExit = 0
+    $alertOutput = @()
 
-    $emailOutput = & powershell @emailArgs 2>&1
-    $emailExit = $LASTEXITCODE
-    $emailResult = Read-JsonIfExists -Path $emailResultPath
-    $emailStatus = if ($emailResult) { [string]$emailResult.status } else { "EMAIL_ALERT_SEND_FAILED" }
+    if (-not $EmailDryRun -and -not $MockEmailSuccess -and ($AlertRouterEnabled -or (Test-Path -LiteralPath (Join-Path $PSScriptRoot "send_autopilot_alert.ps1") -PathType Leaf))) {
+        $alertResultPath = Join-Path $ArtifactPath "human_verification_autopilot_alert_result.json"
+        $alertArgs = @(
+            "-ExecutionPolicy", "Bypass",
+            "-File", (Join-Path $PSScriptRoot "send_autopilot_alert.ps1"),
+            "-Channel", "auto",
+            "-Title", "[NeuroChess] Action required - complete ChatGPT verification",
+            "-MissionId", $MissionId,
+            "-ServiceName", $ServiceName,
+            "-Reason", $Reason,
+            "-ArtifactPath", $ArtifactPath,
+            "-Priority", "high",
+            "-ResultPath", $alertResultPath,
+            "-NoPrompt"
+        )
+        if (-not [string]::IsNullOrWhiteSpace($AlertRouterConfigPath)) {
+            $alertArgs += @("-ConfigPath", $AlertRouterConfigPath)
+        }
+        $alertOutput = & powershell @alertArgs 2>&1
+        $alertExit = $LASTEXITCODE
+        $alertResult = Read-JsonIfExists -Path $alertResultPath
+        $alertStatus = if ($alertResult) { [string]$alertResult.status } else { "ALERT_DELIVERY_FAILED" }
+        $emailStatus = $alertStatus
+        $state.alert_status = $alertStatus
+        $state.alert_result_path = $alertResultPath
+    } else {
+        $emailResultPath = Join-Path $ArtifactPath "human_verification_email_alert_result.json"
+        $emailArgs = @(
+            "-ExecutionPolicy", "Bypass",
+            "-File", (Join-Path $PSScriptRoot "send_human_verification_email_alert.ps1"),
+            "-ServiceName", $ServiceName,
+            "-MissionId", $MissionId,
+            "-Reason", $Reason,
+            "-BrowserProfile", $BrowserProfile,
+            "-ArtifactPath", $ArtifactPath,
+            "-PauseStatePath", $PauseStatePath,
+            "-ResultPath", $emailResultPath
+        )
+        if (-not [string]::IsNullOrWhiteSpace($PageUrl)) {
+            $emailArgs += @("-PageUrl", $PageUrl)
+        }
+        if (-not [string]::IsNullOrWhiteSpace($EmailLocalConfigPath)) {
+            $emailArgs += @("-LocalConfigPath", $EmailLocalConfigPath)
+        }
+        if ($EmailDryRun) { $emailArgs += "-DryRun" }
+        if ($MockEmailSuccess) { $emailArgs += "-MockSmtpSuccess" }
+
+        $emailOutput = & powershell @emailArgs 2>&1
+        $emailExit = $LASTEXITCODE
+        $emailResult = Read-JsonIfExists -Path $emailResultPath
+        $emailStatus = if ($emailResult) { [string]$emailResult.status } else { "EMAIL_ALERT_SEND_FAILED" }
+        $alertStatus = $emailStatus
+        $state.email_alert_result_path = $emailResultPath
+    }
 
     $state.email_alert_status = $emailStatus
-    $state.email_alert_result_path = $emailResultPath
     Write-Json -Path $PauseStatePath -Payload $state
 
     $result = [ordered]@{
@@ -150,6 +187,9 @@ if ($Mode -eq "PauseAndAlert") {
         mission_id = $MissionId
         reason = $Reason
         pause_state_path = $PauseStatePath
+        alert_status = $alertStatus
+        alert_exit_code = $alertExit
+        alert_output_redacted = ($alertOutput -join "`n")
         email_alert_status = $emailStatus
         email_exit_code = $emailExit
         email_output_redacted = ($emailOutput -join "`n")
@@ -164,7 +204,7 @@ if ($Mode -eq "PauseAndAlert") {
     }
     Write-Json -Path $ResultPath -Payload $result
     $result | ConvertTo-Json -Depth 30
-    if ($emailStatus -eq "EMAIL_ALERT_SENT" -or $emailStatus -eq "EMAIL_ALERT_DRY_RUN") { exit 0 }
+    if ($alertStatus -in @("ALERT_SENT_NTFY", "ALERT_SENT_GMAIL_FALLBACK", "ALERT_DRY_RUN") -or $emailStatus -eq "EMAIL_ALERT_SENT" -or $emailStatus -eq "EMAIL_ALERT_DRY_RUN") { exit 0 }
     if ($emailStatus -eq "EMAIL_ALERT_NOT_CONFIGURED") { exit 10 }
     exit 11
 }

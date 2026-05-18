@@ -9,31 +9,38 @@ problems:
     stop_status: CDP_SESSION_UNAVAILABLE
   - status_code: AUTH_OR_CONSENT_WALL
     detection_method: "Auth, login, or consent markers are visible."
-    action: "Keep browser open, email user, wait for manual action, poll ResumeCheck."
+    action: "Keep browser open, send ntfy iPhone alert, wait for manual action, poll ResumeCheck. Use Gmail only as explicitly enabled fallback."
     forbidden_action: "Do not click consent/login controls or enter credentials."
     retry_limit: 0
-    email: true
+    email: gmail_fallback_only
     stop_status: WAITING_FOR_HUMAN_ACTION
   - status_code: HUMAN_VERIFICATION_REQUIRED
     detection_method: "CAPTCHA, I am human, or human verification markers are visible."
-    action: "Keep browser open, email user, wait for manual action."
+    action: "Keep browser open, send ntfy iPhone alert, wait for manual action."
     forbidden_action: "Do not automate human verification."
     retry_limit: 0
-    email: true
+    email: gmail_fallback_only
+    stop_status: WAITING_FOR_HUMAN_ACTION
+  - status_code: CAPTCHA_REQUIRED
+    detection_method: "CAPTCHA or challenge marker appears."
+    action: "Keep browser open, send ntfy iPhone alert, wait for manual action."
+    forbidden_action: "Do not solve CAPTCHA or click verification controls."
+    retry_limit: 0
+    email: gmail_fallback_only
     stop_status: WAITING_FOR_HUMAN_ACTION
   - status_code: TWO_FACTOR_REQUIRED
     detection_method: "2FA marker or secondary auth screen appears."
-    action: "Email user and wait."
+    action: "Send ntfy iPhone alert and wait."
     forbidden_action: "Do not enter 2FA codes."
     retry_limit: 0
-    email: true
+    email: gmail_fallback_only
     stop_status: WAITING_FOR_HUMAN_ACTION
   - status_code: CHATGPT_CONVERSATION_TOO_LONG
     detection_method: "message_count_sent >= 35"
-    action: "Rotate to next available discussion and bootstrap before send."
+    action: "Rotate to next available discussion and bootstrap before send; if no discussion remains, send ntfy alert requesting a new pool."
     forbidden_action: "Do not send to exhausted discussion."
     retry_limit: 0
-    email: true_if_pool_exhausted
+    email: gmail_fallback_only_if_enabled
     stop_status: CHATGPT_POOL_EXHAUSTED
   - status_code: CHATGPT_DISCUSSION_NOT_BOOTSTRAPPED
     detection_method: "bootstrap_sent is false"
@@ -42,13 +49,20 @@ problems:
     retry_limit: 1
     email: false
     stop_status: BOOTSTRAP_REQUIRED
-  - status_code: EMAIL_SECRET_CACHE_MISSING
-    detection_method: "No NC_ALERT_SMTP_PASSWORD env var and no DPAPI cache."
-    action: "Prompt once unless NoPrompt, then store encrypted cache."
-    forbidden_action: "Do not print or commit password."
-    retry_limit: 1
-    email: false
-    stop_status: EMAIL_SECRET_CACHE_MISSING
+  - status_code: EMAIL_PREFLIGHT_FAILED
+    detection_method: "Gmail SMTP preflight fails while ntfy is ready."
+    action: "Record Gmail fallback unavailable and continue if ntfy alert router is ready."
+    forbidden_action: "Do not block live web flow on Gmail when ntfy works."
+    retry_limit: 0
+    email: fallback_disabled_by_default
+    stop_status: GMAIL_FALLBACK_UNAVAILABLE
+  - status_code: ALERT_DELIVERY_FAILED
+    detection_method: "ntfy and all enabled fallbacks failed."
+    action: "Write local runtime alert event and stop live action."
+    forbidden_action: "Do not proceed to human-action-required web work without alert delivery."
+    retry_limit: 0
+    email: fallback_only_if_enabled
+    stop_status: ALERT_DELIVERY_FAILED
   - status_code: OPERATOR_PROMPT_LEAK
     detection_method: "Script asks for EvidencePath, OutputPath, ArtifactPath, URL, or counter."
     action: "Fail tests and route through resolver/state."

@@ -1,0 +1,14 @@
+{
+  "schema_version": "autopilot_alert_router_v1",
+  "primary_channel": "ntfy",
+  "ntfy": {
+    "enabled": true,
+    "server": "https://ntfy.sh",
+    "topic": "replace-with-private-random-topic-at-least-24-characters",
+    "priority": "high"
+  },
+  "gmail": {
+    "enabled": false,
+    "fallback_only": true
+  }
+}

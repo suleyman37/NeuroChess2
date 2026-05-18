@@ -37,10 +37,15 @@ That file is gitignored. It may contain private operational URLs, counters, and 
 Auth, consent, CAPTCHA, 2FA, and human verification are pause states:
 
 - keep Chrome open;
-- send email;
+- send an ntfy iPhone alert first;
+- use Gmail only as an explicitly enabled fallback;
 - wait for manual action;
 - poll read-only resume checks;
 - never click verification or enter credentials.
+
+Gmail SMTP preflight is no longer the primary live-web gate. If ntfy is
+configured and working, Gmail failure is recorded as fallback unavailable and
+does not block Web Judge automation.
 
 ## Gemini
 

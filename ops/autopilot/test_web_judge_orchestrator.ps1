@@ -109,6 +109,7 @@ try {
 
     $pause = Invoke-Orchestrator -Arguments @("-Mode", "PauseForHuman", "-ProblemCode", "AUTH_OR_CONSENT_WALL", "-DryRun", "-NoPrompt")
     Assert-True ($pause.status -eq "WAITING_FOR_HUMAN_ACTION") "auth wall did not pause"
+    Assert-True ($pause.alert_status -eq "ALERT_DRY_RUN") "auth wall did not produce alert dry-run"
     Assert-True ($pause.email_alert_status -eq "EMAIL_ALERT_DRY_RUN") "auth wall did not produce email dry-run"
     Assert-True ($pause.clicked_verification -eq $false) "pause encoded click action"
 
@@ -118,7 +119,8 @@ try {
 
     $setup = Invoke-Orchestrator -Arguments @("-Mode", "Setup", "-DryRun", "-NoPrompt")
     Assert-True ($setup.status -eq "SETUP_COMPLETE") "setup dry run failed"
-    Assert-True ($setup.email_secret_status -in @("EMAIL_PREFLIGHT_READY", "EMAIL_SECRET_CACHE_CREATED_AND_READY")) "unexpected email status"
+    Assert-True ($setup.alert_router_status -in @("ALERT_ROUTER_DRY_RUN_READY", "ALERT_ROUTER_READY")) "unexpected alert router status"
+    Assert-True ($setup.gmail_blocks_live_flow -eq $false) "Gmail should not block live flow when alert router is ready"
 
     $bootstrapPath = Join-Path $ArtifactPath "bootstrap_context_sample.md"
     $bootstrapResult = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $RepoRoot "ops\autopilot\build_web_judge_bootstrap_context.ps1") `
@@ -161,12 +163,12 @@ try {
         exhausted_discussions_not_reused = $true
         exhausted_pool_requests_email = $true
         problem_matrix_maps_cdp = $true
-        auth_consent_email_pause = $true
-        human_verification_email_pause = ($codes -contains "HUMAN_VERIFICATION_REQUIRED")
-        two_factor_email_pause = ($codes -contains "TWO_FACTOR_REQUIRED")
+        auth_consent_alert_pause = $true
+        human_verification_alert_pause = ($codes -contains "HUMAN_VERIFICATION_REQUIRED")
+        two_factor_alert_pause = ($codes -contains "TWO_FACTOR_REQUIRED")
         operator_prompt_leak_detected_by_source_test = $true
         low_level_path_prompts_forbidden = $true
-        email_secret_cache_integrated = $true
+        alert_router_integrated = $true
         no_prompt_mode_no_hang = $true
         local_urls_not_staged = $true
         runtime_state_not_staged = $true
