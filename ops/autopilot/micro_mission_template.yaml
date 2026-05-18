@@ -1,0 +1,31 @@
+schema_version: autonomous_micro_mission_template_v1
+defaults:
+  branch_prefix: auto
+  max_files: 8
+  max_diff_lines: 1200
+  no_road_push: true
+  no_user_intervention: true
+  no_live_dependency: true
+required_sections:
+  - mission_summary
+  - objective
+  - allowed_paths
+  - forbidden_paths
+  - validation
+  - stop_conditions
+  - mission_doctor
+visual_requirements:
+  - dev_route_required_for_visual_code
+  - screenshots_external_only
+  - visual_delta_report_required
+  - board_safety_check_if_board_visible
+  - no_live_judge_plumbing
+non_visual_requirements:
+  - explain_pixel_mandate_exception
+  - prove_automation_or_safety_value
+stop_conditions:
+  - road_to_v2_would_be_modified
+  - forbidden_path_touched
+  - secret_or_private_url_detected
+  - user_intervention_required
+  - live_web_dependency_required

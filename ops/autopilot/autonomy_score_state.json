@@ -1,0 +1,20 @@
+{
+  "schema_version": "autonomy_score_state_v1",
+  "updated_by": "A20AN_AUTONOMOUS_IMPROVEMENT_CONDUCTOR_V1",
+  "scores": {
+    "safety_git": 18.5,
+    "operator_zero_friction": 17.5,
+    "web_orchestrator": 17.5,
+    "autonomous_loop": 12.0,
+    "visual_production": 12.5,
+    "evidence_quality": 17.0,
+    "night_readiness": 15.0,
+    "overall": 17.0
+  },
+  "target_overall": 19.5,
+  "notes": [
+    "Conservative baseline after A20AL.",
+    "Live GPT Web is optional and may be parked.",
+    "Visual production score cannot climb on docs and gates alone."
+  ]
+}

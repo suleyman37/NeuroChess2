@@ -1,0 +1,37 @@
+schema_version: autonomy_scorecard_v1
+target_overall: 19.5
+categories:
+  - id: safety_git
+    name: Safety & Git Hygiene
+    target: 20
+    current_estimate: 18.5
+  - id: operator_zero_friction
+    name: Operator Zero-Friction
+    target: 19.5
+    current_estimate: 17.5
+  - id: web_orchestrator
+    name: Supervisor Robustness
+    target: 19
+    current_estimate: 17.5
+  - id: autonomous_loop
+    name: Mission Loop Autonomy
+    target: 19.5
+    current_estimate: 12
+  - id: visual_production
+    name: Visual Production
+    target: 19.5
+    current_estimate: 12.5
+  - id: evidence_quality
+    name: Evidence Quality
+    target: 19.5
+    current_estimate: 17
+  - id: night_readiness
+    name: Night Mode Readiness
+    target: 19.5
+    current_estimate: 15
+score_rules:
+  docs_or_gates_visual_ceiling: 17.5
+  probes_visual_ceiling: 18.5
+  tripled_variants_visual_ceiling: 19.2
+  limited_night_rehearsal_ceiling: 19.5
+  no_gemini_or_a20p_live_judge_ceiling: 18

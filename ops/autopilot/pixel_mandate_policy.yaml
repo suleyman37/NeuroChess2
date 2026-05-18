@@ -1,0 +1,17 @@
+schema_version: pixel_mandate_policy_v1
+principle: Visual automation must produce visible pixels, not only more meta gates.
+requirements:
+  - create_visible_dev_routes_for_visual_progress
+  - write_screenshots_to_external_artifacts
+  - include_visual_delta_report
+  - target_signature_candidate_or_component
+  - avoid_new_live_judge_plumbing_during_visual_production
+score_rules:
+  docs_and_gates_visual_ceiling: 17.5
+  visible_probes_ceiling: 18.5
+  tripled_signature_variants_ceiling: 19.2
+  limited_productive_rehearsal_ceiling: 19.5
+exceptions:
+  - automation_safety_bootstrap
+  - mission_doctor_or_conductor_infrastructure
+  - report_only_failure_diagnosis

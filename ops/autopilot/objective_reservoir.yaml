@@ -1,0 +1,168 @@
+schema_version: autonomous_objective_reservoir_v1
+selection_policy: prefer_visual_production_unless_hard_blocked
+objectives:
+  - id: VISUAL_CONSTITUTION_CANDIDATE_V0
+    family: VISUAL_PRODUCTION_MODE
+    priority: 100
+    expected_value: Establish a first visual constitution candidate before more automation meta work.
+    risk_tier: low
+    allowed_paths:
+      - docs/design/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - manifest.json
+      - visual_delta_report.md
+      - mission_doctor_result.json
+    success_criteria:
+      - constitution_candidate_defined
+      - learning_loop_contribution_explained
+      - no_live_web_dependency
+    fallback_if_blocked: SIGNATURE_CANDIDATE_PROBE_SET_V0
+  - id: SIGNATURE_CANDIDATE_PROBE_SET_V0
+    family: VISUAL_PRODUCTION_MODE
+    priority: 95
+    expected_value: Define 10 visible Signature Candidate probes without waiting on GPT Web.
+    risk_tier: low
+    allowed_paths:
+      - docs/design/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - probe_manifest.json
+      - screenshot_plan.md
+      - mission_doctor_result.json
+    success_criteria:
+      - ten_probe_routes_specified
+      - no_product_code_mutation
+      - pixel_mandate_attached
+    fallback_if_blocked: SAFETY_PROMPT_LEAK_SWEEP
+  - id: SACRED_BOARD_CHAMBER_COMPONENT_PROBE
+    family: SIGNATURE_COMPONENTS
+    priority: 88
+    expected_value: Create a focused component probe contract for board-first visual identity.
+    risk_tier: low
+    allowed_paths:
+      - docs/design/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - component_probe_contract.md
+      - mission_doctor_result.json
+    success_criteria:
+      - board_safety_check_required
+      - three_variant_path_defined
+      - no_live_judge_required
+    fallback_if_blocked: SIGNATURE_CANDIDATE_PROBE_SET_V0
+  - id: HUMAN_TASTE_VOTE_SHEET_SCHEMA
+    family: HUMAN_TASTE_CALIBRATION
+    priority: 72
+    expected_value: Prepare a vote sheet schema for later review without blocking autonomous runs.
+    risk_tier: low
+    allowed_paths:
+      - docs/design/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - vote_sheet_schema.json
+      - daily_bundle_plan.md
+    success_criteria:
+      - no_live_user_vote_required
+      - screenshot_bundle_fields_defined
+    fallback_if_blocked: NIGHT_MODE_OBJECTIVE_SELECTION_DRY_RUN
+  - id: NIGHT_MODE_OBJECTIVE_SELECTION_DRY_RUN
+    family: NIGHT_MODE_READINESS
+    priority: 68
+    expected_value: Dry-run bounded objective selection for a future night rehearsal.
+    risk_tier: low
+    allowed_paths:
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - night_selection_dry_run.json
+      - failure_ledger_check.json
+    success_criteria:
+      - max_runtime_enforced
+      - max_iterations_enforced
+      - no_user_intervention
+    fallback_if_blocked: SAFETY_PROMPT_LEAK_SWEEP
+  - id: SAFETY_PROMPT_LEAK_SWEEP
+    family: SAFETY_MAINTENANCE
+    priority: 65
+    expected_value: Verify no low-level prompts or local secrets are exposed.
+    risk_tier: low
+    allowed_paths:
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - prompt_leak_report.json
+      - secret_safety_report.json
+    success_criteria:
+      - no_evidencepath_prompt
+      - no_outputpath_prompt
+      - no_secret_or_url_printed
+    fallback_if_blocked: VISUAL_CONSTITUTION_CANDIDATE_V0
+  - id: WEB_ORCHESTRATOR_NO_PROMPT_DRY_RUN
+    family: ORCHESTRATOR_RELIABILITY
+    priority: 45
+    expected_value: Validate web orchestrator no-prompt behavior only when a blocker needs diagnosis.
+    risk_tier: low
+    allowed_paths:
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - no_prompt_result.json
+      - blocked_lane_classification.json
+    success_criteria:
+      - no_ready_gate_in_unattended_mode
+      - live_lane_parks_when_blocked
+    fallback_if_blocked: VISUAL_CONSTITUTION_CANDIDATE_V0
