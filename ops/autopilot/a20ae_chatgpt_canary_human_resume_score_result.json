@@ -1,0 +1,22 @@
+{
+  "schema_version": "A20AE_score_update_v1",
+  "mission_id": "A20AE_RERUN_CHATGPT_CANARY_USER_READY_EMAIL_ALERT",
+  "previous_score": "17.5/20",
+  "new_score": "17.5/20",
+  "user_ready_gate": "READY_CONFIRMED",
+  "email_sent": false,
+  "human_verification_encountered": false,
+  "resume_result": "NOT_TRIGGERED",
+  "canary_generated": true,
+  "code_hidden_from_prompt": true,
+  "c6_file_input_found": false,
+  "c7_attachment_confirmed": false,
+  "c8_prompt_sent_with_image": false,
+  "c9_image_aware_raw_response_captured": false,
+  "c10_valid_canary_json_captured": false,
+  "highest_overall_capability": "C5_LOCAL_CANARY_IMAGE_GENERATED",
+  "highest_chatgpt_capability": "C0_REPO_AND_CONFIG_FOUND",
+  "reached_18": false,
+  "reason": "User readiness was confirmed and a local canary was generated, but ChatGPT CDP attach failed with ECONNREFUSED on 127.0.0.1:9222 before human verification, upload, or prompt send.",
+  "next_required_proof": "An active user-owned ChatGPT Chrome/CDP session on 127.0.0.1:9222 before rerunning the canary."
+}
