@@ -48,3 +48,16 @@ problems earlier.
 - detect earlier: require screenshot-to-patch evidence for 18/20 claims.
 - avoid: claiming visual competence from docs alone.
 - classification: system limitation.
+
+## A20P
+
+- what failed: the first teaser patch made the route cleaner, but the first
+  smoke pass exposed a board-size regression at 1366px; the design could have
+  become a nicer screenshot while quietly weakening the board artifact.
+- why it matters: public framing cannot starve the sacred board. A teaser mode
+  that hides prototype chrome still fails if the board stops feeling central.
+- detect earlier: run board geometry and screenshot checks at 1366, 1440, and
+  1920 before accepting the visual delta.
+- avoid: solving prototype residue by compressing the board; hide weak chrome
+  and then reallocate space back to the board.
+- classification: meaningful improvement after fix, with public-readiness debt.

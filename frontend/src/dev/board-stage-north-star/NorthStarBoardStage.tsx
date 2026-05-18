@@ -142,11 +142,29 @@ function squareTone(fileIndex: number, rank: number) {
   return (fileIndex + rank) % 2 === 0 ? "dark" : "light";
 }
 
+function getInitialNorthStarState(): NorthStarState {
+  if (typeof window === "undefined") {
+    return "observe";
+  }
+
+  const value = new URLSearchParams(window.location.search).get("state");
+  return stateOrder.includes(value as NorthStarState) ? (value as NorthStarState) : "observe";
+}
+
+function isNorthStarTeaserMode() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return new URLSearchParams(window.location.search).get("teaser") === "1";
+}
+
 export function NorthStarBoardStage() {
-  const [stageState, setStageState] = useState<NorthStarState>("observe");
+  const [stageState, setStageState] = useState<NorthStarState>(() => getInitialNorthStarState());
   const [reducedMotion, setReducedMotion] = useState(false);
   const [flatFallback, setFlatFallback] = useState(false);
 
+  const teaserMode = isNorthStarTeaserMode();
   const preset = statePresets[stageState];
   const traceVisible = preset.allowsBoardTrace;
   const stageStyle = {
@@ -185,11 +203,12 @@ export function NorthStarBoardStage() {
 
   return (
     <main
-      className="a20l-stage"
+      className={`a20l-stage${teaserMode ? " a20l-stage-teaser" : ""}`}
       data-testid="a20l-north-star-stage"
       data-state={stageState}
       data-reduced-motion={reducedMotion ? "true" : "false"}
       data-flat-fallback={flatFallback ? "true" : "false"}
+      data-teaser-mode={teaserMode ? "true" : "false"}
       data-chessboard-fidelity="pass"
       data-anti-spoiler={preset.phase === "pre_feedback" ? "pre-feedback-clean" : "post-feedback-trace"}
       style={stageStyle}
@@ -201,7 +220,14 @@ export function NorthStarBoardStage() {
         <header className="a20l-hero">
           <div>
             <p className="a20l-kicker">Decision chamber</p>
-            <h1>NeuroChess Board Stage</h1>
+            <h1>{teaserMode ? "NeuroChess Decision Chamber" : "NeuroChess Board Stage"}</h1>
+            {teaserMode && (
+              <div className="a20l-teaser-proof" aria-label="North Star safeguards">
+                <span>Strict board</span>
+                <span>No hint before effort</span>
+                <span>Feedback after try</span>
+              </div>
+            )}
           </div>
           <p>{preset.title}</p>
         </header>
@@ -220,6 +246,13 @@ export function NorthStarBoardStage() {
           </aside>
 
           <section className="a20l-board-theater" aria-label="Sacred board stage">
+            {teaserMode && (
+              <div className="a20l-teaser-state-card" data-testid="a20l-teaser-state-card">
+                <span>{preset.label}</span>
+                <strong>{preset.feedbackTone}</strong>
+                <p>{preset.chamberLine}</p>
+              </div>
+            )}
             {/* Visual role: board_readability. The frame may glow, but the grid never distorts. */}
             <div
               className="a20l-board-frame"
@@ -269,9 +302,28 @@ export function NorthStarBoardStage() {
               </div>
             </div>
             <div className="a20l-board-caption" data-testid="a20l-board-caption">
-              <span>8x8 preserved</span>
-              <span>{preset.boardPromise}</span>
+              <span>{teaserMode ? "Read first" : "8x8 preserved"}</span>
+              <span>
+                {teaserMode
+                  ? "No hint before effort. Teaching appears only after feedback."
+                  : preset.boardPromise}
+              </span>
             </div>
+            {teaserMode && (
+              <div className="a20l-teaser-phase-rail" aria-label="Decision phase rail">
+                {stateOrder.map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={id === stageState ? "is-active" : ""}
+                    data-testid={`a20l-teaser-state-${id}`}
+                    onClick={() => setStageState(id)}
+                  >
+                    <span>{statePresets[id].label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </section>
 
           <aside className="a20l-chamber-panel a20l-chamber-panel-right" aria-label="State controls">
@@ -314,7 +366,11 @@ export function NorthStarBoardStage() {
 
         <footer className="a20l-footer">
           <p>{preset.feedbackTone}</p>
-          <p>{sceneContract.board_readability_rule}</p>
+          <p>
+            {teaserMode
+              ? "A disciplined chamber for reading, trying, and learning after effort."
+              : sceneContract.board_readability_rule}
+          </p>
         </footer>
       </section>
     </main>

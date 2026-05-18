@@ -61,3 +61,36 @@ Why:
 - Show the Creative Director chose a patch for concrete visible reasons.
 - Show at least one bad design is correctly rejected.
 - Record Taste Ledger and Failure Gallery updates.
+
+## A20P Update
+
+Estimated score after A20P: 17/20.
+
+Why:
+
+- A20P completed a real screenshot-to-patch loop on the A20L North Star route.
+- The selected patch was constrained and delete-first: it reduced side-panel
+  dominance, hid proof-like public chrome in teaser mode, and introduced a
+  compact Decision Phase Rail.
+- Before/after screenshots and contact sheets were generated outside the repo.
+- Browser checks verified 64 squares, square geometry, centered board, no board
+  pollution, and no pre-feedback traces at 1366, 1440, and 1920 observe.
+- The first attempted teaser sizing was caught by the smoke as too small at
+  1366px and was fixed before acceptance.
+- Taste Ledger and Failure Gallery were updated with the concrete learning.
+
+Why this is not 18/20:
+
+- Live Gemini and ChatGPT visual court inputs were not used.
+- Human visual review remains required before a public-ready claim.
+- The result is PUBLIC_TEASER_READY_WITH_CAVEATS, not HERO_SCREENSHOT_READY.
+- Feedback language and piece identity still need deeper visual proof.
+
+Required proof to reach 18:
+
+- run a safe live or equivalently strict multi-judge visual court on the A20P
+  screenshots;
+- prove the system can merge external visual objections without treating
+  missing judges as PASS;
+- run at least one additional focused patch or human-reviewed visual decision
+  that improves a real screenshot without hard-gate regression.

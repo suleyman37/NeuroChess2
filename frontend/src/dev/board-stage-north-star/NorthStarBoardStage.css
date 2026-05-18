@@ -163,6 +163,22 @@
   line-height: 0.94;
 }
 
+.a20l-teaser-proof {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  color: #d8ebf7;
+  font-size: 0.72rem;
+  font-weight: 820;
+}
+
+.a20l-teaser-proof span {
+  padding: 6px 9px;
+  border: 1px solid color-mix(in srgb, var(--a20l-accent) 30%, transparent);
+  background: rgba(3, 10, 18, 0.46);
+}
+
 .a20l-hero > p {
   margin: 0;
   color: #d4e3ef;
@@ -228,6 +244,11 @@
   align-content: center;
   min-height: 0;
   height: calc(100vh - 170px);
+}
+
+.a20l-teaser-state-card,
+.a20l-teaser-phase-rail {
+  display: none;
 }
 
 .a20l-board-frame {
@@ -515,6 +536,149 @@
 
 .a20l-stage[data-state="replay"] .a20l-world-ring-two {
   border-color: rgba(169, 161, 255, 0.34);
+}
+
+.a20l-stage-teaser .a20l-shell {
+  padding: 22px 30px 18px;
+}
+
+.a20l-stage-teaser .a20l-hero {
+  grid-template-columns: minmax(560px, 0.88fr) minmax(320px, 0.8fr);
+  min-height: 96px;
+}
+
+.a20l-stage-teaser .a20l-hero h1 {
+  font-size: clamp(2.1rem, 2.6vw, 2.85rem);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.a20l-stage-teaser .a20l-experience {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.a20l-stage-teaser .a20l-chamber-panel {
+  display: none;
+}
+
+.a20l-stage-teaser .a20l-board-theater {
+  grid-template-rows: auto auto auto auto;
+  align-content: center;
+  gap: 8px;
+  height: calc(100vh - 144px);
+}
+
+.a20l-stage-teaser .a20l-teaser-state-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: min(720px, 78vw);
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, var(--a20l-accent) 25%, transparent);
+  background:
+    linear-gradient(90deg, transparent, color-mix(in srgb, var(--a20l-accent) 9%, rgba(4, 10, 18, 0.64)), transparent),
+    rgba(4, 10, 18, 0.46);
+  color: #dcecf7;
+  text-align: center;
+}
+
+.a20l-stage-teaser .a20l-teaser-state-card span {
+  color: color-mix(in srgb, var(--a20l-accent) 78%, #ffffff 22%);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.a20l-stage-teaser .a20l-teaser-state-card strong {
+  font-size: clamp(0.96rem, 1.2vw, 1.16rem);
+  line-height: 1.1;
+}
+
+.a20l-stage-teaser .a20l-teaser-state-card p {
+  max-width: 620px;
+  margin: 0;
+  color: #bdd0df;
+  font-size: 0.76rem;
+  line-height: 1.34;
+}
+
+.a20l-stage-teaser .a20l-board-frame {
+  width: min(700px, 66vh, 64vw);
+  padding: 22px;
+}
+
+.a20l-stage-teaser .a20l-board-caption {
+  display: none;
+}
+
+.a20l-stage-teaser .a20l-teaser-phase-rail {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  width: min(720px, 80vw);
+  padding: 6px;
+  border: 1px solid rgba(178, 222, 255, 0.13);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 70%),
+    rgba(4, 9, 18, 0.58);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.32);
+}
+
+.a20l-stage-teaser .a20l-teaser-phase-rail button {
+  min-width: 92px;
+  min-height: 30px;
+  border: 1px solid rgba(172, 214, 245, 0.18);
+  border-radius: 4px;
+  color: #eaf6ff;
+  background: rgba(9, 16, 29, 0.58);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.a20l-stage-teaser .a20l-teaser-phase-rail button:hover,
+.a20l-stage-teaser .a20l-teaser-phase-rail button:focus-visible {
+  border-color: color-mix(in srgb, var(--a20l-accent) 70%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--a20l-accent) 23%, transparent);
+  outline-offset: 2px;
+}
+
+.a20l-stage-teaser .a20l-teaser-phase-rail button.is-active {
+  border-color: color-mix(in srgb, var(--a20l-accent) 78%, transparent);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--a20l-accent) 25%, rgba(9, 16, 29, 0.78)), rgba(9, 16, 29, 0.72));
+  box-shadow:
+    inset 0 -2px 0 var(--a20l-accent),
+    0 0 26px color-mix(in srgb, var(--a20l-accent) 15%, transparent);
+}
+
+.a20l-stage-teaser .a20l-post-trace path,
+.a20l-stage-teaser .a20l-post-trace circle {
+  stroke-width: 1.65;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--a20l-accent) 42%, transparent));
+}
+
+.a20l-stage-teaser .a20l-post-trace circle {
+  opacity: 0.9;
+}
+
+.a20l-stage-teaser .a20l-post-trace-miss .a20l-trace-path {
+  stroke-width: 1.55;
+}
+
+.a20l-stage-teaser .a20l-post-trace-miss .a20l-trace-ghost {
+  opacity: 0.7;
+  stroke-width: 0.95;
+}
+
+.a20l-stage-teaser .a20l-footer {
+  grid-template-columns: minmax(220px, 0.36fr) 1fr;
+  min-height: 28px;
+  opacity: 0.88;
+  font-size: 0.78rem;
 }
 
 .a20l-stage[data-flat-fallback="true"] {

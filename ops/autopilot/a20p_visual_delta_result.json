@@ -1,0 +1,23 @@
+{
+  "schema_version": "A20P_visual_delta_result_v1",
+  "previous_score": 16,
+  "new_score_estimate": 17,
+  "score_ceiling_applied": "no_live_visual_court_external_judges",
+  "reason": "A20P completed a real screenshot-to-patch loop on the A20L DEV-only route, improved public-teaser framing, preserved hard gates, and generated before/after evidence. It does not reach 18 because live Gemini/ChatGPT or equivalent stronger multi-judge visual debate was not used and human review remains required.",
+  "evidence_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_training\\A20P_screenshot_to_patch_a20l_20260518\\",
+  "patch_result": "PATCH_IMPROVED_PUBLIC_TEASER_READINESS",
+  "before_classification": "INTERNAL_NORTH_STAR_CANDIDATE",
+  "after_classification": "PUBLIC_TEASER_READY_WITH_CAVEATS",
+  "board_fidelity": "PASS_CHESS_FIDELITY",
+  "anti_spoiler": "PASS_STATE_SEMANTICS",
+  "generic_glow": "PASS_NO_GENERIC_GLOW_OVERUSE",
+  "prototype_residue": "MEANINGFUL_IMPROVEMENT",
+  "live_chatgpt_called": false,
+  "live_gemini_called": false,
+  "human_review_required": true,
+  "next_required_proof": [
+    "run live or equivalently strict Gemini/ChatGPT visual court without human-verification bypass",
+    "run second screenshot-to-patch generation focused on feedback and piece identity",
+    "obtain human visual review before public-ready or 18+/20 claims"
+  ]
+}
