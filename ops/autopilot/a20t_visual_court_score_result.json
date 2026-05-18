@@ -1,0 +1,33 @@
+{
+  "schema_version": "A20T_visual_court_score_result_v1",
+  "mission_id": "A20T_AUTONOMOUS_REAL_JUDGE_CAPTURE_AND_MERGE",
+  "previous_score": 17.5,
+  "new_score_estimate": 17.5,
+  "reached_18": false,
+  "final_verdict": "VISUAL_COURT_OUTPUTS_INVALID_NO_SCORE_GAIN",
+  "artifact_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_court_bridge\\A20T_autonomous_real_judge_capture_20260518\\",
+  "evidence_path": "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\visual_training\\A20P_screenshot_to_patch_a20l_20260518\\",
+  "capture_results": {
+    "gemini": "GEMINI_RESPONSE_TIMEOUT_OR_DONE_MISSING",
+    "chatgpt": "SAFE_LIVE_JUDGE_CAPTURE_UNAVAILABLE"
+  },
+  "validation_results": {
+    "gemini": "MISSING_INPUT",
+    "chatgpt": "MISSING_INPUT"
+  },
+  "merge_executed": false,
+  "creative_director_verdict_generated": false,
+  "next_prompt_generated_from_real_judges": false,
+  "a21_visual_lane_blocked": true,
+  "why_not_18": [
+    "Gemini live capture did not produce stable extractable normalized JSON after one correction attempt.",
+    "ChatGPT safe live capture was blocked before send because the enabled bridge path has no approved screenshot upload lane.",
+    "No valid real judge output was merged with hard-gate evidence."
+  ],
+  "recommended_next_mission": "A20U_VISUAL_JUDGE_CAPTURE_HARDENING",
+  "live_gemini_called_by_codex": true,
+  "live_chatgpt_called_by_codex": false,
+  "fixtures_used_as_real_outputs": false,
+  "credentials_touched": false,
+  "bypass_attempted": false
+}

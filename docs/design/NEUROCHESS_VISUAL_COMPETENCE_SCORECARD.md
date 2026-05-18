@@ -215,3 +215,36 @@ Required proof to reach 18:
 
 19/20 remains blocked until repeated screenshot-to-patch wins are reviewed
 against human-calibrated visual judgment.
+
+## A20T Update
+
+Estimated score after A20T: 17.5/20.
+
+Why:
+
+- A20T built an A20P Visual Court packet and attempted autonomous real judge
+  capture through existing safe bridge tooling.
+- Gemini was genuinely called through the bounded visual bridge and only A20P
+  visual evidence was submitted.
+- Gemini did not produce a stable extractable normalized judge JSON after the
+  initial attempt and one JSON-only correction attempt.
+- ChatGPT was blocked before send because the upload-capable web bridge is
+  disabled and the approved CDP attach path does not provide screenshot upload
+  for visual judge evidence.
+- No valid real judge output was merged.
+
+Why this is still not 18/20:
+
+- no valid Gemini visual observation JSON was captured;
+- no valid ChatGPT art-direction review JSON was captured;
+- no real external judge disagreement was merged into a Creative Director
+  verdict.
+
+Required proof to reach 18:
+
+- repair the live/manual bridge so Gemini and ChatGPT produce stable,
+  extractable, screenshot-referenced strict JSON;
+- validate both judge outputs;
+- merge them with hard-gate evidence;
+- produce a Creative Director verdict without treating missing, partial, or
+  timeout output as PASS.
