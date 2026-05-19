@@ -172,3 +172,21 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20BB
+  - id: memory-a20bc-mcp-native-playwright-bootstrap
+    date: 2026-05-19
+    category: supervisor_robustness
+    lesson: "MCP Playwright can be configured locally while script-level E2E proof uses native Playwright with a dedicated persistent profile."
+    evidence: "A20BC found MCP_PLAYWRIGHT_READY and NATIVE_PLAYWRIGHT_READY with a system browser channel fallback because bundled Chromium was absent."
+    action_rule: "Check MCP readiness, then use the native Playwright executor when scripts need direct browser control without package changes."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BC
+  - id: memory-a20bc-session-auth-resume
+    date: 2026-05-19
+    category: supervisor_robustness
+    lesson: "Opening Discussion A is not enough; ChatGPT supervision is restored only after the dedicated profile reaches SESSION_READY and a composer is detected."
+    evidence: "A20BC opened Discussion A, classified HUMAN_ACTION_REQUIRED, sent ntfy, did not send the test message, and preserved the A-J counter."
+    action_rule: "After manual auth, rerun the one-command E2E proof before any live-supervised overnight run."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BC

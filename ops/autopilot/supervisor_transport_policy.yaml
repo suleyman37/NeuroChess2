@@ -1,10 +1,12 @@
 schema_version: supervisor_transport_policy_v1
-updated_by: A20BB_FREE_SUPERVISOR_BROWSER_HARNESS_CHATGPT_AJ_E2E_PROOF
+updated_by: A20BC_MCP_PLAYWRIGHT_SESSION_BOOTSTRAP_CHATGPT_AJ_E2E_REPAIR
 
 strategy_supervisor:
   preferred_order:
+    - mcp_playwright_chatgpt_supervisor
+    - native_playwright_chatgpt_supervisor
+    - legacy_cdp_chatgpt_supervisor
     - supervisor_browser_harness
-    - chatgpt_web_a_j_pool
     - chatgpt_windows_app_adapter
     - local_omega_fallback
   zero_cost_policy:
@@ -22,6 +24,33 @@ strategy_supervisor:
     local_fallback_always_available: true
 
 lanes:
+  mcp_playwright_chatgpt_supervisor:
+    enabled: true
+    mode: codex_mcp_playwright_if_ready
+    ready_statuses:
+      - CHATGPT_A_READY
+      - CHATGPT_A_MESSAGE_SUBMITTED_RESPONSE_UNREAD
+    blocked_statuses:
+      - CHATGPT_SESSION_BOOTSTRAP_NEEDS_MANUAL_AUTH
+      - CHATGPT_AJ_POOL_MISSING
+      - CHATGPT_COMPOSER_NOT_FOUND
+      - PLAYWRIGHT_SUPERVISOR_UNAVAILABLE
+      - MCP_PLAYWRIGHT_BOOTSTRAP_PARTIAL
+      - MCP_PLAYWRIGHT_BOOTSTRAP_FAILED
+  native_playwright_chatgpt_supervisor:
+    enabled: true
+    mode: native_playwright_fallback
+    ready_statuses:
+      - CHATGPT_A_READY
+      - CHATGPT_A_MESSAGE_SUBMITTED_RESPONSE_UNREAD
+    blocked_statuses:
+      - CHATGPT_SESSION_BOOTSTRAP_NEEDS_MANUAL_AUTH
+      - CHATGPT_AJ_POOL_MISSING
+      - CHATGPT_COMPOSER_NOT_FOUND
+      - PLAYWRIGHT_SUPERVISOR_UNAVAILABLE
+  legacy_cdp_chatgpt_supervisor:
+    enabled: true
+    mode: legacy_cdp_only_if_available
   chatgpt_windows_app_adapter:
     enabled: true
     mode: local_ui_discovery_only

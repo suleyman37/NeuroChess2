@@ -1,5 +1,5 @@
 schema_version: failure_ledger_v2
-updated_by: A20BB_FREE_SUPERVISOR_BROWSER_HARNESS_CHATGPT_AJ_E2E_PROOF
+updated_by: A20BC_MCP_PLAYWRIGHT_SESSION_BOOTSTRAP_CHATGPT_AJ_E2E_REPAIR
 entries:
   - id: a20az-chatgpt-cdp-unavailable
     mission_id: A20AZ
@@ -45,17 +45,28 @@ entries:
     ntfy_alert_sent: true
     user_intervention_required: false
     loop_continued: true
+  - id: a20bc-chatgpt-session-bootstrap-needs-manual-auth
+    mission_id: A20BC
+    failed_lane: mcp_playwright_chatgpt_supervisor
+    reason: CHATGPT_SESSION_BOOTSTRAP_NEEDS_MANUAL_AUTH
+    recurrence_count: 1
+    parked_until: dedicated_playwright_profile_manually_authenticated
+    do_not_repeat_rule: do_not_send_until_session_ready_and_composer_detected
+    next_safe_alternative: local_omega_fallback_or_rerun_e2e_after_manual_auth
+    ntfy_alert_sent: true
+    user_intervention_required: false
+    loop_continued: true
 last_run_summary:
-  mission_id: A20BB
+  mission_id: A20BC
   blockers:
-    - CHATGPT_WEB_HUMAN_ACTION_REQUIRED_PARKED
+    - CHATGPT_SESSION_BOOTSTRAP_NEEDS_MANUAL_AUTH
   repeated_blocked_lanes:
-    - supervisor_browser_harness
+    - mcp_playwright_chatgpt_supervisor
   live_lanes_required: false
   loop_continued: true
   kill_switch_triggered: false
   runtime_minimum_met: not_applicable
-  stop_reason: WEB_SUPERVISOR_HUMAN_ACTION_PARKED_LOCAL_FALLBACK_CONTINUED
+  stop_reason: PLAYWRIGHT_SESSION_AUTH_PARKED_LOCAL_FALLBACK_CONTINUED
 policy:
   repeat_threshold: 2
   repeated_failure_action: avoid_lane_unless_explicitly_unparked

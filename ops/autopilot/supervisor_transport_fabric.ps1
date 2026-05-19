@@ -5,6 +5,9 @@ param(
     [string]$ArtifactPath = "",
     [string]$OutPath = "",
     [switch]$NoPrompt,
+    [switch]$MockPlaywrightReady,
+    [switch]$MockPlaywrightUnavailable,
+    [switch]$MockPlaywrightHumanAuth,
     [switch]$MockHarnessReady,
     [switch]$MockHarnessUnavailable,
     [switch]$MockHarnessHumanAction,
@@ -16,7 +19,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
-    if ($MissionId -eq "A20BB") {
+    if ($MissionId -eq "A20BC") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\mcp_playwright_chatgpt\A20BC_session_bootstrap_e2e_20260518"
+    } elseif ($MissionId -eq "A20BB") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\supervisor_browser_harness\A20BB_chatgpt_aj_e2e_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\chatgpt_desktop_adapter\A20BA_chatgpt_windows_app_adapter_20260518"
@@ -110,13 +115,65 @@ function Get-HarnessStatus {
     )
 }
 
+function Get-PlaywrightStatus {
+    if ($MockPlaywrightReady) {
+        return [pscustomobject]([ordered]@{
+            status = "CHATGPT_A_READY"
+            current_label = "A"
+            threshold_50 = $true
+            selected_transport = "mcp_playwright_chatgpt_supervisor"
+            private_urls_redacted = $true
+            local_omega_fallback_available = $true
+        })
+    }
+    if ($MockPlaywrightUnavailable) {
+        return [pscustomobject]([ordered]@{
+            status = "PLAYWRIGHT_SUPERVISOR_UNAVAILABLE"
+            current_label = "A"
+            threshold_50 = $true
+            selected_transport = "local_omega_fallback"
+            private_urls_redacted = $true
+            local_omega_fallback_available = $true
+        })
+    }
+    if ($MockPlaywrightHumanAuth) {
+        return [pscustomobject]([ordered]@{
+            status = "CHATGPT_SESSION_BOOTSTRAP_NEEDS_MANUAL_AUTH"
+            current_label = "A"
+            threshold_50 = $true
+            selected_transport = "native_playwright_chatgpt_supervisor"
+            private_urls_redacted = $true
+            local_omega_fallback_available = $true
+        })
+    }
+    $playwrightPath = Join-Path $PSScriptRoot "playwright_chatgpt_supervisor_harness.ps1"
+    if (-not (Test-Path -LiteralPath $playwrightPath -PathType Leaf)) {
+        return [pscustomobject]([ordered]@{ status = "PLAYWRIGHT_SUPERVISOR_NOT_PRESENT"; local_omega_fallback_available = $true })
+    }
+    return Invoke-JsonScript -ScriptPath $playwrightPath -Arguments @(
+        "-Mode", "BuildReport",
+        "-MissionId", $MissionId,
+        "-ArtifactPath", $ArtifactPath,
+        "-NoPrompt"
+    )
+}
+
 New-Item -ItemType Directory -Force -Path $ArtifactPath | Out-Null
 
+$playwright = Get-PlaywrightStatus
 $harness = Get-HarnessStatus
 $desktop = Get-DesktopStatus
+$playwrightReady = ([string]$playwright.status -in @("CHATGPT_A_READY", "CHATGPT_A_MESSAGE_SUBMITTED_RESPONSE_UNREAD"))
 $harnessReady = ([string]$harness.status -in @("CHATGPT_WEB_SUPERVISOR_E2E_READY", "CHATGPT_WEB_MESSAGE_SUBMITTED_RESPONSE_UNREAD"))
 $desktopReady = ([string]$desktop.status -eq "CHATGPT_DESKTOP_TRANSPORT_READY")
 $parked = @()
+if (-not $playwrightReady) {
+    $parked += [ordered]@{
+        lane = "playwright_chatgpt_supervisor_harness"
+        status = [string]$playwright.status
+        reason = [string]$playwright.status
+    }
+}
 if (-not $harnessReady) {
     $parked += [ordered]@{
         lane = "supervisor_browser_harness"
@@ -132,8 +189,8 @@ if (-not $desktopReady) {
     }
 }
 
-$selected = if ($harnessReady) { "supervisor_browser_harness" } elseif ($desktopReady) { "chatgpt_windows_app_adapter" } else { "local_omega_fallback" }
-$resultStatus = if ($harnessReady) { "SUPERVISOR_TRANSPORT_BROWSER_HARNESS_READY" } elseif ($desktopReady) { "SUPERVISOR_TRANSPORT_DESKTOP_READY" } else { "SUPERVISOR_TRANSPORT_FALLBACK_READY" }
+$selected = if ($playwrightReady) { [string]$playwright.selected_transport } elseif ($harnessReady) { "supervisor_browser_harness" } elseif ($desktopReady) { "chatgpt_windows_app_adapter" } else { "local_omega_fallback" }
+$resultStatus = if ($playwrightReady) { "SUPERVISOR_TRANSPORT_PLAYWRIGHT_READY" } elseif ($harnessReady) { "SUPERVISOR_TRANSPORT_BROWSER_HARNESS_READY" } elseif ($desktopReady) { "SUPERVISOR_TRANSPORT_DESKTOP_READY" } else { "SUPERVISOR_TRANSPORT_FALLBACK_READY" }
 if ($Mode -eq "DryRun") { $resultStatus = "SUPERVISOR_TRANSPORT_DRY_RUN_PASS" }
 if ($Mode -eq "HealthCheck") { $resultStatus = "SUPERVISOR_TRANSPORT_HEALTH_CHECK_COMPLETE" }
 
@@ -143,7 +200,8 @@ $payload = [ordered]@{
     mode = $Mode
     status = $resultStatus
     created_at = (Get-Date).ToString("o")
-    preferred_order = @("supervisor_browser_harness", "chatgpt_web_a_j_pool", "chatgpt_windows_app_adapter", "local_omega_fallback")
+    preferred_order = @("mcp_playwright_chatgpt_supervisor", "native_playwright_chatgpt_supervisor", "legacy_cdp_chatgpt_supervisor", "supervisor_browser_harness", "chatgpt_windows_app_adapter", "local_omega_fallback")
+    playwright_chatgpt_supervisor = $playwright
     supervisor_browser_harness = $harness
     desktop_adapter = $desktop
     selected_transport = $selected

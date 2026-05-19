@@ -36,6 +36,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\chatgpt_desktop_adapter\A20BA_chatgpt_windows_app_adapter_20260518"
     } elseif ($MissionId -eq "A20BB") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\supervisor_browser_harness\A20BB_chatgpt_aj_e2e_20260518"
+    } elseif ($MissionId -eq "A20BC") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\mcp_playwright_chatgpt\A20BC_session_bootstrap_e2e_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -248,8 +250,64 @@ function Test-A20BBChatGptSupervisorHarnessReady {
     }
 }
 
+function Test-A20BCPlaywrightChatGptReady {
+    $transportPath = Join-Path $ArtifactPath "transport_integration_result.json"
+    if (-not (Test-Path -LiteralPath $transportPath -PathType Leaf)) { return $false }
+    try {
+        $transport = Get-Content -LiteralPath $transportPath -Raw | ConvertFrom-Json
+        return ([string]$transport.status -in @("CHATGPT_A_READY", "CHATGPT_A_MESSAGE_SUBMITTED_RESPONSE_UNREAD"))
+    } catch {
+        return $false
+    }
+}
+
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20BC") {
+        $chatGptReady = Test-A20BCPlaywrightChatGptReady
+        $objectives = @(
+            [pscustomobject]@{
+                id = if ($chatGptReady) { "A20BD_TRUE_OVERNIGHT_SECOND_RUN_WITH_CHATGPT_READY" } else { "A20BD_RERUN_E2E_AFTER_MANUAL_AUTH" }
+                family = "LIVE_SUPERVISOR_RELIABILITY"
+                expected_value = if ($chatGptReady) { "Run a second true overnight with ChatGPT A ready through the MCP/native Playwright supervisor harness." } else { "Rerun the ChatGPT A-J E2E proof after the dedicated profile is manually authenticated, with zero paid API use and no auth-wall automation." }
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("chatgpt_a_ready_or_parked", "no_private_urls", "no_paid_api", "auth_walls_not_automated", "local_fallback_preserved")
+            },
+            [pscustomobject]@{
+                id = "A20BD_REPAIR_MCP_PLAYWRIGHT_HARNESS"
+                family = "LIVE_SUPERVISOR_RELIABILITY"
+                expected_value = "Repair the MCP/native Playwright harness if the current session cannot reach a usable composer after manual authentication."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("no_blind_typing", "no_secrets", "bounded_retry")
+            },
+            [pscustomobject]@{
+                id = "A20BD_GEMINI_PLAYWRIGHT_SETUP"
+                family = "LIVE_SUPERVISOR_RELIABILITY"
+                expected_value = "Explore a separate Gemini Playwright setup after ChatGPT A-J transport status is recorded."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("no_paid_api", "no_secrets", "park_blocked_lane")
+            },
+            [pscustomobject]@{
+                id = "A20BD_ROAD_TO_V2_MERGE_AUDIT_PLAN"
+                family = "SAFETY_MAINTENANCE"
+                expected_value = "Prepare a road-to-V2 merge audit plan after Playwright supervisor status is known."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("audit_plan_only", "no_road_push", "no_merge")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20BB") {
         $harnessReady = Test-A20BBChatGptSupervisorHarnessReady
         $objectives = @(
