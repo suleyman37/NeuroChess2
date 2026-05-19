@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NeuroChess Full Night Morning Report",
+  "type": "object",
+  "required": [
+    "runtime",
+    "iterations",
+    "pixel_deltas",
+    "useful_pixel_deltas",
+    "weak_deltas",
+    "screenshots_path",
+    "mission_doctor_summary",
+    "failure_ledger_summary",
+    "protocol_memory_update",
+    "score_before_after",
+    "night_readiness_v2_result",
+    "safety_scan",
+    "final_git_status",
+    "recommended_next_step",
+    "go_no_go"
+  ],
+  "properties": {
+    "runtime": { "type": "object" },
+    "iterations": { "type": "array" },
+    "pixel_deltas": { "type": "integer", "minimum": 0 },
+    "useful_pixel_deltas": { "type": "integer", "minimum": 0 },
+    "weak_deltas": { "type": "array" },
+    "screenshots_path": { "type": "string" },
+    "mission_doctor_summary": { "type": "object" },
+    "failure_ledger_summary": { "type": "object" },
+    "protocol_memory_update": { "type": "object" },
+    "score_before_after": { "type": "object" },
+    "night_readiness_v2_result": { "type": "string" },
+    "safety_scan": { "type": "object" },
+    "final_git_status": { "type": "string" },
+    "recommended_next_step": { "type": "string" },
+    "go_no_go": {
+      "type": "string",
+      "enum": [
+        "GO_FOR_REVIEW",
+        "GO_FOR_SECOND_REHEARSAL",
+        "NO_GO_SAFETY",
+        "NO_GO_WEAK_OUTPUT",
+        "NO_GO_TEST_FAILURE"
+      ]
+    }
+  }
+}

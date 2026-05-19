@@ -1,0 +1,69 @@
+schema_version: full_night_control_policy_v1
+mission_id: A20AX
+allowed_runtime:
+  max_runtime_minutes: 480
+  max_iterations: 12
+  minimum_pixel_deltas_target: 6
+  stretch_pixel_deltas_target: 10
+allowed_work:
+  - frontend_dev_only_visual_routes_components
+  - screenshot_scripts
+  - external_artifacts
+  - omega_score_state
+  - failure_ledger
+  - protocol_memory
+  - morning_report
+  - small_tests_when_needed
+forbidden_work:
+  - backend_product_logic
+  - db_writes
+  - package_installs
+  - v1_behavior_changes
+  - road_to_v2_push
+  - road_to_v2_merge
+  - secrets
+  - local_runtime_commit
+  - public_release
+  - a21_launch
+  - paid_studies
+  - live_gpt_gemini_dependency
+  - human_verification_flows
+required_proof:
+  - every_pixel_delta_has_screenshot
+  - every_iteration_has_mission_doctor_result
+  - morning_report_generated
+  - night_readiness_v2_after_run
+  - no_safety_violation
+  - final_git_status_clean
+stop_conditions:
+  - test_matrix_failure_not_safely_fixable
+  - v1_risk_detected
+  - forbidden_path_touched
+  - screenshots_staged
+  - local_runtime_staged
+  - no_useful_pixel_objective_remains
+  - max_runtime_reached
+  - max_iterations_reached
+  - two_consecutive_meta_drift_detections
+  - two_consecutive_weak_pixel_deltas
+  - kill_switch_file_exists
+kill_switch:
+  path: ops/autopilot/runtime/STOP_FULL_NIGHT.flag
+  runtime_path_gitignored: true
+alerts:
+  required_events:
+    - full_night_started
+    - iteration_failure
+    - kill_switch_detected
+    - safety_stop
+    - full_night_completed
+    - morning_report_ready
+  cooldown_minutes_per_reason: 30
+  ntfy_optional: true
+  gmail_not_required: true
+score_rules:
+  no_20_out_of_20_claim: true
+  no_arbitrary_increase_after_19_5_candidate: true
+  visual_requires_screenshot: true
+  human_validation_requires_human_data: true
+  external_score_requires_external_packets: true

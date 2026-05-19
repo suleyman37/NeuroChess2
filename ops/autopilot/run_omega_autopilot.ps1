@@ -111,6 +111,11 @@ function Run-OneOmegaIteration {
     }
 }
 
+function Test-FullNightKillSwitch {
+    $flag = Join-Path $PSScriptRoot "runtime\STOP_FULL_NIGHT.flag"
+    return (Test-Path -LiteralPath $flag -PathType Leaf)
+}
+
 New-Item -ItemType Directory -Force -Path $ArtifactPath, (Split-Path -Parent $StatePath) | Out-Null
 
 if ($Mode -eq "Stop") {
@@ -149,6 +154,11 @@ $avoid = @()
 $iterationResults = @()
 
 for ($i = 1; $i -le $iterations; $i++) {
+    if (Test-FullNightKillSwitch) {
+        $state.status = "STOPPED_BY_KILL_SWITCH"
+        $state.stop_requested = $true
+        break
+    }
     if (((Get-Date) - $start).TotalMinutes -gt $MaxRuntimeMinutes) {
         $state.status = "TIME_BUDGET_EXPIRED"
         break

@@ -1,0 +1,32 @@
+schema_version: full_night_branch_policy_v1
+dedicated_branch_required: true
+required_branch_pattern: '^auto/a20ay-full-night-real-pixel-run-[0-9]{8}(-[0-9]{6})?$'
+timestamp_required: true
+forbidden_git_actions:
+  - push_road_to_v2
+  - merge_road_to_v2
+  - tag_release
+  - branch_deletion_during_run
+  - git_add_a
+staging_policy:
+  explicit_files_only: true
+  broad_staging_forbidden: true
+  forbidden_paths:
+    - backend/**
+    - package.json
+    - package-lock.json
+    - qa_artifacts/**
+    - ops/autopilot/local/**
+    - ops/autopilot/runtime/**
+    - screenshots/**
+    - "**/*.png"
+    - "**/*.jpg"
+    - "**/*.jpeg"
+    - "**/*.webp"
+    - "**/*.gif"
+final_report_required_fields:
+  - branch
+  - commit
+  - diff_stat
+  - safety_scan
+  - final_git_status
