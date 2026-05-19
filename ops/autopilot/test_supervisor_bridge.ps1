@@ -34,18 +34,21 @@ try {
     Assert-True ($result.status -eq "SUPERVISOR_LIVE_UNAVAILABLE") "NoLiveWeb should park live supervisor"
     Assert-True ($result.fallback_required -eq $true) "fallback should be required"
     Assert-True ($result.no_user_intervention -eq $true) "bridge should not require user"
+    Assert-True ($result.external_judge_sre.status -eq "EXTERNAL_JUDGE_SRE_HEALTH_CHECK_COMPLETE") "bridge did not run external judge SRE"
     $json = $result | ConvertTo-Json -Depth 30
     Assert-True ($json -notmatch "https://chatgpt.com/g/") "bridge output leaked private URL"
     $source = Get-Content -LiteralPath (Join-Path $RepoRoot "ops\autopilot\supervisor_bridge.ps1") -Raw
     Assert-True ($source -notmatch "Read-Host") "bridge contains prompt"
     Assert-True ($source -match "AllowLiveWeb") "bridge missing explicit live gate"
+    Assert-True ($source -match "external_judge_sre.ps1") "bridge missing external judge SRE hook"
 
     [ordered]@{
         status = "pass"
-        tests = 6
+        tests = 8
         live_web_optional = $true
         no_user_intervention = $true
         fallback_required_when_blocked = $true
+        external_judge_sre_health_check = $true
         private_urls_redacted = $true
     } | ConvertTo-Json -Depth 10
 } finally {

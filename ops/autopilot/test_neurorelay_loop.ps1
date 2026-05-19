@@ -35,6 +35,7 @@ try {
     Assert-True ($dry.gemini_required -eq $false) "Gemini required"
     Assert-True ($dry.user_intervention_required -eq $false) "user intervention required"
     Assert-True ($dry.workload_shift_metrics.codex_contract_word_count_avg -lt 900) "contract too large"
+    Assert-True ($dry.iterations[0].external_judge_sre_status -eq "EXTERNAL_JUDGE_SRE_HEALTH_CHECK_COMPLETE") "dry run did not check external SRE"
 
     $rehearsal = Invoke-Loop -Arguments @("-Mode", "Rehearsal", "-MaxIterations", "3", "-NoLiveWeb")
     Assert-True ($rehearsal.status -eq "NEURORELAY_REHEARSAL_PASS") "rehearsal did not pass"
@@ -43,6 +44,7 @@ try {
     Assert-True ($rehearsal.workload_shift_metrics.local_fallback_packets_count -eq 3) "local fallback packet count wrong"
     Assert-True ($rehearsal.workload_shift_metrics.external_decision_packets_count -eq 0) "external packets should be zero in NoLiveWeb"
     Assert-True ($rehearsal.no_giant_prompt -eq $true) "giant prompt not prevented"
+    Assert-True (@($rehearsal.iterations | Where-Object { $_.external_judge_sre_status -eq "EXTERNAL_JUDGE_SRE_HEALTH_CHECK_COMPLETE" }).Count -eq 3) "rehearsal did not check SRE each iteration"
 
     $source = Get-Content -LiteralPath (Join-Path $RepoRoot "ops\autopilot\run_neurorelay_loop.ps1") -Raw
     Assert-True ($source -notmatch "Read-Host") "NeuroRelay loop contains prompt"
@@ -51,9 +53,10 @@ try {
 
     [ordered]@{
         status = "pass"
-        tests = 15
+        tests = 17
         dry_run_pass = $true
         rehearsal_pass = $true
+        external_judge_sre_health_check = $true
         gpt_web_required = $false
         gemini_required = $false
         no_user_intervention = $true

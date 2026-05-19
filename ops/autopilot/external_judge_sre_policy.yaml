@@ -1,0 +1,79 @@
+schema_version: external_judge_sre_policy_v1
+alerting:
+  router: ops/autopilot/send_autopilot_alert.ps1
+  cooldown_minutes_per_lane_reason: 30
+  missing_router_action: local_runtime_alert_and_continue
+lane_states:
+  - READY
+  - AVAILABLE
+  - PARKED_AUTH_REQUIRED
+  - PARKED_HUMAN_ACTION_REQUIRED
+  - PARKED_CDP_UNAVAILABLE
+  - PARKED_RATE_LIMITED
+  - PARKED_SESSION_CLOSED
+  - PARKED_UPLOAD_UNAVAILABLE
+  - PARKED_UNCLASSIFIED_PAGE_STATE
+  - FAILED_INVALID_RESPONSE
+  - SKIPPED_NOT_CONFIGURED
+problems:
+  CHATGPT_CDP_UNREACHABLE:
+    detect: CDP refused connection
+    action: attempt safe bootstrap once; if unavailable, park lane, alert, continue offline
+    lane_state: PARKED_CDP_UNAVAILABLE
+    retry_after_minutes: 30
+  CHATGPT_AUTH_OR_CONSENT_WALL:
+    detect: auth, consent, or human verification wall
+    action: ntfy alert, park lane, no wait in autonomous mode
+    lane_state: PARKED_AUTH_REQUIRED
+    retry_after_minutes: 60
+  CHATGPT_PAGE_USABLE:
+    detect: composer visible and enabled
+    action: allow supervisor packet send
+    lane_state: AVAILABLE
+    retry_after_minutes: 0
+  CHATGPT_UNCLASSIFIED_PAGE_STATE:
+    detect: page state not recognized by orchestrator
+    action: park lane, write diagnostic artifact, avoid repeated alert spam
+    lane_state: PARKED_UNCLASSIFIED_PAGE_STATE
+    retry_after_minutes: 30
+  CHATGPT_CONVERSATION_EXHAUSTED:
+    detect: message count at or above 35
+    action: rotate to next A-J discussion; if none available, park lane and alert
+    lane_state: PARKED_SESSION_CLOSED
+    retry_after_minutes: 60
+  GEMINI_NOT_CONFIGURED:
+    detect: no Gemini relay configuration
+    action: park Gemini lane as skipped, no mission failure
+    lane_state: SKIPPED_NOT_CONFIGURED
+    retry_after_minutes: 240
+  GEMINI_AUTH_OR_CONSENT_WALL:
+    detect: Gemini page requires auth, consent, or human verification
+    action: ntfy alert, park lane, continue offline
+    lane_state: PARKED_AUTH_REQUIRED
+    retry_after_minutes: 60
+  GEMINI_NO_VISUAL_EVIDENCE:
+    detect: no screenshots or visual evidence supplied
+    action: skip Gemini, no failure
+    lane_state: SKIPPED_NOT_CONFIGURED
+    retry_after_minutes: 0
+  GEMINI_INVALID_RESPONSE:
+    detect: response cannot be normalized into a safe decision packet
+    action: reject response and use local fallback
+    lane_state: FAILED_INVALID_RESPONSE
+    retry_after_minutes: 30
+  EXTERNAL_RESPONSE_TIMEOUT:
+    detect: external response did not return before max wait
+    action: park lane for retry_after
+    lane_state: PARKED_RATE_LIMITED
+    retry_after_minutes: 30
+  NTFY_ALERT_FAILED:
+    detect: alert router missing or delivery failure
+    action: write local runtime alert and continue offline
+    lane_state: READY
+    retry_after_minutes: 0
+safety:
+  never_block_autonomous_loop: true
+  never_prompt_user: true
+  never_bypass_auth_captcha_2fa_consent_or_human_verification: true
+  never_print_private_urls_or_topics: true
+  fallback_required: true

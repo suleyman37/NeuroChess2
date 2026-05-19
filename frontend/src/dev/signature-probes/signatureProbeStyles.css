@@ -1,0 +1,463 @@
+.sig-probe-gallery {
+  --sig-probe-bg: #07090f;
+  --sig-probe-ink: #f4f7fb;
+  --sig-probe-muted: #a7b3c2;
+  --sig-probe-line: rgba(225, 235, 247, 0.16);
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 24px;
+  color: var(--sig-probe-ink);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 42px 42px,
+    linear-gradient(180deg, #07090f 0%, #101521 52%, #07090f 100%);
+  font-family:
+    "Aptos Display",
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.sig-probe-gallery *,
+.sig-probe-gallery *::before,
+.sig-probe-gallery *::after {
+  box-sizing: border-box;
+}
+
+.sig-probe-gallery-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px 24px;
+  max-width: 1540px;
+  margin: 0 auto 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--sig-probe-line);
+}
+
+.sig-probe-gallery-header p,
+.sig-probe-gallery-header h1,
+.sig-probe-gallery-header span {
+  margin: 0;
+}
+
+.sig-probe-gallery-header p {
+  color: #b6d9ff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sig-probe-gallery-header h1 {
+  grid-column: 1;
+  margin-top: 5px;
+  font-size: 2.1rem;
+  line-height: 1;
+}
+
+.sig-probe-gallery-header span {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-self: end;
+  color: var(--sig-probe-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.sig-probe-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(210px, 1fr));
+  gap: 14px;
+  max-width: 1540px;
+  margin: 0 auto;
+}
+
+.sig-probe-card {
+  min-height: 430px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--sig-probe-accent) 42%, var(--sig-probe-line));
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--sig-probe-accent) 10%, transparent), transparent 42%),
+    linear-gradient(135deg, rgba(14, 18, 27, 0.98), rgba(7, 10, 15, 0.98));
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
+}
+
+.sig-probe-card-shell {
+  display: grid;
+  grid-template-rows: 172px minmax(0, 1fr);
+  min-height: 430px;
+}
+
+.sig-probe-visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 172px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--sig-probe-line);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--sig-probe-accent) 16%, transparent), transparent 36%),
+    linear-gradient(270deg, color-mix(in srgb, var(--sig-probe-secondary) 16%, transparent), transparent 36%),
+    #0a0d15;
+}
+
+.sig-probe-copy {
+  display: grid;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 14px;
+}
+
+.sig-probe-index,
+.sig-probe-stage,
+.sig-probe-intent,
+.sig-probe-facts,
+.sig-probe-risk-row {
+  margin: 0;
+}
+
+.sig-probe-index {
+  color: color-mix(in srgb, var(--sig-probe-accent) 78%, #ffffff);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.sig-probe-copy h2 {
+  min-height: 2.2rem;
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.08;
+}
+
+.sig-probe-stage {
+  color: color-mix(in srgb, var(--sig-probe-secondary) 76%, #ffffff);
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.sig-probe-intent {
+  color: #dde8f4;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.sig-probe-facts {
+  display: grid;
+  gap: 8px;
+}
+
+.sig-probe-facts div {
+  display: grid;
+  gap: 3px;
+}
+
+.sig-probe-facts dt {
+  color: var(--sig-probe-muted);
+  font-size: 0.7rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.sig-probe-facts dd {
+  margin: 0;
+  color: #edf4fb;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.sig-probe-risk-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-self: end;
+}
+
+.sig-probe-risk-row span {
+  display: inline-grid;
+  min-height: 24px;
+  place-items: center;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--sig-probe-accent) 34%, var(--sig-probe-line));
+  border-radius: 6px;
+  color: #f7fbff;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.sig-probe-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  width: 132px;
+  aspect-ratio: 1;
+  border: 2px solid color-mix(in srgb, var(--sig-probe-accent) 54%, #111827);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.38);
+}
+
+.sig-probe-square {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.sig-probe-square-light {
+  color: #202631;
+  background: #d4d3bf;
+}
+
+.sig-probe-square-dark {
+  color: #f7f3d9;
+  background: #5b675f;
+}
+
+.sig-probe-board-trace {
+  position: absolute;
+  left: 29%;
+  top: 58%;
+  width: 42%;
+  height: 2px;
+  background: var(--sig-probe-secondary);
+  transform: rotate(-34deg);
+  transform-origin: left center;
+  box-shadow: 0 0 12px var(--sig-probe-secondary);
+}
+
+.sig-probe-piece-set {
+  display: flex;
+  align-items: end;
+  gap: 14px;
+}
+
+.sig-piece {
+  display: grid;
+  width: 54px;
+  height: 74px;
+  place-items: center;
+  border: 2px solid var(--sig-probe-accent);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.18));
+  color: #f8fbff;
+  font-size: 1.5rem;
+  font-weight: 950;
+}
+
+.sig-piece-classic {
+  border-radius: 28px 28px 8px 8px;
+}
+
+.sig-piece-cut {
+  height: 64px;
+  clip-path: polygon(50% 0, 100% 36%, 82% 100%, 18% 100%, 0 36%);
+}
+
+.sig-piece-sentinel {
+  height: 82px;
+  border-radius: 8px 8px 2px 2px;
+}
+
+.sig-probe-timeline {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+  width: 178px;
+  height: 78px;
+  padding: 0 8px;
+  border-top: 2px solid color-mix(in srgb, var(--sig-probe-accent) 42%, transparent);
+  border-bottom: 2px solid color-mix(in srgb, var(--sig-probe-secondary) 38%, transparent);
+}
+
+.sig-probe-timeline span {
+  width: 17px;
+  height: 17px;
+  margin: auto;
+  border: 2px solid var(--sig-probe-accent);
+  background: #0f1420;
+}
+
+.sig-probe-timeline .is-critical {
+  height: 48px;
+  border-color: var(--sig-probe-secondary);
+}
+
+.sig-probe-timeline .is-scar {
+  transform: rotate(45deg);
+}
+
+.sig-probe-sigil {
+  width: 128px;
+  height: 128px;
+  fill: rgba(255, 255, 255, 0.06);
+  stroke: var(--sig-probe-accent);
+  stroke-width: 3;
+}
+
+.sig-probe-sigil path,
+.sig-probe-sigil circle {
+  fill: transparent;
+  stroke: var(--sig-probe-secondary);
+}
+
+.sig-probe-seal {
+  display: grid;
+  width: 118px;
+  height: 118px;
+  place-items: center;
+  border: 3px double color-mix(in srgb, var(--sig-probe-secondary) 74%, #ffffff);
+  border-radius: 50%;
+  background:
+    conic-gradient(from 0deg, rgba(255, 255, 255, 0.12), transparent, rgba(255, 255, 255, 0.12)),
+    color-mix(in srgb, var(--sig-probe-accent) 32%, #251018);
+  color: #fff7e8;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.sig-probe-cabinet {
+  display: grid;
+  grid-template-columns: repeat(2, 78px);
+  gap: 8px;
+}
+
+.sig-probe-cabinet span {
+  height: 54px;
+  border: 1px solid color-mix(in srgb, var(--sig-probe-accent) 58%, #ffffff);
+  border-left-width: 5px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--sig-probe-secondary) 20%, transparent), rgba(255, 255, 255, 0.05));
+}
+
+.sig-probe-breath {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.sig-probe-breath span {
+  display: grid;
+  width: 48px;
+  height: 66px;
+  place-items: center;
+  border: 2px solid var(--sig-probe-accent);
+  border-radius: 8px 8px 3px 3px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f6fbff;
+  font-size: 1.2rem;
+  font-weight: 950;
+  animation: sig-piece-breath 3.6s ease-in-out infinite;
+}
+
+.sig-probe-breath span:nth-child(2) {
+  animation-delay: 0.28s;
+}
+
+.sig-probe-breath span:nth-child(3) {
+  animation-delay: 0.56s;
+}
+
+@keyframes sig-piece-breath {
+  0%,
+  100% {
+    transform: translateY(0);
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+  50% {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 22px color-mix(in srgb, var(--sig-probe-accent) 18%, transparent);
+  }
+}
+
+.sig-probe-resonance {
+  display: grid;
+  grid-template-columns: 88px 54px 88px;
+  align-items: center;
+}
+
+.sig-probe-resonance .sig-probe-board {
+  width: 88px;
+}
+
+.sig-probe-resonance .sig-probe-square {
+  font-size: 0.54rem;
+}
+
+.sig-probe-resonance-link {
+  height: 2px;
+  background: linear-gradient(90deg, var(--sig-probe-accent), var(--sig-probe-secondary));
+}
+
+.sig-probe-pressure {
+  display: grid;
+  grid-template-columns: 32px 132px 32px;
+  align-items: center;
+  gap: 10px;
+}
+
+.sig-probe-pressure > span {
+  height: 124px;
+  border: 1px solid color-mix(in srgb, var(--sig-probe-accent) 50%, transparent);
+  background:
+    linear-gradient(180deg, transparent, color-mix(in srgb, var(--sig-probe-accent) 24%, transparent), transparent),
+    repeating-linear-gradient(180deg, transparent 0 12px, rgba(255, 255, 255, 0.12) 13px 14px);
+}
+
+.sig-probe-card-sacred_board_chamber .sig-probe-visual::before,
+.sig-probe-card-sacred_board_chamber .sig-probe-visual::after {
+  position: absolute;
+  content: "";
+  width: 48px;
+  height: 132px;
+  border-top: 1px solid var(--sig-probe-accent);
+  border-bottom: 1px solid var(--sig-probe-secondary);
+}
+
+.sig-probe-card-sacred_board_chamber .sig-probe-visual::before {
+  left: 14px;
+}
+
+.sig-probe-card-sacred_board_chamber .sig-probe-visual::after {
+  right: 14px;
+}
+
+@media (max-width: 1280px) {
+  .sig-probe-grid {
+    grid-template-columns: repeat(4, minmax(210px, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .sig-probe-gallery {
+    padding: 16px;
+  }
+
+  .sig-probe-gallery-header {
+    grid-template-columns: 1fr;
+  }
+
+  .sig-probe-gallery-header span {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
+  }
+
+  .sig-probe-grid {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .sig-probe-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sig-probe-breath span {
+    animation: none;
+  }
+}

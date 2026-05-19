@@ -52,9 +52,23 @@ $packet = [ordered]@{
 
 $capsule = $null
 $decisionPacket = $null
+$externalJudgeSre = $null
 $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("neurorelay_bridge_" + [guid]::NewGuid().ToString("N"))
 try {
     New-Item -ItemType Directory -Force -Path $tempRoot | Out-Null
+    $sreScript = Join-Path $PSScriptRoot "external_judge_sre.ps1"
+    if (Test-Path -LiteralPath $sreScript -PathType Leaf) {
+        $externalJudgeSre = Invoke-JsonScript -ScriptPath $sreScript -Arguments @(
+            "-Mode", "HealthCheck",
+            "-MissionId", $MissionId,
+            "-Lane", "chatgpt",
+            "-DryRun",
+            "-NoPrompt",
+            "-ArtifactPath", $tempRoot,
+            "-StatePath", (Join-Path $tempRoot "external_judge_sre_state.json"),
+            "-OutPath", (Join-Path $tempRoot "external_judge_sre_health.json")
+        )
+    }
     $capsule = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "context_capsule_builder.ps1") -Arguments @(
         "-Mode", "BuildMissionDiagnosisCapsule",
         "-MissionId", $MissionId,
@@ -98,6 +112,7 @@ if ($NoLiveWeb -or $DryRun -or -not $AllowLiveWeb) {
         status = "SUPERVISOR_LIVE_UNAVAILABLE"
         reason = if ($NoLiveWeb) { "NoLiveWeb requested" } elseif ($DryRun) { "DryRun requested" } else { "AllowLiveWeb not set for unattended conductor" }
         packet = $packet
+        external_judge_sre = $externalJudgeSre
         context_capsule = $capsule
         decision_packet = $decisionPacket
         fallback_required = $true
@@ -118,6 +133,7 @@ $result = [ordered]@{
     status = "SUPERVISOR_LIVE_PARKED_UNATTENDED"
     reason = "Live web send is not attempted without an explicit mission that allows it."
     packet = $packet
+    external_judge_sre = $externalJudgeSre
     context_capsule = $capsule
     decision_packet = $decisionPacket
     fallback_required = $true

@@ -1,30 +1,49 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20AN_AUTONOMOUS_IMPROVEMENT_CONDUCTOR_V1",
+  "updated_by": "A20AP_CRITICAL_DEFICIT_UPLIFT_EXTERNAL_JUDGE_SRE_10_VISUAL_PROBES",
   "scores": {
-    "safety_git": 18.5,
-    "operator_zero_friction": 17.5,
-    "web_orchestrator": 17.5,
-    "autonomous_loop": 12.0,
-    "visual_production": 12.5,
-    "evidence_quality": 17.0,
-    "night_readiness": 15.0,
-    "overall": 17.0
+    "safety_git": 18.7,
+    "operator_zero_friction": 18.0,
+    "web_orchestrator": 18.1,
+    "external_judge_reliability": 18.5,
+    "autonomous_loop": 15.0,
+    "visual_production": 15.8,
+    "art_direction_concrete": 16.5,
+    "evidence_quality": 17.8,
+    "night_readiness": 17.5,
+    "overall": 17.7
   },
   "target_overall": 19.5,
   "workload_shift_metrics": {
-    "codex_contract_word_count_avg": 0,
-    "context_capsule_word_count_avg": 0,
+    "codex_contract_word_count_avg": 186,
+    "context_capsule_word_count_avg": 135,
     "external_decision_packets_count": 0,
-    "local_fallback_packets_count": 0,
-    "codex_workload_reduction_estimate": "not_yet_measured",
+    "local_fallback_packets_count": 2,
+    "codex_workload_reduction_estimate": "high_by_word_count_proxy",
     "external_reasoning_utilization": 0,
-    "repeated_context_removed_count": 0,
-    "giant_prompt_prevented_count": 0
+    "repeated_context_removed_count": 2,
+    "giant_prompt_prevented_count": 2
   },
   "notes": [
-    "Conservative baseline after A20AL.",
-    "Live GPT Web is optional and may be parked.",
-    "Visual production score cannot climb on docs and gates alone."
-  ]
+    "A20AP adds external judge SRE architecture, lane parking, and ntfy-capable failure alerting.",
+    "A20AP creates ten DEV-only visual probes with external screenshot and contact sheet evidence.",
+    "Scores remain conservative: visual production is below 18.5 until probes are reviewed and selected.",
+    "External reasoning utilization remains 0 in NoLiveWeb rehearsal by design; fallback still works."
+  ],
+  "a20ap_score_update": {
+    "before_overall": 17.0,
+    "after_overall": 17.7,
+    "low_score_categories_targeted": [
+      "autonomous_loop",
+      "visual_production",
+      "art_direction_concrete",
+      "night_readiness"
+    ],
+    "evidence": [
+      "external_judge_sre.ps1 dry run classifies and parks live lanes",
+      "browser_signature_probe_gallery_smoke.mjs verified all 10 probes and contact sheet",
+      "run_neurorelay_loop.ps1 A20AP rehearsal selected probe review and tripled variants"
+    ],
+    "not_19_5_reason": "No human probe selection, no integrated signature components, no reviewed Gemini visual critique, and no limited autonomous pixel run yet."
+  }
 }

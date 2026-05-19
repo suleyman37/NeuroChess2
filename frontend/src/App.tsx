@@ -118,6 +118,7 @@ import { V2VisionApp } from "./v2/product-vision/V2VisionApp";
 import { RexApp } from "./rex/RexApp";
 import { StrictBoardStageTournament } from "./dev/board-stage-strict/StrictBoardStageTournament";
 import { NorthStarBoardStage } from "./dev/board-stage-north-star/NorthStarBoardStage";
+import { SignatureProbeGallery } from "./dev/signature-probes/SignatureProbeGallery";
 
 type BusyState = "idle" | "new-game" | "move" | "finish" | "load-game";
 type PositionMode = "LIVE" | "HISTORICAL" | "REVIEW";
@@ -396,6 +397,14 @@ function isNorthStarBoardStageDevRoute(): boolean {
   return window.location.pathname === "/app" && params.get("boardStageNorthStar") === "1";
 }
 
+function isSignatureProbeGalleryDevRoute(): boolean {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return false;
+  }
+  const params = new URLSearchParams(window.location.search);
+  return window.location.pathname === "/app" && params.get("visualProbeGallery") === "1";
+}
+
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<NeuroChessRoute>(() =>
     normalizeRoute(readCurrentPath()),
@@ -413,6 +422,9 @@ export default function App() {
   const [showNorthStarBoardStagePreview, setShowNorthStarBoardStagePreview] = useState(() =>
     isNorthStarBoardStageDevRoute(),
   );
+  const [showSignatureProbeGallery, setShowSignatureProbeGallery] = useState(() =>
+    isSignatureProbeGalleryDevRoute(),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -425,6 +437,7 @@ export default function App() {
       setShowRexPreview(isRexDevRoute());
       setShowStrictBoardStagePreview(isStrictBoardStageDevRoute());
       setShowNorthStarBoardStagePreview(isNorthStarBoardStageDevRoute());
+      setShowSignatureProbeGallery(isSignatureProbeGalleryDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -482,6 +495,10 @@ export default function App() {
 
   if (showNorthStarBoardStagePreview) {
     return <NorthStarBoardStage />;
+  }
+
+  if (showSignatureProbeGallery) {
+    return <SignatureProbeGallery />;
   }
 
   if (currentRoute === "/app") {

@@ -12,7 +12,11 @@ param(
 $ErrorActionPreference = "Stop"
 
 if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
-    $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
+    if ($MissionId -eq "A20AP") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\visual_probes\A20AP_critical_deficit_uplift_10_probes_20260518"
+    } else {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
+    }
 }
 if ([string]::IsNullOrWhiteSpace($StatePath)) {
     $StatePath = Join-Path $PSScriptRoot "runtime\neurorelay_loop_state.json"
@@ -105,11 +109,70 @@ function New-LocalDecisionPacketRaw {
     return $packet
 }
 
+function Test-SignatureProbeEvidenceReady {
+    $probeGallery = Join-Path (Split-Path -Parent $PSScriptRoot) "..\frontend\src\dev\signature-probes\SignatureProbeGallery.tsx"
+    $probeDoc = Join-Path (Split-Path -Parent $PSScriptRoot) "..\docs\design\SIGNATURE_CANDIDATES_10.md"
+    return (Test-Path -LiteralPath $probeGallery -PathType Leaf) -and (Test-Path -LiteralPath $probeDoc -PathType Leaf)
+}
+
+function Get-ProbeAwareObjective {
+    param([string[]]$AvoidObjectiveIds = @())
+    if (-not (Test-SignatureProbeEvidenceReady)) { return $null }
+    $objectives = @(
+        [pscustomobject]@{
+            id = "SIGNATURE_FIVE_SELECTION_FROM_10_PROBES"
+            family = "VISUAL_PRODUCTION_MODE"
+            expected_value = "Select the strongest five signature candidates from the ten DEV-only visual probes using screenshot evidence."
+            risk_tier = "low"
+            allowed_paths = @("docs/design/**", "docs/autopilot/**", "ops/autopilot/**")
+            forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+            success_criteria = @("five_candidates_selected", "screenshot_evidence_referenced", "no_product_integration")
+        },
+        [pscustomobject]@{
+            id = "TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES"
+            family = "SIGNATURE_COMPONENTS"
+            expected_value = "Create A/B/C variant contracts for the top two signature candidates after probe review."
+            risk_tier = "low"
+            allowed_paths = @("docs/design/**", "docs/autopilot/**", "ops/autopilot/**")
+            forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+            success_criteria = @("two_signature_targets_selected", "three_variants_each_defined", "pixel_mandate_preserved")
+        },
+        [pscustomobject]@{
+            id = "LIMITED_AUTONOMOUS_PIXEL_REHEARSAL"
+            family = "NIGHT_MODE_READINESS"
+            expected_value = "Run a bounded pixel rehearsal that proves visual work continues offline when external lanes are parked."
+            risk_tier = "low"
+            allowed_paths = @("docs/autopilot/**", "ops/autopilot/**", "scripts/**")
+            forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+            success_criteria = @("bounded_iterations", "no_user_intervention", "external_lanes_optional")
+        }
+    )
+    $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+    if ($remaining.Count -gt 0) { return $remaining[0] }
+    return $objectives[0]
+}
+
 function Run-OneRelayIteration {
     param([int]$Index, [string[]]$AvoidObjectiveIds = @())
 
     $iterDir = Join-Path $ArtifactPath ("iteration_{0}" -f $Index)
     New-Item -ItemType Directory -Force -Path $iterDir | Out-Null
+
+    $sre = $null
+    $srePath = Join-Path $PSScriptRoot "external_judge_sre.ps1"
+    if (Test-Path -LiteralPath $srePath -PathType Leaf) {
+        $sre = Invoke-JsonScript -ScriptPath $srePath -Arguments @(
+            "-Mode", "HealthCheck",
+            "-MissionId", $MissionId,
+            "-Lane", "all",
+            "-DryRun",
+            "-NoPrompt",
+            "-ArtifactPath", $iterDir,
+            "-StatePath", (Join-Path $iterDir "external_judge_sre_state.json"),
+            "-OutPath", (Join-Path $iterDir "external_judge_sre_health.json")
+        )
+    }
 
     $capsulePath = Join-Path $iterDir "context_capsule.json"
     $capsule = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "context_capsule_builder.ps1") -Arguments @(
@@ -139,12 +202,31 @@ function Run-OneRelayIteration {
     $fallback = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "local_supervisor_fallback.ps1") -Arguments $fallbackArgs
 
     $missionPath = Join-Path $iterDir "micro_mission.json"
-    $mission = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "generate_micro_mission.ps1") -Arguments @(
-        "-MissionId", $MissionId,
-        "-ObjectiveId", ([string]$fallback.selected_objective_id),
-        "-OutPath", $missionPath,
-        "-NoLiveWeb"
-    )
+    $probeObjective = Get-ProbeAwareObjective -AvoidObjectiveIds $AvoidObjectiveIds
+    if ($probeObjective) {
+        $mission = [pscustomobject]@{
+            schema_version = "autonomous_micro_mission_v1"
+            status = "MICRO_MISSION_GENERATED"
+            mission_id = $MissionId
+            branch_name = ("auto/{0}-{1}" -f $MissionId.ToLowerInvariant(), ([string]$probeObjective.id).ToLowerInvariant())
+            objective = $probeObjective
+            generated_by = "probe_aware_local_fallback"
+            no_live_web_required = $true
+            no_user_intervention = $true
+        }
+        Write-JsonFile -Path $missionPath -Payload $mission
+        $fallback.selected_objective_id = [string]$probeObjective.id
+        $fallback.selected_family = [string]$probeObjective.family
+        $fallback.reason = "Ten DEV-only signature probes exist; local fallback routes toward probe review and signature selection."
+        Write-JsonFile -Path (Join-Path $iterDir "local_fallback_result.json") -Payload $fallback
+    } else {
+        $mission = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "generate_micro_mission.ps1") -Arguments @(
+            "-MissionId", $MissionId,
+            "-ObjectiveId", ([string]$fallback.selected_objective_id),
+            "-OutPath", $missionPath,
+            "-NoLiveWeb"
+        )
+    }
 
     $rawPacketPath = Join-Path $iterDir "local_fallback_raw_packet.json"
     New-LocalDecisionPacketRaw -Mission $mission -Path $rawPacketPath | Out-Null
@@ -200,6 +282,7 @@ function Run-OneRelayIteration {
         selected_objective_id = [string]$auction.winner.id
         mission_doctor_verdict = [string]$doctor.verdict
         memory_status = [string]$memory.status
+        external_judge_sre_status = if ($sre) { [string]$sre.status } else { "SRE_NOT_PRESENT" }
         chatgpt_packet_status = if ($NoLiveWeb) { "PARKED_NO_LIVE_WEB" } else { "PARKED_UNATTENDED" }
         gemini_packet_status = "SKIPPED_NO_VISUAL_EVIDENCE"
         local_fallback_packets_count = 1

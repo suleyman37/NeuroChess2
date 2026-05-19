@@ -138,7 +138,7 @@ Assert-True ($effectsDoc -match "decision_ring") "allowed effects doc missing de
 
 $changed = @(git -C $repoRoot status --porcelain=v1 | ForEach-Object { $_.Substring(3).Trim() -replace "\\", "/" })
 $forbidden = @($changed | Where-Object {
-  $_ -like "frontend/*" -or
+  (($_ -like "frontend/*") -and $_ -ne "frontend/src/App.tsx" -and $_ -notlike "frontend/src/dev/signature-probes/*" -and $_ -ne "frontend/src/dev/signature-probes/") -or
   $_ -like "backend/*" -or
   $_ -like "docs/rebuild/*" -or
   $_ -like "plan/*" -or

@@ -9,26 +9,34 @@ statuses:
 candidate_statuses:
   - id: sacred_board_chamber
     name: Sacred Board Chamber
-    status: STATUS_0_NOT_STARTED
+    status: STATUS_1_PROBED
   - id: piece_identity_system
     name: Piece Identity System
-    status: STATUS_0_NOT_STARTED
+    status: STATUS_1_PROBED
   - id: decision_feedback_language
     name: Decision Feedback Language
-    status: STATUS_0_NOT_STARTED
+    status: STATUS_1_PROBED
   - id: critical_moment_sigil
     name: Critical Moment Sigil
-    status: STATUS_0_NOT_STARTED
+    status: STATUS_1_PROBED
+  - id: verdict_wax_seal
+    name: Verdict Wax Seal
+    status: STATUS_1_PROBED
   - id: aftermath_timeline
     name: Aftermath Timeline
-    status: STATUS_0_NOT_STARTED
+    status: STATUS_1_PROBED
   - id: piece_breath
     name: Piece Breath
-    status: STATUS_0_NOT_STARTED
+    status: STATUS_1_PROBED
   - id: memory_cabinet
     name: Memory Cabinet
-    status: STATUS_0_NOT_STARTED
+    status: STATUS_1_PROBED
+  - id: position_resonance
+    name: Position Resonance
+    status: STATUS_1_PROBED
   - id: decision_pressure_field
     name: Decision Pressure Field
-    status: STATUS_0_NOT_STARTED
+    status: STATUS_1_PROBED
+candidate_probe_count: 10
+final_five_selected: false
 score_rule: Sum selected final-five status indexes and divide by 25.
