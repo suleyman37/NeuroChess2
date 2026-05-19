@@ -136,3 +136,57 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20AZ
+  - id: memory-a20ba-browser-state-not-body-text
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "Do not classify ChatGPT auth state from full body text."
+    evidence: "A20BA manual screenshot showed a usable composer while historical conversation text mentioned CAPTCHA, bypass, consent, and human verification."
+    action_rule: "Use targeted current UI evidence before sending human-action alerts."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BA
+  - id: memory-a20ba-history-may-contain-blocker-words
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "Conversation history may contain blocker words without indicating a current blocker."
+    evidence: "Historical supervisor messages contained verification terms while the active page remained usable."
+    action_rule: "Ignore historical blocker terms unless a current foreground overlay or direct blocker selector is visible."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BA
+  - id: memory-a20ba-composer-visible-wins
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "Composer-visible current UI evidence beats historical blocker text."
+    evidence: "The #prompt-textarea composer was targetable and a JSON test message succeeded."
+    action_rule: "Classify PAGE_USABLE when composer, enabled input, and send/submission evidence are present and no foreground blocker exists."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BA
+  - id: memory-a20ba-screenshot-before-human-action
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "Screenshot evidence is required before HUMAN_ACTION_REQUIRED."
+    evidence: "The false positive was resolved by looking at the screenshot instead of trusting the broad body text classifier."
+    action_rule: "Before sending ntfy for auth/human action, capture screenshot and DOM probe evidence."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BA
+  - id: memory-a20ba-user-visual-conflict-reclassify
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "If user visual observation conflicts with classifier output, capture screenshot and reclassify."
+    evidence: "The user saw a connected, usable ChatGPT page while automation was stuck on HUMAN_ACTION_REQUIRED."
+    action_rule: "Prefer screenshot/composer diagnostics over stale classifier state."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BA
+  - id: memory-a20ba-ntfy-only-current-blocker
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "Send ntfy only after current UI blocker evidence."
+    evidence: "Historical text alone would have caused repeated false human-action alerts."
+    action_rule: "No ntfy for PAGE_USABLE or UNCLASSIFIED_PAGE_STATE; alert only for HUMAN_ACTION_REQUIRED with foreground evidence."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BA

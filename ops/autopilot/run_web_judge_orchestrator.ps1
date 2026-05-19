@@ -758,6 +758,27 @@ switch ($Mode) {
     }
     "ResumeCheck" {
         $state = Load-Or-InitializeState
+        if (-not $DryRun) {
+            $resume = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "classify_web_judge_page_state.ps1") -Arguments @(
+                "-Mode", "ResumeCheck",
+                "-Service", "chatgpt",
+                "-MissionId", $MissionId,
+                "-ArtifactPath", $ArtifactPath,
+                "-NoPrompt"
+            )
+            Emit-Result -Payload ([ordered]@{
+                status = [string]$resume.status
+                classification = [string]$resume.classification
+                composer_visible = [bool]$resume.composer_visible
+                composer_enabled = [bool]$resume.composer_enabled
+                send_available = [bool]$resume.send_available
+                history_text_ignored = [bool]$resume.history_text_ignored
+                ntfy_should_send = [bool]$resume.ntfy_should_send
+                screenshot_path = [string]$resume.screenshot_path
+                browser_should_remain_open = $true
+                private_urls_redacted = $true
+            }) -ArtifactName "resume_check_result.json"
+        }
         Emit-Result -Payload ([ordered]@{
             status = if ($DryRun) { "STILL_WAITING" } else { "RESUME_CHECK_DELEGATED_TO_GATE" }
             browser_should_remain_open = $true

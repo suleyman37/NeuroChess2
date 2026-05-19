@@ -112,3 +112,24 @@ problems:
     retry_limit: 0
     email: optional
     stop_status: GEMINI_DISABLED_NO_URL
+  - status_code: FALSE_POSITIVE_HUMAN_ACTION_REQUIRED
+    detection_method: "Classifier saw blocker terms in historical conversation text while the current composer is visible and usable."
+    action: "Ignore history text, capture screenshot/DOM evidence, classify PAGE_USABLE, and continue automation."
+    forbidden_action: "Do not send repeated ntfy alerts or park the lane from body text alone."
+    retry_limit: 0
+    email: false
+    stop_status: PAGE_USABLE
+  - status_code: PAGE_USABLE_BUT_ORCHESTRATOR_WAITING
+    detection_method: "Composer is visible and enabled while orchestrator state is waiting for human action."
+    action: "Run composer-first ResumeCheck; map PAGE_USABLE to RESUME_READY."
+    forbidden_action: "Do not keep waiting for non-existent user action."
+    retry_limit: 1
+    email: false
+    stop_status: RESUME_READY
+  - status_code: HISTORY_TEXT_BLOCKER_TERMS
+    detection_method: "Body text contains CAPTCHA, verification, bypass, auth, or consent words outside a current foreground blocker."
+    action: "Treat blocker words as historical unless active overlay/direct blocker evidence exists."
+    forbidden_action: "Do not classify HUMAN_ACTION_REQUIRED from full body text alone."
+    retry_limit: 0
+    email: false
+    stop_status: PAGE_USABLE_OR_UNCLASSIFIED
