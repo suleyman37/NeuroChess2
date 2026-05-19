@@ -38,6 +38,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\supervisor_browser_harness\A20BB_chatgpt_aj_e2e_20260518"
     } elseif ($MissionId -eq "A20BC") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\mcp_playwright_chatgpt\A20BC_session_bootstrap_e2e_20260518"
+    } elseif ($MissionId -eq "A20BD") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\mcp_playwright_chatgpt\A20BD_keep_open_auth_bootstrap_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -261,8 +263,67 @@ function Test-A20BCPlaywrightChatGptReady {
     }
 }
 
+function Test-A20BDManualAuthBootstrapReady {
+    $transportPath = Join-Path $ArtifactPath "transport_integration_result.json"
+    $resumePath = Join-Path $ArtifactPath "resume_e2e_result.json"
+    $paths = @($transportPath, $resumePath)
+    foreach ($path in $paths) {
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { continue }
+        try {
+            $payload = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+            if ([string]$payload.status -in @("CHATGPT_A_READY", "CHATGPT_A_MESSAGE_SUBMITTED_RESPONSE_UNREAD")) { return $true }
+        } catch {}
+    }
+    return $false
+}
+
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20BD") {
+        $authReady = Test-A20BDManualAuthBootstrapReady
+        $objectives = @(
+            [pscustomobject]@{
+                id = if ($authReady) { "A20BE_TRUE_OVERNIGHT_SECOND_RUN_WITH_CHATGPT_READY" } else { "A20BE_RERUN_E2E_AFTER_MANUAL_AUTH" }
+                family = "LIVE_SUPERVISOR_RELIABILITY"
+                expected_value = if ($authReady) { "Run a second true overnight after the persistent Playwright auth bootstrap restored ChatGPT A-J E2E." } else { "Rerun ResumeE2E after manual auth is completed in the persistent supervisor browser, with zero paid API use and no auth-wall automation." }
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("chatgpt_a_ready_or_waiting", "browser_kept_open", "no_private_urls", "no_paid_api", "no_auth_wall_automation", "local_fallback_preserved")
+            },
+            [pscustomobject]@{
+                id = "A20BE_REPAIR_AUTH_BOOTSTRAP_KEEP_OPEN"
+                family = "LIVE_SUPERVISOR_RELIABILITY"
+                expected_value = "Repair the keep-open browser bootstrap if the persistent auth window cannot remain attached or visible."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("browser_visible", "bounded_polling", "no_blind_typing", "no_secrets")
+            },
+            [pscustomobject]@{
+                id = "A20BE_GEMINI_PLAYWRIGHT_SETUP"
+                family = "LIVE_SUPERVISOR_RELIABILITY"
+                expected_value = "Explore a separate Gemini Playwright setup after the ChatGPT auth bootstrap state is recorded."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("no_paid_api", "no_secrets", "park_blocked_lane")
+            },
+            [pscustomobject]@{
+                id = "A20BE_ROAD_TO_V2_MERGE_AUDIT_PLAN"
+                family = "SAFETY_MAINTENANCE"
+                expected_value = "Prepare the road-to-V2 merge audit plan after the ChatGPT keep-open auth bootstrap status is known."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("audit_plan_only", "no_road_push", "no_merge")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20BC") {
         $chatGptReady = Test-A20BCPlaywrightChatGptReady
         $objectives = @(
@@ -785,6 +846,8 @@ function Run-OneRelayIteration {
             "A20AZ produced twelve-plus screenshot-backed local pixel deltas but parked live supervisor lanes; local fallback routes toward live supervisor repair before claiming a live-supervised pass."
         } elseif ($MissionId -eq "A20AY") {
             "A20AY real full-night run evidence has six-plus useful screenshot-backed pixel deltas; local fallback routes toward A20AZ audit, integration review, or final handoff."
+        } elseif ($MissionId -eq "A20BD") {
+            "A20BD keep-open auth bootstrap keeps the dedicated ChatGPT browser available; local fallback routes toward ResumeE2E after manual auth or a focused keep-open repair."
         } elseif ($MissionId -eq "A20AW") {
             "A20AW full-night rehearsal evidence has five-plus useful pixel deltas; local fallback routes toward a bounded real night run or final hardening."
         } elseif ($MissionId -eq "A20AV") {

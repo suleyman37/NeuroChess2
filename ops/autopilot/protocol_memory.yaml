@@ -190,3 +190,21 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20BC
+  - id: memory-a20bd-keep-open-auth-browser
+    date: 2026-05-19
+    category: supervisor_robustness
+    lesson: "Manual ChatGPT auth needs an OS-owned headed browser process; Playwright-owned contexts can disappear when scripts exit."
+    evidence: "A20BD launches Chrome/Edge with the dedicated supervisor profile and remote debugging, then attaches over CDP without closing the browser."
+    action_rule: "Use chatgpt_manual_auth_bootstrap LaunchAuthWindow for auth, then ResumeE2E after the user completes manual verification."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BD
+  - id: memory-a20bd-no-close-during-auth
+    date: 2026-05-19
+    category: supervisor_robustness
+    lesson: "When HUMAN_ACTION_REQUIRED is detected, automation must alert, park, and leave the browser open rather than closing or polling forever."
+    evidence: "A20BD returned AUTH_BOOTSTRAP_READY_WAITING_FOR_MANUAL_AUTH, browser_process_running true, debug endpoint ready, and ntfy sent."
+    action_rule: "Never send ChatGPT messages until SESSION_READY and composer detection pass; keep local OMEGA fallback available while waiting."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BD
