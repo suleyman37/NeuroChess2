@@ -1,7 +1,9 @@
 import "./signatureProbeStyles.css";
 import type { CSSProperties } from "react";
-import { signatureProbes } from "./signatureProbeData";
+import { signatureProbeIds, signatureProbes } from "./signatureProbeData";
 import type { SignatureProbe, SignatureProbeId } from "./signatureProbeData";
+
+export type SignatureProbeEvidenceMode = "primary" | "detail" | "states";
 
 const boardSquares = Array.from({ length: 64 }, (_, index) => {
   const file = index % 8;
@@ -34,7 +36,12 @@ function MiniBoard({ probeId }: { probeId: SignatureProbeId }) {
     probeId === "decision_pressure_field";
 
   return (
-    <div className={`sig-probe-board sig-probe-board-${probeId}`} aria-hidden="true">
+    <div
+      className={`sig-probe-board sig-probe-board-${probeId}`}
+      data-evidence-role="board"
+      data-board-visible="true"
+      aria-hidden="true"
+    >
       {boardSquares.map((square, index) => (
         <span
           className={`sig-probe-square ${square.isLight ? "sig-probe-square-light" : "sig-probe-square-dark"}`}
@@ -163,6 +170,8 @@ function ProbeCard({ probe, index }: { probe: SignatureProbe; index: number }) {
     <article
       className={`sig-probe-card sig-probe-card-${probe.id}`}
       data-testid={`signature-probe-${probe.id}`}
+      data-visual-probe-id={probe.id}
+      data-board-visible={String(probe.boardVisible)}
       style={{
         "--sig-probe-accent": probe.accent,
         "--sig-probe-secondary": probe.secondary,
@@ -194,6 +203,131 @@ function ProbeCard({ probe, index }: { probe: SignatureProbe; index: number }) {
         </div>
       </div>
     </article>
+  );
+}
+
+function getProbeById(probeId: SignatureProbeId): SignatureProbe {
+  return signatureProbes.find((probe) => probe.id === probeId) ?? signatureProbes[0];
+}
+
+function EvidenceStateRail({ probe }: { probe: SignatureProbe }) {
+  return (
+    <div className="sig-evidence-state-rail" aria-label={`${probe.title} state preview`}>
+      <span>Before</span>
+      <strong>Commit</strong>
+      <span>After</span>
+    </div>
+  );
+}
+
+function EvidenceMicroBoard({ probeId }: { probeId: SignatureProbeId }) {
+  if (
+    probeId === "sacred_board_chamber" ||
+    probeId === "decision_feedback_language" ||
+    probeId === "position_resonance" ||
+    probeId === "decision_pressure_field"
+  ) {
+    return <MiniBoard probeId={probeId} />;
+  }
+  return (
+    <div className="sig-evidence-proof-tiles" aria-hidden="true">
+      <span />
+      <span />
+      <span />
+      <span />
+    </div>
+  );
+}
+
+export function SignatureProbeEvidencePage({
+  probeId,
+  evidenceMode = "primary",
+}: {
+  probeId: SignatureProbeId;
+  evidenceMode?: SignatureProbeEvidenceMode;
+}) {
+  const probe = getProbeById(probeId);
+  const index = signatureProbeIds.indexOf(probe.id) + 1;
+
+  return (
+    <main
+      className={`sig-probe-gallery sig-probe-evidence-page sig-probe-evidence-${probe.id} sig-probe-evidence-mode-${evidenceMode}`}
+      data-testid="signature-probe-evidence-page"
+      data-visual-probe-id={probe.id}
+      data-evidence-role="primary"
+      data-board-visible={String(probe.boardVisible)}
+      style={{
+        "--sig-probe-accent": probe.accent,
+        "--sig-probe-secondary": probe.secondary,
+      } as CSSProperties}
+    >
+      <header className="sig-evidence-header">
+        <div>
+          <p>{String(index).padStart(2, "0")} / 10</p>
+          <h1>{probe.title}</h1>
+          <span>{probe.id}</span>
+        </div>
+        <dl>
+          <div>
+            <dt>Stage</dt>
+            <dd>{probe.stage}</dd>
+          </div>
+          <div>
+            <dt>Mode</dt>
+            <dd>{evidenceMode}</dd>
+          </div>
+        </dl>
+      </header>
+
+      <section className="sig-evidence-layout" aria-label={`${probe.title} isolated evidence`}>
+        <article
+          className="sig-evidence-main-surface"
+          data-testid={`signature-probe-main-surface-${probe.id}`}
+          data-visual-probe-id={probe.id}
+          data-evidence-role="main-surface"
+          data-board-visible={String(probe.boardVisible)}
+        >
+          <div className="sig-evidence-stage-copy">
+            <p>{probe.stage}</p>
+            <h2>{probe.intent}</h2>
+          </div>
+          <div className="sig-evidence-visual-field" data-evidence-role="detail">
+            <VisualMark probe={probe} />
+          </div>
+          <EvidenceStateRail probe={probe} />
+        </article>
+
+        <aside
+          className="sig-evidence-detail-panel"
+          data-testid={`signature-probe-detail-${probe.id}`}
+          data-visual-probe-id={probe.id}
+          data-evidence-role="detail"
+          data-board-visible={String(probe.boardVisible)}
+        >
+          <div className="sig-evidence-detail-visual">
+            <EvidenceMicroBoard probeId={probe.id} />
+          </div>
+          <dl>
+            <div>
+              <dt>Detail focus</dt>
+              <dd>{probe.detailFocus}</dd>
+            </div>
+            <div>
+              <dt>Learning proof</dt>
+              <dd>{probe.factualContribution}</dd>
+            </div>
+            <div>
+              <dt>Anti-pattern avoided</dt>
+              <dd>{probe.antiPattern}</dd>
+            </div>
+          </dl>
+          <div className="sig-probe-risk-row">
+            <span>Decor {probe.decorativeRisk}/3</span>
+            <span>Board {probe.boardReadabilityRisk}/3</span>
+          </div>
+        </aside>
+      </section>
+    </main>
   );
 }
 

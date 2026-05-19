@@ -118,7 +118,13 @@ import { V2VisionApp } from "./v2/product-vision/V2VisionApp";
 import { RexApp } from "./rex/RexApp";
 import { StrictBoardStageTournament } from "./dev/board-stage-strict/StrictBoardStageTournament";
 import { NorthStarBoardStage } from "./dev/board-stage-north-star/NorthStarBoardStage";
-import { SignatureProbeGallery } from "./dev/signature-probes/SignatureProbeGallery";
+import {
+  SignatureProbeEvidencePage,
+  SignatureProbeGallery,
+} from "./dev/signature-probes/SignatureProbeGallery";
+import { signatureProbeIds } from "./dev/signature-probes/signatureProbeData";
+import type { SignatureProbeEvidenceMode } from "./dev/signature-probes/SignatureProbeGallery";
+import type { SignatureProbeId } from "./dev/signature-probes/signatureProbeData";
 
 type BusyState = "idle" | "new-game" | "move" | "finish" | "load-game";
 type PositionMode = "LIVE" | "HISTORICAL" | "REVIEW";
@@ -405,6 +411,26 @@ function isSignatureProbeGalleryDevRoute(): boolean {
   return window.location.pathname === "/app" && params.get("visualProbeGallery") === "1";
 }
 
+function getSignatureProbeEvidenceDevRoute():
+  | { probeId: SignatureProbeId; evidenceMode: SignatureProbeEvidenceMode }
+  | null {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return null;
+  }
+  if (window.location.pathname !== "/app") {
+    return null;
+  }
+  const params = new URLSearchParams(window.location.search);
+  const probeId = params.get("visualProbe");
+  if (!signatureProbeIds.includes(probeId as SignatureProbeId)) {
+    return null;
+  }
+  const evidenceParam = params.get("evidence");
+  const evidenceMode: SignatureProbeEvidenceMode =
+    evidenceParam === "detail" || evidenceParam === "states" ? evidenceParam : "primary";
+  return { probeId: probeId as SignatureProbeId, evidenceMode };
+}
+
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<NeuroChessRoute>(() =>
     normalizeRoute(readCurrentPath()),
@@ -425,6 +451,9 @@ export default function App() {
   const [showSignatureProbeGallery, setShowSignatureProbeGallery] = useState(() =>
     isSignatureProbeGalleryDevRoute(),
   );
+  const [signatureProbeEvidenceRoute, setSignatureProbeEvidenceRoute] = useState(() =>
+    getSignatureProbeEvidenceDevRoute(),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -438,6 +467,7 @@ export default function App() {
       setShowStrictBoardStagePreview(isStrictBoardStageDevRoute());
       setShowNorthStarBoardStagePreview(isNorthStarBoardStageDevRoute());
       setShowSignatureProbeGallery(isSignatureProbeGalleryDevRoute());
+      setSignatureProbeEvidenceRoute(getSignatureProbeEvidenceDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -499,6 +529,15 @@ export default function App() {
 
   if (showSignatureProbeGallery) {
     return <SignatureProbeGallery />;
+  }
+
+  if (signatureProbeEvidenceRoute) {
+    return (
+      <SignatureProbeEvidencePage
+        evidenceMode={signatureProbeEvidenceRoute.evidenceMode}
+        probeId={signatureProbeEvidenceRoute.probeId}
+      />
+    );
   }
 
   if (currentRoute === "/app") {

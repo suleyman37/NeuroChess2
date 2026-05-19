@@ -1,17 +1,17 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20AP_CRITICAL_DEFICIT_UPLIFT_EXTERNAL_JUDGE_SRE_10_VISUAL_PROBES",
+  "updated_by": "A20AQ_PERCEPTION_GRADE_VISUAL_EVIDENCE_FOUNDRY",
   "scores": {
     "safety_git": 18.7,
     "operator_zero_friction": 18.0,
     "web_orchestrator": 18.1,
     "external_judge_reliability": 18.5,
     "autonomous_loop": 15.0,
-    "visual_production": 15.8,
-    "art_direction_concrete": 16.5,
-    "evidence_quality": 17.8,
+    "visual_production": 16.8,
+    "art_direction_concrete": 17.2,
+    "evidence_quality": 18.3,
     "night_readiness": 17.5,
-    "overall": 17.7
+    "overall": 18.0
   },
   "target_overall": 19.5,
   "workload_shift_metrics": {
@@ -27,7 +27,8 @@
   "notes": [
     "A20AP adds external judge SRE architecture, lane parking, and ntfy-capable failure alerting.",
     "A20AP creates ten DEV-only visual probes with external screenshot and contact sheet evidence.",
-    "Scores remain conservative: visual production is below 18.5 until probes are reviewed and selected.",
+    "A20AQ upgrades visual evidence to one full-size screenshot, main-surface crop, and detail crop per probe.",
+    "Scores remain conservative: no Signature Five has been selected and no signature component has been integrated.",
     "External reasoning utilization remains 0 in NoLiveWeb rehearsal by design; fallback still works."
   ],
   "a20ap_score_update": {
@@ -45,5 +46,22 @@
       "run_neurorelay_loop.ps1 A20AP rehearsal selected probe review and tripled variants"
     ],
     "not_19_5_reason": "No human probe selection, no integrated signature components, no reviewed Gemini visual critique, and no limited autonomous pixel run yet."
+  },
+  "a20aq_score_update": {
+    "before_overall": 17.7,
+    "after_overall": 18.0,
+    "visual_production_before": 15.8,
+    "visual_production_after": 16.8,
+    "art_direction_concrete_before": 16.5,
+    "art_direction_concrete_after": 17.2,
+    "evidence_quality_before": 17.8,
+    "evidence_quality_after": 18.3,
+    "evidence": [
+      "10 isolated DEV-only probe routes captured externally",
+      "10 primary screenshots and 10 main-surface crops passed pixel budget",
+      "10 Gemini packets, 10 ChatGPT packets, and 5 pairwise packets generated",
+      "local triage returned EVIDENCE_READY_FOR_SELECTION"
+    ],
+    "not_19_5_reason": "Final Signature Five selection, reviewed external critique, tripled variants, and integrated signature components are still pending."
   }
 }

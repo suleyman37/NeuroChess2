@@ -51,6 +51,55 @@ objectives:
       - no_product_code_mutation
       - pixel_mandate_attached
     fallback_if_blocked: SAFETY_PROMPT_LEAK_SWEEP
+  - id: SIGNATURE_FIVE_SELECTION_FROM_HIGH_QUALITY_EVIDENCE
+    family: VISUAL_PRODUCTION_MODE
+    priority: 94
+    expected_value: Select the Signature Five only after one-probe perception-grade evidence packets pass quality gates.
+    risk_tier: low
+    allowed_paths:
+      - docs/design/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - evidence_manifest.json
+      - judge_packets/**
+      - selection_matrix.md
+    success_criteria:
+      - one_probe_primary_evidence_used
+      - overview_contact_sheet_not_primary
+      - five_candidates_selected_by_evidence
+    fallback_if_blocked: RECAPTURE_WEAK_PROBE_EVIDENCE
+  - id: RECAPTURE_WEAK_PROBE_EVIDENCE
+    family: VISUAL_PRODUCTION_MODE
+    priority: 93
+    expected_value: Recapture any probe whose primary screenshot, main-surface crop, or detail crop fails pixel budget.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/signature-probes/**
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - visual_pixel_budget_report.json
+      - recapture_report.json
+    success_criteria:
+      - weak_probe_count_reduced
+      - screenshots_external_only
+      - no_product_route_change
+    fallback_if_blocked: SAFETY_PROMPT_LEAK_SWEEP
   - id: SACRED_BOARD_CHAMBER_COMPONENT_PROBE
     family: SIGNATURE_COMPONENTS
     priority: 88

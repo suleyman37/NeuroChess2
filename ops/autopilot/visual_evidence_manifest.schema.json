@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/autopilot/visual_evidence_manifest.schema.json",
+  "title": "NeuroChess Visual Evidence Manifest",
+  "type": "object",
+  "required": ["schema_version", "mission_id", "status", "artifact_path", "probes"],
+  "properties": {
+    "schema_version": { "const": "visual_evidence_manifest_v1" },
+    "mission_id": { "type": "string" },
+    "status": { "type": "string" },
+    "artifact_path": { "type": "string" },
+    "overview_contact_sheet": {
+      "type": "object",
+      "required": ["path", "use", "primary_evidence_allowed"],
+      "properties": {
+        "path": { "type": "string" },
+        "use": { "const": "OVERVIEW_ONLY" },
+        "primary_evidence_allowed": { "const": false }
+      }
+    },
+    "pairwise_sheets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["pair", "path", "max_probe_count", "use"],
+        "properties": {
+          "pair": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": { "type": "string" }
+          },
+          "path": { "type": "string" },
+          "max_probe_count": { "maximum": 2 },
+          "use": { "const": "comparison_only" }
+        }
+      }
+    },
+    "probes": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "required": [
+          "probe_id",
+          "route",
+          "primary_screenshot_path",
+          "main_surface_screenshot_path",
+          "detail_screenshot_path",
+          "viewport_width",
+          "viewport_height",
+          "main_surface_bbox",
+          "main_surface_area_ratio",
+          "board_visible",
+          "learning_loop_stage",
+          "primary_evidence_ready",
+          "recommended_for_gemini",
+          "recommended_for_chatgpt",
+          "evidence_quality_score",
+          "failure_reasons"
+        ],
+        "properties": {
+          "probe_id": { "type": "string" },
+          "route": { "type": "string" },
+          "primary_screenshot_path": { "type": "string" },
+          "main_surface_screenshot_path": { "type": "string" },
+          "detail_screenshot_path": { "type": "string" },
+          "viewport_width": { "type": "integer", "minimum": 1200 },
+          "viewport_height": { "type": "integer", "minimum": 800 },
+          "main_surface_bbox": {
+            "type": "object",
+            "required": ["width", "height"],
+            "properties": {
+              "width": { "type": "integer" },
+              "height": { "type": "integer" }
+            }
+          },
+          "main_surface_area_ratio": { "type": "number" },
+          "board_visible": { "type": "boolean" },
+          "board_bbox": { "type": "object" },
+          "learning_loop_stage": { "type": "string" },
+          "primary_evidence_ready": { "type": "boolean" },
+          "recommended_for_gemini": { "type": "boolean" },
+          "recommended_for_chatgpt": { "type": "boolean" },
+          "evidence_quality_score": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "failure_reasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

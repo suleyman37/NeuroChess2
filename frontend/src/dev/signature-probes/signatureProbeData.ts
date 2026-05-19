@@ -21,7 +21,22 @@ export type SignatureProbe = {
   boardReadabilityRisk: 0 | 1 | 2 | 3;
   accent: string;
   secondary: string;
+  boardVisible: boolean;
+  detailFocus: string;
 };
+
+export const signatureProbeIds: SignatureProbeId[] = [
+  "sacred_board_chamber",
+  "piece_identity_system",
+  "decision_feedback_language",
+  "critical_moment_sigil",
+  "verdict_wax_seal",
+  "aftermath_timeline",
+  "memory_cabinet",
+  "piece_breath",
+  "position_resonance",
+  "decision_pressure_field",
+];
 
 export const signatureProbes: SignatureProbe[] = [
   {
@@ -35,6 +50,8 @@ export const signatureProbes: SignatureProbe[] = [
     boardReadabilityRisk: 0,
     accent: "hsl(168 72% 58%)",
     secondary: "hsl(42 78% 62%)",
+    boardVisible: true,
+    detailFocus: "undistorted board framed by chamber rails",
   },
   {
     id: "piece_identity_system",
@@ -47,6 +64,8 @@ export const signatureProbes: SignatureProbe[] = [
     boardReadabilityRisk: 1,
     accent: "hsl(202 80% 64%)",
     secondary: "hsl(8 78% 66%)",
+    boardVisible: false,
+    detailFocus: "three readable piece silhouettes",
   },
   {
     id: "decision_feedback_language",
@@ -59,6 +78,8 @@ export const signatureProbes: SignatureProbe[] = [
     boardReadabilityRisk: 1,
     accent: "hsl(132 68% 58%)",
     secondary: "hsl(254 72% 72%)",
+    boardVisible: true,
+    detailFocus: "post-attempt feedback glyphs and traces",
   },
   {
     id: "critical_moment_sigil",
@@ -71,6 +92,8 @@ export const signatureProbes: SignatureProbe[] = [
     boardReadabilityRisk: 0,
     accent: "hsl(322 74% 66%)",
     secondary: "hsl(184 72% 58%)",
+    boardVisible: false,
+    detailFocus: "procedural critical-moment sigil",
   },
   {
     id: "verdict_wax_seal",
@@ -83,6 +106,8 @@ export const signatureProbes: SignatureProbe[] = [
     boardReadabilityRisk: 0,
     accent: "hsl(352 76% 62%)",
     secondary: "hsl(44 72% 63%)",
+    boardVisible: false,
+    detailFocus: "tactile post-feedback verdict seal",
   },
   {
     id: "aftermath_timeline",
@@ -95,6 +120,8 @@ export const signatureProbes: SignatureProbe[] = [
     boardReadabilityRisk: 0,
     accent: "hsl(26 82% 62%)",
     secondary: "hsl(216 80% 66%)",
+    boardVisible: false,
+    detailFocus: "timeline scars showing game consequence",
   },
   {
     id: "memory_cabinet",
@@ -107,6 +134,8 @@ export const signatureProbes: SignatureProbe[] = [
     boardReadabilityRisk: 0,
     accent: "hsl(286 60% 68%)",
     secondary: "hsl(150 58% 58%)",
+    boardVisible: false,
+    detailFocus: "memory cards in a compact cabinet abstraction",
   },
   {
     id: "piece_breath",
@@ -119,6 +148,8 @@ export const signatureProbes: SignatureProbe[] = [
     boardReadabilityRisk: 1,
     accent: "hsl(184 70% 62%)",
     secondary: "hsl(58 76% 62%)",
+    boardVisible: false,
+    detailFocus: "subtle piece motion frame",
   },
   {
     id: "position_resonance",
@@ -131,6 +162,8 @@ export const signatureProbes: SignatureProbe[] = [
     boardReadabilityRisk: 1,
     accent: "hsl(232 78% 70%)",
     secondary: "hsl(160 68% 60%)",
+    boardVisible: true,
+    detailFocus: "resonance link between two related positions",
   },
   {
     id: "decision_pressure_field",
@@ -143,5 +176,7 @@ export const signatureProbes: SignatureProbe[] = [
     boardReadabilityRisk: 1,
     accent: "hsl(14 84% 64%)",
     secondary: "hsl(196 76% 64%)",
+    boardVisible: true,
+    detailFocus: "peripheral pressure field outside the board",
   },
 ];

@@ -14,6 +14,8 @@ $ErrorActionPreference = "Stop"
 if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
     if ($MissionId -eq "A20AP") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\visual_probes\A20AP_critical_deficit_uplift_10_probes_20260518"
+    } elseif ($MissionId -eq "A20AQ") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\visual_evidence\A20AQ_perception_grade_visual_evidence_foundry_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -115,8 +117,57 @@ function Test-SignatureProbeEvidenceReady {
     return (Test-Path -LiteralPath $probeGallery -PathType Leaf) -and (Test-Path -LiteralPath $probeDoc -PathType Leaf)
 }
 
+function Test-PerceptionGradeEvidenceReady {
+    $manifestPath = Join-Path $ArtifactPath "evidence_manifest.json"
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { return $false }
+    try {
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        $probes = @($manifest.probes)
+        if ($probes.Count -ne 10) { return $false }
+        $weak = @($probes | Where-Object { $_.primary_evidence_ready -ne $true -or [int]$_.evidence_quality_score -lt 75 })
+        return ($weak.Count -eq 0)
+    } catch {
+        return $false
+    }
+}
+
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20AQ" -and (Test-PerceptionGradeEvidenceReady)) {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20AR_SIGNATURE_FIVE_SELECTION_FROM_HIGH_QUALITY_EVIDENCE"
+                family = "VISUAL_PRODUCTION_MODE"
+                expected_value = "Select the Signature Five from perception-grade one-probe evidence packets."
+                risk_tier = "low"
+                allowed_paths = @("docs/design/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("five_candidates_selected", "one_probe_packets_referenced", "overview_contact_sheet_not_primary")
+            },
+            [pscustomobject]@{
+                id = "A20AR_TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES"
+                family = "SIGNATURE_COMPONENTS"
+                expected_value = "Create A/B/C variants for the two strongest evidence-backed signature candidates."
+                risk_tier = "low"
+                allowed_paths = @("docs/design/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("top_two_selected", "three_variants_each_defined", "pixel_mandate_preserved")
+            },
+            [pscustomobject]@{
+                id = "A20AR_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL"
+                family = "NIGHT_MODE_READINESS"
+                expected_value = "Run a bounded offline pixel rehearsal using perception-grade evidence packets."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**", "scripts/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("bounded_iterations", "no_user_intervention", "evidence_packets_consumed")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if (-not (Test-SignatureProbeEvidenceReady)) { return $null }
     $objectives = @(
         [pscustomobject]@{
