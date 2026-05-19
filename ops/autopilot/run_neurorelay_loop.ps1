@@ -22,6 +22,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\signature_arena\A20AS_tripled_variants_top2_20260518"
     } elseif ($MissionId -eq "A20AT") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\human_taste_network\A20AT_human_taste_network_20260518"
+    } elseif ($MissionId -eq "A20AV") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\limited_pixel_rehearsal\A20AV_limited_autonomous_pixel_rehearsal_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -167,8 +169,54 @@ function Test-HumanTastePacketsReady {
         ((Test-Path -LiteralPath $manifestPath -PathType Leaf) -or (Test-Path -LiteralPath $localVotePath -PathType Leaf))
 }
 
+function Test-A20AVLimitedPixelRehearsalReady {
+    $manifestPath = Join-Path $ArtifactPath "pixel_delta_manifest.json"
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { return $false }
+    try {
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        return ([int]$manifest.pixel_delta_count -ge 2 -and [string]$manifest.status -eq "PIXEL_DELTAS_READY")
+    } catch {
+        return $false
+    }
+}
+
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20AV" -and (Test-A20AVLimitedPixelRehearsalReady)) {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20AW_FULL_NIGHT_PIXEL_REHEARSAL"
+                family = "NIGHT_MODE_READINESS"
+                expected_value = "Run the next full-night pixel rehearsal candidate now that A20AV produced screenshot-backed pixel deltas."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/autonomous-pixel-rehearsal/**", "scripts/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("bounded_full_night_rehearsal", "no_user_intervention", "screenshots_external_only", "no_product_integration")
+            },
+            [pscustomobject]@{
+                id = "A20AW_FINAL_NIGHT_READINESS_HARDENING"
+                family = "NIGHT_MODE_READINESS"
+                expected_value = "Harden final night readiness checks before launching any full-night pixel rehearsal."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**", "scripts/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("night_readiness_v2_pass", "stop_flag_verified", "no_live_web_dependency")
+            },
+            [pscustomobject]@{
+                id = "A20AW_PIXEL_REHEARSAL_SECOND_PASS"
+                family = "VISUAL_PRODUCTION_MODE"
+                expected_value = "Run a second limited pixel rehearsal only if full-night confidence is not high enough."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/autonomous-pixel-rehearsal/**", "scripts/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("additional_pixel_deltas", "mission_doctor_pass", "screenshots_external_only")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20AT" -and (Test-HumanTastePacketsReady)) {
         $objectives = @(
             [pscustomobject]@{
@@ -409,7 +457,11 @@ function Run-OneRelayIteration {
         Write-JsonFile -Path $missionPath -Payload $mission
         $fallback.selected_objective_id = [string]$probeObjective.id
         $fallback.selected_family = [string]$probeObjective.family
-        $fallback.reason = "Ten DEV-only signature probes exist; local fallback routes toward probe review and signature selection."
+        $fallback.reason = if ($MissionId -eq "A20AV") {
+            "A20AV pixel deltas exist with external evidence; local fallback routes toward full-night pixel rehearsal or final hardening."
+        } else {
+            "Ten DEV-only signature probes exist; local fallback routes toward probe review and signature selection."
+        }
         Write-JsonFile -Path (Join-Path $iterDir "local_fallback_result.json") -Payload $fallback
     } else {
         $mission = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "generate_micro_mission.ps1") -Arguments @(

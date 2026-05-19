@@ -4,6 +4,7 @@ param(
     [string]$ScorePath = "",
     [string]$FailureLedgerPath = "",
     [string]$OutPath = "",
+    [string]$MissionId = "",
     [string[]]$AvoidObjectiveIds = @(),
     [int]$Seed = 0,
     [switch]$Pareto
@@ -85,6 +86,17 @@ function Score-Objective {
     if ($allowed -contains "package.json" -or $allowed -contains "backend/**") { $rejected += "unsafe_allowed_path" }
     if (@($Objective.success_criteria).Count -eq 0) { $rejected += "no_bounded_stop_condition" }
     if ($Avoid -contains [string]$Objective.id) { $rejected += "avoided_repeated_objective" }
+    if ($MissionId -eq "A20AV") {
+        $eligibleA20AV = @(
+            "A20AV_REFINE_SACRED_BOARD_CHAMBER_WINNER",
+            "A20AV_REFINE_DECISION_FEEDBACK_LANGUAGE_WINNER",
+            "A20AV_BUILD_NORTH_STAR_MICRO_SCENE",
+            "A20AV_BUILD_SIGNATURE_COMPARISON_STAGE",
+            "A20AV_BUILD_PIXEL_REHEARSAL_DASHBOARD",
+            "A20AV_BUILD_ANTI_WEIRDNESS_PATCH_SET"
+        )
+        if ($eligibleA20AV -notcontains [string]$Objective.id) { $rejected += "outside_a20av_pixel_rehearsal_pool" }
+    }
 
     $priorityFactor = [Math]::Max(0.1, [double]$Objective.priority / 100.0)
     $impact = if ($Objective.family -in @("SIGNATURE_COMPONENTS", "VISUAL_PRODUCTION_MODE")) { 4.8 } elseif ($Objective.family -eq "NIGHT_MODE_READINESS") { 4.0 } elseif ($Objective.family -eq "HUMAN_TASTE_CALIBRATION") { 3.0 } else { 2.5 }
@@ -98,8 +110,10 @@ function Score-Objective {
 
     $bonus = 0.0
     if ($Bottleneck.pixel_mandate_active -and $Objective.family -in @("SIGNATURE_COMPONENTS", "VISUAL_PRODUCTION_MODE")) { $bonus += 2.0; $notes += "pixel_mandate_boost" }
-    if ([string]$Objective.id -match "A20AU") { $bonus += 0.35; $notes += "novelty_bonus" }
-    if ([string]$Objective.id -eq "A20AU_VARIANT_REFINEMENT_FOR_PROVISIONAL_WINNERS") { $bonus += 1.75; $notes += "current_bottleneck_objective_boost" }
+    if ([string]$Objective.id -match "A20AU|A20AV") { $bonus += 0.35; $notes += "novelty_bonus" }
+    if ($MissionId -ne "A20AV" -and [string]$Objective.id -eq "A20AU_VARIANT_REFINEMENT_FOR_PROVISIONAL_WINNERS") { $bonus += 1.75; $notes += "current_bottleneck_objective_boost" }
+    if ($MissionId -eq "A20AV" -and [string]$Objective.id -match "^A20AV_") { $bonus += 1.4; $notes += "a20av_pixel_rehearsal_pool_boost" }
+    if ([string]$Objective.id -eq "A20AV_REFINE_SACRED_BOARD_CHAMBER_WINNER") { $bonus += 0.65; $notes += "first_iteration_refinement_boost" }
     if ($Objective.family -eq "NIGHT_MODE_READINESS") { $bonus += 0.45; $notes += "night_readiness_bonus" }
 
     $penalty = 0.0

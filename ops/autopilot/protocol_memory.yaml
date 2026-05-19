@@ -64,3 +64,21 @@ entries:
     expires_after_missions: 12
     confidence: high
     source_mission: A20AU_TEST
+  - id: memory-a20av-limited-rehearsal-pixels
+    date: 2026-05-19
+    category: omega_kernel
+    lesson: "Limited autonomous pixel rehearsals need at least two screenshot-backed pixel deltas before full-night candidacy."
+    evidence: "A20AV pixel_delta_manifest.json and mission_doctor_results.json."
+    action_rule: "Reject rehearsal passes that are docs-only, test-only, or lack external screenshots."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AV
+  - id: memory-a20av-pixel-objective-pool
+    date: 2026-05-19
+    category: anti_stagnation
+    lesson: "When OMEGA rehearses pixels, utility ranking must stay inside the eligible pixel objective pool."
+    evidence: "A20AV OMEGA rehearsal selected chamber, feedback, and North Star pixel objectives only."
+    action_rule: "Reject live-web, alert, supervisor, and docs-only objectives during pixel rehearsal."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AV

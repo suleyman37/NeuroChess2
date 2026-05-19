@@ -12,7 +12,11 @@ param(
 $ErrorActionPreference = "Stop"
 
 if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
-    $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\omega\A20AU_omega_autonomy_kernel_20260518"
+    if ($MissionId -eq "A20AV") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\limited_pixel_rehearsal\A20AV_limited_autonomous_pixel_rehearsal_20260518"
+    } else {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\omega\A20AU_omega_autonomy_kernel_20260518"
+    }
 }
 if ([string]::IsNullOrWhiteSpace($StatePath)) {
     $StatePath = Join-Path $PSScriptRoot "runtime\omega_autopilot_state.json"
@@ -71,7 +75,7 @@ function Run-OneOmegaIteration {
     $antiPath = Join-Path $iterDir "anti_stagnation_result.json"
 
     $bottleneck = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "bottleneck_detector.ps1") -Arguments @("-OutPath", $bottleneckPath)
-    $utilityArgs = @("-BottleneckPath", $bottleneckPath, "-OutPath", $utilityPath)
+    $utilityArgs = @("-MissionId", $MissionId, "-BottleneckPath", $bottleneckPath, "-OutPath", $utilityPath)
     if ($Avoid.Count -gt 0) {
         $utilityArgs += "-AvoidObjectiveIds"
         $utilityArgs += ($Avoid -join ",")
@@ -80,6 +84,7 @@ function Run-OneOmegaIteration {
     $contract = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "build_proof_carrying_contract.ps1") -Arguments @("-MissionId", $MissionId, "-UtilityPath", $utilityPath, "-OutPath", $contractPath, "-ContractOutPath", $contractMd)
     $anti = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "anti_stagnation_sentinel.ps1") -Arguments @("-OutPath", $antiPath)
     Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "protocol_memory_update.ps1") -Arguments @(
+        "-MemoryPath", (Join-Path $ArtifactPath "protocol_memory_rehearsal.yaml"),
         "-MissionId", $MissionId,
         "-Category", "omega_kernel",
         "-Lesson", "Pixel mandate activates when visual production remains below target after meta work.",
@@ -129,7 +134,7 @@ if ($Mode -eq "Status") {
 }
 
 if ($Mode -eq "NightCheck") {
-    $night = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "night_readiness_v2.ps1") -Arguments @("-ArtifactPath", $ArtifactPath, "-OutPath", (Join-Path $ArtifactPath "night_readiness_v2_result.json"), "-MaxIterations", "$MaxIterations", "-MaxRuntimeMinutes", "$MaxRuntimeMinutes") -AcceptExitCodes @(0,3)
+    $night = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "night_readiness_v2.ps1") -Arguments @("-MissionId", $MissionId, "-ArtifactPath", $ArtifactPath, "-OutPath", (Join-Path $ArtifactPath "night_readiness_v2_result.json"), "-MaxIterations", "$MaxIterations", "-MaxRuntimeMinutes", "$MaxRuntimeMinutes") -AcceptExitCodes @(0,3)
     $night | ConvertTo-Json -Depth 60
     exit 0
 }

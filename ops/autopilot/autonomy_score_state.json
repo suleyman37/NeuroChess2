@@ -1,18 +1,18 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20AU_OMEGA_AUTONOMY_KERNEL_SELF_IMPROVING_PIXEL_LAB",
+  "updated_by": "A20AV_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL",
   "scores": {
     "safety_git": 18.7,
     "operator_zero_friction": 18.4,
     "web_orchestrator": 18.1,
     "external_judge_reliability": 18.5,
-    "autonomous_loop": 18.4,
-    "visual_production": 18.25,
+    "autonomous_loop": 19.2,
+    "visual_production": 18.8,
     "art_direction_concrete": 18.2,
-    "evidence_quality": 18.3,
-    "night_readiness": 18.8,
+    "evidence_quality": 18.6,
+    "night_readiness": 19.2,
     "human_taste_calibration_readiness": 18.0,
-    "overall": 19.15
+    "overall": 19.35
   },
   "target_overall": 19.5,
   "workload_shift_metrics": {
@@ -28,14 +28,14 @@
   "omega_metrics": {
     "bottleneck_detection_accuracy_proxy": 0.92,
     "utility_selection_explainability": 0.94,
-    "meta_drift_risk": 0.18,
+    "meta_drift_risk": 0.1,
     "pixel_mandate_compliance": 1.0,
     "no_user_intervention_score": 1.0,
     "live_dependency_risk": 0.08,
-    "proof_strength_score": 0.88,
-    "night_readiness_v2_score": 18.8,
-    "codex_contract_word_count_avg": 218,
-    "next_objective_confidence": 0.86
+    "proof_strength_score": 0.94,
+    "night_readiness_v2_score": 19.2,
+    "codex_contract_word_count_avg": 217.67,
+    "next_objective_confidence": 0.92
   },
   "notes": [
     "A20AP adds external judge SRE architecture, lane parking, and ntfy-capable failure alerting.",
@@ -47,7 +47,8 @@
     "External reasoning utilization remains 0 in NoLiveWeb rehearsal by design; fallback still works.",
     "A20AT creates export-only provider packets, CSV/JSON import, and conservative Taste Confidence scoring.",
     "No human validation claim is made because no owner or crowd results are imported.",
-    "A20AU adds the OMEGA bottleneck detector, utility engine, proof-carrying contract, anti-stagnation sentinel, failure ledger 2.0, Night Readiness V2, and a DEV-only OMEGA Pixel Lab route."
+    "A20AU adds the OMEGA bottleneck detector, utility engine, proof-carrying contract, anti-stagnation sentinel, failure ledger 2.0, Night Readiness V2, and a DEV-only OMEGA Pixel Lab route.",
+    "A20AV runs a limited autonomous pixel rehearsal with three DEV-only pixel deltas, external screenshots, Mission Doctor pass results, and no live-web dependency."
   ],
   "a20ap_score_update": {
     "before_overall": 17.0,
@@ -167,5 +168,30 @@
       "browser_omega_pixel_lab_smoke.mjs captures external screenshot proof"
     ],
     "not_19_5_reason": "The OMEGA kernel is ready, but a limited autonomous pixel rehearsal has not yet run and no final human-voted signature winner is integrated."
+  },
+  "a20av_score_update": {
+    "before_overall": 19.15,
+    "after_overall": 19.35,
+    "autonomous_loop_before": 18.4,
+    "autonomous_loop_after": 19.2,
+    "visual_production_before": 18.25,
+    "visual_production_after": 18.8,
+    "night_readiness_before": 18.8,
+    "night_readiness_after": 19.2,
+    "iterations_completed": 3,
+    "pixel_deltas_produced": 3,
+    "mission_doctor_all_pass": true,
+    "night_readiness_after_rehearsal": "NIGHT_READY",
+    "readiness_19_5_candidate": true,
+    "full_night_proven": false,
+    "evidence": [
+      "DEV-only /app?autonomousPixelRehearsal=1 renders three pixel delta previews.",
+      "Isolated iteration routes render sacred_board_chamber, decision_feedback_language, and North Star micro-scene deltas.",
+      "browser_autonomous_pixel_rehearsal_smoke.mjs captured external summary and per-iteration screenshots.",
+      "Mission Doctor returned PASS for all three rehearsal iterations.",
+      "OMEGA rehearsal selected only A20AV pixel objectives with NoLiveWeb enabled.",
+      "NeuroRelay rehearsal recommends A20AW_FULL_NIGHT_PIXEL_REHEARSAL then A20AW_FINAL_NIGHT_READINESS_HARDENING."
+    ],
+    "not_19_5_reason": "A20AV is a 19.5 readiness candidate, but full all-night pixel operation has not been launched or observed yet."
   }
 }

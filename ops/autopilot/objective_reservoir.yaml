@@ -206,6 +206,162 @@ objectives:
       - provisional_taste_state_respected
       - no_live_web_dependency
     fallback_if_blocked: A20AU_FIX_HUMAN_TASTE_NETWORK
+  - id: A20AV_REFINE_SACRED_BOARD_CHAMBER_WINNER
+    family: SIGNATURE_COMPONENTS
+    priority: 99
+    expected_value: Refine the sacred_board_chamber Variant B winner into a more product-grade chamber pixel delta.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/autonomous-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_result.json
+    success_criteria:
+      - sacred_board_chamber_refinement_visible
+      - board_safety_preserved
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AV_REFINE_DECISION_FEEDBACK_LANGUAGE_WINNER
+  - id: A20AV_REFINE_DECISION_FEEDBACK_LANGUAGE_WINNER
+    family: SIGNATURE_COMPONENTS
+    priority: 98
+    expected_value: Refine the decision_feedback_language Variant B winner into a clearer post-attempt feedback pixel delta.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/autonomous-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_result.json
+    success_criteria:
+      - decision_feedback_language_refinement_visible
+      - no_pre_feedback_hint
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AV_BUILD_NORTH_STAR_MICRO_SCENE
+  - id: A20AV_BUILD_NORTH_STAR_MICRO_SCENE
+    family: VISUAL_PRODUCTION_MODE
+    priority: 96
+    expected_value: Build a DEV-only North Star micro-scene combining chamber identity and feedback language.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/autonomous-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - limited_pixel_rehearsal_report.json
+    success_criteria:
+      - north_star_micro_scene_visible
+      - at_least_two_pixel_deltas_visible
+      - screenshots_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AV_BUILD_SIGNATURE_COMPARISON_STAGE
+  - id: A20AV_BUILD_SIGNATURE_COMPARISON_STAGE
+    family: VISUAL_PRODUCTION_MODE
+    priority: 88
+    expected_value: Create a scaled DEV-only comparison stage for the current best signature directions.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/autonomous-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - comparison_stage_report.json
+      - screenshots/**
+    success_criteria:
+      - comparison_stage_visible
+      - no_generic_dark_saas_only
+      - no_product_integration
+    fallback_if_blocked: A20AV_BUILD_PIXEL_REHEARSAL_DASHBOARD
+  - id: A20AV_BUILD_PIXEL_REHEARSAL_DASHBOARD
+    family: NIGHT_MODE_READINESS
+    priority: 82
+    expected_value: Build the DEV-only rehearsal dashboard showing OMEGA iterations, score deltas, screenshots, and next decisions.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/autonomous-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - rehearsal_dashboard_report.json
+      - screenshots/**
+    success_criteria:
+      - dashboard_route_visible
+      - omega_decision_summary_visible
+      - no_user_intervention
+    fallback_if_blocked: A20AV_BUILD_ANTI_WEIRDNESS_PATCH_SET
+  - id: A20AV_BUILD_ANTI_WEIRDNESS_PATCH_SET
+    family: VISUAL_PRODUCTION_MODE
+    priority: 78
+    expected_value: Patch visually risky elements in the current top signatures using local anti-weirdness heuristics.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/autonomous-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - anti_weirdness_patch_report.json
+      - screenshots/**
+    success_criteria:
+      - weirdness_risk_reduced
+      - board_readability_preserved
+      - no_product_integration
+    fallback_if_blocked: A20AW_FINAL_NIGHT_READINESS_HARDENING
   - id: A20AU_FIX_HUMAN_TASTE_NETWORK
     family: SAFETY_MAINTENANCE
     priority: 70

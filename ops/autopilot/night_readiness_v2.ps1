@@ -1,4 +1,5 @@
 param(
+    [string]$MissionId = "A20AU",
     [string]$ScorePath = "",
     [string]$ReservoirPath = "",
     [string]$ArtifactPath = "",
@@ -11,7 +12,13 @@ $ErrorActionPreference = "Stop"
 
 if ([string]::IsNullOrWhiteSpace($ScorePath)) { $ScorePath = Join-Path $PSScriptRoot "autonomy_score_state.json" }
 if ([string]::IsNullOrWhiteSpace($ReservoirPath)) { $ReservoirPath = Join-Path $PSScriptRoot "objective_reservoir.yaml" }
-if ([string]::IsNullOrWhiteSpace($ArtifactPath)) { $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\omega\A20AU_omega_autonomy_kernel_20260518" }
+if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
+    if ($MissionId -eq "A20AV") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\limited_pixel_rehearsal\A20AV_limited_autonomous_pixel_rehearsal_20260518"
+    } else {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\omega\A20AU_omega_autonomy_kernel_20260518"
+    }
+}
 
 function Write-JsonFile {
     param([string]$Path, [object]$Payload)
@@ -19,6 +26,12 @@ function Write-JsonFile {
     $dir = Split-Path -Parent $Path
     if (-not [string]::IsNullOrWhiteSpace($dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
     $Payload | ConvertTo-Json -Depth 40 | Set-Content -LiteralPath $Path -Encoding UTF8
+}
+
+$morningReportName = if ($MissionId -eq "A20AV") {
+    "A20AV_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL_REPORT.md"
+} else {
+    "A20AU_OMEGA_AUTONOMY_KERNEL_SELF_IMPROVING_PIXEL_LAB_REPORT.md"
 }
 
 $requiredFiles = [ordered]@{
@@ -29,7 +42,7 @@ $requiredFiles = [ordered]@{
     pixel_mandate_ready = (Join-Path $PSScriptRoot "pixel_mandate_policy.yaml")
     proof_contracts_ready = (Join-Path $PSScriptRoot "build_proof_carrying_contract.ps1")
     failure_ledger_ready = (Join-Path $PSScriptRoot "failure_ledger.yaml")
-    morning_report_available = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path "docs\autopilot\A20AU_OMEGA_AUTONOMY_KERNEL_SELF_IMPROVING_PIXEL_LAB_REPORT.md")
+    morning_report_available = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path ("docs\autopilot\" + $morningReportName))
     stop_flag_supported = (Join-Path $PSScriptRoot "run_omega_autopilot.ps1")
 }
 
@@ -62,6 +75,7 @@ $verdict = if ($missing.Count -eq 0 -and $nightScore -ge 18.8) {
 
 $result = [ordered]@{
     schema_version = "night_readiness_v2_result"
+    mission_id = $MissionId
     status = $verdict
     checked_at = (Get-Date).ToString("o")
     checks = $checks
@@ -69,7 +83,11 @@ $result = [ordered]@{
     max_iterations = $MaxIterations
     max_runtime_minutes = $MaxRuntimeMinutes
     no_full_night_launched = $true
-    recommended_next = if ($verdict -eq "NIGHT_NOT_READY") { "A20AV_FIX_OMEGA_KERNEL" } else { "A20AV_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL" }
+    recommended_next = if ($verdict -eq "NIGHT_NOT_READY") {
+        if ($MissionId -eq "A20AV") { "A20AW_FINAL_NIGHT_READINESS_HARDENING" } else { "A20AV_FIX_OMEGA_KERNEL" }
+    } else {
+        if ($MissionId -eq "A20AV") { "A20AW_FULL_NIGHT_PIXEL_REHEARSAL" } else { "A20AV_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL" }
+    }
 }
 
 Write-JsonFile -Path $OutPath -Payload $result
