@@ -1,0 +1,41 @@
+schema_version: supervisor_transport_policy_v1
+updated_by: A20BA_CHATGPT_WINDOWS_APP_ADAPTER_DISCOVERY
+
+strategy_supervisor:
+  preferred_order:
+    - chatgpt_windows_app_adapter
+    - chatgpt_web_a_j_pool
+    - local_omega_fallback
+  zero_cost_policy:
+    openai_api_enabled: false
+    gemini_api_enabled: false
+    paid_platforms_enabled: false
+  safety_rules:
+    no_blind_typing: true
+    no_credentials: true
+    no_auth_bypass: true
+    no_captcha_automation: true
+    no_2fa_automation: true
+    no_private_urls_in_logs: true
+    park_blocked_lanes: true
+    local_fallback_always_available: true
+
+lanes:
+  chatgpt_windows_app_adapter:
+    enabled: true
+    mode: local_ui_discovery_only
+    ready_status: CHATGPT_DESKTOP_TRANSPORT_READY
+    blocked_statuses:
+      - CHATGPT_DESKTOP_NOT_INSTALLED
+      - CHATGPT_DESKTOP_INSTALLED_NOT_AUTOMATABLE
+      - CHATGPT_DESKTOP_AUTH_REQUIRED
+      - CHATGPT_DESKTOP_COMPOSER_NOT_FOUND
+      - CHATGPT_DESKTOP_SAFE_SEND_FAILED
+      - CHATGPT_DESKTOP_ADAPTER_UNSAFE
+  chatgpt_web_a_j_pool:
+    enabled: true
+    mode: optional_cdp
+    park_if_cdp_unavailable: true
+  local_omega_fallback:
+    enabled: true
+    mode: always_available

@@ -136,3 +136,21 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20AZ
+  - id: memory-a20ba-desktop-adapter-safety
+    date: 2026-05-19
+    category: supervisor_robustness
+    lesson: "The ChatGPT Windows app can be discovered locally, but it must not be used unless UI Automation proves a composer and high-confidence target."
+    evidence: "A20BA detected the installed/running desktop app, redacted the UI tree, and parked the lane because the composer was not safely detected."
+    action_rule: "Never type blindly into the ChatGPT desktop app; park the lane and continue with local OMEGA fallback when composer confidence is not high."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BA
+  - id: memory-a20ba-redacted-ui-tree
+    date: 2026-05-19
+    category: secret_hygiene
+    lesson: "Desktop UI Automation trees can expose private conversation labels, so adapter logs must classify UI text instead of storing raw names."
+    evidence: "A20BA window inspection writes redacted UI node names and omits private ChatGPT URLs, credentials, cookies, and tokens."
+    action_rule: "Use redacted UI summaries for supervisor transport discovery and never commit local artifacts."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BA

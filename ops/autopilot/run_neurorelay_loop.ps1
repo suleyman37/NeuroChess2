@@ -31,6 +31,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\full_night_real_run\A20AY_full_night_real_pixel_run_20260518"
     } elseif ($MissionId -eq "A20AZ") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\true_overnight_live_run\A20AZ_true_overnight_live_supervised_pixel_run_20260518"
+    } elseif ($MissionId -eq "A20BA") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\chatgpt_desktop_adapter\A20BA_chatgpt_windows_app_adapter_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -221,8 +223,55 @@ function Test-A20AZTrueOvernightLiveRunReady {
     }
 }
 
+function Test-A20BAChatGptDesktopAdapterReady {
+    $transportPath = Join-Path $ArtifactPath "transport_integration_result.json"
+    if (-not (Test-Path -LiteralPath $transportPath -PathType Leaf)) { return $false }
+    try {
+        $transport = Get-Content -LiteralPath $transportPath -Raw | ConvertFrom-Json
+        return ([string]$transport.desktop_adapter.status -eq "CHATGPT_DESKTOP_TRANSPORT_READY")
+    } catch {
+        return $false
+    }
+}
+
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20BA") {
+        $desktopReady = Test-A20BAChatGptDesktopAdapterReady
+        $objectives = @(
+            [pscustomobject]@{
+                id = if ($desktopReady) { "A20BB_TRUE_OVERNIGHT_SECOND_RUN_WITH_DESKTOP_TRANSPORT" } else { "A20BB_CHATGPT_WEB_CDP_REPAIR" }
+                family = "LIVE_SUPERVISOR_RELIABILITY"
+                expected_value = if ($desktopReady) { "Run a second true overnight with ChatGPT Windows desktop transport sampled as an optional supervisor lane." } else { "Repair the remaining ChatGPT Web/CDP lane while the desktop app adapter is parked and OMEGA fallback remains available." }
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("no_private_urls", "no_user_prompt", "local_fallback_preserved", "transport_status_recorded")
+            },
+            [pscustomobject]@{
+                id = "A20BB_DEEP_PIXEL_OBJECTIVE_RESERVOIR_AND_SECOND_NIGHT"
+                family = "NIGHT_MODE_READINESS"
+                expected_value = "Expand safe pixel objectives before a second night run if live lanes remain parked."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("pixel_objectives_only", "no_backend", "no_package_changes")
+            },
+            [pscustomobject]@{
+                id = "A20BB_ROAD_TO_V2_MERGE_AUDIT_PLAN"
+                family = "SAFETY_MAINTENANCE"
+                expected_value = "Prepare a merge audit plan only after live-supervisor transport status is documented."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("audit_plan_only", "no_road_push", "no_merge")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20AZ" -and (Test-A20AZTrueOvernightLiveRunReady)) {
         $objectives = @(
             [pscustomobject]@{
@@ -560,6 +609,18 @@ function Run-OneRelayIteration {
         )
     }
 
+    $transport = $null
+    $transportPath = Join-Path $PSScriptRoot "supervisor_transport_fabric.ps1"
+    if (Test-Path -LiteralPath $transportPath -PathType Leaf) {
+        $transport = Invoke-JsonScript -ScriptPath $transportPath -Arguments @(
+            "-Mode", "HealthCheck",
+            "-MissionId", $MissionId,
+            "-ArtifactPath", $iterDir,
+            "-OutPath", (Join-Path $iterDir "supervisor_transport_health.json"),
+            "-NoPrompt"
+        )
+    }
+
     $capsulePath = Join-Path $iterDir "context_capsule.json"
     $capsule = Invoke-JsonScript -ScriptPath (Join-Path $PSScriptRoot "context_capsule_builder.ps1") -Arguments @(
         "-Mode", "BuildNextObjectiveCapsule",
@@ -679,6 +740,10 @@ function Run-OneRelayIteration {
         mission_doctor_verdict = [string]$doctor.verdict
         memory_status = [string]$memory.status
         external_judge_sre_status = if ($sre) { [string]$sre.status } else { "SRE_NOT_PRESENT" }
+        supervisor_transport_status = if ($transport) { [string]$transport.status } else { "SUPERVISOR_TRANSPORT_NOT_PRESENT" }
+        supervisor_transport_selected = if ($transport) { [string]$transport.selected_transport } else { "local_omega_fallback" }
+        desktop_transport_status = if ($transport) { [string]$transport.desktop_adapter.status } else { "CHATGPT_DESKTOP_NOT_CHECKED" }
+        desktop_transport_safe_to_send = if ($transport) { [bool]$transport.desktop_adapter.safe_to_send } else { $false }
         chatgpt_packet_status = if ($NoLiveWeb) { "PARKED_NO_LIVE_WEB" } else { "PARKED_UNATTENDED" }
         gemini_packet_status = "SKIPPED_NO_VISUAL_EVIDENCE"
         local_fallback_packets_count = 1

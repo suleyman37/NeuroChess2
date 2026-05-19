@@ -1,5 +1,5 @@
 schema_version: failure_ledger_v2
-updated_by: A20AZ_TRUE_OVERNIGHT_LIVE_SUPERVISED_PIXEL_RUN
+updated_by: A20BA_CHATGPT_WINDOWS_APP_ADAPTER_DISCOVERY
 entries:
   - id: a20az-chatgpt-cdp-unavailable
     mission_id: A20AZ
@@ -23,19 +23,28 @@ entries:
     ntfy_alert_sent: true
     user_intervention_required: false
     loop_continued: true
+  - id: a20ba-chatgpt-desktop-composer-not-found
+    mission_id: A20BA
+    failed_lane: chatgpt_windows_app_adapter
+    reason: CHATGPT_DESKTOP_COMPOSER_NOT_FOUND
+    recurrence_count: 1
+    parked_until: composer_accessible_by_safe_ui_automation
+    do_not_repeat_rule: do_not_send_without_detected_composer_and_high_confidence_target
+    next_safe_alternative: local_omega_fallback_or_chatgpt_web_cdp_repair
+    ntfy_alert_sent: false
+    user_intervention_required: false
+    loop_continued: true
 last_run_summary:
-  mission_id: A20AZ
+  mission_id: A20BA
   blockers:
-    - CHATGPT_CDP_UNREACHABLE
-    - GEMINI_NOT_CONFIGURED
+    - CHATGPT_DESKTOP_COMPOSER_NOT_FOUND
   repeated_blocked_lanes:
-    - chatgpt
-    - gemini
+    - chatgpt_windows_app_adapter
   live_lanes_required: false
   loop_continued: true
   kill_switch_triggered: false
-  runtime_minimum_met: false
-  stop_reason: OBJECTIVE_EXHAUSTED_BEFORE_MIN_RUNTIME
+  runtime_minimum_met: not_applicable
+  stop_reason: DESKTOP_TRANSPORT_PARKED_LOCAL_FALLBACK_CONTINUED
 policy:
   repeat_threshold: 2
   repeated_failure_action: avoid_lane_unless_explicitly_unparked
