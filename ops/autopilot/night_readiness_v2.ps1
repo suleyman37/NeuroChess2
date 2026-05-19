@@ -15,6 +15,8 @@ if ([string]::IsNullOrWhiteSpace($ReservoirPath)) { $ReservoirPath = Join-Path $
 if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
     if ($MissionId -eq "A20AV") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\limited_pixel_rehearsal\A20AV_limited_autonomous_pixel_rehearsal_20260518"
+    } elseif ($MissionId -eq "A20AW") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\full_night_pixel_rehearsal\A20AW_full_night_pixel_rehearsal_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\omega\A20AU_omega_autonomy_kernel_20260518"
     }
@@ -30,6 +32,8 @@ function Write-JsonFile {
 
 $morningReportName = if ($MissionId -eq "A20AV") {
     "A20AV_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL_REPORT.md"
+} elseif ($MissionId -eq "A20AW") {
+    "A20AW_FULL_NIGHT_PIXEL_REHEARSAL_REPORT.md"
 } else {
     "A20AU_OMEGA_AUTONOMY_KERNEL_SELF_IMPROVING_PIXEL_LAB_REPORT.md"
 }
@@ -84,9 +88,9 @@ $result = [ordered]@{
     max_runtime_minutes = $MaxRuntimeMinutes
     no_full_night_launched = $true
     recommended_next = if ($verdict -eq "NIGHT_NOT_READY") {
-        if ($MissionId -eq "A20AV") { "A20AW_FINAL_NIGHT_READINESS_HARDENING" } else { "A20AV_FIX_OMEGA_KERNEL" }
+        if ($MissionId -eq "A20AV") { "A20AW_FINAL_NIGHT_READINESS_HARDENING" } elseif ($MissionId -eq "A20AW") { "A20AX_FINAL_AUTOPILOT_HARDENING_BEFORE_NIGHT" } else { "A20AV_FIX_OMEGA_KERNEL" }
     } else {
-        if ($MissionId -eq "A20AV") { "A20AW_FULL_NIGHT_PIXEL_REHEARSAL" } else { "A20AV_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL" }
+        if ($MissionId -eq "A20AV") { "A20AW_FULL_NIGHT_PIXEL_REHEARSAL" } elseif ($MissionId -eq "A20AW") { "A20AX_FULL_NIGHT_REAL_RUN" } else { "A20AV_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL" }
     }
 }
 

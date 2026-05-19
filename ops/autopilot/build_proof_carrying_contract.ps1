@@ -34,15 +34,16 @@ function Count-Words {
 function New-FallbackWinner {
     param([string]$Id)
     $isA20AV = $Id -match "^A20AV_"
+    $isA20AW = $Id -match "^A20AW_"
     [pscustomobject]@{
         id = $Id
-        expected_value = if ($isA20AV) { "Run a DEV-only autonomous pixel rehearsal and prove at least two visible pixel deltas." } else { "Create visible DEV-only OMEGA Pixel Lab proof and route the next pixel mission." }
+        expected_value = if ($isA20AW) { "Run a DEV-only full-night pixel rehearsal and prove at least five useful visible pixel deltas." } elseif ($isA20AV) { "Run a DEV-only autonomous pixel rehearsal and prove at least two visible pixel deltas." } else { "Create visible DEV-only OMEGA Pixel Lab proof and route the next pixel mission." }
         family = "SIGNATURE_COMPONENTS"
         risk_tier = "low"
-        allowed_paths = if ($isA20AV) { @("frontend/src/dev/autonomous-pixel-rehearsal/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") } else { @("frontend/src/dev/omega-pixel-lab/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") }
+        allowed_paths = if ($isA20AW) { @("frontend/src/dev/full-night-pixel-rehearsal/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") } elseif ($isA20AV) { @("frontend/src/dev/autonomous-pixel-rehearsal/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") } else { @("frontend/src/dev/omega-pixel-lab/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") }
         forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
-        expected_artifacts = if ($isA20AV) { @("pixel_delta_manifest.json", "screenshots/**", "mission_doctor_results.json") } else { @("omega_pixel_lab_smoke_report.json", "screenshot/**", "selected_contract.md") }
-        success_criteria = if ($isA20AV) { @("two_pixel_deltas_visible", "screenshots_external", "mission_doctor_pass", "no_product_integration") } else { @("visible_dev_route", "pixel_pilot_screenshot_external", "browser_smoke_pass", "no_product_integration") }
+        expected_artifacts = if ($isA20AW) { @("pixel_delta_manifest.json", "screenshots/**", "mission_doctor_results.json", "morning_report.md") } elseif ($isA20AV) { @("pixel_delta_manifest.json", "screenshots/**", "mission_doctor_results.json") } else { @("omega_pixel_lab_smoke_report.json", "screenshot/**", "selected_contract.md") }
+        success_criteria = if ($isA20AW) { @("five_pixel_deltas_visible", "screenshots_external", "mission_doctor_pass", "night_ready", "no_product_integration") } elseif ($isA20AV) { @("two_pixel_deltas_visible", "screenshots_external", "mission_doctor_pass", "no_product_integration") } else { @("visible_dev_route", "pixel_pilot_screenshot_external", "browser_smoke_pass", "no_product_integration") }
     }
 }
 
@@ -56,7 +57,15 @@ if (-not $winner) {
     $winner = New-FallbackWinner -Id $ObjectiveId
 }
 
-$expectedProof = if ($MissionId -eq "A20AV") {
+$expectedProof = if ($MissionId -eq "A20AW") {
+    @(
+        "DEV-only /app?fullNightPixelRehearsal=1 route visible.",
+        "At least five pixel delta previews rendered, not text-only.",
+        "External screenshots captured outside the repo for each full-night iteration.",
+        "Browser smoke verifies OMEGA decision log, Mission Doctor summaries, score progression, and pixel deltas.",
+        "Mission Doctor records at least three useful pixel deltas and NightReadinessV2 stays NIGHT_READY."
+    )
+} elseif ($MissionId -eq "A20AV") {
     @(
         "DEV-only /app?autonomousPixelRehearsal=1 route visible.",
         "At least two pixel delta previews rendered, not text-only.",
@@ -75,7 +84,16 @@ $expectedProof = if ($MissionId -eq "A20AV") {
 }
 if (@($expectedProof).Count -eq 0) { throw "PROOF_REQUIRED" }
 
-$tests = if ($MissionId -eq "A20AV") {
+$tests = if ($MissionId -eq "A20AW") {
+    @(
+        "git diff --check",
+        "cd frontend; npm run build",
+        "cd frontend; npx tsc --noEmit",
+        "node scripts/browser_full_night_pixel_rehearsal_smoke.mjs",
+        "powershell -ExecutionPolicy Bypass -File ops/autopilot/test_omega_autopilot.ps1",
+        "python tools/plan_guard.py"
+    )
+} elseif ($MissionId -eq "A20AV") {
     @(
         "git diff --check",
         "cd frontend; npm run build",
@@ -95,7 +113,17 @@ $tests = if ($MissionId -eq "A20AV") {
     )
 }
 
-$evidenceArtifacts = if ($MissionId -eq "A20AV") {
+$evidenceArtifacts = if ($MissionId -eq "A20AW") {
+    @(
+        "omega_decision_log.json",
+        "mission_doctor_results.json",
+        "pixel_delta_manifest.json",
+        "screenshots/*.png",
+        "morning_report.md",
+        "night_readiness_after_rehearsal.json",
+        "score_update.json"
+    )
+} elseif ($MissionId -eq "A20AV") {
     @(
         "omega_decision_log.json",
         "mission_doctor_results.json",
@@ -114,7 +142,15 @@ $evidenceArtifacts = if ($MissionId -eq "A20AV") {
     )
 }
 
-$finalVerdicts = if ($MissionId -eq "A20AV") {
+$finalVerdicts = if ($MissionId -eq "A20AW") {
+    @(
+        "FULL_NIGHT_PIXEL_REHEARSAL_PASS_19_5_CANDIDATE",
+        "FULL_NIGHT_PIXEL_REHEARSAL_PASS_NOT_19_5",
+        "FULL_NIGHT_REHEARSAL_PARTIAL_PIXEL_DELTAS_WEAK",
+        "FULL_NIGHT_REHEARSAL_FAILED_META_DRIFT",
+        "FULL_NIGHT_REHEARSAL_FAILED"
+    )
+} elseif ($MissionId -eq "A20AV") {
     @(
         "LIMITED_AUTONOMOUS_PIXEL_REHEARSAL_PASS_FULL_NIGHT_CANDIDATE",
         "LIMITED_AUTONOMOUS_PIXEL_REHEARSAL_PASS",
@@ -132,7 +168,15 @@ $finalVerdicts = if ($MissionId -eq "A20AV") {
     )
 }
 
-$scoreDeltaRules = if ($MissionId -eq "A20AV") {
+$scoreDeltaRules = if ($MissionId -eq "A20AW") {
+    [ordered]@{
+        overall_max_after_a20aw = 19.5
+        nineteen_five_candidate_requires_five_useful_pixel_deltas = $true
+        visual_production_requires_screenshot = $true
+        full_night_rehearsal_not_public_release = $true
+        no_human_validation_without_human_data = $true
+    }
+} elseif ($MissionId -eq "A20AV") {
     [ordered]@{
         overall_max_after_a20av = 19.35
         no_19_5_without_full_night_rehearsal = $true

@@ -82,3 +82,21 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20AV
+  - id: memory-a20aw-full-night-candidacy-proof
+    date: 2026-05-19
+    category: night_readiness
+    lesson: "Full-night candidacy requires five or more useful screenshot-backed pixel deltas and NIGHT_READY."
+    evidence: "A20AW pixel_delta_manifest.json records 8 useful deltas and NightReadinessV2 returned NIGHT_READY."
+    action_rule: "Do not claim 19.5 candidacy if useful deltas, screenshots, or night readiness are missing."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AW
+  - id: memory-a20aw-rehearsal-not-release
+    date: 2026-05-19
+    category: release_safety
+    lesson: "A full-night pixel rehearsal is not a public release, road merge, or A21 launch."
+    evidence: "A20AW kept all UI changes DEV-only and did not push road-to-V2."
+    action_rule: "Require a separate real-run or merge-audit mission before release claims."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AW

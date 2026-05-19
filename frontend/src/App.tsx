@@ -133,12 +133,17 @@ import {
   type AutonomousPixelRehearsalRoute,
 } from "./dev/autonomous-pixel-rehearsal/AutonomousPixelRehearsal";
 import {
+  FullNightPixelRehearsal,
+  type FullNightPixelRehearsalRoute,
+} from "./dev/full-night-pixel-rehearsal/FullNightPixelRehearsal";
+import {
   signatureArenaSignatureIds,
   signatureArenaVariantIds,
   type SignatureArenaSignatureId,
   type SignatureArenaVariantId,
 } from "./dev/signature-probes/signature-arena/signatureArenaData";
 import type { PixelIterationId } from "./dev/autonomous-pixel-rehearsal/autonomousPixelRehearsalData";
+import type { FullNightIterationId } from "./dev/full-night-pixel-rehearsal/fullNightPixelRehearsalData";
 import { OmegaPixelLab } from "./dev/omega-pixel-lab/OmegaPixelLab";
 import type { SignatureProbeEvidenceMode } from "./dev/signature-probes/SignatureProbeGallery";
 import type { SignatureProbeId } from "./dev/signature-probes/signatureProbeData";
@@ -462,6 +467,33 @@ function getAutonomousPixelRehearsalDevRoute(): AutonomousPixelRehearsalRoute | 
   return null;
 }
 
+function getFullNightPixelRehearsalDevRoute(): FullNightPixelRehearsalRoute | null {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return null;
+  }
+  if (window.location.pathname !== "/app") {
+    return null;
+  }
+  const params = new URLSearchParams(window.location.search);
+  const value = params.get("fullNightPixelRehearsal");
+  if (value === "1") {
+    return { iterationId: null };
+  }
+  if (
+    value === "iteration1" ||
+    value === "iteration2" ||
+    value === "iteration3" ||
+    value === "iteration4" ||
+    value === "iteration5" ||
+    value === "iteration6" ||
+    value === "iteration7" ||
+    value === "iteration8"
+  ) {
+    return { iterationId: value as FullNightIterationId };
+  }
+  return null;
+}
+
 function getSignatureArenaVariantDevRoute(): SignatureArenaVariantRoute | null {
   if (typeof window === "undefined" || !import.meta.env.DEV) {
     return null;
@@ -539,6 +571,9 @@ export default function App() {
   const [autonomousPixelRehearsalRoute, setAutonomousPixelRehearsalRoute] = useState(() =>
     getAutonomousPixelRehearsalDevRoute(),
   );
+  const [fullNightPixelRehearsalRoute, setFullNightPixelRehearsalRoute] = useState(() =>
+    getFullNightPixelRehearsalDevRoute(),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -557,6 +592,7 @@ export default function App() {
       setSignatureArenaVariantRoute(getSignatureArenaVariantDevRoute());
       setShowOmegaPixelLab(isOmegaPixelLabDevRoute());
       setAutonomousPixelRehearsalRoute(getAutonomousPixelRehearsalDevRoute());
+      setFullNightPixelRehearsalRoute(getFullNightPixelRehearsalDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -643,6 +679,10 @@ export default function App() {
 
   if (autonomousPixelRehearsalRoute) {
     return <AutonomousPixelRehearsal route={autonomousPixelRehearsalRoute} />;
+  }
+
+  if (fullNightPixelRehearsalRoute) {
+    return <FullNightPixelRehearsal route={fullNightPixelRehearsalRoute} />;
   }
 
   if (currentRoute === "/app") {

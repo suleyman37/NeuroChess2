@@ -1,5 +1,5 @@
 schema_version: signature_component_status_v1
-updated_by: A20AV_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL
+updated_by: A20AW_FULL_NIGHT_PIXEL_REHEARSAL
 statuses:
   - STATUS_0_NOT_STARTED
   - STATUS_1_PROBED
@@ -147,5 +147,15 @@ autonomous_pixel_rehearsal:
   pixel_deltas_produced: 3
   live_web_required: false
   user_intervention_required: false
-next_recommended_objective: A20AW_FULL_NIGHT_PIXEL_REHEARSAL
+full_night_pixel_rehearsal:
+  status: FULL_NIGHT_REHEARSAL_PASS_19_5_CANDIDATE
+  iterations_completed: 8
+  pixel_deltas_produced: 8
+  useful_pixel_deltas: 8
+  live_web_required: false
+  user_intervention_required: false
+  screenshots_external_only: true
+  public_release_made: false
+  road_to_v2_pushed: false
+next_recommended_objective: A20AX_FULL_NIGHT_REAL_RUN
 score_rule: Sum selected final-five status indexes and divide by 25.

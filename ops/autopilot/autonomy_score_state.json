@@ -1,29 +1,29 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20AV_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL",
+  "updated_by": "A20AW_FULL_NIGHT_PIXEL_REHEARSAL",
   "scores": {
     "safety_git": 18.7,
     "operator_zero_friction": 18.4,
     "web_orchestrator": 18.1,
     "external_judge_reliability": 18.5,
-    "autonomous_loop": 19.2,
-    "visual_production": 18.8,
+    "autonomous_loop": 19.5,
+    "visual_production": 19.0,
     "art_direction_concrete": 18.2,
-    "evidence_quality": 18.6,
-    "night_readiness": 19.2,
+    "evidence_quality": 18.9,
+    "night_readiness": 19.5,
     "human_taste_calibration_readiness": 18.0,
-    "overall": 19.35
+    "overall": 19.5
   },
   "target_overall": 19.5,
   "workload_shift_metrics": {
-    "codex_contract_word_count_avg": 218,
+    "codex_contract_word_count_avg": 222.38,
     "context_capsule_word_count_avg": 135,
     "external_decision_packets_count": 0,
-    "local_fallback_packets_count": 3,
+    "local_fallback_packets_count": 8,
     "codex_workload_reduction_estimate": "high_by_word_count_proxy",
     "external_reasoning_utilization": 0,
-    "repeated_context_removed_count": 3,
-    "giant_prompt_prevented_count": 3
+    "repeated_context_removed_count": 8,
+    "giant_prompt_prevented_count": 8
   },
   "omega_metrics": {
     "bottleneck_detection_accuracy_proxy": 0.92,
@@ -32,10 +32,10 @@
     "pixel_mandate_compliance": 1.0,
     "no_user_intervention_score": 1.0,
     "live_dependency_risk": 0.08,
-    "proof_strength_score": 0.94,
-    "night_readiness_v2_score": 19.2,
-    "codex_contract_word_count_avg": 217.67,
-    "next_objective_confidence": 0.92
+    "proof_strength_score": 0.98,
+    "night_readiness_v2_score": 19.5,
+    "codex_contract_word_count_avg": 222.38,
+    "next_objective_confidence": 0.96
   },
   "notes": [
     "A20AP adds external judge SRE architecture, lane parking, and ntfy-capable failure alerting.",
@@ -48,7 +48,8 @@
     "A20AT creates export-only provider packets, CSV/JSON import, and conservative Taste Confidence scoring.",
     "No human validation claim is made because no owner or crowd results are imported.",
     "A20AU adds the OMEGA bottleneck detector, utility engine, proof-carrying contract, anti-stagnation sentinel, failure ledger 2.0, Night Readiness V2, and a DEV-only OMEGA Pixel Lab route.",
-    "A20AV runs a limited autonomous pixel rehearsal with three DEV-only pixel deltas, external screenshots, Mission Doctor pass results, and no live-web dependency."
+    "A20AV runs a limited autonomous pixel rehearsal with three DEV-only pixel deltas, external screenshots, Mission Doctor pass results, and no live-web dependency.",
+    "A20AW runs a full-night pixel rehearsal candidate with eight DEV-only pixel deltas, external screenshots, Mission Doctor pass summaries, NightReadinessV2 NIGHT_READY, and no live-web or user dependency."
   ],
   "a20ap_score_update": {
     "before_overall": 17.0,
@@ -193,5 +194,32 @@
       "NeuroRelay rehearsal recommends A20AW_FULL_NIGHT_PIXEL_REHEARSAL then A20AW_FINAL_NIGHT_READINESS_HARDENING."
     ],
     "not_19_5_reason": "A20AV is a 19.5 readiness candidate, but full all-night pixel operation has not been launched or observed yet."
+  },
+  "a20aw_score_update": {
+    "before_overall": 19.35,
+    "after_overall": 19.5,
+    "autonomous_loop_before": 19.2,
+    "autonomous_loop_after": 19.5,
+    "visual_production_before": 18.8,
+    "visual_production_after": 19.0,
+    "night_readiness_before": 19.2,
+    "night_readiness_after": 19.5,
+    "iterations_completed": 8,
+    "pixel_deltas_produced": 8,
+    "useful_pixel_deltas": 8,
+    "mission_doctor_useful_count": 8,
+    "night_readiness_after_rehearsal": "NIGHT_READY",
+    "readiness_19_5_candidate": true,
+    "public_release_proven": false,
+    "evidence": [
+      "DEV-only /app?fullNightPixelRehearsal=1 renders eight pixel delta previews.",
+      "Isolated iteration routes render chamber, feedback, combination, micro-flow, sigil, memory, pressure, and progress-board deltas.",
+      "browser_full_night_pixel_rehearsal_smoke.mjs captured external summary and per-iteration screenshots.",
+      "Mission Doctor summaries are PASS for all eight rehearsal iterations.",
+      "OMEGA rehearsal selected only A20AW pixel objectives with NoLiveWeb enabled.",
+      "NeuroRelay rehearsal recommends A20AX_FULL_NIGHT_REAL_RUN after evidence is present."
+    ],
+    "not_public_release_reason": "A20AW is a rehearsal candidate only; no road-to-V2 merge, product release, or A21 launch occurred.",
+    "remaining_before_real_night": "Run A20AX_FULL_NIGHT_REAL_RUN or final hardening with the same bounded stop flags and external-only evidence policy."
   }
 }

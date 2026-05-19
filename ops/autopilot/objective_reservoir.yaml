@@ -362,6 +362,273 @@ objectives:
       - board_readability_preserved
       - no_product_integration
     fallback_if_blocked: A20AW_FINAL_NIGHT_READINESS_HARDENING
+  - id: A20AW_REFINE_SACRED_BOARD_CHAMBER_PRODUCTION_CANDIDATE
+    family: SIGNATURE_COMPONENTS
+    priority: 100
+    expected_value: Improve the current sacred_board_chamber direction toward a product-grade North Star pixel delta.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - chamber_candidate_visible
+      - board_safety_preserved
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AW_REFINE_DECISION_FEEDBACK_LANGUAGE_PRODUCTION_CANDIDATE
+  - id: A20AW_REFINE_DECISION_FEEDBACK_LANGUAGE_PRODUCTION_CANDIDATE
+    family: SIGNATURE_COMPONENTS
+    priority: 99
+    expected_value: Improve feedback language states for no-spoiler, success, miss, and replay.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - feedback_candidate_visible
+      - no_pre_feedback_hint
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AW_BUILD_CRITICAL_MOMENT_SIGIL_VARIANTS
+  - id: A20AW_BUILD_CRITICAL_MOMENT_SIGIL_VARIANTS
+    family: SIGNATURE_COMPONENTS
+    priority: 97
+    expected_value: Create DEV-only critical_moment_sigil variants that support memorable post-game review moments.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - sigil_variants_visible
+      - not_generic_logo
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AW_BUILD_MEMORY_CABINET_VARIANTS
+  - id: A20AW_BUILD_MEMORY_CABINET_VARIANTS
+    family: SIGNATURE_COMPONENTS
+    priority: 95
+    expected_value: Create DEV-only memory_cabinet variants that support return, replay, and mistake recall.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - memory_cabinet_visible
+      - avoids_literal_furniture
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AW_BUILD_DECISION_PRESSURE_FIELD_VARIANTS
+  - id: A20AW_BUILD_DECISION_PRESSURE_FIELD_VARIANTS
+    family: VISUAL_PRODUCTION_MODE
+    priority: 93
+    expected_value: Create DEV-only decision_pressure_field variants with peripheral pressure and no eval-bar spoilers.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - pressure_field_visible
+      - no_eval_bar_spoiler
+      - board_readability_preserved
+      - no_product_integration
+    fallback_if_blocked: A20AW_BUILD_SIGNATURE_COMBINATION_SCENE
+  - id: A20AW_BUILD_SIGNATURE_COMBINATION_SCENE
+    family: VISUAL_PRODUCTION_MODE
+    priority: 91
+    expected_value: Combine chamber, feedback, sigil, and memory elements into one coherent DEV-only review scene.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - combination_scene_visible
+      - signature_system_coherent
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AW_BUILD_NORTH_STAR_REVIEW_MICRO_FLOW
+  - id: A20AW_BUILD_NORTH_STAR_REVIEW_MICRO_FLOW
+    family: VISUAL_PRODUCTION_MODE
+    priority: 89
+    expected_value: Create a DEV-only observe-to-try-to-feedback-to-memory micro-flow using selected signature components.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - north_star_micro_flow_visible
+      - learning_loop_clear
+      - no_fake_xp_or_rank
+      - no_product_integration
+    fallback_if_blocked: A20AW_BUILD_PIXEL_REHEARSAL_PROGRESS_BOARD
+  - id: A20AW_BUILD_PIXEL_REHEARSAL_PROGRESS_BOARD
+    family: NIGHT_MODE_READINESS
+    priority: 87
+    expected_value: Extend a DEV-only progress board showing night deltas, score changes, verdicts, and final recommendation.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+      - morning_report.md
+    success_criteria:
+      - progress_board_visible
+      - at_least_five_pixel_deltas_visible
+      - night_readiness_visible
+      - no_product_integration
+    fallback_if_blocked: A20AW_ANTI_WEIRDNESS_REFINEMENT_PASS
+  - id: A20AW_ANTI_WEIRDNESS_REFINEMENT_PASS
+    family: VISUAL_PRODUCTION_MODE
+    priority: 84
+    expected_value: Patch risky full-night visual elements using local anti-weirdness heuristics while preserving board safety.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-pixel-rehearsal/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - anti_weirdness_patch_report.json
+      - screenshots/**
+    success_criteria:
+      - weirdness_risk_reduced
+      - board_readability_preserved
+      - no_product_integration
+    fallback_if_blocked: A20AW_PERCEPTION_EVIDENCE_RECAPTURE_FOR_NEW_DELTAS
+  - id: A20AW_PERCEPTION_EVIDENCE_RECAPTURE_FOR_NEW_DELTAS
+    family: VISUAL_PRODUCTION_MODE
+    priority: 82
+    expected_value: Recapture isolated screenshots and evidence packets for all new full-night pixel deltas if evidence is weak.
+    risk_tier: low
+    allowed_paths:
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - screenshot_quality_report.json
+      - screenshots/**
+      - pixel_delta_manifest.json
+    success_criteria:
+      - evidence_recaptured_external_only
+      - weak_screenshots_identified
+      - no_product_integration
+    fallback_if_blocked: A20AX_FINAL_AUTOPILOT_HARDENING_BEFORE_NIGHT
   - id: A20AU_FIX_HUMAN_TASTE_NETWORK
     family: SAFETY_MAINTENANCE
     priority: 70
