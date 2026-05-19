@@ -109,7 +109,13 @@ function Get-ProblemState {
         "CHATGPT_UNCLASSIFIED_PAGE_STATE" { "PARKED_UNCLASSIFIED_PAGE_STATE" }
         "CHATGPT_CONVERSATION_EXHAUSTED" { "PARKED_SESSION_CLOSED" }
         "GEMINI_NOT_CONFIGURED" { "SKIPPED_NOT_CONFIGURED" }
+        "GEMINI_PAGE_USABLE" { "AVAILABLE" }
+        "GEMINI_WEB_LANE_READY" { "AVAILABLE" }
+        "GEMINI_WEB_LANE_READY_MODEL_NOT_EXACT" { "AVAILABLE_MODEL_NOT_EXACT" }
         "GEMINI_AUTH_OR_CONSENT_WALL" { "PARKED_AUTH_REQUIRED" }
+        "GEMINI_PAGE_NOT_USABLE" { "PARKED_UNCLASSIFIED_PAGE_STATE" }
+        "GEMINI_MODEL_NOT_AVAILABLE_OR_NOT_IN_PLAN" { "PARKED_MODEL_NOT_EXACT" }
+        "GEMINI_UPLOAD_UNAVAILABLE" { "PARKED_UPLOAD_UNAVAILABLE" }
         "GEMINI_NO_VISUAL_EVIDENCE" { "SKIPPED_NOT_CONFIGURED" }
         "GEMINI_INVALID_RESPONSE" { "FAILED_INVALID_RESPONSE" }
         "EXTERNAL_RESPONSE_TIMEOUT" { "PARKED_RATE_LIMITED" }
@@ -130,6 +136,9 @@ function Get-RetryAfter {
         "CHATGPT_CONVERSATION_EXHAUSTED" { 60 }
         "GEMINI_NOT_CONFIGURED" { 240 }
         "GEMINI_AUTH_OR_CONSENT_WALL" { 60 }
+        "GEMINI_PAGE_NOT_USABLE" { 30 }
+        "GEMINI_MODEL_NOT_AVAILABLE_OR_NOT_IN_PLAN" { 60 }
+        "GEMINI_UPLOAD_UNAVAILABLE" { 60 }
         "GEMINI_NO_VISUAL_EVIDENCE" { 0 }
         default { 30 }
     }
@@ -139,7 +148,7 @@ function Get-RetryAfter {
 
 function Should-Alert {
     param([string]$Problem)
-    return $Problem -notin @("CHATGPT_PAGE_USABLE", "GEMINI_NOT_CONFIGURED", "GEMINI_NO_VISUAL_EVIDENCE")
+    return $Problem -notin @("CHATGPT_PAGE_USABLE", "GEMINI_PAGE_USABLE", "GEMINI_WEB_LANE_READY", "GEMINI_WEB_LANE_READY_MODEL_NOT_EXACT", "GEMINI_NOT_CONFIGURED", "GEMINI_NO_VISUAL_EVIDENCE")
 }
 
 function Test-AlertCooldown {
@@ -275,8 +284,62 @@ function Park-Lane {
     }
 }
 
+function Set-LaneAvailable {
+    param([object]$State, [string]$LaneName, [string]$Reason, [object]$Probe)
+    $laneStateObject = $State.lanes.$LaneName
+    $laneStateObject.state = Get-ProblemState -Problem $Reason
+    $laneStateObject.reason = $Reason
+    $laneStateObject.retry_after = ""
+    $laneStateObject.consecutive_same_reason_failures = 0
+    return [ordered]@{
+        lane = $LaneName
+        state = [string]$laneStateObject.state
+        reason = $Reason
+        probe_status = if ($Probe) { [string]$Probe.status } else { "" }
+        selected_model = if ($Probe) { [string]$Probe.selected_model } else { "" }
+        selected_reasoning_mode = if ($Probe) { [string]$Probe.selected_reasoning_mode } else { "" }
+        codex_continues_offline = $true
+        external_failure_blocks_loop = $false
+    }
+}
+
+function Invoke-GeminiLaneAdapterHealth {
+    param([object]$State)
+    $adapter = Join-Path $PSScriptRoot "gemini_web_lane_adapter.ps1"
+    if (-not (Test-Path -LiteralPath $adapter -PathType Leaf)) {
+        return Park-Lane -State $State -LaneName "gemini" -Problem "GEMINI_NOT_CONFIGURED"
+    }
+    $adapterOut = Join-Path $ArtifactPath "gemini_lane_health_from_sre.json"
+    $output = & powershell -NoProfile -ExecutionPolicy Bypass -File $adapter `
+        -Mode HealthCheck `
+        -MissionId $MissionId `
+        -ArtifactPath $ArtifactPath `
+        -OutPath $adapterOut `
+        -NoPrompt 2>&1
+    $probe = $null
+    if (Test-Path -LiteralPath $adapterOut -PathType Leaf) {
+        $probe = Get-Content -LiteralPath $adapterOut -Raw | ConvertFrom-Json
+    } else {
+        $text = ($output | Out-String).Trim()
+        $start = $text.IndexOf("{")
+        if ($start -ge 0) { $probe = $text.Substring($start) | ConvertFrom-Json }
+    }
+    $status = [string]$probe.status
+    switch ($status) {
+        "GEMINI_3_5_FLASH_EXTENDED_WEB_LANE_READY" { return Set-LaneAvailable -State $State -LaneName "gemini" -Reason "GEMINI_WEB_LANE_READY" -Probe $probe }
+        "GEMINI_WEB_LANE_READY_MODEL_NOT_EXACT" { return Set-LaneAvailable -State $State -LaneName "gemini" -Reason "GEMINI_WEB_LANE_READY_MODEL_NOT_EXACT" -Probe $probe }
+        "GEMINI_WEB_LANE_AUTH_REQUIRED_PARKED" { return Park-Lane -State $State -LaneName "gemini" -Problem "GEMINI_AUTH_OR_CONSENT_WALL" }
+        "GEMINI_WEB_LANE_PAGE_NOT_USABLE" { return Park-Lane -State $State -LaneName "gemini" -Problem "GEMINI_PAGE_NOT_USABLE" }
+        "GEMINI_NOT_CONFIGURED" { return Park-Lane -State $State -LaneName "gemini" -Problem "GEMINI_NOT_CONFIGURED" }
+        default { return Park-Lane -State $State -LaneName "gemini" -Problem "GEMINI_PAGE_NOT_USABLE" }
+    }
+}
+
 function Probe-Lane {
     param([object]$State, [string]$LaneName)
+    if ($LaneName -eq "gemini" -and -not $DryRun -and [string]::IsNullOrWhiteSpace($Reason)) {
+        return Invoke-GeminiLaneAdapterHealth -State $State
+    }
     $problem = if (-not [string]::IsNullOrWhiteSpace($Reason)) { $Reason } else { Get-DefaultProblem -LaneName $LaneName }
     return Park-Lane -State $State -LaneName $LaneName -Problem $problem
 }

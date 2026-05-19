@@ -112,6 +112,27 @@ problems:
     retry_limit: 0
     email: optional
     stop_status: GEMINI_DISABLED_NO_URL
+  - status_code: GEMINI_COMPOSER_VISIBLE_PAGE_USABLE
+    detection_method: "Gemini current composer is visible, enabled, and not blocked by a foreground auth or verification overlay."
+    action: "Classify PAGE_USABLE and allow bounded text or visual smoke."
+    forbidden_action: "Do not classify from historical body text or old prompt text alone."
+    retry_limit: 0
+    email: false
+    stop_status: PAGE_USABLE
+  - status_code: GEMINI_MODEL_NOT_AVAILABLE_OR_NOT_IN_PLAN
+    detection_method: "Gemini Web is usable but Gemini 3.5 Flash or Extended/Thinking mode is not visible."
+    action: "Record exact visible model labels, use best visible model only if safe, and do not attempt payment."
+    forbidden_action: "Do not pretend the exact model was selected or ask for billing."
+    retry_limit: 0
+    email: optional
+    stop_status: GEMINI_WEB_LANE_READY_MODEL_NOT_EXACT
+  - status_code: GEMINI_UPLOAD_UNAVAILABLE
+    detection_method: "Gemini Web composer is usable but no safe image upload path is detected."
+    action: "Skip visual packet, keep text/local fallback, and record a parked visual lane."
+    forbidden_action: "Do not send a text-only packet while claiming screenshot review."
+    retry_limit: 0
+    email: optional
+    stop_status: GEMINI_UPLOAD_UNAVAILABLE
   - status_code: FALSE_POSITIVE_HUMAN_ACTION_REQUIRED
     detection_method: "Classifier saw blocker terms in historical conversation text while the current composer is visible and usable."
     action: "Ignore history text, capture screenshot/DOM evidence, classify PAGE_USABLE, and continue automation."

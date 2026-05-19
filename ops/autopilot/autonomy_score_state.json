@@ -1,6 +1,6 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20BB_TRUE_OVERNIGHT_SECOND_RUN_WITH_COMPOSER_FIRST_CLASSIFIER",
+  "updated_by": "A20BC_GEMINI_3_5_FLASH_EXTENDED_WEB_LANE",
   "scores": {
     "safety_git": 18.7,
     "operator_zero_friction": 18.4,
@@ -52,7 +52,8 @@
     "A20AW runs a full-night pixel rehearsal candidate with eight DEV-only pixel deltas, external screenshots, Mission Doctor pass summaries, NightReadinessV2 NIGHT_READY, and no live-web or user dependency.",
     "A20AY confirms the 19.5 candidate with a bounded real full-night pixel run: twelve useful DEV-only deltas, external screenshots, Mission Doctor pass summaries, and NightReadinessV2 NIGHT_READY.",
     "A20AZ adds a true-overnight live-supervised route and actively records ChatGPT/Gemini attempts or parked lanes, but does not raise score because runtime minimum and live supervisor success were not proven.",
-    "A20BB restores ChatGPT Web supervision with the composer-first classifier, records eight ChatGPT attempts and four successful Decision Packets, and keeps the overall score at 19.5 without arbitrary inflation."
+    "A20BB restores ChatGPT Web supervision with the composer-first classifier, records eight ChatGPT attempts and four successful Decision Packets, and keeps the overall score at 19.5 without arbitrary inflation.",
+    "A20BC opens Gemini Web through the free browser lane, proves a zero-cost text smoke, records exact-model and upload limitations honestly, and keeps the overall score at 19.5."
   ],
   "a20ap_score_update": {
     "before_overall": 17.0,
@@ -313,5 +314,31 @@
       "NightReadinessV2 remains NIGHT_READY after the run artifacts."
     ],
     "remaining_before_merge_or_product_integration": "Configure Gemini or build the multi-channel supervisor router before broader night expansion; product integration still requires merge audit and taste validation."
+  },
+  "a20bc_score_update": {
+    "before_overall": 19.5,
+    "after_overall": 19.5,
+    "external_judge_reliability_before": 18.5,
+    "external_judge_reliability_after": 18.5,
+    "human_taste_calibration_readiness_before": 18.0,
+    "human_taste_calibration_readiness_after": 18.0,
+    "gemini_page_opened": true,
+    "gemini_composer_usable": true,
+    "gemini_3_5_flash_visible": false,
+    "extended_thinking_mode_visible": false,
+    "text_smoke_result": "GEMINI_TEXT_SMOKE_PASS",
+    "visual_packet_result": "GEMINI_UPLOAD_UNAVAILABLE",
+    "decision_packet_produced": true,
+    "visual_decision_packet_produced": false,
+    "neurorelay_integration": "AVAILABLE_MODEL_NOT_EXACT",
+    "score_inflation_prevented": true,
+    "evidence": [
+      "gemini_web_lane_adapter.ps1 HealthCheck classified Gemini as PAGE_USABLE after current composer evidence.",
+      "gemini_web_lane_adapter.ps1 SendTextSmoke returned GEMINI_TEXT_SMOKE_PASS without API calls.",
+      "gemini_model_selector.ps1 reported Gemini 3.5 Flash and Extended/Thinking were not visible in safe UI signals.",
+      "gemini_visual_packet_smoke.ps1 selected an isolated screenshot and rejected contact sheets, then returned GEMINI_UPLOAD_UNAVAILABLE.",
+      "external_judge_sre.ps1 ProbeGemini mapped the lane to AVAILABLE_MODEL_NOT_EXACT and kept fallback available."
+    ],
+    "not_ready_for_chatgpt_and_gemini_true_night_reason": "Gemini text supervision works, but exact model/mode and visual upload packet proof are not complete."
   }
 }

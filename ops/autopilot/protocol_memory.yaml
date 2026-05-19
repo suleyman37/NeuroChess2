@@ -208,3 +208,21 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20BB
+  - id: memory-a20bc-gemini-current-ui
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "Gemini Web must use the same current-UI composer-first doctrine as ChatGPT."
+    evidence: "A20BC opened Gemini Web through CDP, classified the page as PAGE_USABLE when the composer was visible, and ignored broad page/history text."
+    action_rule: "Before parking Gemini, verify composer visibility, enabled state, foreground blockers, and screenshot evidence."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BC
+  - id: memory-a20bc-gemini-visual-packet-boundary
+    date: 2026-05-20
+    category: visual_supervision
+    lesson: "A Gemini text smoke does not prove visual supervision; visual readiness requires an uploaded isolated screenshot and normalized packet."
+    evidence: "A20BC text smoke passed, but visual packet smoke returned GEMINI_UPLOAD_UNAVAILABLE while selecting an isolated screenshot."
+    action_rule: "Do not claim Gemini visual judge readiness until upload support and visual Decision Packet capture pass."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BC

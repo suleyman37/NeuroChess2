@@ -1,0 +1,7 @@
+{
+  "enabled": true,
+  "start_url": "https://gemini.google.com/app",
+  "preferred_model": "Gemini 3.5 Flash",
+  "preferred_reasoning_mode": "Extended",
+  "message_threshold": 50
+}

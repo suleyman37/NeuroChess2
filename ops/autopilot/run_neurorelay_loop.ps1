@@ -33,6 +33,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\true_overnight_live_run\A20AZ_true_overnight_live_supervised_pixel_run_20260518"
     } elseif ($MissionId -eq "A20BB") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\true_overnight_composer_first\A20BB_true_overnight_composer_first_20260518"
+    } elseif ($MissionId -eq "A20BC") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BC_gemini_3_5_flash_extended_lane_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -264,6 +266,41 @@ function Get-ProbeAwareObjective {
                 allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
                 forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
                 success_criteria = @("audit_plan_only", "no_road_push", "no_merge")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
+    if ($MissionId -eq "A20BC") {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20BD_TRUE_OVERNIGHT_WITH_CHATGPT_AND_GEMINI"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Run a bounded live-supervised overnight only after ChatGPT composer-first and Gemini Web lane statuses are recorded."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("chatgpt_ready_or_parked", "gemini_ready_or_parked", "local_fallback_preserved")
+            },
+            [pscustomobject]@{
+                id = "A20BD_GEMINI_LANE_SECOND_PASS"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Repeat Gemini Web lane smoke if exact model, upload, or response read was unavailable."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("no_paid_api", "bounded_gemini_retry", "no_user_prompt")
+            },
+            [pscustomobject]@{
+                id = "A20BD_SUPERVISOR_TRANSPORT_FABRIC_MULTI_CHANNEL_ROUTER"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Route ChatGPT, Gemini, and OMEGA fallback through one explicit multi-channel fabric."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("multi_channel_status", "no_private_urls", "fallback_preserved")
             }
         )
         $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
@@ -596,16 +633,17 @@ function Run-OneRelayIteration {
     $sre = $null
     $srePath = Join-Path $PSScriptRoot "external_judge_sre.ps1"
     if (Test-Path -LiteralPath $srePath -PathType Leaf) {
-        $sre = Invoke-JsonScript -ScriptPath $srePath -Arguments @(
+        $sreArgs = @(
             "-Mode", "HealthCheck",
             "-MissionId", $MissionId,
             "-Lane", "all",
-            "-DryRun",
             "-NoPrompt",
             "-ArtifactPath", $iterDir,
             "-StatePath", (Join-Path $iterDir "external_judge_sre_state.json"),
             "-OutPath", (Join-Path $iterDir "external_judge_sre_health.json")
         )
+        if ($NoLiveWeb -or $MissionId -ne "A20BC") { $sreArgs += "-DryRun" }
+        $sre = Invoke-JsonScript -ScriptPath $srePath -Arguments $sreArgs
     }
 
     $capsulePath = Join-Path $iterDir "context_capsule.json"
@@ -655,6 +693,8 @@ function Run-OneRelayIteration {
             "A20AZ produced twelve-plus screenshot-backed local pixel deltas but parked live supervisor lanes; local fallback routes toward live supervisor repair before claiming a live-supervised pass."
         } elseif ($MissionId -eq "A20BB") {
             "A20BB produced composer-first ChatGPT Decision Packets and twelve-plus useful deltas; local fallback routes toward Gemini setup or multi-channel supervisor routing before broader night expansion."
+        } elseif ($MissionId -eq "A20BC") {
+            "A20BC records Gemini Web lane readiness or the precise parked reason; local fallback remains authoritative before any combined ChatGPT/Gemini overnight run."
         } elseif ($MissionId -eq "A20AY") {
             "A20AY real full-night run evidence has six-plus useful screenshot-backed pixel deltas; local fallback routes toward A20AZ audit, integration review, or final handoff."
         } elseif ($MissionId -eq "A20AW") {
@@ -716,6 +756,11 @@ function Run-OneRelayIteration {
         "-OutPath", (Join-Path $iterDir "protocol_memory_update_result.json")
     )
 
+    $geminiPacketStatus = "SKIPPED_NO_VISUAL_EVIDENCE"
+    if ($sre -and $sre.lanes -and $sre.lanes.gemini) {
+        $geminiPacketStatus = [string]$sre.lanes.gemini.state
+    }
+
     return [pscustomobject]([ordered]@{
         iteration = $Index
         status = "NEURORELAY_ITERATION_SIMULATED"
@@ -730,7 +775,7 @@ function Run-OneRelayIteration {
         memory_status = [string]$memory.status
         external_judge_sre_status = if ($sre) { [string]$sre.status } else { "SRE_NOT_PRESENT" }
         chatgpt_packet_status = if ($NoLiveWeb) { "PARKED_NO_LIVE_WEB" } else { "PARKED_UNATTENDED" }
-        gemini_packet_status = "SKIPPED_NO_VISUAL_EVIDENCE"
+        gemini_packet_status = $geminiPacketStatus
         local_fallback_packets_count = 1
         external_decision_packets_count = 0
         giant_prompt_prevented = [bool]$contract.giant_prompt_prevented
@@ -775,6 +820,7 @@ for ($i = 1; $i -le $iterationsToRun; $i++) {
     $state.completed_iterations = $i
     $state.next_planned_objectives = @($selected | Select-Object -Last 3)
     foreach ($lane in @("live_gpt_web", "gemini")) {
+        if ($lane -eq "gemini" -and -not $NoLiveWeb -and [string]$iteration.gemini_packet_status -match "AVAILABLE") { continue }
         if ($state.blocked_lanes -notcontains $lane) { $state.blocked_lanes += $lane }
     }
 }

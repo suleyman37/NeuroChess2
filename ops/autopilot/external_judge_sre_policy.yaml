@@ -6,6 +6,7 @@ alerting:
 lane_states:
   - READY
   - AVAILABLE
+  - AVAILABLE_MODEL_NOT_EXACT
   - PARKED_AUTH_REQUIRED
   - PARKED_HUMAN_ACTION_REQUIRED
   - PARKED_CDP_UNAVAILABLE
@@ -46,10 +47,40 @@ problems:
     action: park Gemini lane as skipped, no mission failure
     lane_state: SKIPPED_NOT_CONFIGURED
     retry_after_minutes: 240
+  GEMINI_PAGE_USABLE:
+    detect: Gemini composer visible, enabled, and unblocked under composer-first current-UI rules
+    action: allow optional Gemini Web visual packet attempts
+    lane_state: AVAILABLE
+    retry_after_minutes: 0
+  GEMINI_WEB_LANE_READY:
+    detect: Gemini Web composer usable and target model/mode selected or confirmed
+    action: include Gemini as optional visual supervisor, never as sole authority
+    lane_state: AVAILABLE
+    retry_after_minutes: 0
+  GEMINI_WEB_LANE_READY_MODEL_NOT_EXACT:
+    detect: Gemini Web composer usable but exact preferred model or reasoning mode not visible
+    action: allow best visible model with model mismatch recorded
+    lane_state: AVAILABLE_MODEL_NOT_EXACT
+    retry_after_minutes: 0
   GEMINI_AUTH_OR_CONSENT_WALL:
     detect: Gemini page requires auth, consent, or human verification
     action: ntfy alert, park lane, continue offline
     lane_state: PARKED_AUTH_REQUIRED
+    retry_after_minutes: 60
+  GEMINI_PAGE_NOT_USABLE:
+    detect: Gemini page lacks usable composer and has no safe current-UI ready state
+    action: write diagnostic artifact, park lane, continue offline
+    lane_state: PARKED_UNCLASSIFIED_PAGE_STATE
+    retry_after_minutes: 30
+  GEMINI_MODEL_NOT_AVAILABLE_OR_NOT_IN_PLAN:
+    detect: preferred Gemini 3.5 Flash or Extended/Thinking mode not visible after page is usable
+    action: record model mismatch, alert once if useful, continue with local fallback or best visible model
+    lane_state: PARKED_UNCLASSIFIED_PAGE_STATE
+    retry_after_minutes: 60
+  GEMINI_UPLOAD_UNAVAILABLE:
+    detect: Gemini page usable but visual upload path is unavailable
+    action: park visual packet lane, continue text/local fallback
+    lane_state: PARKED_UPLOAD_UNAVAILABLE
     retry_after_minutes: 60
   GEMINI_NO_VISUAL_EVIDENCE:
     detect: no screenshots or visual evidence supplied
