@@ -1,0 +1,654 @@
+.signature-arena {
+  --arena-bg: #080907;
+  --arena-ink: #f7f3e8;
+  --arena-muted: #b8bdaf;
+  --arena-line: rgba(246, 235, 211, 0.18);
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 24px;
+  color: var(--arena-ink);
+  background:
+    linear-gradient(90deg, rgba(244, 226, 188, 0.045) 1px, transparent 1px) 0 0 / 44px 44px,
+    linear-gradient(180deg, #080907 0%, #12120d 44%, #080907 100%);
+  font-family:
+    "Aptos Display",
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.signature-arena *,
+.signature-arena *::before,
+.signature-arena *::after {
+  box-sizing: border-box;
+}
+
+.signature-arena-header,
+.signature-variant-page-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  width: min(1540px, 100%);
+  margin: 0 auto 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--arena-line);
+}
+
+.signature-arena-header p,
+.signature-arena-header h1,
+.signature-arena-header span,
+.signature-variant-page-header p,
+.signature-variant-page-header h1,
+.signature-variant-page-header span {
+  margin: 0;
+}
+
+.signature-arena-header p,
+.signature-variant-page-header p,
+.signature-stage-label {
+  color: color-mix(in srgb, var(--signature-secondary, hsl(42 78% 62%)) 72%, #ffffff);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.signature-arena-header h1,
+.signature-variant-page-header h1 {
+  max-width: 980px;
+  margin-top: 6px;
+  font-size: 2.12rem;
+  line-height: 1.04;
+}
+
+.signature-arena-header span,
+.signature-variant-page-header span {
+  color: var(--arena-muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.signature-variant-page-header strong {
+  display: grid;
+  width: 76px;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--signature-accent) 48%, var(--arena-line));
+  border-radius: 50%;
+  color: #08100d;
+  background: linear-gradient(145deg, var(--signature-accent), var(--signature-secondary));
+  font-size: 1.1rem;
+  font-weight: 950;
+}
+
+.signature-five-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 18px;
+  width: min(1540px, 100%);
+  margin: 0 auto 18px;
+}
+
+.signature-five-summary > div,
+.signature-five-summary aside {
+  min-height: 108px;
+  border: 1px solid var(--arena-line);
+  border-radius: 8px;
+  background:
+    linear-gradient(120deg, rgba(244, 226, 188, 0.08), transparent 44%),
+    rgba(255, 255, 255, 0.035);
+}
+
+.signature-five-summary > div {
+  padding: 16px;
+}
+
+.signature-five-summary p,
+.signature-five-summary ul {
+  margin: 0;
+}
+
+.signature-five-summary p {
+  color: var(--arena-muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.signature-five-summary ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 13px 0 0;
+  list-style: none;
+}
+
+.signature-five-summary li,
+.signature-five-summary aside span {
+  display: inline-grid;
+  min-height: 30px;
+  place-items: center;
+  padding: 6px 10px;
+  border: 1px solid rgba(246, 235, 211, 0.2);
+  border-radius: 6px;
+  color: #f7f3e8;
+  background: rgba(255, 255, 255, 0.055);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.signature-five-summary aside {
+  display: grid;
+  gap: 8px;
+  align-content: center;
+  padding: 16px;
+}
+
+.signature-five-summary aside strong {
+  color: color-mix(in srgb, hsl(168 72% 58%) 74%, #ffffff);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.signature-variant-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(520px, 1fr));
+  gap: 18px;
+  width: min(1540px, 100%);
+  margin: 0 auto;
+}
+
+.signature-variant-card {
+  display: grid;
+  grid-template-columns: minmax(350px, 0.86fr) minmax(300px, 0.64fr);
+  grid-template-rows: minmax(430px, auto) auto;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--signature-accent) 42%, var(--arena-line));
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--signature-accent) 10%, transparent), transparent 54%),
+    linear-gradient(145deg, rgba(20, 19, 14, 0.98), rgba(8, 9, 7, 0.98));
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.34);
+}
+
+.signature-variant-visual {
+  display: grid;
+  min-height: 430px;
+  place-items: center;
+  padding: 18px;
+  overflow: hidden;
+  border-right: 1px solid var(--arena-line);
+}
+
+.signature-variant-copy {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 18px;
+}
+
+.signature-stage-label,
+.signature-variant-copy h2,
+.signature-variant-copy h3,
+.signature-variant-copy p,
+.signature-variant-facts,
+.signature-variant-facts dd,
+.signature-variant-footer,
+.signature-score-grid,
+.signature-score-grid dd {
+  margin: 0;
+}
+
+.signature-variant-copy h2 {
+  color: #fbf7ec;
+  font-size: 1.32rem;
+  line-height: 1.08;
+}
+
+.signature-variant-copy h2 span {
+  color: var(--signature-accent);
+}
+
+.signature-variant-copy h3 {
+  color: color-mix(in srgb, var(--signature-secondary) 72%, #ffffff);
+  font-size: 0.95rem;
+  line-height: 1.12;
+}
+
+.signature-variant-copy p,
+.signature-variant-facts dd {
+  color: #e8e2d4;
+  font-size: 0.84rem;
+  line-height: 1.34;
+}
+
+.signature-variant-facts {
+  display: grid;
+  gap: 9px;
+}
+
+.signature-variant-facts div {
+  display: grid;
+  gap: 3px;
+}
+
+.signature-variant-facts dt,
+.signature-score-grid dt {
+  color: var(--arena-muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.signature-variant-footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 48px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--arena-line);
+  color: var(--arena-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.signature-variant-footer strong {
+  color: #08100d;
+  border-radius: 6px;
+  padding: 6px 9px;
+  background: linear-gradient(90deg, var(--signature-accent), var(--signature-secondary));
+}
+
+.signature-arena-stage {
+  position: relative;
+  width: 100%;
+  min-height: 390px;
+}
+
+.chamber-stage {
+  display: grid;
+  grid-template-columns: 78px minmax(270px, 1fr) 78px;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 0 30px;
+}
+
+.chamber-core {
+  position: relative;
+  display: grid;
+  min-height: 330px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--signature-accent) 28%, var(--arena-line));
+  background:
+    linear-gradient(90deg, transparent, color-mix(in srgb, var(--signature-accent) 8%, transparent), transparent),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.12));
+}
+
+.chamber-state-label {
+  position: absolute;
+  left: 14px;
+  top: 12px;
+  color: var(--arena-muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.chamber-rail {
+  display: grid;
+  gap: 14px;
+  align-content: center;
+  min-height: 330px;
+  padding: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--signature-accent) 34%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--signature-secondary) 34%, transparent);
+}
+
+.chamber-rail span {
+  min-height: 64px;
+  border: 1px solid color-mix(in srgb, var(--signature-accent) 38%, var(--arena-line));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--signature-secondary) 14%, transparent), transparent),
+    rgba(255, 255, 255, 0.035);
+}
+
+.chamber-rail-left span:nth-child(2),
+.chamber-rail-right span:nth-child(2) {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--signature-accent) 22%, transparent), transparent),
+    rgba(255, 255, 255, 0.05);
+}
+
+.chamber-instrument-line {
+  position: absolute;
+  right: 13%;
+  bottom: 0;
+  left: 13%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.chamber-instrument-line span {
+  height: 10px;
+  border: 1px solid color-mix(in srgb, var(--signature-secondary) 38%, transparent);
+  background: color-mix(in srgb, var(--signature-accent) 10%, transparent);
+}
+
+.chamber-stage-b .chamber-core {
+  min-height: 350px;
+  border-width: 2px;
+  box-shadow:
+    inset 0 0 0 18px rgba(255, 255, 255, 0.025),
+    0 0 0 1px color-mix(in srgb, var(--signature-secondary) 22%, transparent);
+}
+
+.chamber-stage-b .chamber-rail span {
+  min-height: 82px;
+}
+
+.chamber-stage-c {
+  grid-template-columns: 96px minmax(290px, 1fr) 96px;
+}
+
+.chamber-stage-c .chamber-core {
+  min-height: 370px;
+  box-shadow:
+    inset 0 0 0 24px rgba(255, 255, 255, 0.026),
+    0 22px 64px color-mix(in srgb, var(--signature-accent) 20%, transparent);
+}
+
+.chamber-stage-c .chamber-rail {
+  min-height: 370px;
+  border-color: color-mix(in srgb, var(--signature-accent) 54%, transparent);
+}
+
+.signature-arena-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  width: 286px;
+  aspect-ratio: 1;
+  border: 3px solid color-mix(in srgb, var(--signature-accent) 46%, #15120c);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.38);
+}
+
+.signature-arena-square {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  font-size: 1.55rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.signature-arena-square-light {
+  color: #20251f;
+  background: hsl(48 31% 82%);
+}
+
+.signature-arena-square-dark {
+  color: #f6efd4;
+  background: hsl(142 15% 38%);
+}
+
+.signature-arena-board-feedback {
+  width: 174px;
+  border-width: 2px;
+}
+
+.signature-arena-board-feedback .signature-arena-square {
+  font-size: 0.92rem;
+}
+
+.signature-arena-trace {
+  position: absolute;
+  pointer-events: none;
+  transform-origin: left center;
+}
+
+.signature-arena-trace-success {
+  left: 26%;
+  top: 52%;
+  width: 46%;
+  height: 3px;
+  background: var(--signature-accent);
+  transform: rotate(-28deg);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--signature-accent) 52%, transparent);
+}
+
+.signature-arena-trace-miss {
+  left: 30%;
+  top: 32%;
+  width: 42%;
+  height: 3px;
+  background: var(--signature-secondary);
+  transform: rotate(42deg);
+}
+
+.feedback-stage {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.feedback-state {
+  display: grid;
+  grid-template-rows: auto minmax(180px, 1fr);
+  gap: 12px;
+  place-items: center;
+  min-height: 342px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--signature-accent) 28%, var(--arena-line));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 44%),
+    rgba(255, 255, 255, 0.035);
+}
+
+.feedback-state-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  color: #f4f0e8;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.feedback-glyph {
+  width: 38px;
+  height: 38px;
+  fill: rgba(255, 255, 255, 0.05);
+  stroke: color-mix(in srgb, var(--signature-accent) 78%, #ffffff);
+  stroke-width: 4;
+}
+
+.feedback-glyph path,
+.feedback-glyph circle {
+  fill: transparent;
+}
+
+.feedback-glyph-success {
+  stroke: var(--signature-accent);
+}
+
+.feedback-glyph-miss {
+  stroke: var(--signature-secondary);
+}
+
+.feedback-stage-b .feedback-state {
+  min-height: 360px;
+  border-width: 2px;
+}
+
+.feedback-stage-b .feedback-glyph {
+  width: 46px;
+  height: 46px;
+}
+
+.feedback-stage-c .feedback-state {
+  min-height: 374px;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--signature-accent) 12%, transparent), transparent 48%),
+    linear-gradient(240deg, color-mix(in srgb, var(--signature-secondary) 10%, transparent), transparent 52%),
+    rgba(255, 255, 255, 0.035);
+}
+
+.feedback-stage-c .feedback-glyph {
+  width: 54px;
+  height: 54px;
+}
+
+.signature-variant-page {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 18px;
+}
+
+.signature-variant-page-layout {
+  display: grid;
+  grid-template-columns: minmax(820px, 1fr) minmax(340px, 430px);
+  gap: 18px;
+  width: min(1360px, 100%);
+  margin: 0 auto;
+}
+
+.signature-variant-main-surface,
+.signature-variant-detail {
+  border: 1px solid color-mix(in srgb, var(--signature-accent) 40%, var(--arena-line));
+  border-radius: 8px;
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--signature-accent) 10%, transparent), transparent 48%),
+    linear-gradient(330deg, color-mix(in srgb, var(--signature-secondary) 8%, transparent), transparent 52%),
+    rgba(14, 15, 11, 0.96);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
+}
+
+.signature-variant-main-surface {
+  display: grid;
+  min-height: 650px;
+  place-items: center;
+  overflow: hidden;
+  padding: 28px;
+}
+
+.signature-variant-main-surface .signature-arena-board-chamber {
+  width: 432px;
+}
+
+.signature-variant-main-surface .signature-arena-board-chamber .signature-arena-square {
+  font-size: 2.28rem;
+}
+
+.signature-variant-main-surface .signature-arena-board-feedback {
+  width: 226px;
+}
+
+.signature-variant-main-surface .signature-arena-board-feedback .signature-arena-square {
+  font-size: 1.16rem;
+}
+
+.signature-variant-main-surface .chamber-stage {
+  grid-template-columns: 118px minmax(460px, 1fr) 118px;
+  width: 100%;
+  min-height: 580px;
+}
+
+.signature-variant-main-surface .chamber-core,
+.signature-variant-main-surface .chamber-stage-c .chamber-core {
+  min-height: 520px;
+}
+
+.signature-variant-main-surface .chamber-rail,
+.signature-variant-main-surface .chamber-stage-c .chamber-rail {
+  min-height: 520px;
+}
+
+.signature-variant-main-surface .feedback-stage {
+  width: 100%;
+  min-height: 560px;
+  align-items: center;
+}
+
+.signature-variant-main-surface .feedback-state {
+  min-height: 510px;
+}
+
+.signature-variant-detail {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 14px;
+  min-height: 650px;
+}
+
+.signature-score-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 0 18px 18px;
+}
+
+.signature-score-grid div {
+  display: grid;
+  min-height: 62px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--signature-accent) 30%, var(--arena-line));
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.signature-score-grid dd {
+  color: #fbf7ec;
+  font-size: 1.1rem;
+  font-weight: 950;
+}
+
+@media (max-width: 1320px) {
+  .signature-variant-grid,
+  .signature-variant-page-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .signature-variant-card {
+    grid-template-columns: minmax(340px, 0.92fr) minmax(300px, 0.68fr);
+  }
+}
+
+@media (max-width: 920px) {
+  .signature-five-summary,
+  .signature-variant-card {
+    grid-template-columns: 1fr;
+  }
+
+  .signature-variant-visual {
+    border-right: 0;
+    border-bottom: 1px solid var(--arena-line);
+  }
+
+  .chamber-stage,
+  .signature-variant-main-surface .chamber-stage {
+    grid-template-columns: 72px minmax(260px, 1fr) 72px;
+  }
+
+  .feedback-stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signature-arena *,
+  .signature-arena *::before,
+  .signature-arena *::after {
+    transition: none;
+    animation: none;
+  }
+}

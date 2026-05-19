@@ -1,5 +1,5 @@
 schema_version: signature_component_status_v1
-updated_by: A20AR_SIGNATURE_FIVE_SELECTION_FROM_HIGH_QUALITY_EVIDENCE
+updated_by: A20AS_TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES
 statuses:
   - STATUS_0_NOT_STARTED
   - STATUS_1_PROBED
@@ -15,18 +15,46 @@ selection_markers:
 candidate_statuses:
   - id: sacred_board_chamber
     name: Sacred Board Chamber
-    status: STATUS_1_PROBED
+    status: STATUS_2_TRIPLED
     selection_status: SELECTED_SIGNATURE_FIVE
-    marker: MARKED_FOR_TRIPLED_NEXT
+    marker: TRIPLED_VARIANTS_READY
     rank: 1
     weighted_score: 4.81
+    variants:
+      A:
+        name: Premium Clarity
+        local_score: 4.42
+        evidence_status: EVIDENCE_PASS
+      B:
+        name: Signature Identity
+        local_score: 4.68
+        evidence_status: EVIDENCE_PASS
+        preliminary_best: true
+      C:
+        name: Radical Candidate
+        local_score: 4.31
+        evidence_status: EVIDENCE_PASS
   - id: decision_feedback_language
     name: Decision Feedback Language
-    status: STATUS_1_PROBED
+    status: STATUS_2_TRIPLED
     selection_status: SELECTED_SIGNATURE_FIVE
-    marker: MARKED_FOR_TRIPLED_NEXT
+    marker: TRIPLED_VARIANTS_READY
     rank: 2
     weighted_score: 4.71
+    variants:
+      A:
+        name: Premium Clarity
+        local_score: 4.39
+        evidence_status: EVIDENCE_PASS
+      B:
+        name: Signature Identity
+        local_score: 4.64
+        evidence_status: EVIDENCE_PASS
+        preliminary_best: true
+      C:
+        name: Radical Candidate
+        local_score: 4.22
+        evidence_status: EVIDENCE_PASS
   - id: critical_moment_sigil
     name: Critical Moment Sigil
     status: STATUS_1_PROBED
@@ -94,5 +122,9 @@ final_five:
 top_two_for_tripled_variants:
   - sacred_board_chamber
   - decision_feedback_language
-next_recommended_objective: A20AS_TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES
+tripled_signature_count: 2
+preliminary_best_variants:
+  sacred_board_chamber: B
+  decision_feedback_language: B
+next_recommended_objective: A20AT_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE
 score_rule: Sum selected final-five status indexes and divide by 25.

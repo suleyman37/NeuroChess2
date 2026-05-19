@@ -103,6 +103,82 @@ objectives:
       - board_safety_pixel_budget_pass
       - no_product_integration
     fallback_if_blocked: A20AS_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE
+  - id: A20AT_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE
+    family: HUMAN_TASTE_CALIBRATION
+    priority: 97
+    expected_value: Prepare a compact evidence-backed vote pass for the six top-two signature variants.
+    risk_tier: low
+    allowed_paths:
+      - docs/design/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - signature_vote_sheet.md
+      - variant_evidence_index.json
+      - taste_calibration_report.json
+    success_criteria:
+      - six_variants_referenced
+      - no_live_user_vote_required
+      - screenshots_external_only
+    fallback_if_blocked: A20AT_VARIANT_REFINEMENT_FOR_TOP_TWO
+  - id: A20AT_VARIANT_REFINEMENT_FOR_TOP_TWO
+    family: SIGNATURE_COMPONENTS
+    priority: 92
+    expected_value: Refine the strongest sacred_board_chamber and decision_feedback_language variants after evidence review.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/signature-probes/signature-arena/**
+      - scripts/**
+      - docs/design/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - refined_variant_manifest.json
+      - screenshots/**
+      - refinement_report.md
+    success_criteria:
+      - top_two_best_variants_improved
+      - board_safety_preserved
+      - no_product_integration
+    fallback_if_blocked: A20AT_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL
+  - id: A20AT_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL
+    family: NIGHT_MODE_READINESS
+    priority: 84
+    expected_value: Run a bounded offline rehearsal that advances signature pixels without live web dependencies.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/signature-probes/signature-arena/**
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - limited_pixel_rehearsal_report.json
+      - screenshots/**
+      - mission_doctor_result.json
+    success_criteria:
+      - bounded_iterations
+      - no_user_intervention
+      - no_live_web_dependency
+    fallback_if_blocked: SAFETY_PROMPT_LEAK_SWEEP
   - id: A20AS_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE
     family: HUMAN_TASTE_CALIBRATION
     priority: 90

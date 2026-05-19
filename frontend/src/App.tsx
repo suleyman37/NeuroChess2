@@ -123,6 +123,17 @@ import {
   SignatureProbeGallery,
 } from "./dev/signature-probes/SignatureProbeGallery";
 import { signatureProbeIds } from "./dev/signature-probes/signatureProbeData";
+import {
+  SignatureArena,
+  SignatureArenaVariantPage,
+  type SignatureArenaVariantRoute,
+} from "./dev/signature-probes/signature-arena/SignatureArena";
+import {
+  signatureArenaSignatureIds,
+  signatureArenaVariantIds,
+  type SignatureArenaSignatureId,
+  type SignatureArenaVariantId,
+} from "./dev/signature-probes/signature-arena/signatureArenaData";
 import type { SignatureProbeEvidenceMode } from "./dev/signature-probes/SignatureProbeGallery";
 import type { SignatureProbeId } from "./dev/signature-probes/signatureProbeData";
 
@@ -411,6 +422,36 @@ function isSignatureProbeGalleryDevRoute(): boolean {
   return window.location.pathname === "/app" && params.get("visualProbeGallery") === "1";
 }
 
+function isSignatureArenaDevRoute(): boolean {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return false;
+  }
+  const params = new URLSearchParams(window.location.search);
+  return window.location.pathname === "/app" && params.get("signatureArena") === "1";
+}
+
+function getSignatureArenaVariantDevRoute(): SignatureArenaVariantRoute | null {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return null;
+  }
+  if (window.location.pathname !== "/app") {
+    return null;
+  }
+  const params = new URLSearchParams(window.location.search);
+  const signatureId = params.get("signature");
+  const variantId = params.get("variant");
+  if (!signatureArenaSignatureIds.includes(signatureId as SignatureArenaSignatureId)) {
+    return null;
+  }
+  if (!signatureArenaVariantIds.includes(variantId as SignatureArenaVariantId)) {
+    return null;
+  }
+  return {
+    signatureId: signatureId as SignatureArenaSignatureId,
+    variantId: variantId as SignatureArenaVariantId,
+  };
+}
+
 function getSignatureProbeEvidenceDevRoute():
   | { probeId: SignatureProbeId; evidenceMode: SignatureProbeEvidenceMode }
   | null {
@@ -454,6 +495,12 @@ export default function App() {
   const [signatureProbeEvidenceRoute, setSignatureProbeEvidenceRoute] = useState(() =>
     getSignatureProbeEvidenceDevRoute(),
   );
+  const [showSignatureArena, setShowSignatureArena] = useState(() =>
+    isSignatureArenaDevRoute(),
+  );
+  const [signatureArenaVariantRoute, setSignatureArenaVariantRoute] = useState(() =>
+    getSignatureArenaVariantDevRoute(),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -468,6 +515,8 @@ export default function App() {
       setShowNorthStarBoardStagePreview(isNorthStarBoardStageDevRoute());
       setShowSignatureProbeGallery(isSignatureProbeGalleryDevRoute());
       setSignatureProbeEvidenceRoute(getSignatureProbeEvidenceDevRoute());
+      setShowSignatureArena(isSignatureArenaDevRoute());
+      setSignatureArenaVariantRoute(getSignatureArenaVariantDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -538,6 +587,14 @@ export default function App() {
         probeId={signatureProbeEvidenceRoute.probeId}
       />
     );
+  }
+
+  if (showSignatureArena) {
+    return <SignatureArena />;
+  }
+
+  if (signatureArenaVariantRoute) {
+    return <SignatureArenaVariantPage route={signatureArenaVariantRoute} />;
   }
 
   if (currentRoute === "/app") {

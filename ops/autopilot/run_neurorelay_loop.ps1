@@ -18,6 +18,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\visual_evidence\A20AQ_perception_grade_visual_evidence_foundry_20260518"
     } elseif ($MissionId -eq "A20AR") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\signature_selection\A20AR_signature_five_high_quality_evidence_20260518"
+    } elseif ($MissionId -eq "A20AS") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\signature_arena\A20AS_tripled_variants_top2_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -142,8 +144,53 @@ function Test-SignatureFiveSelected {
         ($text -match 'MARKED_FOR_TRIPLED_NEXT')
 }
 
+function Test-TopTwoSignaturesTripled {
+    $statusPath = Join-Path $PSScriptRoot "signature_component_status.yaml"
+    if (-not (Test-Path -LiteralPath $statusPath -PathType Leaf)) { return $false }
+    $text = Get-Content -LiteralPath $statusPath -Raw
+    return ($text -match '(?m)^tripled_signature_count:\s*2\s*$') -and
+        ($text -match 'sacred_board_chamber[\s\S]*?status:\s*STATUS_2_TRIPLED') -and
+        ($text -match 'decision_feedback_language[\s\S]*?status:\s*STATUS_2_TRIPLED') -and
+        ($text -match 'A20AT_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE')
+}
+
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20AS" -and (Test-TopTwoSignaturesTripled)) {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20AT_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE"
+                family = "HUMAN_TASTE_CALIBRATION"
+                expected_value = "Prepare an evidence-backed vote pass for the six top-two signature variants without blocking autonomous work."
+                risk_tier = "low"
+                allowed_paths = @("docs/design/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("six_variants_referenced", "no_live_user_vote_required", "screenshots_external_only")
+            },
+            [pscustomobject]@{
+                id = "A20AT_VARIANT_REFINEMENT_FOR_TOP_TWO"
+                family = "SIGNATURE_COMPONENTS"
+                expected_value = "Refine the strongest sacred_board_chamber and decision_feedback_language variants after evidence review."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/signature-probes/signature-arena/**", "scripts/**", "docs/design/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("top_two_best_variants_improved", "board_safety_preserved", "no_product_integration")
+            },
+            [pscustomobject]@{
+                id = "A20AT_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL"
+                family = "NIGHT_MODE_READINESS"
+                expected_value = "Run a bounded offline rehearsal that advances signature pixels without live web dependencies."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/signature-probes/signature-arena/**", "scripts/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("bounded_iterations", "no_user_intervention", "no_live_web_dependency")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20AR" -and (Test-SignatureFiveSelected)) {
         $objectives = @(
             [pscustomobject]@{

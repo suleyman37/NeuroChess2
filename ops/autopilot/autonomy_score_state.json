@@ -1,17 +1,17 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20AR_SIGNATURE_FIVE_SELECTION_FROM_HIGH_QUALITY_EVIDENCE",
+  "updated_by": "A20AS_TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES",
   "scores": {
     "safety_git": 18.7,
     "operator_zero_friction": 18.0,
     "web_orchestrator": 18.1,
     "external_judge_reliability": 18.5,
     "autonomous_loop": 15.0,
-    "visual_production": 17.1,
-    "art_direction_concrete": 17.5,
+    "visual_production": 18.0,
+    "art_direction_concrete": 18.2,
     "evidence_quality": 18.3,
     "night_readiness": 17.5,
-    "overall": 18.2
+    "overall": 18.7
   },
   "target_overall": 19.5,
   "workload_shift_metrics": {
@@ -29,7 +29,8 @@
     "A20AP creates ten DEV-only visual probes with external screenshot and contact sheet evidence.",
     "A20AQ upgrades visual evidence to one full-size screenshot, main-surface crop, and detail crop per probe.",
     "A20AR selects the Signature Five from A20AQ perception-grade evidence.",
-    "Scores remain conservative: no signature has been tripled, voted, integrated, or promoted.",
+    "A20AS creates A/B/C variants for sacred_board_chamber and decision_feedback_language.",
+    "Scores remain conservative: no signature has been human-voted, integrated, or promoted.",
     "External reasoning utilization remains 0 in NoLiveWeb rehearsal by design; fallback still works."
   ],
   "a20ap_score_update": {
@@ -91,5 +92,29 @@
     ],
     "not_18_5_visual_reason": "No A/B/C tripled variants or selected signature screenshots exist yet.",
     "not_19_5_reason": "Tripled variants, external or human review, integration, and autonomous pixel rehearsal are still pending."
+  },
+  "a20as_score_update": {
+    "before_overall": 18.2,
+    "after_overall": 18.7,
+    "visual_production_before": 17.1,
+    "visual_production_after": 18.0,
+    "art_direction_concrete_before": 17.5,
+    "art_direction_concrete_after": 18.2,
+    "tripled_components": [
+      "sacred_board_chamber",
+      "decision_feedback_language"
+    ],
+    "preliminary_best_variants": {
+      "sacred_board_chamber": "B",
+      "decision_feedback_language": "B"
+    },
+    "evidence": [
+      "DEV-only /app?signatureArena=1 route presents six visible A/B/C variants",
+      "Direct isolated routes exist for each top-two signature variant",
+      "Browser smoke captures primary and main-surface screenshots externally",
+      "No frontend production route, backend, package, or database behavior is changed"
+    ],
+    "not_19_reason": "The tripled variants are not human-voted, externally reviewed, integrated, or rehearsed in a productive autonomous pixel run.",
+    "not_19_5_reason": "Human taste calibration, selected variant refinement, integration planning, and limited autonomous pixel rehearsal remain pending."
   }
 }
