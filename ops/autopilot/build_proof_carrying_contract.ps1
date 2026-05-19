@@ -36,15 +36,16 @@ function New-FallbackWinner {
     $isA20AV = $Id -match "^A20AV_"
     $isA20AW = $Id -match "^A20AW_"
     $isA20AZ = $Id -match "^A20AZ_"
+    $isA20BB = $Id -match "^A20BB_"
     [pscustomobject]@{
         id = $Id
-        expected_value = if ($isA20AZ) { "Run a DEV-only true overnight live-supervised pixel lane, attempt or park external supervisors, and prove at least twelve useful visible pixel deltas." } elseif ($isA20AW) { "Run a DEV-only full-night pixel rehearsal and prove at least five useful visible pixel deltas." } elseif ($isA20AV) { "Run a DEV-only autonomous pixel rehearsal and prove at least two visible pixel deltas." } else { "Create visible DEV-only OMEGA Pixel Lab proof and route the next pixel mission." }
+        expected_value = if ($isA20BB) { "Run a DEV-only true overnight composer-first pixel lane with ChatGPT Decision Packets and at least twelve useful visible pixel deltas." } elseif ($isA20AZ) { "Run a DEV-only true overnight live-supervised pixel lane, attempt or park external supervisors, and prove at least twelve useful visible pixel deltas." } elseif ($isA20AW) { "Run a DEV-only full-night pixel rehearsal and prove at least five useful visible pixel deltas." } elseif ($isA20AV) { "Run a DEV-only autonomous pixel rehearsal and prove at least two visible pixel deltas." } else { "Create visible DEV-only OMEGA Pixel Lab proof and route the next pixel mission." }
         family = "SIGNATURE_COMPONENTS"
         risk_tier = "low"
-        allowed_paths = if ($isA20AZ) { @("frontend/src/dev/true-overnight-live-run/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") } elseif ($isA20AW) { @("frontend/src/dev/full-night-pixel-rehearsal/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") } elseif ($isA20AV) { @("frontend/src/dev/autonomous-pixel-rehearsal/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") } else { @("frontend/src/dev/omega-pixel-lab/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") }
+        allowed_paths = if ($isA20BB) { @("frontend/src/dev/true-overnight-composer-first-run/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") } elseif ($isA20AZ) { @("frontend/src/dev/true-overnight-live-run/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") } elseif ($isA20AW) { @("frontend/src/dev/full-night-pixel-rehearsal/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") } elseif ($isA20AV) { @("frontend/src/dev/autonomous-pixel-rehearsal/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") } else { @("frontend/src/dev/omega-pixel-lab/**", "frontend/src/App.tsx", "scripts/**", "docs/autopilot/**", "ops/autopilot/**") }
         forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
-        expected_artifacts = if ($isA20AZ) { @("pixel_delta_manifest.json", "screenshots/**", "mission_doctor_results.json", "chatgpt_supervisor_attempts.json", "gemini_visual_attempts.json", "morning_report.md") } elseif ($isA20AW) { @("pixel_delta_manifest.json", "screenshots/**", "mission_doctor_results.json", "morning_report.md") } elseif ($isA20AV) { @("pixel_delta_manifest.json", "screenshots/**", "mission_doctor_results.json") } else { @("omega_pixel_lab_smoke_report.json", "screenshot/**", "selected_contract.md") }
-        success_criteria = if ($isA20AZ) { @("twelve_pixel_deltas_visible", "supervisor_attempts_or_parked_lanes_recorded", "screenshots_external", "mission_doctor_pass", "night_ready", "no_product_integration") } elseif ($isA20AW) { @("five_pixel_deltas_visible", "screenshots_external", "mission_doctor_pass", "night_ready", "no_product_integration") } elseif ($isA20AV) { @("two_pixel_deltas_visible", "screenshots_external", "mission_doctor_pass", "no_product_integration") } else { @("visible_dev_route", "pixel_pilot_screenshot_external", "browser_smoke_pass", "no_product_integration") }
+        expected_artifacts = if ($isA20BB) { @("pixel_delta_manifest.json", "screenshots/**", "mission_doctor_results.json", "chatgpt_supervisor_attempts.json", "chatgpt_decision_packets/**", "morning_report.md") } elseif ($isA20AZ) { @("pixel_delta_manifest.json", "screenshots/**", "mission_doctor_results.json", "chatgpt_supervisor_attempts.json", "gemini_visual_attempts.json", "morning_report.md") } elseif ($isA20AW) { @("pixel_delta_manifest.json", "screenshots/**", "mission_doctor_results.json", "morning_report.md") } elseif ($isA20AV) { @("pixel_delta_manifest.json", "screenshots/**", "mission_doctor_results.json") } else { @("omega_pixel_lab_smoke_report.json", "screenshot/**", "selected_contract.md") }
+        success_criteria = if ($isA20BB) { @("twelve_pixel_deltas_visible", "four_chatgpt_decision_packets_recorded", "composer_first_classifier_used", "screenshots_external", "mission_doctor_pass", "night_ready", "no_product_integration") } elseif ($isA20AZ) { @("twelve_pixel_deltas_visible", "supervisor_attempts_or_parked_lanes_recorded", "screenshots_external", "mission_doctor_pass", "night_ready", "no_product_integration") } elseif ($isA20AW) { @("five_pixel_deltas_visible", "screenshots_external", "mission_doctor_pass", "night_ready", "no_product_integration") } elseif ($isA20AV) { @("two_pixel_deltas_visible", "screenshots_external", "mission_doctor_pass", "no_product_integration") } else { @("visible_dev_route", "pixel_pilot_screenshot_external", "browser_smoke_pass", "no_product_integration") }
     }
 }
 
@@ -58,7 +59,15 @@ if (-not $winner) {
     $winner = New-FallbackWinner -Id $ObjectiveId
 }
 
-$expectedProof = if ($MissionId -eq "A20AZ") {
+$expectedProof = if ($MissionId -eq "A20BB") {
+    @(
+        "DEV-only /app?trueOvernightComposerFirstRun=1 route visible.",
+        "At least twelve pixel delta previews rendered, not text-only.",
+        "At least four successful ChatGPT Decision Packets recorded and normalized.",
+        "Composer-first classifier records PAGE_USABLE without history-text false positives.",
+        "Browser smoke verifies ChatGPT log, A-J rotation, Mission Doctor summaries, score progression, and morning report."
+    )
+} elseif ($MissionId -eq "A20AZ") {
     @(
         "DEV-only /app?trueOvernightLiveRun=1 route visible.",
         "At least twelve pixel delta previews rendered, not text-only.",
@@ -93,7 +102,16 @@ $expectedProof = if ($MissionId -eq "A20AZ") {
 }
 if (@($expectedProof).Count -eq 0) { throw "PROOF_REQUIRED" }
 
-$tests = if ($MissionId -eq "A20AZ") {
+$tests = if ($MissionId -eq "A20BB") {
+    @(
+        "git diff --check",
+        "cd frontend; npm run build",
+        "cd frontend; npx tsc --noEmit",
+        "node scripts/browser_true_overnight_composer_first_run_smoke.mjs",
+        "powershell -ExecutionPolicy Bypass -File ops/autopilot/test_omega_autopilot.ps1",
+        "python tools/plan_guard.py"
+    )
+} elseif ($MissionId -eq "A20AZ") {
     @(
         "git diff --check",
         "cd frontend; npm run build",
@@ -131,7 +149,20 @@ $tests = if ($MissionId -eq "A20AZ") {
     )
 }
 
-$evidenceArtifacts = if ($MissionId -eq "A20AZ") {
+$evidenceArtifacts = if ($MissionId -eq "A20BB") {
+    @(
+        "omega_decision_log.json",
+        "mission_doctor_results.json",
+        "pixel_delta_manifest.json",
+        "chatgpt_supervisor_attempts.json",
+        "chatgpt_decision_packets/*.json",
+        "chatgpt_classifier_results/*.json",
+        "screenshots/*.png",
+        "morning_report.md",
+        "night_readiness_after_run.json",
+        "score_update.json"
+    )
+} elseif ($MissionId -eq "A20AZ") {
     @(
         "omega_decision_log.json",
         "mission_doctor_results.json",
@@ -173,7 +204,17 @@ $evidenceArtifacts = if ($MissionId -eq "A20AZ") {
     )
 }
 
-$finalVerdicts = if ($MissionId -eq "A20AZ") {
+$finalVerdicts = if ($MissionId -eq "A20BB") {
+    @(
+        "TRUE_OVERNIGHT_COMPOSER_FIRST_PASS",
+        "TRUE_OVERNIGHT_OFFLINE_PASS_CHATGPT_WEAK",
+        "TRUE_OVERNIGHT_RUN_TOO_SHORT",
+        "TRUE_OVERNIGHT_PARTIAL",
+        "TRUE_OVERNIGHT_FAILED_META_DRIFT",
+        "TRUE_OVERNIGHT_FAILED_SAFETY",
+        "TRUE_OVERNIGHT_FAILED"
+    )
+} elseif ($MissionId -eq "A20AZ") {
     @(
         "TRUE_OVERNIGHT_LIVE_SUPERVISED_PASS",
         "TRUE_OVERNIGHT_OFFLINE_PASS_LIVE_SUPERVISOR_WEAK",
@@ -209,7 +250,16 @@ $finalVerdicts = if ($MissionId -eq "A20AZ") {
     )
 }
 
-$scoreDeltaRules = if ($MissionId -eq "A20AZ") {
+$scoreDeltaRules = if ($MissionId -eq "A20BB") {
+    [ordered]@{
+        overall_max_after_a20bb = 19.5
+        no_score_increase_without_screenshot_or_chatgpt_packet_proof = $true
+        live_supervised_pass_requires_four_successful_decision_packets = $true
+        visual_production_requires_screenshot = $true
+        no_human_validation_without_human_data = $true
+        no_public_release_claim = $true
+    }
+} elseif ($MissionId -eq "A20AZ") {
     [ordered]@{
         overall_max_after_a20az = 19.5
         no_score_increase_without_runtime_or_live_supervisor_proof = $true

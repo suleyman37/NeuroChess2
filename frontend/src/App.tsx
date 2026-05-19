@@ -145,6 +145,10 @@ import {
   type TrueOvernightLiveRunRoute,
 } from "./dev/true-overnight-live-run/TrueOvernightLiveRun";
 import {
+  TrueOvernightComposerFirstRun,
+  type TrueOvernightComposerFirstRunRoute,
+} from "./dev/true-overnight-composer-first-run/TrueOvernightComposerFirstRun";
+import {
   signatureArenaSignatureIds,
   signatureArenaVariantIds,
   type SignatureArenaSignatureId,
@@ -154,6 +158,10 @@ import type { PixelIterationId } from "./dev/autonomous-pixel-rehearsal/autonomo
 import type { FullNightIterationId } from "./dev/full-night-pixel-rehearsal/fullNightPixelRehearsalData";
 import type { FullNightRealRunIterationId } from "./dev/full-night-real-run/fullNightRealRunData";
 import type { TrueOvernightLiveRunIterationId } from "./dev/true-overnight-live-run/trueOvernightLiveRunData";
+import {
+  trueOvernightComposerFirstRunIterationIds,
+  type TrueOvernightComposerFirstRunIterationId,
+} from "./dev/true-overnight-composer-first-run/trueOvernightComposerFirstRunData";
 import { OmegaPixelLab } from "./dev/omega-pixel-lab/OmegaPixelLab";
 import type { SignatureProbeEvidenceMode } from "./dev/signature-probes/SignatureProbeGallery";
 import type { SignatureProbeId } from "./dev/signature-probes/signatureProbeData";
@@ -572,6 +580,24 @@ function getTrueOvernightLiveRunDevRoute(): TrueOvernightLiveRunRoute | null {
   return null;
 }
 
+function getTrueOvernightComposerFirstRunDevRoute(): TrueOvernightComposerFirstRunRoute | null {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return null;
+  }
+  if (window.location.pathname !== "/app") {
+    return null;
+  }
+  const params = new URLSearchParams(window.location.search);
+  const value = params.get("trueOvernightComposerFirstRun");
+  if (value === "1") {
+    return { iterationId: null };
+  }
+  if (trueOvernightComposerFirstRunIterationIds.includes(value as TrueOvernightComposerFirstRunIterationId)) {
+    return { iterationId: value as TrueOvernightComposerFirstRunIterationId };
+  }
+  return null;
+}
+
 function getSignatureArenaVariantDevRoute(): SignatureArenaVariantRoute | null {
   if (typeof window === "undefined" || !import.meta.env.DEV) {
     return null;
@@ -658,6 +684,9 @@ export default function App() {
   const [trueOvernightLiveRunRoute, setTrueOvernightLiveRunRoute] = useState(() =>
     getTrueOvernightLiveRunDevRoute(),
   );
+  const [trueOvernightComposerFirstRunRoute, setTrueOvernightComposerFirstRunRoute] = useState(() =>
+    getTrueOvernightComposerFirstRunDevRoute(),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -679,6 +708,7 @@ export default function App() {
       setFullNightPixelRehearsalRoute(getFullNightPixelRehearsalDevRoute());
       setFullNightRealRunRoute(getFullNightRealRunDevRoute());
       setTrueOvernightLiveRunRoute(getTrueOvernightLiveRunDevRoute());
+      setTrueOvernightComposerFirstRunRoute(getTrueOvernightComposerFirstRunDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -777,6 +807,10 @@ export default function App() {
 
   if (trueOvernightLiveRunRoute) {
     return <TrueOvernightLiveRun route={trueOvernightLiveRunRoute} />;
+  }
+
+  if (trueOvernightComposerFirstRunRoute) {
+    return <TrueOvernightComposerFirstRun route={trueOvernightComposerFirstRunRoute} />;
   }
 
   if (currentRoute === "/app") {

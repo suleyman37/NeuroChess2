@@ -1,5 +1,5 @@
 schema_version: failure_ledger_v2
-updated_by: A20AZ_TRUE_OVERNIGHT_LIVE_SUPERVISED_PIXEL_RUN
+updated_by: A20BB_TRUE_OVERNIGHT_SECOND_RUN_WITH_COMPOSER_FIRST_CLASSIFIER
 entries:
   - id: a20az-chatgpt-cdp-unavailable
     mission_id: A20AZ
@@ -23,19 +23,43 @@ entries:
     ntfy_alert_sent: true
     user_intervention_required: false
     loop_continued: true
+  - id: a20bb-chatgpt-composer-first-restored
+    mission_id: A20BB
+    failed_lane: chatgpt_false_positive_classifier
+    reason: FALSE_POSITIVE_HUMAN_ACTION_REQUIRED_HISTORY_TEXT_RESOLVED
+    recurrence_count: 1
+    parked_until: unparked
+    do_not_repeat_rule: do_not_classify_auth_from_historical_body_text
+    next_safe_alternative: composer_first_classifier_with_screenshot_diagnostic
+    ntfy_alert_sent: false
+    user_intervention_required: false
+    loop_continued: true
+  - id: a20bb-gemini-not-configured
+    mission_id: A20BB
+    failed_lane: gemini
+    reason: GEMINI_NOT_CONFIGURED
+    recurrence_count: 2
+    parked_until: configured
+    do_not_repeat_rule: do_not_block_composer_first_pixel_run_on_gemini
+    next_safe_alternative: chatgpt_composer_first_and_local_omega
+    ntfy_alert_sent: true
+    user_intervention_required: false
+    loop_continued: true
 last_run_summary:
-  mission_id: A20AZ
+  mission_id: A20BB
   blockers:
-    - CHATGPT_CDP_UNREACHABLE
     - GEMINI_NOT_CONFIGURED
+  resolved:
+    - FALSE_POSITIVE_HUMAN_ACTION_REQUIRED_HISTORY_TEXT
   repeated_blocked_lanes:
-    - chatgpt
     - gemini
   live_lanes_required: false
   loop_continued: true
   kill_switch_triggered: false
   runtime_minimum_met: false
   stop_reason: OBJECTIVE_EXHAUSTED_BEFORE_MIN_RUNTIME
+  chatgpt_attempts: 8
+  chatgpt_successful_decision_packets: 4
 policy:
   repeat_threshold: 2
   repeated_failure_action: avoid_lane_unless_explicitly_unparked

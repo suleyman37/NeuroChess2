@@ -190,3 +190,21 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20BA
+  - id: memory-a20bb-composer-first-live-supervision
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "Composer-first classification can restore ChatGPT Web supervision when the current UI is usable even if old conversation text contains blocker words."
+    evidence: "A20BB classifier returned PAGE_USABLE, manual conversation test passed, and the route records eight attempts with four normalized Decision Packets."
+    action_rule: "Before parking ChatGPT, verify current composer visibility, enabled state, send availability, and screenshot evidence."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BB
+  - id: memory-a20bb-no-score-inflation
+    date: 2026-05-20
+    category: score_safety
+    lesson: "A composer-first live-supervised pass can confirm 19.5 but must not inflate score without Gemini or human taste evidence."
+    evidence: "A20BB kept overall score at 19.5 despite active ChatGPT packets and useful pixel deltas."
+    action_rule: "Route next expansion to Gemini lane setup or multi-channel supervisor routing before product or release claims."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BB

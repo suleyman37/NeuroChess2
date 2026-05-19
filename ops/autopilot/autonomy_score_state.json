@@ -1,6 +1,6 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20AZ_TRUE_OVERNIGHT_LIVE_SUPERVISED_PIXEL_RUN",
+  "updated_by": "A20BB_TRUE_OVERNIGHT_SECOND_RUN_WITH_COMPOSER_FIRST_CLASSIFIER",
   "scores": {
     "safety_git": 18.7,
     "operator_zero_friction": 18.4,
@@ -51,7 +51,8 @@
     "A20AV runs a limited autonomous pixel rehearsal with three DEV-only pixel deltas, external screenshots, Mission Doctor pass results, and no live-web dependency.",
     "A20AW runs a full-night pixel rehearsal candidate with eight DEV-only pixel deltas, external screenshots, Mission Doctor pass summaries, NightReadinessV2 NIGHT_READY, and no live-web or user dependency.",
     "A20AY confirms the 19.5 candidate with a bounded real full-night pixel run: twelve useful DEV-only deltas, external screenshots, Mission Doctor pass summaries, and NightReadinessV2 NIGHT_READY.",
-    "A20AZ adds a true-overnight live-supervised route and actively records ChatGPT/Gemini attempts or parked lanes, but does not raise score because runtime minimum and live supervisor success were not proven."
+    "A20AZ adds a true-overnight live-supervised route and actively records ChatGPT/Gemini attempts or parked lanes, but does not raise score because runtime minimum and live supervisor success were not proven.",
+    "A20BB restores ChatGPT Web supervision with the composer-first classifier, records eight ChatGPT attempts and four successful Decision Packets, and keeps the overall score at 19.5 without arbitrary inflation."
   ],
   "a20ap_score_update": {
     "before_overall": 17.0,
@@ -281,5 +282,36 @@
     ],
     "not_true_live_supervised_pass_reason": "The run stopped with OBJECTIVE_EXHAUSTED_BEFORE_MIN_RUNTIME and both external supervisor lanes were parked or not configured.",
     "remaining_before_merge_or_product_integration": "Repair/configure live supervisor lanes, or run a true overnight second pass with the runtime minimum satisfied before merge or product integration review."
+  },
+  "a20bb_score_update": {
+    "before_overall": 19.5,
+    "after_overall": 19.5,
+    "autonomous_loop_before": 19.5,
+    "autonomous_loop_after": 19.5,
+    "visual_production_before": 19.0,
+    "visual_production_after": 19.0,
+    "night_readiness_before": 19.5,
+    "night_readiness_after": 19.5,
+    "iterations_attempted": 18,
+    "pixel_deltas_produced": 18,
+    "useful_pixel_deltas": 18,
+    "runtime_minimum_met": false,
+    "valid_short_stop_reason": "OBJECTIVE_EXHAUSTED_BEFORE_MIN_RUNTIME",
+    "chatgpt_attempts": 8,
+    "chatgpt_successful_decision_packets": 4,
+    "composer_first_classifier": "PAGE_USABLE",
+    "false_positive_avoidance": true,
+    "gemini_lane_status": "GEMINI_NOT_CONFIGURED",
+    "composer_first_live_supervised_pass": true,
+    "score_inflation_prevented": true,
+    "evidence": [
+      "DEV-only /app?trueOvernightComposerFirstRun=1 renders eighteen useful pixel delta previews.",
+      "Browser smoke captures external summary and per-iteration screenshots.",
+      "Composer-first classifier returns PAGE_USABLE and ignores historical blocker terms.",
+      "A-J manual conversation test sends a safe JSON prompt and reads a JSON response.",
+      "A20BB records eight ChatGPT attempts and four normalized Decision Packets.",
+      "NightReadinessV2 remains NIGHT_READY after the run artifacts."
+    ],
+    "remaining_before_merge_or_product_integration": "Configure Gemini or build the multi-channel supervisor router before broader night expansion; product integration still requires merge audit and taste validation."
   }
 }

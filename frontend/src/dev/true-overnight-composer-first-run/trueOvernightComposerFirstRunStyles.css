@@ -1,0 +1,641 @@
+.true-overnight-composer-first-run {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 28px;
+  color: hsl(47 30% 94%);
+  background:
+    linear-gradient(90deg, hsl(158 32% 8% / 0.82), transparent 38%, hsl(352 32% 10% / 0.68)),
+    linear-gradient(180deg, hsl(220 21% 7%), hsl(34 24% 8%));
+  font-family: Aptos, "Segoe UI", system-ui, sans-serif;
+}
+
+.true-overnight-composer-first-run *,
+.true-overnight-composer-first-run *::before,
+.true-overnight-composer-first-run *::after {
+  box-sizing: border-box;
+}
+
+.tocf-header,
+.tocf-summary,
+.tocf-packets,
+.tocf-direction,
+.tocf-grid,
+.tocf-isolated-layout {
+  width: min(1600px, 100%);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.tocf-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid hsl(43 78% 66% / 0.28);
+}
+
+.tocf-header p,
+.tocf-header h1,
+.tocf-header span,
+.tocf-summary p,
+.tocf-packets p,
+.tocf-direction p,
+.tocf-card p,
+.tocf-notes p,
+.tocf-notes h2,
+.tocf-notes dl,
+.tocf-notes dd {
+  margin: 0;
+}
+
+.tocf-header p,
+.tocf-summary p,
+.tocf-packets p,
+.tocf-direction p,
+.tocf-card p,
+.tocf-notes p,
+.tocf-notes dt {
+  color: hsl(43 82% 66%);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.tocf-header h1 {
+  max-width: 980px;
+  margin: 7px 0;
+  font-size: 2.15rem;
+  line-height: 1.04;
+  letter-spacing: 0;
+}
+
+.tocf-header span {
+  color: hsl(174 65% 72%);
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
+.tocf-header > strong {
+  display: grid;
+  width: 98px;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid hsl(174 66% 60% / 0.5);
+  color: hsl(31 24% 8%);
+  background: linear-gradient(145deg, hsl(174 66% 63%), hsl(43 86% 63%));
+  font-size: 1.22rem;
+  font-weight: 950;
+}
+
+.tocf-summary {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.tocf-summary > div,
+.tocf-packets > article,
+.tocf-direction,
+.tocf-card,
+.tocf-notes,
+.tocf-isolated-layout > [data-evidence-role="main-surface"] {
+  border: 1px solid hsl(43 46% 72% / 0.2);
+  background: hsl(212 22% 8% / 0.88);
+  box-shadow: 0 18px 54px hsl(0 0% 0% / 0.34);
+}
+
+.tocf-summary > div {
+  display: grid;
+  min-height: 126px;
+  align-content: center;
+  gap: 8px;
+  padding: 15px;
+}
+
+.tocf-packets {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tocf-packets > article {
+  display: grid;
+  gap: 8px;
+  min-height: 120px;
+  padding: 14px;
+}
+
+.tocf-summary strong,
+.tocf-packets strong,
+.tocf-direction strong {
+  color: hsl(44 32% 93%);
+  font-size: 0.98rem;
+  line-height: 1.14;
+}
+
+.tocf-summary span,
+.tocf-packets span,
+.tocf-card header strong,
+.tocf-notes dd {
+  color: hsl(43 22% 76%);
+  overflow-wrap: anywhere;
+}
+
+.tocf-direction {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 18px;
+}
+
+.tocf-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(330px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.tocf-card {
+  display: grid;
+  grid-template-rows: auto minmax(420px, 1fr) auto;
+  min-height: 706px;
+  overflow: hidden;
+}
+
+.tocf-card header {
+  display: grid;
+  gap: 7px;
+  padding: 16px;
+}
+
+.tocf-card h2 {
+  margin: 0;
+  font-size: 1.08rem;
+  line-height: 1.08;
+}
+
+.tocf-card header strong {
+  font-size: 0.68rem;
+}
+
+.tocf-card footer {
+  display: grid;
+  grid-template-columns: 0.42fr 0.65fr 1.55fr;
+  gap: 7px;
+  min-height: 72px;
+  padding: 9px;
+  border-top: 1px solid hsl(43 46% 72% / 0.18);
+}
+
+.tocf-card footer span {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 7px;
+  color: hsl(44 32% 93%);
+  background: hsl(214 22% 5% / 0.76);
+  font-size: 0.66rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.tocf-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  width: 282px;
+  aspect-ratio: 1;
+  border: 7px solid hsl(41 34% 25%);
+  box-shadow: 0 18px 44px hsl(0 0% 0% / 0.42);
+}
+
+.tocf-board span {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.24rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.tocf-square-light {
+  color: hsl(130 16% 15%);
+  background: hsl(47 33% 82%);
+}
+
+.tocf-square-dark {
+  color: hsl(46 44% 89%);
+  background: hsl(140 15% 36%);
+}
+
+.tocf-board-line,
+.tocf-pressure-frame {
+  position: absolute;
+  pointer-events: none;
+}
+
+.tocf-board-line-success {
+  left: 24%;
+  top: 55%;
+  width: 52%;
+  height: 3px;
+  background: hsl(134 68% 62%);
+  transform: rotate(-27deg);
+}
+
+.tocf-board-line-miss {
+  left: 29%;
+  top: 31%;
+  width: 44%;
+  height: 3px;
+  background: hsl(11 84% 66%);
+  transform: rotate(43deg);
+}
+
+.tocf-pressure-frame {
+  inset: -26px;
+  border: 2px solid hsl(11 84% 62% / 0.42);
+}
+
+.tocf-glyph,
+.tocf-sigil {
+  width: 82px;
+  height: 82px;
+  fill: hsl(214 22% 7%);
+  stroke: hsl(43 82% 66%);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tocf-glyph-success {
+  stroke: hsl(136 68% 62%);
+}
+
+.tocf-glyph-miss {
+  stroke: hsl(11 84% 66%);
+}
+
+.tocf-glyph-replay {
+  stroke: hsl(174 66% 72%);
+}
+
+.tocf-chamber,
+.tocf-feedback,
+.tocf-flow,
+.tocf-sigil-wall,
+.tocf-memory,
+.tocf-pressure,
+.tocf-combination,
+.tocf-anti,
+.tocf-evidence,
+.tocf-dashboard,
+.tocf-external,
+.tocf-integration {
+  min-height: 420px;
+  padding: 18px;
+  background:
+    radial-gradient(circle at 48% 48%, hsl(174 66% 22% / 0.18), transparent 58%),
+    linear-gradient(180deg, hsl(214 22% 10%), hsl(28 24% 8%));
+}
+
+.tocf-chamber {
+  display: grid;
+  grid-template-columns: 78px minmax(240px, 1fr) 78px;
+  align-items: center;
+  gap: 12px;
+}
+
+.tocf-chamber aside {
+  display: grid;
+  gap: 14px;
+}
+
+.tocf-chamber aside span {
+  display: block;
+  min-height: 70px;
+  border: 1px solid hsl(43 62% 55% / 0.24);
+  background: linear-gradient(180deg, hsl(43 50% 26% / 0.32), hsl(174 40% 14% / 0.3));
+}
+
+.tocf-chamber section,
+.tocf-feedback-state,
+.tocf-flow section,
+.tocf-sigil-wall section,
+.tocf-memory section,
+.tocf-combination aside,
+.tocf-anti section,
+.tocf-evidence section,
+.tocf-dashboard div,
+.tocf-external section,
+.tocf-integration aside {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+}
+
+.tocf-chamber p,
+.tocf-anti p,
+.tocf-external p {
+  margin: 0;
+  color: hsl(43 82% 66%);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.tocf-chamber-compact .tocf-board {
+  width: 230px;
+}
+
+.tocf-feedback {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tocf-feedback-state,
+.tocf-memory section,
+.tocf-sigil-wall section,
+.tocf-evidence section,
+.tocf-external section {
+  min-width: 0;
+  border: 1px solid hsl(43 46% 72% / 0.18);
+  background: hsl(214 22% 5% / 0.46);
+}
+
+.tocf-feedback-state .tocf-board {
+  width: min(170px, 100%);
+  border-width: 5px;
+}
+
+.tocf-flow {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 18px;
+}
+
+.tocf-flow > div {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.tocf-flow section,
+.tocf-memory section,
+.tocf-sigil-wall section {
+  min-height: 174px;
+}
+
+.tocf-flow section > span,
+.tocf-memory section > span,
+.tocf-evidence section > span,
+.tocf-dashboard span b {
+  display: grid;
+  width: 34px;
+  aspect-ratio: 1;
+  place-items: center;
+  color: hsl(31 24% 8%);
+  background: hsl(43 82% 66%);
+  font-weight: 950;
+}
+
+.tocf-sigil-wall,
+.tocf-memory,
+.tocf-pressure,
+.tocf-combination {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.9fr) repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: 10px;
+}
+
+.tocf-memory i {
+  width: 80%;
+  height: 5px;
+  background: linear-gradient(90deg, hsl(174 66% 62%), hsl(43 82% 66%));
+}
+
+.tocf-pressure {
+  position: relative;
+  grid-template-columns: minmax(270px, 1fr) minmax(180px, 0.7fr);
+  justify-items: center;
+  overflow: hidden;
+}
+
+.tocf-orbit {
+  position: absolute;
+  border: 1px solid hsl(11 84% 66% / 0.34);
+  transform: rotate(-13deg);
+}
+
+.tocf-orbit-a {
+  inset: 42px 84px;
+}
+
+.tocf-orbit-b {
+  inset: 70px 116px;
+  border-color: hsl(174 66% 62% / 0.28);
+  transform: rotate(17deg);
+}
+
+.tocf-pressure aside,
+.tocf-integration aside section {
+  display: grid;
+  gap: 8px;
+  z-index: 1;
+  color: hsl(43 22% 76%);
+  font-size: 0.86rem;
+  line-height: 1.3;
+}
+
+.tocf-combination {
+  grid-template-columns: minmax(330px, 1.2fr) 170px;
+}
+
+.tocf-combination aside,
+.tocf-integration aside {
+  min-height: 320px;
+  border-left: 1px solid hsl(43 46% 72% / 0.2);
+}
+
+.tocf-anti {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tocf-risk-sample {
+  filter: saturate(2.3) contrast(1.35);
+}
+
+.tocf-evidence {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tocf-evidence section,
+.tocf-external section {
+  min-height: 150px;
+  padding: 14px;
+}
+
+.tocf-evidence p,
+.tocf-external span {
+  max-width: 100%;
+  margin: 0;
+  color: hsl(43 22% 76%);
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.tocf-dashboard {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.8fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+}
+
+.tocf-dashboard div {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-content: center;
+}
+
+.tocf-dashboard span {
+  display: grid;
+  gap: 5px;
+  place-items: center;
+  min-height: 76px;
+  color: hsl(44 32% 93%);
+  background: hsl(214 22% 5% / 0.48);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.tocf-dashboard > strong {
+  grid-column: 1 / -1;
+  justify-self: center;
+  color: hsl(174 66% 72%);
+}
+
+.tocf-external {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tocf-integration {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) 170px;
+  gap: 12px;
+}
+
+.tocf-integration .tocf-flow {
+  min-height: 360px;
+  padding: 0;
+  background: transparent;
+}
+
+.tocf-isolated .tocf-header {
+  margin-bottom: 22px;
+}
+
+.tocf-isolated-layout {
+  display: grid;
+  grid-template-columns: minmax(760px, 1.25fr) minmax(320px, 0.6fr);
+  gap: 18px;
+}
+
+.tocf-isolated-layout > [data-evidence-role="main-surface"] {
+  min-height: 720px;
+}
+
+.tocf-isolated-layout .tocf-board {
+  width: 360px;
+}
+
+.tocf-notes {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 20px;
+}
+
+.tocf-notes h2 {
+  font-size: 1.38rem;
+  line-height: 1.12;
+}
+
+.tocf-notes dl {
+  display: grid;
+  gap: 12px;
+}
+
+.tocf-notes dl > div {
+  display: grid;
+  gap: 5px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid hsl(43 46% 72% / 0.16);
+}
+
+@media (max-width: 1280px) {
+  .tocf-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tocf-packets,
+  .tocf-grid {
+    grid-template-columns: repeat(2, minmax(320px, 1fr));
+  }
+
+  .tocf-isolated-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .true-overnight-composer-first-run {
+    padding: 18px;
+  }
+
+  .tocf-header {
+    display: grid;
+  }
+
+  .tocf-summary,
+  .tocf-packets,
+  .tocf-grid,
+  .tocf-feedback,
+  .tocf-flow,
+  .tocf-sigil-wall,
+  .tocf-memory,
+  .tocf-pressure,
+  .tocf-combination,
+  .tocf-anti,
+  .tocf-evidence,
+  .tocf-dashboard,
+  .tocf-external,
+  .tocf-integration {
+    grid-template-columns: 1fr;
+  }
+
+  .tocf-card {
+    min-height: 640px;
+  }
+
+  .tocf-board,
+  .tocf-isolated-layout .tocf-board {
+    width: min(320px, 100%);
+  }
+}

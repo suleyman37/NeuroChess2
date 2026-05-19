@@ -31,6 +31,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\full_night_real_run\A20AY_full_night_real_pixel_run_20260518"
     } elseif ($MissionId -eq "A20AZ") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\true_overnight_live_run\A20AZ_true_overnight_live_supervised_pixel_run_20260518"
+    } elseif ($MissionId -eq "A20BB") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\true_overnight_composer_first\A20BB_true_overnight_composer_first_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -221,8 +223,54 @@ function Test-A20AZTrueOvernightLiveRunReady {
     }
 }
 
+function Test-A20BBComposerFirstRunReady {
+    $manifestPath = Join-Path $ArtifactPath "pixel_delta_manifest.json"
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { return $false }
+    try {
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        return ([int]$manifest.pixel_delta_count -ge 12 -and [int]$manifest.useful_pixel_delta_count -ge 12 -and [int]$manifest.chatgpt_successful_decision_packets -ge 4 -and [string]$manifest.status -eq "TRUE_OVERNIGHT_COMPOSER_FIRST_PIXEL_DELTAS_READY")
+    } catch {
+        return $false
+    }
+}
+
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20BB" -and (Test-A20BBComposerFirstRunReady)) {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20BC_GEMINI_3_5_FLASH_EXTENDED_WEB_LANE"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Configure or repair the optional Gemini visual lane after ChatGPT composer-first supervision produced valid packets."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("gemini_lane_status_clear", "no_paid_api_required", "local_fallback_preserved")
+            },
+            [pscustomobject]@{
+                id = "A20BC_SUPERVISOR_TRANSPORT_FABRIC_MULTI_CHANNEL_ROUTER"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Route composer-first ChatGPT packets, optional Gemini visual packets, and OMEGA fallback through one safe supervisor fabric."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("multi_channel_policy", "no_private_urls", "auth_safety_preserved", "fallback_preserved")
+            },
+            [pscustomobject]@{
+                id = "A20BC_ROAD_TO_V2_MERGE_AUDIT_PLAN"
+                family = "SAFETY_MAINTENANCE"
+                expected_value = "Prepare a merge audit plan only after live supervisor evidence is reviewed."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("audit_plan_only", "no_road_push", "no_merge")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20AZ" -and (Test-A20AZTrueOvernightLiveRunReady)) {
         $objectives = @(
             [pscustomobject]@{
@@ -605,6 +653,8 @@ function Run-OneRelayIteration {
         $fallback.selected_family = [string]$probeObjective.family
         $fallback.reason = if ($MissionId -eq "A20AZ") {
             "A20AZ produced twelve-plus screenshot-backed local pixel deltas but parked live supervisor lanes; local fallback routes toward live supervisor repair before claiming a live-supervised pass."
+        } elseif ($MissionId -eq "A20BB") {
+            "A20BB produced composer-first ChatGPT Decision Packets and twelve-plus useful deltas; local fallback routes toward Gemini setup or multi-channel supervisor routing before broader night expansion."
         } elseif ($MissionId -eq "A20AY") {
             "A20AY real full-night run evidence has six-plus useful screenshot-backed pixel deltas; local fallback routes toward A20AZ audit, integration review, or final handoff."
         } elseif ($MissionId -eq "A20AW") {
