@@ -1,17 +1,17 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20AQ_PERCEPTION_GRADE_VISUAL_EVIDENCE_FOUNDRY",
+  "updated_by": "A20AR_SIGNATURE_FIVE_SELECTION_FROM_HIGH_QUALITY_EVIDENCE",
   "scores": {
     "safety_git": 18.7,
     "operator_zero_friction": 18.0,
     "web_orchestrator": 18.1,
     "external_judge_reliability": 18.5,
     "autonomous_loop": 15.0,
-    "visual_production": 16.8,
-    "art_direction_concrete": 17.2,
+    "visual_production": 17.1,
+    "art_direction_concrete": 17.5,
     "evidence_quality": 18.3,
     "night_readiness": 17.5,
-    "overall": 18.0
+    "overall": 18.2
   },
   "target_overall": 19.5,
   "workload_shift_metrics": {
@@ -28,7 +28,8 @@
     "A20AP adds external judge SRE architecture, lane parking, and ntfy-capable failure alerting.",
     "A20AP creates ten DEV-only visual probes with external screenshot and contact sheet evidence.",
     "A20AQ upgrades visual evidence to one full-size screenshot, main-surface crop, and detail crop per probe.",
-    "Scores remain conservative: no Signature Five has been selected and no signature component has been integrated.",
+    "A20AR selects the Signature Five from A20AQ perception-grade evidence.",
+    "Scores remain conservative: no signature has been tripled, voted, integrated, or promoted.",
     "External reasoning utilization remains 0 in NoLiveWeb rehearsal by design; fallback still works."
   ],
   "a20ap_score_update": {
@@ -63,5 +64,32 @@
       "local triage returned EVIDENCE_READY_FOR_SELECTION"
     ],
     "not_19_5_reason": "Final Signature Five selection, reviewed external critique, tripled variants, and integrated signature components are still pending."
+  },
+  "a20ar_score_update": {
+    "before_overall": 18.0,
+    "after_overall": 18.2,
+    "visual_production_before": 16.8,
+    "visual_production_after": 17.1,
+    "art_direction_concrete_before": 17.2,
+    "art_direction_concrete_after": 17.5,
+    "selected_signature_five": [
+      "sacred_board_chamber",
+      "decision_feedback_language",
+      "critical_moment_sigil",
+      "decision_pressure_field",
+      "memory_cabinet"
+    ],
+    "top_two_for_tripled_variants": [
+      "sacred_board_chamber",
+      "decision_feedback_language"
+    ],
+    "evidence": [
+      "A20AQ evidence manifest and pixel budget passed for all ten probes",
+      "A20AR candidate_scores.json ranks all ten candidates",
+      "A20AR final_signature_five.json selects exactly five candidates",
+      "A20AR local fallback covers attention/decision, feedback, memory/return, core identity, and board-adjacent safety"
+    ],
+    "not_18_5_visual_reason": "No A/B/C tripled variants or selected signature screenshots exist yet.",
+    "not_19_5_reason": "Tripled variants, external or human review, integration, and autonomous pixel rehearsal are still pending."
   }
 }

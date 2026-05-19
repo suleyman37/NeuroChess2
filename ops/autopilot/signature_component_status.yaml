@@ -1,4 +1,5 @@
 schema_version: signature_component_status_v1
+updated_by: A20AR_SIGNATURE_FIVE_SELECTION_FROM_HIGH_QUALITY_EVIDENCE
 statuses:
   - STATUS_0_NOT_STARTED
   - STATUS_1_PROBED
@@ -6,37 +7,92 @@ statuses:
   - STATUS_3_VOTED
   - STATUS_4_INTEGRATED
   - STATUS_5_PROMOTED
+selection_markers:
+  - MARKED_FOR_TRIPLED_NEXT
+  - SELECTED_NEEDS_VARIANTS
+  - PROBED_NOT_SELECTED
+  - REJECTED_CANDIDATE
 candidate_statuses:
   - id: sacred_board_chamber
     name: Sacred Board Chamber
     status: STATUS_1_PROBED
-  - id: piece_identity_system
-    name: Piece Identity System
-    status: STATUS_1_PROBED
+    selection_status: SELECTED_SIGNATURE_FIVE
+    marker: MARKED_FOR_TRIPLED_NEXT
+    rank: 1
+    weighted_score: 4.81
   - id: decision_feedback_language
     name: Decision Feedback Language
     status: STATUS_1_PROBED
+    selection_status: SELECTED_SIGNATURE_FIVE
+    marker: MARKED_FOR_TRIPLED_NEXT
+    rank: 2
+    weighted_score: 4.71
   - id: critical_moment_sigil
     name: Critical Moment Sigil
     status: STATUS_1_PROBED
-  - id: verdict_wax_seal
-    name: Verdict Wax Seal
-    status: STATUS_1_PROBED
-  - id: aftermath_timeline
-    name: Aftermath Timeline
-    status: STATUS_1_PROBED
-  - id: piece_breath
-    name: Piece Breath
-    status: STATUS_1_PROBED
-  - id: memory_cabinet
-    name: Memory Cabinet
-    status: STATUS_1_PROBED
-  - id: position_resonance
-    name: Position Resonance
-    status: STATUS_1_PROBED
+    selection_status: SELECTED_SIGNATURE_FIVE
+    marker: SELECTED_FOR_LATER_VARIANTS
+    rank: 3
+    weighted_score: 4.65
   - id: decision_pressure_field
     name: Decision Pressure Field
     status: STATUS_1_PROBED
+    selection_status: SELECTED_SIGNATURE_FIVE
+    marker: SELECTED_FOR_LATER_VARIANTS
+    rank: 4
+    weighted_score: 4.50
+  - id: memory_cabinet
+    name: Memory Cabinet
+    status: STATUS_1_PROBED
+    selection_status: SELECTED_SIGNATURE_FIVE
+    marker: SELECTED_NEEDS_VARIANTS
+    rank: 5
+    weighted_score: 4.47
+  - id: aftermath_timeline
+    name: Aftermath Timeline
+    status: STATUS_1_PROBED
+    selection_status: PROBED_NOT_SELECTED
+    marker: RESERVE_CANDIDATE
+    rank: 6
+    weighted_score: 4.43
+  - id: position_resonance
+    name: Position Resonance
+    status: STATUS_1_PROBED
+    selection_status: PROBED_NOT_SELECTED
+    marker: RESERVE_CANDIDATE
+    rank: 7
+    weighted_score: 4.38
+  - id: verdict_wax_seal
+    name: Verdict Wax Seal
+    status: STATUS_1_PROBED
+    selection_status: PROBED_NOT_SELECTED
+    marker: REDUNDANT_WITH_FEEDBACK_LANGUAGE
+    rank: 8
+    weighted_score: 4.30
+  - id: piece_identity_system
+    name: Piece Identity System
+    status: STATUS_1_PROBED
+    selection_status: PROBED_NOT_SELECTED
+    marker: NEEDS_BOARD_SCALE_READABILITY_PROOF
+    rank: 9
+    weighted_score: 4.10
+  - id: piece_breath
+    name: Piece Breath
+    status: STATUS_1_PROBED
+    selection_status: REJECTED_CANDIDATE
+    marker: HIGH_MOTION_DECORATIVE_RISK
+    rank: 10
+    weighted_score: 3.66
 candidate_probe_count: 10
-final_five_selected: false
+final_five_selected: true
+final_five:
+  - sacred_board_chamber
+  - decision_feedback_language
+  - critical_moment_sigil
+  - decision_pressure_field
+  - memory_cabinet
+top_two_for_tripled_variants:
+  - sacred_board_chamber
+  - decision_feedback_language
+next_recommended_objective: A20AS_TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES
 score_rule: Sum selected final-five status indexes and divide by 25.

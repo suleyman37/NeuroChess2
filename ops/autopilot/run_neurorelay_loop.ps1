@@ -16,6 +16,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\visual_probes\A20AP_critical_deficit_uplift_10_probes_20260518"
     } elseif ($MissionId -eq "A20AQ") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\visual_evidence\A20AQ_perception_grade_visual_evidence_foundry_20260518"
+    } elseif ($MissionId -eq "A20AR") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\signature_selection\A20AR_signature_five_high_quality_evidence_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -131,8 +133,52 @@ function Test-PerceptionGradeEvidenceReady {
     }
 }
 
+function Test-SignatureFiveSelected {
+    $statusPath = Join-Path $PSScriptRoot "signature_component_status.yaml"
+    if (-not (Test-Path -LiteralPath $statusPath -PathType Leaf)) { return $false }
+    $text = Get-Content -LiteralPath $statusPath -Raw
+    return ($text -match '(?m)^final_five_selected:\s*true\s*$') -and
+        ($text -match 'A20AS_TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES') -and
+        ($text -match 'MARKED_FOR_TRIPLED_NEXT')
+}
+
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20AR" -and (Test-SignatureFiveSelected)) {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20AS_TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES"
+                family = "SIGNATURE_COMPONENTS"
+                expected_value = "Create A/B/C variants for sacred_board_chamber and decision_feedback_language from the selected Signature Five."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/signature-probes/**", "scripts/**", "docs/design/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("three_variants_for_sacred_board_chamber", "three_variants_for_decision_feedback_language", "no_product_integration")
+            },
+            [pscustomobject]@{
+                id = "A20AS_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE"
+                family = "HUMAN_TASTE_CALIBRATION"
+                expected_value = "Prepare a compact vote sheet for selected Signature Five and top-two variants without blocking autonomous work."
+                risk_tier = "low"
+                allowed_paths = @("docs/design/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("selected_five_referenced", "no_live_user_vote_required", "no_product_integration")
+            },
+            [pscustomobject]@{
+                id = "A20AS_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL"
+                family = "NIGHT_MODE_READINESS"
+                expected_value = "Run a bounded offline rehearsal that advances selected Signature Five pixels without live web dependencies."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/signature-probes/**", "scripts/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("bounded_iterations", "no_user_intervention", "no_live_web_dependency")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20AQ" -and (Test-PerceptionGradeEvidenceReady)) {
         $objectives = @(
             [pscustomobject]@{

@@ -75,7 +75,82 @@ objectives:
       - one_probe_primary_evidence_used
       - overview_contact_sheet_not_primary
       - five_candidates_selected_by_evidence
-    fallback_if_blocked: RECAPTURE_WEAK_PROBE_EVIDENCE
+    fallback_if_blocked: A20AS_TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES
+  - id: A20AS_TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES
+    family: SIGNATURE_COMPONENTS
+    priority: 96
+    expected_value: Create A/B/C variants for sacred_board_chamber and decision_feedback_language from the selected Signature Five.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/signature-probes/**
+      - scripts/**
+      - docs/design/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - variant_manifest.json
+      - screenshots/**
+      - tripled_variant_report.md
+    success_criteria:
+      - three_variants_for_sacred_board_chamber
+      - three_variants_for_decision_feedback_language
+      - board_safety_pixel_budget_pass
+      - no_product_integration
+    fallback_if_blocked: A20AS_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE
+  - id: A20AS_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE
+    family: HUMAN_TASTE_CALIBRATION
+    priority: 90
+    expected_value: Prepare a compact vote sheet for selected Signature Five and top-two variants without blocking autonomous work.
+    risk_tier: low
+    allowed_paths:
+      - docs/design/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - signature_vote_sheet.md
+      - evidence_bundle_index.json
+    success_criteria:
+      - no_live_user_vote_required
+      - selected_five_evidence_referenced
+      - no_product_integration
+    fallback_if_blocked: A20AS_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL
+  - id: A20AS_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL
+    family: NIGHT_MODE_READINESS
+    priority: 80
+    expected_value: Run a bounded offline rehearsal that advances selected Signature Five pixels without live web dependencies.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/signature-probes/**
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - limited_pixel_rehearsal_report.json
+      - screenshots/**
+    success_criteria:
+      - bounded_iterations
+      - no_user_intervention
+      - no_live_web_dependency
+    fallback_if_blocked: SAFETY_PROMPT_LEAK_SWEEP
   - id: RECAPTURE_WEAK_PROBE_EVIDENCE
     family: VISUAL_PRODUCTION_MODE
     priority: 93
