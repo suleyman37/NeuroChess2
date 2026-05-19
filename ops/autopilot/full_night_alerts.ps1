@@ -26,13 +26,28 @@ function Write-JsonFile {
     if ([string]::IsNullOrWhiteSpace($Path)) { return }
     $dir = Split-Path -Parent $Path
     if (-not [string]::IsNullOrWhiteSpace($dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
-    $Payload | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $Path -Encoding UTF8
+    $tempPath = Join-Path $dir (".{0}.{1}.tmp" -f ([System.IO.Path]::GetFileName($Path)), ([guid]::NewGuid().ToString("N")))
+    $Payload | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $tempPath -Encoding UTF8
+    Move-Item -LiteralPath $tempPath -Destination $Path -Force
 }
 
 function Read-JsonOrNull {
     param([string]$Path)
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $null }
-    Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    $raw = Get-Content -LiteralPath $Path -Raw
+    try {
+        return $raw | ConvertFrom-Json
+    } catch {
+        $schemaIndex = $raw.LastIndexOf('"schema_version"')
+        if ($schemaIndex -lt 0) { return $null }
+        $start = $raw.LastIndexOf("{", $schemaIndex)
+        if ($start -lt 0) { return $null }
+        try {
+            return $raw.Substring($start) | ConvertFrom-Json
+        } catch {
+            return $null
+        }
+    }
 }
 
 function Get-SafeTitle {

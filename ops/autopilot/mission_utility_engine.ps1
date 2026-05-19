@@ -112,6 +112,23 @@ function Score-Objective {
         )
         if ($eligibleA20AW -notcontains [string]$Objective.id) { $rejected += "outside_a20aw_full_night_pixel_pool" }
     }
+    if ($MissionId -eq "A20AY") {
+        $eligibleA20AY = @(
+            "A20AY_NORTH_STAR_REVIEW_MICRO_FLOW",
+            "A20AY_SACRED_BOARD_CHAMBER_PRODUCTION_REFINEMENT",
+            "A20AY_DECISION_FEEDBACK_LANGUAGE_PRODUCTION_REFINEMENT",
+            "A20AY_CRITICAL_MOMENT_SIGIL_VARIANTS",
+            "A20AY_MEMORY_CABINET_VARIANTS",
+            "A20AY_DECISION_PRESSURE_FIELD_REFINEMENT",
+            "A20AY_SIGNATURE_COMBINATION_SCENE",
+            "A20AY_ANTI_WEIRDNESS_PATCH_PASS",
+            "A20AY_FULL_NIGHT_REHEARSAL_DASHBOARD",
+            "A20AY_PERCEPTION_EVIDENCE_RECAPTURE_FOR_NEW_DELTAS",
+            "A20AY_NORTH_STAR_REVIEW_MICRO_FLOW_SECOND_PASS",
+            "A20AY_MORNING_REPORT_PIXEL_BOARD"
+        )
+        if ($eligibleA20AY -notcontains [string]$Objective.id) { $rejected += "outside_a20ay_real_full_night_pixel_pool" }
+    }
 
     $priorityFactor = [Math]::Max(0.1, [double]$Objective.priority / 100.0)
     $impact = if ($Objective.family -in @("SIGNATURE_COMPONENTS", "VISUAL_PRODUCTION_MODE")) { 4.8 } elseif ($Objective.family -eq "NIGHT_MODE_READINESS") { 4.0 } elseif ($Objective.family -eq "HUMAN_TASTE_CALIBRATION") { 3.0 } else { 2.5 }
@@ -125,14 +142,38 @@ function Score-Objective {
 
     $bonus = 0.0
     if ($Bottleneck.pixel_mandate_active -and $Objective.family -in @("SIGNATURE_COMPONENTS", "VISUAL_PRODUCTION_MODE")) { $bonus += 2.0; $notes += "pixel_mandate_boost" }
-    if ([string]$Objective.id -match "A20AU|A20AV|A20AW") { $bonus += 0.35; $notes += "novelty_bonus" }
-    if ($MissionId -notin @("A20AV", "A20AW") -and [string]$Objective.id -eq "A20AU_VARIANT_REFINEMENT_FOR_PROVISIONAL_WINNERS") { $bonus += 1.75; $notes += "current_bottleneck_objective_boost" }
+    if ([string]$Objective.id -match "A20AU|A20AV|A20AW|A20AY") { $bonus += 0.35; $notes += "novelty_bonus" }
+    if ($MissionId -notin @("A20AV", "A20AW", "A20AY") -and [string]$Objective.id -eq "A20AU_VARIANT_REFINEMENT_FOR_PROVISIONAL_WINNERS") { $bonus += 1.75; $notes += "current_bottleneck_objective_boost" }
     if ($MissionId -eq "A20AV" -and [string]$Objective.id -match "^A20AV_") { $bonus += 1.4; $notes += "a20av_pixel_rehearsal_pool_boost" }
     if ([string]$Objective.id -eq "A20AV_REFINE_SACRED_BOARD_CHAMBER_WINNER") { $bonus += 0.65; $notes += "first_iteration_refinement_boost" }
     if ($MissionId -eq "A20AW" -and [string]$Objective.id -match "^A20AW_") { $bonus += 1.55; $notes += "a20aw_full_night_pixel_pool_boost" }
     if ([string]$Objective.id -eq "A20AW_REFINE_SACRED_BOARD_CHAMBER_PRODUCTION_CANDIDATE") { $bonus += 0.70; $notes += "full_night_first_iteration_boost" }
     if ($MissionId -eq "A20AW" -and [string]$Objective.id -eq "A20AW_BUILD_DECISION_PRESSURE_FIELD_VARIANTS") { $bonus += 0.75; $notes += "pressure_field_signature_coverage_boost" }
     if ($MissionId -eq "A20AW" -and [string]$Objective.id -eq "A20AW_BUILD_PIXEL_REHEARSAL_PROGRESS_BOARD") { $bonus += 4.10; $notes += "full_night_progress_board_boost" }
+    if ($MissionId -eq "A20AY" -and [string]$Objective.id -match "^A20AY_") { $bonus += 1.8; $notes += "a20ay_real_full_night_pixel_pool_boost" }
+    if ($MissionId -eq "A20AY") {
+        $a20aySequence = @(
+            "A20AY_NORTH_STAR_REVIEW_MICRO_FLOW",
+            "A20AY_SACRED_BOARD_CHAMBER_PRODUCTION_REFINEMENT",
+            "A20AY_DECISION_FEEDBACK_LANGUAGE_PRODUCTION_REFINEMENT",
+            "A20AY_CRITICAL_MOMENT_SIGIL_VARIANTS",
+            "A20AY_MEMORY_CABINET_VARIANTS",
+            "A20AY_DECISION_PRESSURE_FIELD_REFINEMENT",
+            "A20AY_SIGNATURE_COMBINATION_SCENE",
+            "A20AY_ANTI_WEIRDNESS_PATCH_PASS",
+            "A20AY_FULL_NIGHT_REHEARSAL_DASHBOARD",
+            "A20AY_PERCEPTION_EVIDENCE_RECAPTURE_FOR_NEW_DELTAS",
+            "A20AY_NORTH_STAR_REVIEW_MICRO_FLOW_SECOND_PASS",
+            "A20AY_MORNING_REPORT_PIXEL_BOARD"
+        )
+        $nextIndex = [Math]::Min(@($Avoid).Count, $a20aySequence.Count - 1)
+        if ([string]$Objective.id -eq $a20aySequence[$nextIndex]) {
+            $bonus += 20.0
+            $notes += "a20ay_iteration_sequence_boost"
+        }
+    }
+    if ($MissionId -eq "A20AY" -and [string]$Objective.id -eq "A20AY_NORTH_STAR_REVIEW_MICRO_FLOW") { $bonus += 0.95; $notes += "real_run_first_iteration_boost" }
+    if ($MissionId -eq "A20AY" -and [string]$Objective.id -eq "A20AY_MORNING_REPORT_PIXEL_BOARD") { $bonus += 4.35; $notes += "real_run_morning_board_boost" }
     if ($Objective.family -eq "NIGHT_MODE_READINESS") { $bonus += 0.45; $notes += "night_readiness_bonus" }
 
     $penalty = 0.0
@@ -149,6 +190,10 @@ function Score-Objective {
     if ($MissionId -ne "A20AW" -and [string]$Objective.id -match "^A20AW_") {
         $penalty += 6.0
         $notes += "future_full_night_objective_penalty"
+    }
+    if ($MissionId -ne "A20AY" -and [string]$Objective.id -match "^A20AY_") {
+        $penalty += 6.0
+        $notes += "real_full_night_objective_outside_a20ay_penalty"
     }
     if ($MissionId -eq "A20AW" -and [string]$Objective.id -match "ANTI_WEIRDNESS|PERCEPTION_EVIDENCE_RECAPTURE") {
         $penalty += 8.0

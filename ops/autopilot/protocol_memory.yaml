@@ -100,3 +100,21 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20AW
+  - id: memory-a20ay-real-run-confirmation
+    date: 2026-05-19
+    category: night_readiness
+    lesson: "A real full-night pixel run confirms 19.5 only with six or more useful screenshot-backed deltas and NIGHT_READY."
+    evidence: "A20AY pixel_delta_manifest.json records 12 useful deltas and NightReadinessV2 returned NIGHT_READY."
+    action_rule: "After confirmation, route next work to merge audit or product integration review, not more meta gates."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AY
+  - id: memory-a20ay-real-run-not-release
+    date: 2026-05-19
+    category: release_safety
+    lesson: "A real full-night pixel run is still not a public release, road merge, A21 launch, or V1 product integration."
+    evidence: "A20AY kept all UI changes DEV-only and preserved road-to-V2."
+    action_rule: "Require a separate merge audit and product integration review before promotion."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AY

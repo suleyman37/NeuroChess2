@@ -163,7 +163,7 @@ try {
 
     $changed = git -C $RepoRoot status --short
     $forbiddenChanges = $changed | Where-Object {
-        ($_ -match " frontend/" -and $_ -notmatch " frontend/src/App\.tsx" -and $_ -notmatch " frontend/src/dev/signature-probes/" -and $_ -notmatch " frontend/src/dev/omega-pixel-lab/" -and $_ -notmatch " frontend/src/dev/autonomous-pixel-rehearsal/" -and $_ -notmatch " frontend/src/dev/full-night-pixel-rehearsal/") -or
+        ($_ -match " frontend/" -and $_ -notmatch " frontend/src/App\.tsx" -and $_ -notmatch " frontend/src/dev/signature-probes/" -and $_ -notmatch " frontend/src/dev/omega-pixel-lab/" -and $_ -notmatch " frontend/src/dev/autonomous-pixel-rehearsal/" -and $_ -notmatch " frontend/src/dev/full-night-pixel-rehearsal/" -and $_ -notmatch " frontend/src/dev/full-night-real-run/") -or
         $_ -match " backend/" -or
         $_ -match " docs/rebuild/" -or
         $_ -match " package\.json" -or

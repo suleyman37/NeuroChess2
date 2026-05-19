@@ -629,6 +629,330 @@ objectives:
       - weak_screenshots_identified
       - no_product_integration
     fallback_if_blocked: A20AX_FINAL_AUTOPILOT_HARDENING_BEFORE_NIGHT
+  - id: A20AY_NORTH_STAR_REVIEW_MICRO_FLOW
+    family: VISUAL_PRODUCTION_MODE
+    priority: 100
+    expected_value: Create a DEV-only observe-to-try-to-feedback-to-memory real-run flow with board-safe signature components.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - north_star_real_run_flow_visible
+      - board_safety_preserved
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AY_SACRED_BOARD_CHAMBER_PRODUCTION_REFINEMENT
+  - id: A20AY_SACRED_BOARD_CHAMBER_PRODUCTION_REFINEMENT
+    family: SIGNATURE_COMPONENTS
+    priority: 99
+    expected_value: Refine sacred_board_chamber into a production-grade DEV-only visual delta for the real run.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - sacred_chamber_real_run_visible
+      - atmosphere_outside_board
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AY_DECISION_FEEDBACK_LANGUAGE_PRODUCTION_REFINEMENT
+  - id: A20AY_DECISION_FEEDBACK_LANGUAGE_PRODUCTION_REFINEMENT
+    family: SIGNATURE_COMPONENTS
+    priority: 98
+    expected_value: Refine no-spoiler, success, miss, and replay feedback states for the real full-night run.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - feedback_states_visible
+      - no_pre_feedback_hint
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AY_CRITICAL_MOMENT_SIGIL_VARIANTS
+  - id: A20AY_CRITICAL_MOMENT_SIGIL_VARIANTS
+    family: SIGNATURE_COMPONENTS
+    priority: 96
+    expected_value: Create real-run critical_moment_sigil variants without exposing raw criticality or engine internals.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - sigil_variants_visible
+      - no_raw_criticality_exposed
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AY_MEMORY_CABINET_VARIANTS
+  - id: A20AY_MEMORY_CABINET_VARIANTS
+    family: SIGNATURE_COMPONENTS
+    priority: 94
+    expected_value: Create real-run memory_cabinet variants that support return and recall without generic card drift.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - memory_objects_visible
+      - avoids_literal_furniture
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AY_DECISION_PRESSURE_FIELD_REFINEMENT
+  - id: A20AY_DECISION_PRESSURE_FIELD_REFINEMENT
+    family: VISUAL_PRODUCTION_MODE
+    priority: 92
+    expected_value: Refine decision_pressure_field as a peripheral no-spoiler pressure system.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - pressure_field_visible
+      - no_eval_bar_spoiler
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AY_SIGNATURE_COMBINATION_SCENE
+  - id: A20AY_SIGNATURE_COMBINATION_SCENE
+    family: VISUAL_PRODUCTION_MODE
+    priority: 90
+    expected_value: Combine chamber, feedback, sigil, memory, and pressure into a coherent DEV-only real-run scene.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - combination_scene_visible
+      - signature_system_coherent
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AY_ANTI_WEIRDNESS_PATCH_PASS
+  - id: A20AY_ANTI_WEIRDNESS_PATCH_PASS
+    family: VISUAL_PRODUCTION_MODE
+    priority: 88
+    expected_value: Patch risky visual elements while preserving board readability and serious tone.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - anti_weirdness_patch_report.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - weirdness_risk_reduced
+      - board_readability_preserved
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AY_FULL_NIGHT_REHEARSAL_DASHBOARD
+  - id: A20AY_FULL_NIGHT_REHEARSAL_DASHBOARD
+    family: NIGHT_MODE_READINESS
+    priority: 86
+    expected_value: Create a DEV-only progress board showing full-night real-run deltas, proof, verdicts, and next action.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - morning_report.md
+    success_criteria:
+      - real_run_dashboard_visible
+      - at_least_six_useful_pixel_deltas_visible
+      - night_readiness_visible
+      - no_product_integration
+    fallback_if_blocked: A20AY_PERCEPTION_EVIDENCE_RECAPTURE_FOR_NEW_DELTAS
+  - id: A20AY_PERCEPTION_EVIDENCE_RECAPTURE_FOR_NEW_DELTAS
+    family: VISUAL_PRODUCTION_MODE
+    priority: 84
+    expected_value: Capture isolated screenshots and evidence references for all new real-run pixel deltas.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - screenshot_quality_report.json
+      - screenshots/**
+      - pixel_delta_manifest.json
+    success_criteria:
+      - isolated_screenshots_external_only
+      - useful_deltas_have_screenshots
+      - no_contact_sheet_as_primary
+      - no_product_integration
+    fallback_if_blocked: A20AY_NORTH_STAR_REVIEW_MICRO_FLOW_SECOND_PASS
+  - id: A20AY_NORTH_STAR_REVIEW_MICRO_FLOW_SECOND_PASS
+    family: VISUAL_PRODUCTION_MODE
+    priority: 82
+    expected_value: Add a second-pass North Star flow with post-feedback replay clarity and no pre-attempt hint.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - mission_doctor_results.json
+    success_criteria:
+      - second_pass_flow_visible
+      - replay_is_post_feedback_only
+      - screenshot_external_only
+      - no_product_integration
+    fallback_if_blocked: A20AY_MORNING_REPORT_PIXEL_BOARD
+  - id: A20AY_MORNING_REPORT_PIXEL_BOARD
+    family: NIGHT_MODE_READINESS
+    priority: 80
+    expected_value: Add a visual morning report board that closes the real run with proof and Go/No-Go status.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/full-night-real-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - morning_report.md
+      - screenshots/**
+      - final_git_status.txt
+    success_criteria:
+      - morning_report_summary_visible
+      - go_no_go_visible
+      - screenshot_external_only
+      - no_public_release_claim
+    fallback_if_blocked: A20AZ_ROAD_TO_V2_MERGE_AUDIT_PLAN
   - id: A20AU_FIX_HUMAN_TASTE_NETWORK
     family: SAFETY_MAINTENANCE
     priority: 70

@@ -1,6 +1,13 @@
 schema_version: failure_ledger_v2
-updated_by: A20AU_OMEGA_AUTONOMY_KERNEL
+updated_by: A20AY_FULL_NIGHT_REAL_PIXEL_RUN
 entries: []
+last_run_summary:
+  mission_id: A20AY
+  blockers: []
+  repeated_blocked_lanes: []
+  live_lanes_required: false
+  loop_continued: true
+  kill_switch_triggered: false
 policy:
   repeat_threshold: 2
   repeated_failure_action: avoid_lane_unless_explicitly_unparked

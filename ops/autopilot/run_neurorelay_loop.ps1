@@ -26,6 +26,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\limited_pixel_rehearsal\A20AV_limited_autonomous_pixel_rehearsal_20260518"
     } elseif ($MissionId -eq "A20AW") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\full_night_pixel_rehearsal\A20AW_full_night_pixel_rehearsal_20260518"
+    } elseif ($MissionId -eq "A20AY") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\full_night_real_run\A20AY_full_night_real_pixel_run_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -193,8 +195,54 @@ function Test-A20AWFullNightPixelRehearsalReady {
     }
 }
 
+function Test-A20AYFullNightRealRunReady {
+    $manifestPath = Join-Path $ArtifactPath "pixel_delta_manifest.json"
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { return $false }
+    try {
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        return ([int]$manifest.pixel_delta_count -ge 6 -and [int]$manifest.useful_pixel_delta_count -ge 5 -and [string]$manifest.status -eq "FULL_NIGHT_REAL_RUN_PIXEL_DELTAS_READY")
+    } catch {
+        return $false
+    }
+}
+
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20AY" -and (Test-A20AYFullNightRealRunReady)) {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20AZ_ROAD_TO_V2_MERGE_AUDIT_PLAN"
+                family = "SAFETY_MAINTENANCE"
+                expected_value = "Prepare the road-to-V2 merge audit plan after A20AY confirmed a screenshot-backed 19.5 full-night real-run candidate."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("audit_plan_only", "no_road_push", "no_merge", "a20ay_evidence_referenced")
+            },
+            [pscustomobject]@{
+                id = "A20AZ_PRODUCT_INTEGRATION_REVIEW"
+                family = "SAFETY_MAINTENANCE"
+                expected_value = "Review how DEV-only A20AY visual winners could be integrated later without changing V1 or weakening road governance."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "docs/design/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("review_only", "no_product_integration", "no_v1_change", "no_road_push")
+            },
+            [pscustomobject]@{
+                id = "A20AZ_FINAL_AUTOPILOT_REPORT_AND_HANDOFF"
+                family = "NIGHT_MODE_READINESS"
+                expected_value = "Produce the final autopilot handoff report for the A20A full-night sequence with safety and evidence references."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("handoff_report_complete", "safety_scan_referenced", "no_public_release")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20AW" -and (Test-A20AWFullNightPixelRehearsalReady)) {
         $objectives = @(
             [pscustomobject]@{
@@ -505,7 +553,9 @@ function Run-OneRelayIteration {
         Write-JsonFile -Path $missionPath -Payload $mission
         $fallback.selected_objective_id = [string]$probeObjective.id
         $fallback.selected_family = [string]$probeObjective.family
-        $fallback.reason = if ($MissionId -eq "A20AW") {
+        $fallback.reason = if ($MissionId -eq "A20AY") {
+            "A20AY real full-night run evidence has six-plus useful screenshot-backed pixel deltas; local fallback routes toward A20AZ audit, integration review, or final handoff."
+        } elseif ($MissionId -eq "A20AW") {
             "A20AW full-night rehearsal evidence has five-plus useful pixel deltas; local fallback routes toward a bounded real night run or final hardening."
         } elseif ($MissionId -eq "A20AV") {
             "A20AV pixel deltas exist with external evidence; local fallback routes toward full-night pixel rehearsal or final hardening."

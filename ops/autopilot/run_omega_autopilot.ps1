@@ -16,6 +16,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\limited_pixel_rehearsal\A20AV_limited_autonomous_pixel_rehearsal_20260518"
     } elseif ($MissionId -eq "A20AW") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\full_night_pixel_rehearsal\A20AW_full_night_pixel_rehearsal_20260518"
+    } elseif ($MissionId -eq "A20AY") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\full_night_real_run\A20AY_full_night_real_pixel_run_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\omega\A20AU_omega_autonomy_kernel_20260518"
     }

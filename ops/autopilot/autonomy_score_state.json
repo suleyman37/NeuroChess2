@@ -1,6 +1,6 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20AW_FULL_NIGHT_PIXEL_REHEARSAL",
+  "updated_by": "A20AY_FULL_NIGHT_REAL_PIXEL_RUN",
   "scores": {
     "safety_git": 18.7,
     "operator_zero_friction": 18.4,
@@ -49,7 +49,8 @@
     "No human validation claim is made because no owner or crowd results are imported.",
     "A20AU adds the OMEGA bottleneck detector, utility engine, proof-carrying contract, anti-stagnation sentinel, failure ledger 2.0, Night Readiness V2, and a DEV-only OMEGA Pixel Lab route.",
     "A20AV runs a limited autonomous pixel rehearsal with three DEV-only pixel deltas, external screenshots, Mission Doctor pass results, and no live-web dependency.",
-    "A20AW runs a full-night pixel rehearsal candidate with eight DEV-only pixel deltas, external screenshots, Mission Doctor pass summaries, NightReadinessV2 NIGHT_READY, and no live-web or user dependency."
+    "A20AW runs a full-night pixel rehearsal candidate with eight DEV-only pixel deltas, external screenshots, Mission Doctor pass summaries, NightReadinessV2 NIGHT_READY, and no live-web or user dependency.",
+    "A20AY confirms the 19.5 candidate with a bounded real full-night pixel run: twelve useful DEV-only deltas, external screenshots, Mission Doctor pass summaries, and NightReadinessV2 NIGHT_READY."
   ],
   "a20ap_score_update": {
     "before_overall": 17.0,
@@ -221,5 +222,32 @@
     ],
     "not_public_release_reason": "A20AW is a rehearsal candidate only; no road-to-V2 merge, product release, or A21 launch occurred.",
     "remaining_before_real_night": "Run A20AX_FULL_NIGHT_REAL_RUN or final hardening with the same bounded stop flags and external-only evidence policy."
+  },
+  "a20ay_score_update": {
+    "before_overall": 19.5,
+    "after_overall": 19.5,
+    "autonomous_loop_before": 19.5,
+    "autonomous_loop_after": 19.5,
+    "visual_production_before": 19.0,
+    "visual_production_after": 19.0,
+    "night_readiness_before": 19.5,
+    "night_readiness_after": 19.5,
+    "iterations_completed": 12,
+    "pixel_deltas_produced": 12,
+    "useful_pixel_deltas": 12,
+    "mission_doctor_useful_count": 12,
+    "night_readiness_after_run": "NIGHT_READY",
+    "confirmed_19_5": true,
+    "public_release_proven": false,
+    "score_inflation_prevented": true,
+    "evidence": [
+      "DEV-only /app?fullNightRealRun=1 renders twelve useful pixel delta previews.",
+      "Isolated iteration routes render North Star flow, chamber, feedback, sigil, memory, pressure, combination, anti-weirdness, dashboard, evidence recap, second-pass flow, and morning board deltas.",
+      "browser_full_night_real_run_smoke.mjs captures external summary and per-iteration screenshots.",
+      "Mission Doctor summaries are PASS for all twelve real-run iterations.",
+      "OMEGA rehearsal selects only A20AY pixel objectives with NoLiveWeb enabled.",
+      "NeuroRelay rehearsal recommends A20AZ road-to-V2 merge audit planning after the real-run proof."
+    ],
+    "remaining_before_merge_or_product_integration": "Run a separate road-to-V2 merge audit and product integration review; A20AY is not a public release or V1 integration."
   }
 }
