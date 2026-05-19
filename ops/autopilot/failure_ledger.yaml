@@ -1,0 +1,8 @@
+schema_version: failure_ledger_v2
+updated_by: A20AU_OMEGA_AUTONOMY_KERNEL
+entries: []
+policy:
+  repeat_threshold: 2
+  repeated_failure_action: avoid_lane_unless_explicitly_unparked
+  no_user_intervention_required: true
+  loop_continues_when_lane_parked: true

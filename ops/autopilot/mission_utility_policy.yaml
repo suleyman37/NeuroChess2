@@ -1,0 +1,37 @@
+schema_version: mission_utility_policy_v1
+mission_id: A20AU
+formula: base_utility_times_bonuses_minus_penalties
+weights:
+  impact: 1.00
+  confidence: 1.00
+  bottleneck_relevance: 1.20
+  evidence_value: 1.00
+  learning_value: 0.90
+  cost: 1.00
+  risk: 1.00
+bonuses:
+  pixel_mandate_boost: 2.00
+  novelty_bonus: 0.35
+  external_leverage_bonus: 0.10
+  night_readiness_bonus: 0.45
+penalties:
+  meta_drift_penalty: 2.25
+  repeated_failure_penalty: 1.50
+  user_dependency_penalty: 4.00
+  live_web_dependency_penalty: 4.00
+  evidence_weakness_penalty: 1.75
+  scope_risk_penalty: 1.25
+hard_reject:
+  - unsafe_mission
+  - road_push
+  - secrets_risk
+  - human_verification_automation
+  - package_change_without_authorization
+  - backend_or_db_risky_write
+  - no_bounded_stop_condition
+defaults:
+  epsilon: 0.10
+  max_files: 8
+  max_diff_lines: 1200
+  no_live_web_required: true
+  no_user_intervention_required: true

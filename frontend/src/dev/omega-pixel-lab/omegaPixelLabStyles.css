@@ -1,0 +1,293 @@
+.omega-pixel-lab {
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(8, 13, 15, 0.96), rgba(22, 13, 18, 0.96)),
+    hsl(210 24% 7%);
+  color: hsl(44 34% 92%);
+  font-family:
+    "Aptos",
+    "Segoe UI",
+    system-ui,
+    sans-serif;
+  padding: 32px;
+}
+
+.omega-lab-header,
+.omega-lab-band,
+.omega-lab-layout {
+  width: min(1420px, 100%);
+  margin: 0 auto;
+}
+
+.omega-lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  border-bottom: 1px solid hsl(42 42% 58% / 0.32);
+  padding-bottom: 24px;
+}
+
+.omega-lab-header p,
+.omega-kernel-summary p,
+.omega-candidate-panel h2,
+.omega-status-panel h2,
+.omega-pilot-layout h2 {
+  margin: 0;
+  color: hsl(42 78% 62%);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.omega-lab-header h1 {
+  max-width: 780px;
+  margin: 8px 0 0;
+  font-size: 2.35rem;
+  line-height: 1.03;
+  letter-spacing: 0;
+}
+
+.omega-lab-header > span {
+  color: hsl(168 72% 68%);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.omega-lab-band {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.omega-kernel-summary > div,
+.omega-candidate-panel,
+.omega-status-panel,
+.omega-pilot-layout > div,
+.omega-pilot {
+  border: 1px solid hsl(44 40% 70% / 0.18);
+  background: hsl(208 22% 10% / 0.84);
+  box-shadow: 0 18px 48px hsl(0 0% 0% / 0.32);
+}
+
+.omega-kernel-summary > div {
+  min-height: 118px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.omega-kernel-summary strong {
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+.omega-kernel-summary span,
+.omega-candidate-panel p,
+.omega-pilot-layout p,
+.omega-pilot-layout dd,
+.omega-status-panel small {
+  color: hsl(44 20% 74%);
+}
+
+.omega-lab-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(330px, 0.65fr);
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.omega-candidate-panel,
+.omega-status-panel,
+.omega-pilot-layout > div {
+  padding: 22px;
+}
+
+.omega-candidate-panel ol,
+.omega-status-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0;
+  display: grid;
+  gap: 10px;
+}
+
+.omega-candidate-panel li,
+.omega-status-panel li {
+  display: grid;
+  gap: 6px;
+  border-left: 3px solid hsl(168 72% 58%);
+  background: hsl(212 22% 7% / 0.74);
+  padding: 12px 14px;
+}
+
+.omega-candidate-panel li span,
+.omega-status-panel li span {
+  color: hsl(168 72% 70%);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.omega-candidate-panel li strong,
+.omega-status-panel li strong {
+  overflow-wrap: anywhere;
+}
+
+.omega-candidate-panel li em {
+  justify-self: start;
+  color: hsl(14 84% 68%);
+  font-style: normal;
+  font-weight: 900;
+}
+
+.omega-pilot-layout {
+  grid-template-columns: minmax(360px, 0.72fr) minmax(0, 1.28fr);
+}
+
+.omega-pilot-layout dl {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+}
+
+.omega-pilot-layout dl div {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.omega-pilot-layout dt {
+  color: hsl(168 72% 68%);
+  font-weight: 850;
+}
+
+.omega-pilot {
+  min-height: 510px;
+  padding: 22px;
+  display: grid;
+  grid-template-columns: minmax(410px, 1fr) minmax(260px, 0.58fr);
+  gap: 18px;
+  overflow: hidden;
+}
+
+.omega-pilot-chamber {
+  position: relative;
+  display: grid;
+  grid-template-columns: 86px minmax(360px, 1fr) 86px;
+  gap: 14px;
+  align-items: center;
+  min-height: 450px;
+  border: 1px solid hsl(168 72% 58% / 0.24);
+  background:
+    radial-gradient(circle at 50% 50%, hsl(168 72% 20% / 0.26), transparent 58%),
+    linear-gradient(180deg, hsl(210 24% 11%), hsl(222 31% 6%));
+}
+
+.omega-chamber-rail {
+  display: grid;
+  gap: 18px;
+  padding: 24px 18px;
+}
+
+.omega-chamber-rail span {
+  min-height: 82px;
+  border: 1px solid hsl(42 78% 62% / 0.42);
+  background: linear-gradient(180deg, hsl(42 78% 42% / 0.18), hsl(168 72% 40% / 0.08));
+}
+
+.omega-board-well {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+}
+
+.omega-board-label {
+  color: hsl(42 78% 70%);
+  font-weight: 850;
+  text-transform: uppercase;
+  font-size: 0.76rem;
+}
+
+.omega-mini-board {
+  width: min(430px, 100%);
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  border: 10px solid hsl(42 34% 24%);
+  box-shadow: 0 22px 55px hsl(0 0% 0% / 0.42);
+}
+
+.omega-mini-square {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.omega-mini-square-light {
+  background: hsl(48 31% 82%);
+  color: hsl(150 20% 18%);
+}
+
+.omega-mini-square-dark {
+  background: hsl(142 15% 38%);
+  color: hsl(46 42% 88%);
+}
+
+.omega-feedback-strip {
+  display: grid;
+  align-content: center;
+  gap: 16px;
+}
+
+.omega-feedback-strip > div {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  min-height: 120px;
+  border: 1px solid hsl(44 40% 70% / 0.16);
+  background: hsl(214 22% 8% / 0.84);
+  padding: 14px;
+}
+
+.omega-feedback-strip span {
+  font-weight: 850;
+}
+
+.omega-feedback-mark {
+  width: 74px;
+  height: 74px;
+  fill: hsl(210 24% 8%);
+  stroke: hsl(168 72% 64%);
+  stroke-width: 4;
+}
+
+.omega-feedback-mark-success {
+  stroke: hsl(132 68% 62%);
+}
+
+.omega-feedback-mark-miss {
+  stroke: hsl(14 84% 66%);
+}
+
+@media (max-width: 1040px) {
+  .omega-lab-band,
+  .omega-lab-layout,
+  .omega-pilot {
+    grid-template-columns: 1fr;
+  }
+
+  .omega-lab-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

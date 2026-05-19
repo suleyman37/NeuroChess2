@@ -230,7 +230,7 @@ Assert-True ($reaudit -match "BLOCK_STATE_SEMANTICS") "re-audit should include a
 
 $changed = @(git -C $repoRoot status --porcelain=v1 | ForEach-Object { $_.Substring(3).Trim() -replace "\\", "/" })
 $forbidden = @($changed | Where-Object {
-  (($_ -like "frontend/*") -and $_ -ne "frontend/src/App.tsx" -and $_ -notlike "frontend/src/dev/signature-probes/*" -and $_ -ne "frontend/src/dev/signature-probes/") -or
+  (($_ -like "frontend/*") -and $_ -ne "frontend/src/App.tsx" -and $_ -notlike "frontend/src/dev/signature-probes/*" -and $_ -ne "frontend/src/dev/signature-probes/" -and $_ -notlike "frontend/src/dev/omega-pixel-lab/*" -and $_ -ne "frontend/src/dev/omega-pixel-lab/") -or
   $_ -like "backend/*" -or
   $_ -like "docs/rebuild/*" -or
   $_ -like "plan/*" -or

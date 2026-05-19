@@ -134,6 +134,7 @@ import {
   type SignatureArenaSignatureId,
   type SignatureArenaVariantId,
 } from "./dev/signature-probes/signature-arena/signatureArenaData";
+import { OmegaPixelLab } from "./dev/omega-pixel-lab/OmegaPixelLab";
 import type { SignatureProbeEvidenceMode } from "./dev/signature-probes/SignatureProbeGallery";
 import type { SignatureProbeId } from "./dev/signature-probes/signatureProbeData";
 
@@ -430,6 +431,14 @@ function isSignatureArenaDevRoute(): boolean {
   return window.location.pathname === "/app" && params.get("signatureArena") === "1";
 }
 
+function isOmegaPixelLabDevRoute(): boolean {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return false;
+  }
+  const params = new URLSearchParams(window.location.search);
+  return window.location.pathname === "/app" && params.get("omegaPixelLab") === "1";
+}
+
 function getSignatureArenaVariantDevRoute(): SignatureArenaVariantRoute | null {
   if (typeof window === "undefined" || !import.meta.env.DEV) {
     return null;
@@ -501,6 +510,9 @@ export default function App() {
   const [signatureArenaVariantRoute, setSignatureArenaVariantRoute] = useState(() =>
     getSignatureArenaVariantDevRoute(),
   );
+  const [showOmegaPixelLab, setShowOmegaPixelLab] = useState(() =>
+    isOmegaPixelLabDevRoute(),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -517,6 +529,7 @@ export default function App() {
       setSignatureProbeEvidenceRoute(getSignatureProbeEvidenceDevRoute());
       setShowSignatureArena(isSignatureArenaDevRoute());
       setSignatureArenaVariantRoute(getSignatureArenaVariantDevRoute());
+      setShowOmegaPixelLab(isOmegaPixelLabDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -595,6 +608,10 @@ export default function App() {
 
   if (signatureArenaVariantRoute) {
     return <SignatureArenaVariantPage route={signatureArenaVariantRoute} />;
+  }
+
+  if (showOmegaPixelLab) {
+    return <OmegaPixelLab />;
   }
 
   if (currentRoute === "/app") {

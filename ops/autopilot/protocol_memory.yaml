@@ -19,3 +19,48 @@ entries:
     expires_after_missions: 12
     confidence: high
     source_mission: A20AN
+  - id: memory-a20au-gpt-web-optional
+    date: 2026-05-19
+    category: omega_kernel
+    lesson: "GPT Web and Gemini are optional advisory lanes, not core dependencies."
+    evidence: "A20AO through A20AT rehearsals passed with NoLiveWeb and local fallback."
+    action_rule: "Park blocked external lanes and continue with deterministic local selection."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AU
+  - id: memory-a20au-contact-sheets-overview-only
+    date: 2026-05-19
+    category: visual_evidence
+    lesson: "Contact sheets are overview only; perception-grade evidence requires isolated screenshots."
+    evidence: "A20AQ created one-probe screenshots and marked contact sheets OVERVIEW_ONLY."
+    action_rule: "Never use ten-up contact sheets as primary judge evidence."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AU
+  - id: memory-a20au-pixel-mandate
+    date: 2026-05-19
+    category: omega_kernel
+    lesson: "When visual production is below target after meta work, OMEGA must choose a pixel objective."
+    evidence: "A20AT raised readiness but left visual production at 18.0."
+    action_rule: "Apply PixelMandateBoost and reject docs-only loops until screenshot proof exists."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AU
+  - id: memory-a20au-no-score-inflation
+    date: 2026-05-19
+    category: score_hygiene
+    lesson: "Do not raise scores without proof artifacts and Mission Doctor evidence."
+    evidence: "A20AT did not claim human validation because human data was absent."
+    action_rule: "Require proof-carrying contracts before score deltas."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AU
+  - id: memory-a20au_test-62a7659a
+    date: 2026-05-19
+    category: omega_kernel
+    lesson: "Pixel mandate activates when visual production remains below target after meta work."
+    evidence: "C:\Users\suley\AppData\Local\Temp\a20au_omega_loop_test_f21536e2f09e44de9f92a1ed87c3b247\iteration_1\selected_contract.md"
+    action_rule: "Prefer proof-carrying pixel objectives before more control-plane expansion."
+    expires_after_missions: 12
+    confidence: high
+    source_mission: A20AU_TEST
