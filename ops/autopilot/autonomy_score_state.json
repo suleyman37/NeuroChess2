@@ -1,6 +1,6 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20AS_TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES",
+  "updated_by": "A20AT_HUMAN_TASTE_NETWORK_CROWD_VALIDATION_ROUTER",
   "scores": {
     "safety_git": 18.7,
     "operator_zero_friction": 18.0,
@@ -11,7 +11,8 @@
     "art_direction_concrete": 18.2,
     "evidence_quality": 18.3,
     "night_readiness": 17.5,
-    "overall": 18.7
+    "human_taste_calibration_readiness": 18.0,
+    "overall": 18.9
   },
   "target_overall": 19.5,
   "workload_shift_metrics": {
@@ -31,7 +32,9 @@
     "A20AR selects the Signature Five from A20AQ perception-grade evidence.",
     "A20AS creates A/B/C variants for sacred_board_chamber and decision_feedback_language.",
     "Scores remain conservative: no signature has been human-voted, integrated, or promoted.",
-    "External reasoning utilization remains 0 in NoLiveWeb rehearsal by design; fallback still works."
+    "External reasoning utilization remains 0 in NoLiveWeb rehearsal by design; fallback still works.",
+    "A20AT creates export-only provider packets, CSV/JSON import, and conservative Taste Confidence scoring.",
+    "No human validation claim is made because no owner or crowd results are imported."
   ],
   "a20ap_score_update": {
     "before_overall": 17.0,
@@ -116,5 +119,21 @@
     ],
     "not_19_reason": "The tripled variants are not human-voted, externally reviewed, integrated, or rehearsed in a productive autonomous pixel run.",
     "not_19_5_reason": "Human taste calibration, selected variant refinement, integration planning, and limited autonomous pixel rehearsal remain pending."
+  },
+  "a20at_score_update": {
+    "before_overall": 18.7,
+    "after_overall": 18.9,
+    "human_taste_calibration_readiness_before": 0,
+    "human_taste_calibration_readiness_after": 18.0,
+    "visual_production_before": 18.0,
+    "visual_production_after": 18.0,
+    "evidence": [
+      "Provider-ready PickFu, Useberry, Lyssna, Maze, and local/manual packets are export-only.",
+      "CSV/JSON importer rejects missing ids, impossible ratings, duplicate spam, and PII fields.",
+      "Taste Confidence uses conservative sample thresholds and Wilson lower bound.",
+      "A20AT keeps HUMAN_DATA_ABSENT until real owner or crowd results are imported."
+    ],
+    "not_19_reason": "Human taste packets are ready, but no real owner or crowd result has been imported.",
+    "not_19_5_reason": "The system still needs real taste results or a variant refinement pass, selected winner hardening, and a limited autonomous pixel rehearsal."
   }
 }

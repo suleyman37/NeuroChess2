@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/schemas/taste_test_packet.schema.json",
+  "title": "NeuroChess Taste Test Packet",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "provider",
+    "mode",
+    "study_id",
+    "study_type",
+    "validation_level",
+    "human_claim_allowed",
+    "paid_submission_performed",
+    "variants",
+    "questions",
+    "expected_answer_schema"
+  ],
+  "properties": {
+    "schema_version": { "const": "taste_test_packet_v1" },
+    "provider": {
+      "type": "string",
+      "enum": ["pickfu", "useberry", "lyssna", "maze", "local_manual"]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["export_only", "import_csv_json"]
+    },
+    "study_id": { "type": "string", "minLength": 3 },
+    "study_type": {
+      "type": "string",
+      "enum": [
+        "five_second_impression",
+        "weirdness_rejection",
+        "preference",
+        "board_readability",
+        "learning_value",
+        "local_vote"
+      ]
+    },
+    "validation_level": {
+      "type": "string",
+      "enum": ["LEVEL_0_INTERNAL", "LEVEL_1_OWNER", "LEVEL_2_CROWD"]
+    },
+    "human_claim_allowed": { "type": "boolean" },
+    "paid_submission_performed": { "type": "boolean" },
+    "primary_evidence_policy": { "type": "string" },
+    "variants": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "signature_id",
+          "variant_id",
+          "component_name",
+          "screenshot_path",
+          "main_surface_screenshot_path",
+          "learning_loop_stage"
+        ],
+        "properties": {
+          "signature_id": { "type": "string" },
+          "variant_id": { "type": "string" },
+          "component_name": { "type": "string" },
+          "variant_name": { "type": "string" },
+          "screenshot_path": { "type": "string" },
+          "main_surface_screenshot_path": { "type": "string" },
+          "learning_loop_stage": { "type": "string" },
+          "board_visible": { "type": "boolean" },
+          "board_safety_status": { "type": "string" }
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["question_id", "prompt", "response_type"],
+        "properties": {
+          "question_id": { "type": "string" },
+          "prompt": { "type": "string" },
+          "response_type": { "type": "string" },
+          "options": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "expected_answer_schema": {
+      "type": "object",
+      "required": [
+        "participant_id",
+        "provider",
+        "study_id",
+        "question_id",
+        "signature_id",
+        "variant_id",
+        "response",
+        "rating"
+      ]
+    },
+    "no_private_urls": { "type": "boolean" },
+    "no_secrets": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

@@ -20,6 +20,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\signature_selection\A20AR_signature_five_high_quality_evidence_20260518"
     } elseif ($MissionId -eq "A20AS") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\signature_arena\A20AS_tripled_variants_top2_20260518"
+    } elseif ($MissionId -eq "A20AT") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\human_taste_network\A20AT_human_taste_network_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -151,11 +153,57 @@ function Test-TopTwoSignaturesTripled {
     return ($text -match '(?m)^tripled_signature_count:\s*2\s*$') -and
         ($text -match 'sacred_board_chamber[\s\S]*?status:\s*STATUS_2_TRIPLED') -and
         ($text -match 'decision_feedback_language[\s\S]*?status:\s*STATUS_2_TRIPLED') -and
-        ($text -match 'A20AT_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE')
+        ($text -match 'A20AT_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE|A20AU_VARIANT_REFINEMENT_FOR_PROVISIONAL_WINNERS')
+}
+
+function Test-HumanTastePacketsReady {
+    $statusPath = Join-Path $PSScriptRoot "signature_component_status.yaml"
+    if (-not (Test-Path -LiteralPath $statusPath -PathType Leaf)) { return $false }
+    $text = Get-Content -LiteralPath $statusPath -Raw
+    $manifestPath = Join-Path $ArtifactPath "manifest.json"
+    $localVotePath = Join-Path $ArtifactPath "local_vote_sheet.json"
+    return ($text -match '(?m)^taste_packet_ready:\s*true\s*$') -and
+        ($text -match '(?m)^human_data_status:\s*HUMAN_DATA_ABSENT\s*$') -and
+        ((Test-Path -LiteralPath $manifestPath -PathType Leaf) -or (Test-Path -LiteralPath $localVotePath -PathType Leaf))
 }
 
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20AT" -and (Test-HumanTastePacketsReady)) {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20AU_VARIANT_REFINEMENT_FOR_PROVISIONAL_WINNERS"
+                family = "SIGNATURE_COMPONENTS"
+                expected_value = "Refine provisional Variant B winners for sacred_board_chamber and decision_feedback_language while human data is absent."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/signature-probes/signature-arena/**", "scripts/**", "docs/design/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("provisional_b_winners_refined", "board_safety_preserved", "no_human_majority_claim", "no_product_integration")
+            },
+            [pscustomobject]@{
+                id = "A20AU_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL"
+                family = "NIGHT_MODE_READINESS"
+                expected_value = "Run a bounded autonomous pixel rehearsal using provisional top-two signature winners."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/signature-probes/signature-arena/**", "scripts/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("bounded_iterations", "no_user_intervention", "provisional_taste_state_respected", "no_live_web_dependency")
+            },
+            [pscustomobject]@{
+                id = "A20AU_IMPORT_HUMAN_TASTE_RESULTS_AND_FINALIZE"
+                family = "HUMAN_TASTE_CALIBRATION"
+                expected_value = "Import real owner or crowd taste results and finalize variant winners only if data exists."
+                risk_tier = "low"
+                allowed_paths = @("docs/design/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("imported_results_validated", "no_pii_committed", "confidence_labels_conservative")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20AS" -and (Test-TopTwoSignaturesTripled)) {
         $objectives = @(
             [pscustomobject]@{

@@ -1,0 +1,7 @@
+participant_id,provider,study_id,question_id,signature_id,variant_id,response,rating,free_text,timestamp
+anon_001,local_manual,a20at_local_sacred_board_chamber,variant_preference,sacred_board_chamber,B,selected,5,"clear and premium",2026-05-19T10:00:00Z
+anon_002,local_manual,a20at_local_sacred_board_chamber,weirdness_rejection,sacred_board_chamber,B,No,5,"not weird",2026-05-19T10:01:00Z
+anon_003,local_manual,a20at_local_sacred_board_chamber,board_readability,sacred_board_chamber,B,Yes,5,"board readable",2026-05-19T10:02:00Z
+anon_004,local_manual,a20at_local_decision_feedback_language,variant_preference,decision_feedback_language,B,selected,5,"memorable feedback",2026-05-19T10:03:00Z
+anon_005,local_manual,a20at_local_decision_feedback_language,weirdness_rejection,decision_feedback_language,B,No,5,"serious",2026-05-19T10:04:00Z
+anon_006,local_manual,a20at_local_decision_feedback_language,board_readability,decision_feedback_language,B,Yes,4,"main action clear",2026-05-19T10:05:00Z

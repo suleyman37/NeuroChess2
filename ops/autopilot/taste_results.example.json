@@ -1,0 +1,42 @@
+{
+  "schema_version": "taste_results_example_v1",
+  "note": "Anonymous example data only. This is not real human validation.",
+  "results": [
+    {
+      "participant_id": "anon_json_001",
+      "provider": "local_manual",
+      "study_id": "a20at_json_sacred_board_chamber",
+      "question_id": "variant_preference",
+      "signature_id": "sacred_board_chamber",
+      "variant_id": "B",
+      "response": "selected",
+      "rating": 5,
+      "free_text": "Premium without being noisy.",
+      "timestamp": "2026-05-19T10:10:00Z"
+    },
+    {
+      "participant_id": "anon_json_002",
+      "provider": "local_manual",
+      "study_id": "a20at_json_sacred_board_chamber",
+      "question_id": "weirdness_rejection",
+      "signature_id": "sacred_board_chamber",
+      "variant_id": "B",
+      "response": "No",
+      "rating": 5,
+      "free_text": "Not off-putting.",
+      "timestamp": "2026-05-19T10:11:00Z"
+    },
+    {
+      "participant_id": "anon_json_003",
+      "provider": "local_manual",
+      "study_id": "a20at_json_decision_feedback_language",
+      "question_id": "board_readability",
+      "signature_id": "decision_feedback_language",
+      "variant_id": "B",
+      "response": "Yes",
+      "rating": 5,
+      "free_text": "The board remains clear.",
+      "timestamp": "2026-05-19T10:12:00Z"
+    }
+  ]
+}

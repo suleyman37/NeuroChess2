@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/schemas/taste_result.schema.json",
+  "title": "NeuroChess Taste Result",
+  "type": "object",
+  "required": [
+    "participant_id",
+    "provider",
+    "study_id",
+    "question_id",
+    "signature_id",
+    "variant_id",
+    "response",
+    "rating"
+  ],
+  "properties": {
+    "participant_id": {
+      "type": "string",
+      "description": "Anonymous participant identifier only."
+    },
+    "provider": {
+      "type": "string",
+      "enum": ["pickfu", "useberry", "lyssna", "maze", "local_manual", "synthetic_panel"]
+    },
+    "study_id": { "type": "string" },
+    "question_id": { "type": "string" },
+    "signature_id": { "type": "string" },
+    "variant_id": { "type": "string" },
+    "response": { "type": "string" },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5
+    },
+    "free_text": { "type": "string" },
+    "timestamp": { "type": "string" }
+  },
+  "additionalProperties": false
+}

@@ -127,7 +127,108 @@ objectives:
       - six_variants_referenced
       - no_live_user_vote_required
       - screenshots_external_only
-    fallback_if_blocked: A20AT_VARIANT_REFINEMENT_FOR_TOP_TWO
+    fallback_if_blocked: A20AU_VARIANT_REFINEMENT_FOR_PROVISIONAL_WINNERS
+  - id: A20AU_VARIANT_REFINEMENT_FOR_PROVISIONAL_WINNERS
+    family: SIGNATURE_COMPONENTS
+    priority: 98
+    expected_value: Refine provisional Variant B winners for sacred_board_chamber and decision_feedback_language while human data is absent.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/signature-probes/signature-arena/**
+      - scripts/**
+      - docs/design/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - refined_variant_manifest.json
+      - screenshots/**
+      - refinement_report.md
+    success_criteria:
+      - provisional_b_winners_refined
+      - board_safety_preserved
+      - no_human_majority_claim
+      - no_product_integration
+    fallback_if_blocked: A20AU_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL
+  - id: A20AU_IMPORT_HUMAN_TASTE_RESULTS_AND_FINALIZE
+    family: HUMAN_TASTE_CALIBRATION
+    priority: 91
+    expected_value: Import real owner or crowd taste results and finalize variant winners only if data exists.
+    risk_tier: low
+    allowed_paths:
+      - docs/design/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - normalized_taste_results.json
+      - taste_confidence_report.json
+      - final_variant_winners.json
+    success_criteria:
+      - imported_results_validated
+      - no_pii_committed
+      - confidence_labels_conservative
+    fallback_if_blocked: A20AU_VARIANT_REFINEMENT_FOR_PROVISIONAL_WINNERS
+  - id: A20AU_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL
+    family: NIGHT_MODE_READINESS
+    priority: 88
+    expected_value: Run a bounded autonomous pixel rehearsal using provisional top-two signature winners.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/signature-probes/signature-arena/**
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - limited_pixel_rehearsal_report.json
+      - screenshots/**
+      - mission_doctor_result.json
+    success_criteria:
+      - bounded_iterations
+      - no_user_intervention
+      - provisional_taste_state_respected
+      - no_live_web_dependency
+    fallback_if_blocked: A20AU_FIX_HUMAN_TASTE_NETWORK
+  - id: A20AU_FIX_HUMAN_TASTE_NETWORK
+    family: SAFETY_MAINTENANCE
+    priority: 70
+    expected_value: Repair taste packet, importer, or confidence scoring issues without product code changes.
+    risk_tier: low
+    allowed_paths:
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - frontend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - taste_network_fix_report.json
+      - test_results.json
+    success_criteria:
+      - packet_builder_passes
+      - importer_passes
+      - confidence_score_passes
+    fallback_if_blocked: SAFETY_PROMPT_LEAK_SWEEP
   - id: A20AT_VARIANT_REFINEMENT_FOR_TOP_TWO
     family: SIGNATURE_COMPONENTS
     priority: 92

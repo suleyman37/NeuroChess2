@@ -1,0 +1,91 @@
+schema_version: human_taste_network_policy_v1
+mission_id: A20AT
+created_by: A20AT_HUMAN_TASTE_NETWORK_CROWD_VALIDATION_ROUTER
+
+providers:
+  pickfu:
+    enabled: false
+    mode: export_only
+    best_for:
+      - preference
+      - art_direction
+      - gaming_ui
+  useberry:
+    enabled: false
+    mode: export_only
+    best_for:
+      - five_second_test
+      - preference_test
+      - first_click
+  lyssna:
+    enabled: false
+    mode: export_only
+    best_for:
+      - survey
+      - usability
+      - recruited_participants
+  maze:
+    enabled: false
+    mode: export_only
+    best_for:
+      - prototype_test
+      - usability
+      - task_success
+  local_manual:
+    enabled: true
+    mode: import_csv_json
+    best_for:
+      - owner_vote
+      - small_manual_panel
+      - csv_json_import
+
+validation_levels:
+  level_0_internal: provisional_only
+  level_1_owner: owner_taste
+  level_2_crowd: human_majority_validation
+
+allowed_claims:
+  no_data:
+    - HUMAN_DATA_ABSENT
+    - CROWD_TEST_READY
+    - PROVISIONAL_LOCAL_WINNER
+  owner_data:
+    - OWNER_TASTE_SELECTED
+    - HUMAN_VALIDATION_INCONCLUSIVE
+  crowd_data:
+    - CROWD_RESULTS_IMPORTED
+    - MAJORITY_PREFERENCE_SUPPORTED
+    - WEIRDNESS_RISK_LOW
+    - HUMAN_VALIDATION_INCONCLUSIVE
+    - HUMAN_VALIDATION_FAILED
+
+forbidden_claims:
+  - "universal appeal claim framed as 95 percent approval"
+  - "human majority validated without level 2 crowd data"
+  - "crowd approved from synthetic panel"
+  - "owner preference equals general market majority"
+
+decision_rules:
+  no_human_claim_without_level_2: true
+  no_95_percent_claim_without_sufficient_sample: true
+  weirdness_rejection_threshold: 0.15
+  board_readability_threshold: 0.80
+  preference_min_sample: 30
+  stronger_sample_target: 50
+  majority_confidence_method: wilson_lower_bound
+
+automation_rules:
+  paid_platform_calls_default: false
+  export_packets_only_by_default: true
+  require_explicit_credentials_for_paid_call: true
+  require_explicit_dry_run_false_for_paid_call: true
+  no_user_intervention_required: true
+  external_human_data_absent_is_not_blocker: true
+  continue_with_provisional_local_scoring: true
+
+evidence_policy:
+  source_mission: A20AS
+  use_isolated_screenshots: true
+  contact_sheets_primary_evidence_allowed: false
+  screenshots_committed: false
+  qa_artifacts_committed: false

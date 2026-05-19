@@ -1,5 +1,5 @@
 schema_version: signature_component_status_v1
-updated_by: A20AS_TRIPLED_VARIANTS_FOR_TOP_2_SIGNATURES
+updated_by: A20AT_HUMAN_TASTE_NETWORK_CROWD_VALIDATION_ROUTER
 statuses:
   - STATUS_0_NOT_STARTED
   - STATUS_1_PROBED
@@ -12,6 +12,7 @@ selection_markers:
   - SELECTED_NEEDS_VARIANTS
   - PROBED_NOT_SELECTED
   - REJECTED_CANDIDATE
+  - TASTE_PACKET_READY
 candidate_statuses:
   - id: sacred_board_chamber
     name: Sacred Board Chamber
@@ -34,6 +35,11 @@ candidate_statuses:
         name: Radical Candidate
         local_score: 4.31
         evidence_status: EVIDENCE_PASS
+    taste_validation:
+      status: TASTE_PACKET_READY
+      validation_level: LEVEL_0_INTERNAL
+      human_data_status: HUMAN_DATA_ABSENT
+      crowd_validation_claim_allowed: false
   - id: decision_feedback_language
     name: Decision Feedback Language
     status: STATUS_2_TRIPLED
@@ -55,6 +61,11 @@ candidate_statuses:
         name: Radical Candidate
         local_score: 4.22
         evidence_status: EVIDENCE_PASS
+    taste_validation:
+      status: TASTE_PACKET_READY
+      validation_level: LEVEL_0_INTERNAL
+      human_data_status: HUMAN_DATA_ABSENT
+      crowd_validation_claim_allowed: false
   - id: critical_moment_sigil
     name: Critical Moment Sigil
     status: STATUS_1_PROBED
@@ -126,5 +137,9 @@ tripled_signature_count: 2
 preliminary_best_variants:
   sacred_board_chamber: B
   decision_feedback_language: B
-next_recommended_objective: A20AT_HUMAN_TASTE_CALIBRATION_AND_SIGNATURE_VOTE
+taste_packet_ready: true
+human_validation_level: LEVEL_0_INTERNAL
+human_data_status: HUMAN_DATA_ABSENT
+human_validation_claim_allowed: false
+next_recommended_objective: A20AU_VARIANT_REFINEMENT_FOR_PROVISIONAL_WINNERS
 score_rule: Sum selected final-five status indexes and divide by 25.
