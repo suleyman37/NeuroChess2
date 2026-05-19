@@ -154,3 +154,21 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20BA
+  - id: memory-a20bb-dedicated-browser-profile
+    date: 2026-05-19
+    category: supervisor_robustness
+    lesson: "ChatGPT Web supervision must use a dedicated gitignored browser profile and redacted A-J pool status, not random user browser windows."
+    evidence: "A20BB created supervisor_browser_harness with ops/autopilot/local/supervisor_browser_profile and redacted A-J labels A-J."
+    action_rule: "Use the supervisor browser harness first in free mode; never print private discussion URLs or type outside a positively detected composer."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BB
+  - id: memory-a20bb-human-action-parked
+    date: 2026-05-19
+    category: supervisor_robustness
+    lesson: "If the dedicated ChatGPT Web page shows auth, consent, CAPTCHA, or human-verification signals, park the lane and continue offline."
+    evidence: "A20BB classified Discussion A as HUMAN_ACTION_REQUIRED, sent an ntfy alert, did not send the test message, and selected local OMEGA fallback."
+    action_rule: "Only send A-J supervisor messages after PAGE_USABLE with composer and send action verified; otherwise recommend harness repair or manual profile verification in a separate lane."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BB

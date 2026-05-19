@@ -5,6 +5,9 @@ param(
     [string]$ArtifactPath = "",
     [string]$OutPath = "",
     [switch]$NoPrompt,
+    [switch]$MockHarnessReady,
+    [switch]$MockHarnessUnavailable,
+    [switch]$MockHarnessHumanAction,
     [switch]$MockDesktopReady,
     [switch]$MockDesktopUnavailable,
     [switch]$MockDesktopAuthRequired
@@ -13,7 +16,11 @@ param(
 $ErrorActionPreference = "Stop"
 
 if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
-    $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\chatgpt_desktop_adapter\A20BA_chatgpt_windows_app_adapter_20260518"
+    if ($MissionId -eq "A20BB") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\supervisor_browser_harness\A20BB_chatgpt_aj_e2e_20260518"
+    } else {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\chatgpt_desktop_adapter\A20BA_chatgpt_windows_app_adapter_20260518"
+    }
 }
 if ([string]::IsNullOrWhiteSpace($OutPath)) {
     $OutPath = Join-Path $ArtifactPath "transport_integration_result.json"
@@ -60,11 +67,63 @@ function Get-DesktopStatus {
     return Invoke-JsonScript -ScriptPath $adapterPath -Arguments $adapterArgs
 }
 
+function Get-HarnessStatus {
+    if ($MockHarnessReady) {
+        return [pscustomobject]([ordered]@{
+            status = "CHATGPT_WEB_SUPERVISOR_E2E_READY"
+            current_label = "A"
+            rotation_threshold_messages = 50
+            pool_loaded = $true
+            private_urls_redacted = $true
+            local_omega_fallback_available = $true
+        })
+    }
+    if ($MockHarnessUnavailable) {
+        return [pscustomobject]([ordered]@{
+            status = "CHATGPT_AJ_POOL_MISSING"
+            current_label = "A"
+            rotation_threshold_messages = 50
+            pool_loaded = $false
+            private_urls_redacted = $true
+            local_omega_fallback_available = $true
+        })
+    }
+    if ($MockHarnessHumanAction) {
+        return [pscustomobject]([ordered]@{
+            status = "CHATGPT_WEB_HUMAN_ACTION_REQUIRED_PARKED"
+            current_label = "A"
+            rotation_threshold_messages = 50
+            pool_loaded = $true
+            private_urls_redacted = $true
+            local_omega_fallback_available = $true
+        })
+    }
+    $harnessPath = Join-Path $PSScriptRoot "supervisor_browser_harness.ps1"
+    if (-not (Test-Path -LiteralPath $harnessPath -PathType Leaf)) {
+        return [pscustomobject]([ordered]@{ status = "SUPERVISOR_BROWSER_HARNESS_NOT_PRESENT"; local_omega_fallback_available = $true })
+    }
+    return Invoke-JsonScript -ScriptPath $harnessPath -Arguments @(
+        "-Mode", "BuildReport",
+        "-MissionId", $MissionId,
+        "-ArtifactPath", $ArtifactPath,
+        "-NoPrompt"
+    )
+}
+
 New-Item -ItemType Directory -Force -Path $ArtifactPath | Out-Null
 
+$harness = Get-HarnessStatus
 $desktop = Get-DesktopStatus
+$harnessReady = ([string]$harness.status -in @("CHATGPT_WEB_SUPERVISOR_E2E_READY", "CHATGPT_WEB_MESSAGE_SUBMITTED_RESPONSE_UNREAD"))
 $desktopReady = ([string]$desktop.status -eq "CHATGPT_DESKTOP_TRANSPORT_READY")
 $parked = @()
+if (-not $harnessReady) {
+    $parked += [ordered]@{
+        lane = "supervisor_browser_harness"
+        status = [string]$harness.status
+        reason = [string]$harness.status
+    }
+}
 if (-not $desktopReady) {
     $parked += [ordered]@{
         lane = "chatgpt_windows_app_adapter"
@@ -73,8 +132,8 @@ if (-not $desktopReady) {
     }
 }
 
-$selected = if ($desktopReady) { "chatgpt_windows_app_adapter" } else { "local_omega_fallback" }
-$resultStatus = if ($desktopReady) { "SUPERVISOR_TRANSPORT_DESKTOP_READY" } else { "SUPERVISOR_TRANSPORT_FALLBACK_READY" }
+$selected = if ($harnessReady) { "supervisor_browser_harness" } elseif ($desktopReady) { "chatgpt_windows_app_adapter" } else { "local_omega_fallback" }
+$resultStatus = if ($harnessReady) { "SUPERVISOR_TRANSPORT_BROWSER_HARNESS_READY" } elseif ($desktopReady) { "SUPERVISOR_TRANSPORT_DESKTOP_READY" } else { "SUPERVISOR_TRANSPORT_FALLBACK_READY" }
 if ($Mode -eq "DryRun") { $resultStatus = "SUPERVISOR_TRANSPORT_DRY_RUN_PASS" }
 if ($Mode -eq "HealthCheck") { $resultStatus = "SUPERVISOR_TRANSPORT_HEALTH_CHECK_COMPLETE" }
 
@@ -84,7 +143,8 @@ $payload = [ordered]@{
     mode = $Mode
     status = $resultStatus
     created_at = (Get-Date).ToString("o")
-    preferred_order = @("chatgpt_windows_app_adapter", "chatgpt_web_a_j_pool", "local_omega_fallback")
+    preferred_order = @("supervisor_browser_harness", "chatgpt_web_a_j_pool", "chatgpt_windows_app_adapter", "local_omega_fallback")
+    supervisor_browser_harness = $harness
     desktop_adapter = $desktop
     selected_transport = $selected
     parked_lanes = @($parked)

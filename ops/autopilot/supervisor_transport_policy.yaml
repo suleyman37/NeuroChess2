@@ -1,10 +1,11 @@
 schema_version: supervisor_transport_policy_v1
-updated_by: A20BA_CHATGPT_WINDOWS_APP_ADAPTER_DISCOVERY
+updated_by: A20BB_FREE_SUPERVISOR_BROWSER_HARNESS_CHATGPT_AJ_E2E_PROOF
 
 strategy_supervisor:
   preferred_order:
-    - chatgpt_windows_app_adapter
+    - supervisor_browser_harness
     - chatgpt_web_a_j_pool
+    - chatgpt_windows_app_adapter
     - local_omega_fallback
   zero_cost_policy:
     openai_api_enabled: false
@@ -36,6 +37,19 @@ lanes:
     enabled: true
     mode: optional_cdp
     park_if_cdp_unavailable: true
+  supervisor_browser_harness:
+    enabled: true
+    mode: dedicated_profile_free_browser
+    ready_statuses:
+      - CHATGPT_WEB_SUPERVISOR_E2E_READY
+      - CHATGPT_WEB_MESSAGE_SUBMITTED_RESPONSE_UNREAD
+    blocked_statuses:
+      - CHATGPT_WEB_HUMAN_ACTION_REQUIRED_PARKED
+      - CHATGPT_AJ_POOL_MISSING
+      - CHATGPT_COMPOSER_NOT_FOUND
+      - SUPERVISOR_BROWSER_LAUNCH_FAILED
+      - SUPERVISOR_BROWSER_HARNESS_PARTIAL
+      - SUPERVISOR_BROWSER_HARNESS_FAILED
   local_omega_fallback:
     enabled: true
     mode: always_available

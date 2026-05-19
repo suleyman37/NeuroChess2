@@ -5,6 +5,7 @@ param(
     [int]$MaxIterations = 3,
     [int]$MaxRuntimeMinutes = 180,
     [switch]$NoLiveWeb,
+    [switch]$NoPrompt,
     [string]$LiveSupervisorMode = "off",
     [string]$ArtifactPath = "",
     [string]$StatePath = ""
@@ -33,6 +34,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\true_overnight_live_run\A20AZ_true_overnight_live_supervised_pixel_run_20260518"
     } elseif ($MissionId -eq "A20BA") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\chatgpt_desktop_adapter\A20BA_chatgpt_windows_app_adapter_20260518"
+    } elseif ($MissionId -eq "A20BB") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\supervisor_browser_harness\A20BB_chatgpt_aj_e2e_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -234,8 +237,64 @@ function Test-A20BAChatGptDesktopAdapterReady {
     }
 }
 
+function Test-A20BBChatGptSupervisorHarnessReady {
+    $transportPath = Join-Path $ArtifactPath "transport_integration_result.json"
+    if (-not (Test-Path -LiteralPath $transportPath -PathType Leaf)) { return $false }
+    try {
+        $transport = Get-Content -LiteralPath $transportPath -Raw | ConvertFrom-Json
+        return ([string]$transport.status -in @("CHATGPT_WEB_SUPERVISOR_E2E_READY", "CHATGPT_WEB_MESSAGE_SUBMITTED_RESPONSE_UNREAD"))
+    } catch {
+        return $false
+    }
+}
+
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20BB") {
+        $harnessReady = Test-A20BBChatGptSupervisorHarnessReady
+        $objectives = @(
+            [pscustomobject]@{
+                id = if ($harnessReady) { "A20BC_TRUE_OVERNIGHT_SECOND_RUN_WITH_CHATGPT_HARNESS" } else { "A20BC_REPAIR_SUPERVISOR_BROWSER_HARNESS" }
+                family = "LIVE_SUPERVISOR_RELIABILITY"
+                expected_value = if ($harnessReady) { "Run a second true overnight with the dedicated ChatGPT A-J browser harness sampled as the free supervisor lane." } else { "Repair the free ChatGPT A-J browser harness while keeping local OMEGA fallback available." }
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("no_private_urls", "no_user_prompt", "no_paid_api", "local_fallback_preserved", "transport_status_recorded")
+            },
+            [pscustomobject]@{
+                id = "A20BC_DEEP_PIXEL_OBJECTIVE_RESERVOIR_AND_SECOND_NIGHT"
+                family = "NIGHT_MODE_READINESS"
+                expected_value = "Expand the safe pixel objective reservoir before the next overnight run if the ChatGPT harness remains parked."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("pixel_objectives_only", "no_backend", "no_package_changes")
+            },
+            [pscustomobject]@{
+                id = "A20BC_GEMINI_FREE_WEB_HARNESS_DISCOVERY"
+                family = "LIVE_SUPERVISOR_RELIABILITY"
+                expected_value = "Explore a separate zero-cost Gemini web harness only after ChatGPT browser transport status is documented."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("no_paid_api", "no_secrets", "park_blocked_lane")
+            },
+            [pscustomobject]@{
+                id = "A20BC_ROAD_TO_V2_MERGE_AUDIT_PLAN"
+                family = "SAFETY_MAINTENANCE"
+                expected_value = "Prepare a road-to-V2 merge audit plan after free live-supervisor transport status is known."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("audit_plan_only", "no_road_push", "no_merge")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20BA") {
         $desktopReady = Test-A20BAChatGptDesktopAdapterReady
         $objectives = @(
