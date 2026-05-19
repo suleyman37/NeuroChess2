@@ -953,6 +953,204 @@ objectives:
       - screenshot_external_only
       - no_public_release_claim
     fallback_if_blocked: A20AZ_ROAD_TO_V2_MERGE_AUDIT_PLAN
+  - id: A20AZ_NORTH_STAR_REVIEW_MICRO_FLOW
+    family: VISUAL_PRODUCTION_MODE
+    priority: 100
+    expected_value: Create a DEV-only true-overnight observe-to-try-to-feedback-to-memory flow with live supervisor attempt evidence.
+    risk_tier: low
+    allowed_paths:
+      - frontend/src/dev/true-overnight-live-run/**
+      - frontend/src/App.tsx
+      - scripts/**
+      - docs/autopilot/**
+      - ops/autopilot/**
+    forbidden_paths:
+      - backend/**
+      - package.json
+      - package-lock.json
+      - ops/autopilot/local/**
+      - ops/autopilot/runtime/**
+    expected_artifacts:
+      - pixel_delta_manifest.json
+      - screenshots/**
+      - chatgpt_supervisor_attempts.json
+      - gemini_visual_attempts.json
+    success_criteria:
+      - true_overnight_route_visible
+      - screenshot_external_only
+      - supervisor_lanes_attempted_or_parked
+      - no_product_integration
+    fallback_if_blocked: A20AZ_SACRED_BOARD_CHAMBER_PRODUCTION_REFINEMENT
+  - id: A20AZ_SACRED_BOARD_CHAMBER_PRODUCTION_REFINEMENT
+    family: SIGNATURE_COMPONENTS
+    priority: 99
+    expected_value: Refine sacred_board_chamber during the true overnight run while keeping board readability strict.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**, mission_doctor_results.json]
+    success_criteria: [chamber_visible, atmosphere_outside_board, screenshot_external_only, no_product_integration]
+    fallback_if_blocked: A20AZ_DECISION_FEEDBACK_LANGUAGE_PRODUCTION_REFINEMENT
+  - id: A20AZ_DECISION_FEEDBACK_LANGUAGE_PRODUCTION_REFINEMENT
+    family: SIGNATURE_COMPONENTS
+    priority: 98
+    expected_value: Refine no-spoiler, success, miss, and replay feedback states during live-supervised sampling.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**, mission_doctor_results.json]
+    success_criteria: [feedback_states_visible, no_pre_feedback_hint, screenshot_external_only, no_product_integration]
+    fallback_if_blocked: A20AZ_CRITICAL_MOMENT_SIGIL_VARIANTS
+  - id: A20AZ_CRITICAL_MOMENT_SIGIL_VARIANTS
+    family: SIGNATURE_COMPONENTS
+    priority: 96
+    expected_value: Create true-overnight critical_moment_sigil variants without exposing raw criticality.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**, mission_doctor_results.json]
+    success_criteria: [sigil_variants_visible, no_raw_criticality_exposed, screenshot_external_only, no_product_integration]
+    fallback_if_blocked: A20AZ_MEMORY_CABINET_VARIANTS
+  - id: A20AZ_MEMORY_CABINET_VARIANTS
+    family: SIGNATURE_COMPONENTS
+    priority: 94
+    expected_value: Create memory_cabinet return variants that avoid generic card drift.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**, mission_doctor_results.json]
+    success_criteria: [memory_objects_visible, avoids_literal_furniture, screenshot_external_only, no_product_integration]
+    fallback_if_blocked: A20AZ_DECISION_PRESSURE_FIELD_REFINEMENT
+  - id: A20AZ_DECISION_PRESSURE_FIELD_REFINEMENT
+    family: VISUAL_PRODUCTION_MODE
+    priority: 92
+    expected_value: Refine the decision_pressure_field as a peripheral no-spoiler pressure system.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**, mission_doctor_results.json]
+    success_criteria: [pressure_field_visible, no_eval_bar_spoiler, screenshot_external_only, no_product_integration]
+    fallback_if_blocked: A20AZ_SIGNATURE_COMBINATION_SCENE
+  - id: A20AZ_SIGNATURE_COMBINATION_SCENE
+    family: VISUAL_PRODUCTION_MODE
+    priority: 90
+    expected_value: Combine chamber, feedback, sigil, memory, and pressure into a coherent true-overnight scene.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**, mission_doctor_results.json]
+    success_criteria: [combination_scene_visible, signature_system_coherent, screenshot_external_only, no_product_integration]
+    fallback_if_blocked: A20AZ_ANTI_WEIRDNESS_PATCH_PASS
+  - id: A20AZ_ANTI_WEIRDNESS_PATCH_PASS
+    family: VISUAL_PRODUCTION_MODE
+    priority: 88
+    expected_value: Patch risky visual elements while preserving board readability and serious tone.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [anti_weirdness_patch_report.json, screenshots/**, mission_doctor_results.json]
+    success_criteria: [weirdness_risk_reduced, board_readability_preserved, screenshot_external_only, no_product_integration]
+    fallback_if_blocked: A20AZ_PERCEPTION_EVIDENCE_RECAPTURE_FOR_NEW_DELTAS
+  - id: A20AZ_PERCEPTION_EVIDENCE_RECAPTURE_FOR_NEW_DELTAS
+    family: VISUAL_PRODUCTION_MODE
+    priority: 86
+    expected_value: Capture isolated screenshot references and judge packet inputs for true-overnight deltas.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [screenshot_quality_report.json, screenshots/**, pixel_delta_manifest.json]
+    success_criteria: [isolated_screenshots_external_only, no_contact_sheet_as_primary, no_product_integration]
+    fallback_if_blocked: A20AZ_FULL_NIGHT_LIVE_SUPERVISED_DASHBOARD
+  - id: A20AZ_FULL_NIGHT_LIVE_SUPERVISED_DASHBOARD
+    family: NIGHT_MODE_READINESS
+    priority: 84
+    expected_value: Create a DEV-only dashboard showing live-supervised attempts, parked lanes, deltas, and morning status.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**, morning_report.md]
+    success_criteria: [live_supervisor_log_visible, at_least_twelve_useful_deltas_visible, night_readiness_visible, no_product_integration]
+    fallback_if_blocked: A20AZ_EXTERNAL_DECISION_PACKET_COMPARISON
+  - id: A20AZ_EXTERNAL_DECISION_PACKET_COMPARISON
+    family: NIGHT_MODE_READINESS
+    priority: 82
+    expected_value: Compare local OMEGA decisions against ChatGPT/Gemini packets when available and record parked-lane influence when not.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [external_decision_packets/**, parked_lanes.json, screenshots/**]
+    success_criteria: [external_packet_comparison_visible, local_authority_preserved, no_private_urls]
+    fallback_if_blocked: A20AZ_SIGNATURE_SYSTEM_INTEGRATION_STUDY
+  - id: A20AZ_SIGNATURE_SYSTEM_INTEGRATION_STUDY
+    family: VISUAL_PRODUCTION_MODE
+    priority: 80
+    expected_value: Create a DEV-only micro-scene showing signature components working together without product integration.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**, mission_doctor_results.json]
+    success_criteria: [signature_system_study_visible, board_safe, screenshot_external_only, no_product_integration]
+    fallback_if_blocked: A20AZ_NORTH_STAR_REVIEW_MICRO_FLOW_DEEPENING_13
+  - id: A20AZ_NORTH_STAR_REVIEW_MICRO_FLOW_DEEPENING_13
+    family: VISUAL_PRODUCTION_MODE
+    priority: 78
+    expected_value: Deepen the North Star review flow after all primary true-overnight objectives have useful evidence.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**]
+    success_criteria: [deepening_delta_visible, no_meta_drift, screenshot_external_only]
+    fallback_if_blocked: A20AZ_SACRED_BOARD_CHAMBER_PRODUCTION_REFINEMENT_DEEPENING_14
+  - id: A20AZ_SACRED_BOARD_CHAMBER_PRODUCTION_REFINEMENT_DEEPENING_14
+    family: SIGNATURE_COMPONENTS
+    priority: 76
+    expected_value: Deepen the chamber material pass while keeping atmosphere outside the board.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**]
+    success_criteria: [deepening_delta_visible, board_safe, screenshot_external_only]
+    fallback_if_blocked: A20AZ_DECISION_FEEDBACK_LANGUAGE_PRODUCTION_REFINEMENT_DEEPENING_15
+  - id: A20AZ_DECISION_FEEDBACK_LANGUAGE_PRODUCTION_REFINEMENT_DEEPENING_15
+    family: SIGNATURE_COMPONENTS
+    priority: 74
+    expected_value: Deepen feedback state clarity without adding pre-attempt hints.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**]
+    success_criteria: [deepening_delta_visible, no_pre_feedback_hint, screenshot_external_only]
+    fallback_if_blocked: A20AZ_CRITICAL_MOMENT_SIGIL_VARIANTS_DEEPENING_16
+  - id: A20AZ_CRITICAL_MOMENT_SIGIL_VARIANTS_DEEPENING_16
+    family: SIGNATURE_COMPONENTS
+    priority: 72
+    expected_value: Deepen critical moment sigil variants without exposing raw criticality.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**]
+    success_criteria: [deepening_delta_visible, no_raw_criticality, screenshot_external_only]
+    fallback_if_blocked: A20AZ_MEMORY_CABINET_VARIANTS_DEEPENING_17
+  - id: A20AZ_MEMORY_CABINET_VARIANTS_DEEPENING_17
+    family: SIGNATURE_COMPONENTS
+    priority: 70
+    expected_value: Deepen memory cabinet return objects while avoiding generic dashboard cards.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**]
+    success_criteria: [deepening_delta_visible, memory_return_clear, screenshot_external_only]
+    fallback_if_blocked: A20AZ_DECISION_PRESSURE_FIELD_REFINEMENT_DEEPENING_18
+  - id: A20AZ_DECISION_PRESSURE_FIELD_REFINEMENT_DEEPENING_18
+    family: VISUAL_PRODUCTION_MODE
+    priority: 68
+    expected_value: Deepen pressure field readability without adding eval-bar or best-move spoilers.
+    risk_tier: low
+    allowed_paths: [frontend/src/dev/true-overnight-live-run/**, frontend/src/App.tsx, scripts/**, docs/autopilot/**, ops/autopilot/**]
+    forbidden_paths: [backend/**, package.json, package-lock.json, ops/autopilot/local/**, ops/autopilot/runtime/**]
+    expected_artifacts: [pixel_delta_manifest.json, screenshots/**]
+    success_criteria: [deepening_delta_visible, no_eval_bar_spoiler, screenshot_external_only]
+    fallback_if_blocked: A20BA_LIVE_SUPERVISOR_REPAIR
   - id: A20AU_FIX_HUMAN_TASTE_NETWORK
     family: SAFETY_MAINTENANCE
     priority: 70

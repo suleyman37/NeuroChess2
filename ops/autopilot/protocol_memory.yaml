@@ -118,3 +118,21 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20AY
+  - id: memory-a20az-live-supervisor-proof
+    date: 2026-05-19
+    category: supervisor_robustness
+    lesson: "A true live-supervised pass requires external supervisor attempts or parked-lane evidence plus the runtime contract or a valid stop reason."
+    evidence: "A20AZ recorded ChatGPT and Gemini attempts, parked unavailable lanes, and continued local OMEGA pixel work."
+    action_rule: "Do not claim TRUE_OVERNIGHT_LIVE_SUPERVISED_PASS while ChatGPT/Gemini are parked or the runtime minimum is unmet."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AZ
+  - id: memory-a20az-no-idle-runtime-padding
+    date: 2026-05-19
+    category: night_readiness
+    lesson: "Do not idle-wait just to satisfy an overnight runtime; deepen pixel objectives or stop with objective exhaustion evidence."
+    evidence: "A20AZ stops with OBJECTIVE_EXHAUSTED_BEFORE_MIN_RUNTIME rather than faking a six-hour run."
+    action_rule: "Use A20BA_LIVE_SUPERVISOR_REPAIR or a second true overnight run before claiming live-supervised overnight success."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20AZ

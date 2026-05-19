@@ -141,6 +141,10 @@ import {
   type FullNightRealRunRoute,
 } from "./dev/full-night-real-run/FullNightRealRun";
 import {
+  TrueOvernightLiveRun,
+  type TrueOvernightLiveRunRoute,
+} from "./dev/true-overnight-live-run/TrueOvernightLiveRun";
+import {
   signatureArenaSignatureIds,
   signatureArenaVariantIds,
   type SignatureArenaSignatureId,
@@ -149,6 +153,7 @@ import {
 import type { PixelIterationId } from "./dev/autonomous-pixel-rehearsal/autonomousPixelRehearsalData";
 import type { FullNightIterationId } from "./dev/full-night-pixel-rehearsal/fullNightPixelRehearsalData";
 import type { FullNightRealRunIterationId } from "./dev/full-night-real-run/fullNightRealRunData";
+import type { TrueOvernightLiveRunIterationId } from "./dev/true-overnight-live-run/trueOvernightLiveRunData";
 import { OmegaPixelLab } from "./dev/omega-pixel-lab/OmegaPixelLab";
 import type { SignatureProbeEvidenceMode } from "./dev/signature-probes/SignatureProbeGallery";
 import type { SignatureProbeId } from "./dev/signature-probes/signatureProbeData";
@@ -530,6 +535,43 @@ function getFullNightRealRunDevRoute(): FullNightRealRunRoute | null {
   return null;
 }
 
+function getTrueOvernightLiveRunDevRoute(): TrueOvernightLiveRunRoute | null {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return null;
+  }
+  if (window.location.pathname !== "/app") {
+    return null;
+  }
+  const params = new URLSearchParams(window.location.search);
+  const value = params.get("trueOvernightLiveRun");
+  if (value === "1") {
+    return { iterationId: null };
+  }
+  if (
+    value === "iteration1" ||
+    value === "iteration2" ||
+    value === "iteration3" ||
+    value === "iteration4" ||
+    value === "iteration5" ||
+    value === "iteration6" ||
+    value === "iteration7" ||
+    value === "iteration8" ||
+    value === "iteration9" ||
+    value === "iteration10" ||
+    value === "iteration11" ||
+    value === "iteration12" ||
+    value === "iteration13" ||
+    value === "iteration14" ||
+    value === "iteration15" ||
+    value === "iteration16" ||
+    value === "iteration17" ||
+    value === "iteration18"
+  ) {
+    return { iterationId: value as TrueOvernightLiveRunIterationId };
+  }
+  return null;
+}
+
 function getSignatureArenaVariantDevRoute(): SignatureArenaVariantRoute | null {
   if (typeof window === "undefined" || !import.meta.env.DEV) {
     return null;
@@ -613,6 +655,9 @@ export default function App() {
   const [fullNightRealRunRoute, setFullNightRealRunRoute] = useState(() =>
     getFullNightRealRunDevRoute(),
   );
+  const [trueOvernightLiveRunRoute, setTrueOvernightLiveRunRoute] = useState(() =>
+    getTrueOvernightLiveRunDevRoute(),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -633,6 +678,7 @@ export default function App() {
       setAutonomousPixelRehearsalRoute(getAutonomousPixelRehearsalDevRoute());
       setFullNightPixelRehearsalRoute(getFullNightPixelRehearsalDevRoute());
       setFullNightRealRunRoute(getFullNightRealRunDevRoute());
+      setTrueOvernightLiveRunRoute(getTrueOvernightLiveRunDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -727,6 +773,10 @@ export default function App() {
 
   if (fullNightRealRunRoute) {
     return <FullNightRealRun route={fullNightRealRunRoute} />;
+  }
+
+  if (trueOvernightLiveRunRoute) {
+    return <TrueOvernightLiveRun route={trueOvernightLiveRunRoute} />;
   }
 
   if (currentRoute === "/app") {

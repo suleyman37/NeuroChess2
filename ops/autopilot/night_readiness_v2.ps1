@@ -19,6 +19,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\full_night_pixel_rehearsal\A20AW_full_night_pixel_rehearsal_20260518"
     } elseif ($MissionId -eq "A20AY") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\full_night_real_run\A20AY_full_night_real_pixel_run_20260518"
+    } elseif ($MissionId -eq "A20AZ") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\true_overnight_live_run\A20AZ_true_overnight_live_supervised_pixel_run_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\omega\A20AU_omega_autonomy_kernel_20260518"
     }
@@ -38,6 +40,8 @@ $morningReportName = if ($MissionId -eq "A20AV") {
     "A20AW_FULL_NIGHT_PIXEL_REHEARSAL_REPORT.md"
 } elseif ($MissionId -eq "A20AY") {
     "A20AY_FULL_NIGHT_REAL_PIXEL_RUN_REPORT.md"
+} elseif ($MissionId -eq "A20AZ") {
+    "A20AZ_TRUE_OVERNIGHT_LIVE_SUPERVISED_PIXEL_RUN_REPORT.md"
 } else {
     "A20AU_OMEGA_AUTONOMY_KERNEL_SELF_IMPROVING_PIXEL_LAB_REPORT.md"
 }
@@ -62,8 +66,8 @@ $checks = [ordered]@{
     screenshots_external_only = ($ArtifactPath -match "NeuroChess_QA_Artifacts")
     no_road_push = $true
     no_secrets = $true
-    max_runtime_set = ($MaxRuntimeMinutes -gt 0 -and $MaxRuntimeMinutes -le 480)
-    max_iterations_set = ($MaxIterations -gt 0 -and $MaxIterations -le 20)
+    max_runtime_set = if ($MissionId -eq "A20AZ") { ($MaxRuntimeMinutes -gt 0 -and $MaxRuntimeMinutes -le 520) } else { ($MaxRuntimeMinutes -gt 0 -and $MaxRuntimeMinutes -le 480) }
+    max_iterations_set = if ($MissionId -eq "A20AZ") { ($MaxIterations -gt 0 -and $MaxIterations -le 36) } else { ($MaxIterations -gt 0 -and $MaxIterations -le 20) }
 }
 
 foreach ($name in $requiredFiles.Keys) {
@@ -92,9 +96,9 @@ $result = [ordered]@{
     max_runtime_minutes = $MaxRuntimeMinutes
     no_full_night_launched = $true
     recommended_next = if ($verdict -eq "NIGHT_NOT_READY") {
-        if ($MissionId -eq "A20AV") { "A20AW_FINAL_NIGHT_READINESS_HARDENING" } elseif ($MissionId -eq "A20AW") { "A20AX_FINAL_AUTOPILOT_HARDENING_BEFORE_NIGHT" } elseif ($MissionId -eq "A20AY") { "A20AZ_FINAL_AUTOPILOT_REPORT_AND_HANDOFF" } else { "A20AV_FIX_OMEGA_KERNEL" }
+        if ($MissionId -eq "A20AV") { "A20AW_FINAL_NIGHT_READINESS_HARDENING" } elseif ($MissionId -eq "A20AW") { "A20AX_FINAL_AUTOPILOT_HARDENING_BEFORE_NIGHT" } elseif ($MissionId -eq "A20AY") { "A20AZ_FINAL_AUTOPILOT_REPORT_AND_HANDOFF" } elseif ($MissionId -eq "A20AZ") { "A20BA_LIVE_SUPERVISOR_REPAIR" } else { "A20AV_FIX_OMEGA_KERNEL" }
     } else {
-        if ($MissionId -eq "A20AV") { "A20AW_FULL_NIGHT_PIXEL_REHEARSAL" } elseif ($MissionId -eq "A20AW") { "A20AX_FULL_NIGHT_REAL_RUN" } elseif ($MissionId -eq "A20AY") { "A20AZ_ROAD_TO_V2_MERGE_AUDIT_PLAN" } else { "A20AV_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL" }
+        if ($MissionId -eq "A20AV") { "A20AW_FULL_NIGHT_PIXEL_REHEARSAL" } elseif ($MissionId -eq "A20AW") { "A20AX_FULL_NIGHT_REAL_RUN" } elseif ($MissionId -eq "A20AY") { "A20AZ_ROAD_TO_V2_MERGE_AUDIT_PLAN" } elseif ($MissionId -eq "A20AZ") { "A20BA_LIVE_SUPERVISOR_REPAIR" } else { "A20AV_LIMITED_AUTONOMOUS_PIXEL_REHEARSAL" }
     }
 }
 

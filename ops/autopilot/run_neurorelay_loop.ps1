@@ -5,6 +5,7 @@ param(
     [int]$MaxIterations = 3,
     [int]$MaxRuntimeMinutes = 180,
     [switch]$NoLiveWeb,
+    [string]$LiveSupervisorMode = "off",
     [string]$ArtifactPath = "",
     [string]$StatePath = ""
 )
@@ -28,6 +29,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\full_night_pixel_rehearsal\A20AW_full_night_pixel_rehearsal_20260518"
     } elseif ($MissionId -eq "A20AY") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\full_night_real_run\A20AY_full_night_real_pixel_run_20260518"
+    } elseif ($MissionId -eq "A20AZ") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\true_overnight_live_run\A20AZ_true_overnight_live_supervised_pixel_run_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -75,6 +78,7 @@ function New-BaseState {
         max_iterations = $MaxIterations
         max_runtime_minutes = $MaxRuntimeMinutes
         no_live_web = [bool]$NoLiveWeb
+        live_supervisor_mode = $LiveSupervisorMode
         blocked_lanes = @()
         next_planned_objectives = @()
         iterations = @()
@@ -206,8 +210,54 @@ function Test-A20AYFullNightRealRunReady {
     }
 }
 
+function Test-A20AZTrueOvernightLiveRunReady {
+    $manifestPath = Join-Path $ArtifactPath "pixel_delta_manifest.json"
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { return $false }
+    try {
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        return ([int]$manifest.pixel_delta_count -ge 12 -and [int]$manifest.useful_pixel_delta_count -ge 12 -and [string]$manifest.status -eq "TRUE_OVERNIGHT_PIXEL_DELTAS_READY")
+    } catch {
+        return $false
+    }
+}
+
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20AZ" -and (Test-A20AZTrueOvernightLiveRunReady)) {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20BA_LIVE_SUPERVISOR_REPAIR"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Repair or configure live ChatGPT/Gemini supervisor lanes after A20AZ parked them while local OMEGA continued."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("live_lane_repair_plan", "no_private_urls", "no_user_prompt", "local_fallback_preserved")
+            },
+            [pscustomobject]@{
+                id = "A20BA_TRUE_OVERNIGHT_SECOND_RUN"
+                family = "NIGHT_MODE_READINESS"
+                expected_value = "Run a second true overnight only after live lanes are configured or a valid objective-exhaustion window is accepted."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/true-overnight-live-run/**", "scripts/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("runtime_contract_respected", "supervisor_attempts_recorded", "screenshots_external_only")
+            },
+            [pscustomobject]@{
+                id = "A20BA_ROAD_TO_V2_MERGE_AUDIT_PLAN"
+                family = "SAFETY_MAINTENANCE"
+                expected_value = "Prepare a road-to-V2 merge audit plan only after true overnight evidence is reviewed."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("audit_plan_only", "no_road_push", "no_merge")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20AY" -and (Test-A20AYFullNightRealRunReady)) {
         $objectives = @(
             [pscustomobject]@{
@@ -553,7 +603,9 @@ function Run-OneRelayIteration {
         Write-JsonFile -Path $missionPath -Payload $mission
         $fallback.selected_objective_id = [string]$probeObjective.id
         $fallback.selected_family = [string]$probeObjective.family
-        $fallback.reason = if ($MissionId -eq "A20AY") {
+        $fallback.reason = if ($MissionId -eq "A20AZ") {
+            "A20AZ produced twelve-plus screenshot-backed local pixel deltas but parked live supervisor lanes; local fallback routes toward live supervisor repair before claiming a live-supervised pass."
+        } elseif ($MissionId -eq "A20AY") {
             "A20AY real full-night run evidence has six-plus useful screenshot-backed pixel deltas; local fallback routes toward A20AZ audit, integration review, or final handoff."
         } elseif ($MissionId -eq "A20AW") {
             "A20AW full-night rehearsal evidence has five-plus useful pixel deltas; local fallback routes toward a bounded real night run or final hardening."
