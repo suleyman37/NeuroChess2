@@ -1,0 +1,21 @@
+schema_version: neurorelay_protocol_memory_v1
+max_entries: 100
+entries:
+  - id: memory-a20ao-live-web-optional
+    date: 2026-05-19
+    category: supervisor_robustness
+    lesson: "Do not use GPT Web as a required dependency for autonomous runs."
+    evidence: "A20AN rehearsal parked live_gpt_web and continued offline."
+    action_rule: "If live web blocks, mark the lane parked and run local fallback."
+    expires_after_missions: 12
+    confidence: high
+    source_mission: A20AN
+  - id: memory-a20ao-pixel-proof-required
+    date: 2026-05-19
+    category: visual_production
+    lesson: "Visual missions require external screenshots before visual score can climb."
+    evidence: "A20AN Pixel Mandate caps docs and gates at visual production 17.5."
+    action_rule: "Prefer visible probes and screenshot evidence after relay bootstrap."
+    expires_after_missions: 12
+    confidence: high
+    source_mission: A20AN

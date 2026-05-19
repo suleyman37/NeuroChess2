@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NeuroRelay Decision Packet",
+  "type": "object",
+  "required": [
+    "source",
+    "packet_type",
+    "confidence",
+    "recommended_action",
+    "do_not_do",
+    "candidate_mission",
+    "evidence_used",
+    "open_risks",
+    "token_saving_notes"
+  ],
+  "properties": {
+    "source": {
+      "type": "string",
+      "enum": ["chatgpt_web", "gemini", "local_fallback", "mission_doctor"]
+    },
+    "packet_type": {
+      "type": "string",
+      "enum": ["mission_proposal", "critique", "risk_review", "visual_review", "failure_review"]
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "recommended_action": {
+      "type": "string",
+      "minLength": 8
+    },
+    "do_not_do": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "candidate_mission": {
+      "type": "object",
+      "required": ["id", "objective", "expected_value", "risk", "allowed_paths", "forbidden_paths", "success_criteria"],
+      "properties": {
+        "id": { "type": "string", "minLength": 3 },
+        "objective": { "type": "string", "minLength": 8 },
+        "expected_value": { "type": "string", "enum": ["low", "medium", "high"] },
+        "risk": { "type": "string", "enum": ["low", "medium", "high"] },
+        "allowed_paths": { "type": "array", "items": { "type": "string" } },
+        "forbidden_paths": { "type": "array", "items": { "type": "string" } },
+        "success_criteria": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "evidence_used": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "open_risks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "token_saving_notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

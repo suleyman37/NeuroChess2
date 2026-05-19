@@ -1,0 +1,29 @@
+schema_version: neurorelay_policy_v1
+external_intelligence:
+  chatgpt_web:
+    role: strategic_supervisor
+    default: optional
+    max_wait_seconds: 60
+    block_loop_if_unavailable: false
+  gemini:
+    role: visual_perception_critic
+    default: optional
+    require_visual_evidence: true
+    block_loop_if_unavailable: false
+context_capsules:
+  max_words_default: 1200
+  max_words_visual: 900
+  no_secrets: true
+  no_private_urls: true
+codex_contracts:
+  max_words_default: 900
+  max_files_default: 8
+  max_diff_lines_default: 1200
+mission_auction:
+  boost_pixel_production: true
+  penalize_docs_only: true
+  penalize_repeated_blocked_lane: true
+  prefer_low_codex_context: true
+fallback:
+  local_supervisor_required: true
+  continue_if_live_unavailable: true
