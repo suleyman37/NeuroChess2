@@ -149,6 +149,10 @@ import {
   type TrueOvernightComposerFirstRunRoute,
 } from "./dev/true-overnight-composer-first-run/TrueOvernightComposerFirstRun";
 import {
+  WebVisualRecoveryRun,
+  type WebVisualRecoveryRunRoute,
+} from "./dev/web-visual-recovery-run/WebVisualRecoveryRun";
+import {
   signatureArenaSignatureIds,
   signatureArenaVariantIds,
   type SignatureArenaSignatureId,
@@ -162,6 +166,10 @@ import {
   trueOvernightComposerFirstRunIterationIds,
   type TrueOvernightComposerFirstRunIterationId,
 } from "./dev/true-overnight-composer-first-run/trueOvernightComposerFirstRunData";
+import {
+  webVisualRecoveryRunDeltaIds,
+  type WebVisualRecoveryRunDeltaId,
+} from "./dev/web-visual-recovery-run/webVisualRecoveryRunData";
 import { OmegaPixelLab } from "./dev/omega-pixel-lab/OmegaPixelLab";
 import type { SignatureProbeEvidenceMode } from "./dev/signature-probes/SignatureProbeGallery";
 import type { SignatureProbeId } from "./dev/signature-probes/signatureProbeData";
@@ -598,6 +606,24 @@ function getTrueOvernightComposerFirstRunDevRoute(): TrueOvernightComposerFirstR
   return null;
 }
 
+function getWebVisualRecoveryRunDevRoute(): WebVisualRecoveryRunRoute | null {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return null;
+  }
+  if (window.location.pathname !== "/app") {
+    return null;
+  }
+  const params = new URLSearchParams(window.location.search);
+  const value = params.get("webVisualRecoveryRun");
+  if (value === "1") {
+    return { deltaId: null };
+  }
+  if (webVisualRecoveryRunDeltaIds.includes(value as WebVisualRecoveryRunDeltaId)) {
+    return { deltaId: value as WebVisualRecoveryRunDeltaId };
+  }
+  return null;
+}
+
 function getSignatureArenaVariantDevRoute(): SignatureArenaVariantRoute | null {
   if (typeof window === "undefined" || !import.meta.env.DEV) {
     return null;
@@ -687,6 +713,9 @@ export default function App() {
   const [trueOvernightComposerFirstRunRoute, setTrueOvernightComposerFirstRunRoute] = useState(() =>
     getTrueOvernightComposerFirstRunDevRoute(),
   );
+  const [webVisualRecoveryRunRoute, setWebVisualRecoveryRunRoute] = useState(() =>
+    getWebVisualRecoveryRunDevRoute(),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -709,6 +738,7 @@ export default function App() {
       setFullNightRealRunRoute(getFullNightRealRunDevRoute());
       setTrueOvernightLiveRunRoute(getTrueOvernightLiveRunDevRoute());
       setTrueOvernightComposerFirstRunRoute(getTrueOvernightComposerFirstRunDevRoute());
+      setWebVisualRecoveryRunRoute(getWebVisualRecoveryRunDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -811,6 +841,10 @@ export default function App() {
 
   if (trueOvernightComposerFirstRunRoute) {
     return <TrueOvernightComposerFirstRun route={trueOvernightComposerFirstRunRoute} />;
+  }
+
+  if (webVisualRecoveryRunRoute) {
+    return <WebVisualRecoveryRun route={webVisualRecoveryRunRoute} />;
   }
 
   if (currentRoute === "/app") {

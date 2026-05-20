@@ -289,3 +289,12 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20BF
+  - id: memory-a20bg-web-visual-recovery-loop
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "A web automation failure should trigger screenshot-backed visual recovery instead of repeated blind selector attempts."
+    evidence: "A20BG codified the loop: try once, capture the current service-window screenshot, reason from visible UI, revise once, then park the lane and continue with OMEGA fallback if still blocked."
+    action_rule: "For ChatGPT, Gemini, or any Web lane, record a recovery event with screenshot, visible UI analysis, revised action, and outcome before retrying after ambiguity."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BG
