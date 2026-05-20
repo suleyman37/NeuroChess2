@@ -65,6 +65,19 @@ try {
     $baseResult = Invoke-Importer -Arguments @("-Mode", "Validate", "-ProposalDir", $baseMismatch, "-ExpectedBaseCommit", "0000000", "-NonceLedgerPath", (Join-Path $tempRoot "base_ledger.json"), "-NoPrompt")
     Assert-True (@($baseResult.rejected_reasons) -contains "BASE_COMMIT_MISMATCH") "base mismatch should reject"
 
+    $missingNonce = Copy-Fixture -Name "missing_nonce"
+    $p = Read-Proposal -Dir $missingNonce
+    $p.nonce = ""
+    Write-Proposal -Dir $missingNonce -Proposal $p
+    $missingNonceResult = Invoke-Importer -Arguments @("-Mode", "Validate", "-ProposalDir", $missingNonce, "-ExpectedBaseCommit", $expected, "-NonceLedgerPath", (Join-Path $tempRoot "missing_nonce_ledger.json"), "-NoPrompt")
+    Assert-True (@($missingNonceResult.rejected_reasons) -contains "NONCE_MISSING") "missing nonce should reject"
+
+    $missingRisk = Copy-Fixture -Name "missing_risk"
+    Remove-Item -LiteralPath (Join-Path $missingRisk "risk_report.json") -Force
+    $missingRiskResult = Invoke-Importer -Arguments @("-Mode", "Validate", "-ProposalDir", $missingRisk, "-ExpectedBaseCommit", $expected, "-NonceLedgerPath", (Join-Path $tempRoot "missing_risk_ledger.json"), "-NoPrompt")
+    Assert-True ($missingRiskResult.status -eq "PROPOSAL_PACK_MISSING_REQUIRED_FILES") "missing risk report should reject before validation"
+    Assert-True (@($missingRiskResult.rejected_reasons) -contains "MISSING_risk_report.json") "missing risk report reason should be explicit"
+
     $package = Copy-Fixture -Name "package"
     $p = Read-Proposal -Dir $package
     $p.nonce = "a20bh-package-nonce"
@@ -88,6 +101,40 @@ try {
     $backendResult = Invoke-Importer -Arguments @("-Mode", "Validate", "-ProposalDir", $backend, "-ExpectedBaseCommit", $expected, "-NonceLedgerPath", (Join-Path $tempRoot "backend_ledger.json"), "-NoPrompt")
     Assert-True (($backendResult.rejected_reasons -join "|") -match "BACKEND") "backend file should reject"
 
+    $v1Route = Copy-Fixture -Name "v1_route"
+    $p = Read-Proposal -Dir $v1Route
+    $p.nonce = "a20bi-v1-route-nonce"
+    $p.files_changed = @("frontend/src/App.tsx")
+    $p.allowed_paths = @("frontend/src/App.tsx")
+    $p.frontend_dev_only = $false
+    Write-Proposal -Dir $v1Route -Proposal $p
+    Set-Content -LiteralPath (Join-Path $v1Route "files_touched.txt") -Value "frontend/src/App.tsx" -Encoding UTF8
+    $v1RouteResult = Invoke-Importer -Arguments @("-Mode", "Validate", "-ProposalDir", $v1Route, "-ExpectedBaseCommit", $expected, "-NonceLedgerPath", (Join-Path $tempRoot "v1_route_ledger.json"), "-NoPrompt")
+    Assert-True (($v1RouteResult.rejected_reasons -join "|") -match "PRODUCT_PATH_FORBIDDEN") "V1 route modification should reject"
+
+    $broad = Copy-Fixture -Name "broad"
+    $p = Read-Proposal -Dir $broad
+    $p.nonce = "a20bi-broad-nonce"
+    $broadFiles = @(1..21 | ForEach-Object { "docs/autopilot/dev_proposal/file$_.md" })
+    $p.files_changed = @($broadFiles)
+    $p.allowed_paths = @("docs/autopilot/dev_proposal/")
+    Write-Proposal -Dir $broad -Proposal $p
+    Set-Content -LiteralPath (Join-Path $broad "files_touched.txt") -Value ($broadFiles -join [Environment]::NewLine) -Encoding UTF8
+    $broadResult = Invoke-Importer -Arguments @("-Mode", "Validate", "-ProposalDir", $broad, "-ExpectedBaseCommit", $expected, "-NonceLedgerPath", (Join-Path $tempRoot "broad_ledger.json"), "-NoPrompt")
+    Assert-True (@($broadResult.rejected_reasons) -contains "MAX_FILES_EXCEEDED") "broad patch should reject"
+
+    $safeDev = Copy-Fixture -Name "safe_dev"
+    $p = Read-Proposal -Dir $safeDev
+    $p.nonce = "a20bi-safe-dev-nonce"
+    $p.files_changed = @("frontend/src/dev/antigravity/sample.tsx")
+    $p.allowed_paths = @("frontend/src/dev/antigravity/")
+    $p.frontend_dev_only = $true
+    Write-Proposal -Dir $safeDev -Proposal $p
+    Set-Content -LiteralPath (Join-Path $safeDev "files_touched.txt") -Value "frontend/src/dev/antigravity/sample.tsx" -Encoding UTF8
+    Set-Content -LiteralPath (Join-Path $safeDev "patch.diff") -Value "diff --git a/frontend/src/dev/antigravity/sample.tsx b/frontend/src/dev/antigravity/sample.tsx`n+++ b/frontend/src/dev/antigravity/sample.tsx`n" -Encoding UTF8
+    $safeDevResult = Invoke-Importer -Arguments @("-Mode", "Validate", "-ProposalDir", $safeDev, "-ExpectedBaseCommit", $expected, "-NonceLedgerPath", (Join-Path $tempRoot "safe_dev_ledger.json"), "-NoPrompt")
+    Assert-True ($safeDevResult.status -eq "ANTIGRAVITY_PROPOSAL_VALID") "safe DEV-only frontend proposal should validate in dry-run gate"
+
     $image = Copy-Fixture -Name "image"
     $p = Read-Proposal -Dir $image
     $p.nonce = "a20bh-image-nonce"
@@ -98,13 +145,13 @@ try {
     $imageResult = Invoke-Importer -Arguments @("-Mode", "Validate", "-ProposalDir", $image, "-ExpectedBaseCommit", $expected, "-NonceLedgerPath", (Join-Path $tempRoot "image_ledger.json"), "-NoPrompt")
     Assert-True (($imageResult.rejected_reasons -join "|") -match "SCREENSHOT|ASSET") "image/screenshot should reject"
 
-    $secret = Copy-Fixture -Name "secret"
-    $p = Read-Proposal -Dir $secret
+    $unsafeMarker = Copy-Fixture -Name "unsafe_marker"
+    $p = Read-Proposal -Dir $unsafeMarker
     $p.nonce = "a20bh-secret-nonce"
-    Write-Proposal -Dir $secret -Proposal $p
-    Add-Content -LiteralPath (Join-Path $secret "summary.md") -Value "FORBIDDEN_SECRET_MARKER"
-    $secretResult = Invoke-Importer -Arguments @("-Mode", "Validate", "-ProposalDir", $secret, "-ExpectedBaseCommit", $expected, "-NonceLedgerPath", (Join-Path $tempRoot "secret_ledger.json"), "-NoPrompt")
-    Assert-True (@($secretResult.rejected_reasons) -contains "SECRET_OR_PRIVATE_URL_PATTERN") "secret pattern should reject"
+    Write-Proposal -Dir $unsafeMarker -Proposal $p
+    Add-Content -LiteralPath (Join-Path $unsafeMarker "summary.md") -Value "FORBIDDEN_SECRET_MARKER"
+    $unsafeMarkerResult = Invoke-Importer -Arguments @("-Mode", "Validate", "-ProposalDir", $unsafeMarker, "-ExpectedBaseCommit", $expected, "-NonceLedgerPath", (Join-Path $tempRoot "unsafe_marker_ledger.json"), "-NoPrompt")
+    Assert-True (@($unsafeMarkerResult.rejected_reasons) -contains "SECRET_OR_PRIVATE_URL_PATTERN") "unsafe marker should reject"
 
     $source = Get-Content -LiteralPath $script -Raw
     Assert-True ($source -notmatch "git add -A") "importer must not use broad staging"
@@ -112,10 +159,15 @@ try {
 
     [ordered]@{
         status = "pass"
-        tests = 12
+        tests = 18
         safe_fixture_validates = $true
         duplicate_nonce_rejected = $true
+        missing_nonce_rejected = $true
+        missing_risk_report_rejected = $true
         forbidden_paths_rejected = $true
+        broad_patch_rejected = $true
+        v1_route_rejected = $true
+        safe_dev_only_frontend_validates = $true
         secrets_rejected = $true
         atomic_rollback_supported = $true
     } | ConvertTo-Json -Depth 10

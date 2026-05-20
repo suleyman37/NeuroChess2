@@ -164,6 +164,8 @@ function Invoke-Validate {
     $result.files_changed = @($allFiles)
     $result.diff_lines = @($patchText -split "`r?`n").Count
 
+    if ([string]::IsNullOrWhiteSpace([string]$proposal.proposal_id)) { $result.rejected_reasons += "PROPOSAL_ID_MISSING" }
+    if ([string]::IsNullOrWhiteSpace([string]$proposal.nonce)) { $result.rejected_reasons += "NONCE_MISSING" }
     if ([string]::IsNullOrWhiteSpace([string]$proposal.objective)) { $result.rejected_reasons += "OBJECTIVE_MISSING" }
     if ([string]::IsNullOrWhiteSpace([string]$proposal.rollback_plan) -and $notesText -notmatch '(?i)rollback') { $result.rejected_reasons += "ROLLBACK_PATH_MISSING" }
     if ([string]$proposal.base_commit -ne [string]$result.expected_base_commit) { $result.rejected_reasons += "BASE_COMMIT_MISMATCH" }
