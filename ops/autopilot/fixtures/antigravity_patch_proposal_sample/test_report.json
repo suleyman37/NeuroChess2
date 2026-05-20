@@ -1,0 +1,9 @@
+{
+  "tests_run": [
+    "fixture dry-run validation"
+  ],
+  "results": {
+    "fixture dry-run validation": "PASS"
+  },
+  "notes": "This fixture is not a live Antigravity execution."
+}

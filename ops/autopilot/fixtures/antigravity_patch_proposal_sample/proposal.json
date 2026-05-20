@@ -1,0 +1,39 @@
+{
+  "proposal_id": "A20BH_SAMPLE_VISUAL_SPIKE",
+  "nonce": "a20bh-sample-nonce-20260518",
+  "source_agent": "fixture",
+  "source_worktree": "external-antigravity-sandbox-redacted",
+  "base_commit": "a8f46fc",
+  "objective": "Add a DEV-only visual spike note for review by Codex without touching product behavior.",
+  "files_changed": [
+    "docs/autopilot/ANTIGRAVITY_SPIKE_NOTES_SAMPLE.md"
+  ],
+  "allowed_paths": [
+    "docs/autopilot/"
+  ],
+  "forbidden_paths": [
+    "backend/**",
+    "frontend/**",
+    "package.json",
+    "package-lock.json",
+    "ops/autopilot/local/**",
+    "ops/autopilot/runtime/**",
+    "screenshots/**"
+  ],
+  "dependencies_added": [],
+  "package_files_touched": false,
+  "backend_touched": false,
+  "frontend_dev_only": false,
+  "screenshots_path": "external-artifacts-only-redacted",
+  "tests_run": [
+    "fixture dry-run validation"
+  ],
+  "test_results": {
+    "fixture_dry_run": "PASS"
+  },
+  "known_risks": [
+    "Fixture patch is documentation-only and must not be applied as product work."
+  ],
+  "rollback_plan": "Reject or discard the proposal pack; if applied in a temporary worktree, remove that worktree.",
+  "recommended_codex_action": "ACCEPT"
+}

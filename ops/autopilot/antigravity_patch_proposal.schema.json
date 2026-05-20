@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurochess.local/schemas/antigravity_patch_proposal.schema.json",
+  "title": "Antigravity Patch Proposal Pack",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "proposal_id",
+    "nonce",
+    "source_agent",
+    "source_worktree",
+    "base_commit",
+    "objective",
+    "files_changed",
+    "allowed_paths",
+    "forbidden_paths",
+    "dependencies_added",
+    "package_files_touched",
+    "backend_touched",
+    "frontend_dev_only",
+    "screenshots_path",
+    "tests_run",
+    "test_results",
+    "known_risks",
+    "rollback_plan",
+    "recommended_codex_action"
+  ],
+  "properties": {
+    "proposal_id": {
+      "type": "string",
+      "minLength": 6,
+      "pattern": "^[A-Za-z0-9_.-]+$"
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 12,
+      "pattern": "^[A-Za-z0-9_.-]+$"
+    },
+    "source_agent": {
+      "type": "string",
+      "enum": ["antigravity", "fixture"]
+    },
+    "source_worktree": {
+      "type": "string",
+      "minLength": 3
+    },
+    "base_commit": {
+      "type": "string",
+      "minLength": 7,
+      "pattern": "^[0-9a-fA-F]{7,40}$"
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 12
+    },
+    "files_changed": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "allowed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "dependencies_added": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "package_files_touched": {
+      "type": "boolean"
+    },
+    "backend_touched": {
+      "type": "boolean"
+    },
+    "frontend_dev_only": {
+      "type": "boolean"
+    },
+    "screenshots_path": {
+      "type": "string"
+    },
+    "tests_run": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "test_results": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "known_risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rollback_plan": {
+      "type": "string",
+      "minLength": 10
+    },
+    "recommended_codex_action": {
+      "type": "string",
+      "enum": ["ACCEPT", "ACCEPT_WITH_FIXES", "REJECT", "RETRY_WITH_CONSTRAINTS"]
+    }
+  }
+}

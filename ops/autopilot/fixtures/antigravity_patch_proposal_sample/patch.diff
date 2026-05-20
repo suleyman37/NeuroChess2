@@ -1,0 +1,12 @@
+diff --git a/docs/autopilot/ANTIGRAVITY_SPIKE_NOTES_SAMPLE.md b/docs/autopilot/ANTIGRAVITY_SPIKE_NOTES_SAMPLE.md
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/docs/autopilot/ANTIGRAVITY_SPIKE_NOTES_SAMPLE.md
+@@ -0,0 +1,6 @@
++# Antigravity Spike Notes Sample
++
++This fixture represents a safe proposal pack from a sandbox.
++
++Codex may validate or reject it. Antigravity does not write to the official
++repository and does not push branches.

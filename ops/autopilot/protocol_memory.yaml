@@ -298,3 +298,12 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20BG
+  - id: memory-a20bh-antigravity-proposal-only
+    date: 2026-05-20
+    category: repo_hygiene
+    lesson: "Antigravity is a sandbox explorer, not an official repo integrator."
+    evidence: "A20BH added an external worktree policy, Patch Proposal Pack schema, importer reject gate, nonce protection, and router so Antigravity can only submit proposal packs."
+    action_rule: "Never let Antigravity commit, push, stage, or write directly to the official repo; Codex validates and integrates explicit approved files only."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BH

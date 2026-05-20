@@ -1,0 +1,88 @@
+schema_version: antigravity_lane_policy_v1
+mission_id: A20BH
+
+roles:
+  codex:
+    authority: official_integrator
+    may_commit: true
+    may_push_non_protected_branch: true
+    may_push_road_to_v2: false
+  antigravity:
+    authority: sandbox_explorer
+    may_commit_official_repo: false
+    may_push: false
+    output_only: patch_proposal_pack
+  omega:
+    authority: route_task_and_keep_fallback
+  gemini:
+    authority: visual_critic_from_screenshots
+  chatgpt:
+    authority: strategic_product_critic
+
+worktree_policy:
+  preferred_external_root: "C:/Users/suley/Documents/Dev/NeuroChess_Agent_Worktrees"
+  create_from_exact_commit: true
+  disposable: true
+  forbid_road_to_v2: true
+  forbid_origin_push: true
+  forbid_secrets: true
+  official_repo_direct_write_forbidden: true
+
+proposal_pack:
+  required_files:
+    - proposal.json
+    - patch.diff
+    - summary.md
+    - risk_report.json
+    - test_report.json
+    - files_touched.txt
+    - integration_notes.md
+  screenshots_external_only: true
+  recommended_codex_actions:
+    - ACCEPT
+    - ACCEPT_WITH_FIXES
+    - REJECT
+    - RETRY_WITH_CONSTRAINTS
+
+import_gate:
+  max_files: 20
+  max_diff_lines: 800
+  reject_duplicate_nonce: true
+  reject_base_commit_mismatch: true
+  reject_backend_without_permission: true
+  reject_package_files: true
+  reject_db_files: true
+  reject_local_runtime: true
+  reject_images_and_screenshots: true
+  reject_secrets_private_urls_cookies_tokens: true
+  require_summary_risk_test_reports: true
+  require_clear_objective: true
+  require_rollback_path: true
+  dry_run_validation_first: true
+  atomic_temp_apply_only: true
+  explicit_file_staging_only: true
+  broad_staging_forbidden: true
+
+router:
+  antigravity_when:
+    - exploratory_visual_variants
+    - dev_only_frontend_spikes
+    - screenshots_matter
+    - low_integration_risk
+  codex_when:
+    - final_integration
+    - commit_or_push_required
+    - protected_paths
+    - governance_or_tests
+  gemini_when:
+    - screenshot_critique
+    - board_readability
+    - visual_weirdness
+  chatgpt_when:
+    - product_strategy
+    - architecture_critique
+    - contradiction_resolution
+  local_fallback_when:
+    - live_lanes_fail
+    - external_agents_unavailable
+    - offline_progress_required

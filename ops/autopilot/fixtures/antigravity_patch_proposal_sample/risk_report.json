@@ -1,0 +1,8 @@
+{
+  "risk_level": "low",
+  "backend_touched": false,
+  "package_files_touched": false,
+  "screenshots_included": false,
+  "secrets_detected": false,
+  "rollback_path": "Discard proposal pack or remove temporary worktree."
+}
