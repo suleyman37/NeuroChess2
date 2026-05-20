@@ -263,6 +263,10 @@
   filter: drop-shadow(0 0 10px hsl(43 75% 42% / 0.18));
 }
 
+.premium-clarity-v3 {
+  filter: drop-shadow(0 0 6px hsl(43 72% 45% / 0.12));
+}
+
 /* Animations */
 .sigil-viewport.pulse .pulse-target {
   animation: key-pulse 2s infinite ease-in-out;
@@ -356,7 +360,7 @@
 
 .review-comparison-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -384,6 +388,11 @@
   background: hsl(220 18% 9% / 0.9);
 }
 
+.review-comparison-card.live-lane-card {
+  border-color: hsl(174 58% 60% / 0.52);
+  background: hsl(198 20% 8% / 0.9);
+}
+
 .comparison-label {
   align-self: flex-start;
   border: 1px solid hsl(174 65% 55% / 0.26);
@@ -405,6 +414,48 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.live-frame-preview {
+  position: relative;
+  width: min(100%, 220px);
+  min-height: 144px;
+  border: 1px solid hsl(215 13% 28%);
+  border-radius: 8px;
+  background: hsl(220 20% 5% / 0.86);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.live-frame-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 104px;
+  height: 104px;
+  border: 2px solid hsl(215 13% 20%);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.live-frame-board span.light {
+  background: hsl(42 20% 76%);
+}
+
+.live-frame-board span.dark {
+  background: hsl(220 12% 31%);
+}
+
+.comparison-sigil.frame-anchored {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  border-color: hsl(43 70% 66% / 0.32);
+  padding: 5px;
 }
 
 .review-comparison-card h3,

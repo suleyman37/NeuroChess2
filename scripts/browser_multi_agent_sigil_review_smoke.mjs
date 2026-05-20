@@ -7,8 +7,9 @@ import {
   createEvidence,
 } from "./browser_test_helpers.mjs";
 
-const MISSION = "A20BQ True Multi-Agent Pixel Run";
+const MISSION = process.env.MULTI_AGENT_SIGIL_SMOKE_MISSION ?? "A20BQ True Multi-Agent Pixel Run";
 const ARTIFACT_ROOT =
+  process.env.MULTI_AGENT_SIGIL_SMOKE_ARTIFACT_DIR ??
   "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\multi_agent_pixel_run\\A20BQ_true_multi_agent_sigil_run_20260518";
 const SCREENSHOT_DIR = path.join(ARTIFACT_ROOT, "screenshots");
 const DEV_ROUTE = "/app?antigravitySpike=critical_moment_sigil";
@@ -57,8 +58,10 @@ async function main() {
             Boolean(document.querySelector('[data-testid="multi-agent-sigil-review"]')) &&
             Boolean(document.querySelector('[data-testid="original-premium-clarity"]')) &&
             Boolean(document.querySelector('[data-testid="codex-omega-refined-candidate"]')) &&
+            Boolean(document.querySelector('[data-testid="live-lane-refined-candidate"]')) &&
             Boolean(document.querySelector('[data-testid="multi-agent-final-recommendation"]')) &&
             text.includes("Premium Clarity v2") &&
+            text.includes("Premium Clarity v3") &&
             text.includes("Gemini visual review") &&
             text.includes("ChatGPT strategy review"),
           text,
@@ -80,10 +83,14 @@ async function main() {
         refined_visible: Boolean(
           document.querySelector('[data-testid="codex-omega-refined-candidate"]'),
         ),
+        live_lane_refined_visible: Boolean(
+          document.querySelector('[data-testid="live-lane-refined-candidate"]'),
+        ),
         recommendation_visible: Boolean(
           document.querySelector('[data-testid="multi-agent-final-recommendation"]'),
         ),
         premium_clarity_v2_visible: text.includes("Premium Clarity v2"),
+        premium_clarity_v3_visible: text.includes("Premium Clarity v3"),
         board_visible: Boolean(document.querySelector(".board")),
         board_square_count: document.querySelectorAll(".board .square").length,
         svg_count: document.querySelectorAll(".sigil-spike svg").length,
@@ -99,7 +106,7 @@ async function main() {
     if (!routeState.multi_agent_stage_visible) {
       harness.fail("multi_agent_stage_visible", JSON.stringify(routeState));
     }
-    if (!routeState.original_visible || !routeState.refined_visible) {
+    if (!routeState.original_visible || !routeState.refined_visible || !routeState.live_lane_refined_visible) {
       harness.fail("comparison_cards_visible", JSON.stringify(routeState));
     }
     if (!routeState.recommendation_visible) {

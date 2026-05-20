@@ -89,6 +89,16 @@ export default function CriticalMomentSigilSpike() {
     </svg>
   );
 
+  const renderPremiumClarityV3 = (cls = "svg-sigil") => (
+    <svg className={`${cls} premium-clarity-v3`} viewBox="0 0 100 100">
+      <rect x="16" y="16" width="68" height="68" rx="6" stroke="hsl(215 13% 55%)" strokeWidth="0.8" fill="none" />
+      <path d="M 22 22 H 38 M 62 22 H 78 M 22 78 H 38 M 62 78 H 78" stroke="hsl(43 78% 67%)" strokeWidth="1" strokeLinecap="round" />
+      <path d="M 22 22 V 38 M 78 22 V 38 M 22 78 V 62 M 78 78 V 62" stroke="hsl(43 78% 67%)" strokeWidth="1" strokeLinecap="round" />
+      <rect x="41" y="41" width="18" height="18" rx="2" transform="rotate(45 50 50)" stroke="hsl(174 58% 60%)" strokeWidth="1" fill="none" />
+      <circle cx="50" cy="50" r="1.8" fill="hsl(42 72% 74%)" />
+    </svg>
+  );
+
   return (
     <div className="sigil-spike">
       <nav className="sigil-nav">
@@ -189,16 +199,17 @@ export default function CriticalMomentSigilSpike() {
       </footer>
 
       <section className="multi-agent-sigil-review" data-testid="multi-agent-sigil-review">
-        <div className="review-kicker">A20BQ multi-agent pixel run</div>
+        <div className="review-kicker">A20BR live-lane pixel run 2</div>
         <div className="review-heading-row">
           <div>
-            <h2>Premium Clarity Comparison Stage</h2>
+            <h2>Premium Clarity Live-Lane Comparison</h2>
             <p>
-              OMEGA selected a bounded pixel objective: compare the imported Antigravity
-              Premium Clarity mark with a calmer Codex refinement before any product-facing use.
+              OMEGA accepted the live-lane packets and selected a bounded objective:
+              keep the mark board-first, quieter, and anchored to the stage frame before
+              any product-facing use.
             </p>
           </div>
-          <span className="badge dev">DEV COMPARISON</span>
+          <span className="badge dev">LIVE PREFLIGHT PASSED</span>
         </div>
 
         <div className="review-comparison-grid">
@@ -221,27 +232,45 @@ export default function CriticalMomentSigilSpike() {
               moment, teal for the learning loop, and crosshair ticks for board-safe placement.
             </p>
           </article>
+
+          <article className="review-comparison-card selected live-lane-card" data-testid="live-lane-refined-candidate">
+            <span className="comparison-label">Live-lane refinement</span>
+            <div className="live-frame-preview">
+              <div className="live-frame-board" aria-hidden="true">
+                {Array.from({ length: 16 }).map((_, i) => (
+                  <span key={i} className={(Math.floor(i / 4) + (i % 4)) % 2 === 0 ? "light" : "dark"} />
+                ))}
+              </div>
+              <div className="comparison-sigil frame-anchored">{renderPremiumClarityV3()}</div>
+            </div>
+            <h3>Premium Clarity v3</h3>
+            <p>
+              Moves the signal away from the grid and into the outer stage frame: a smaller
+              tension marker that supports the board instead of competing with it.
+            </p>
+          </article>
         </div>
 
         <div className="multi-agent-notes">
           <article>
             <h3>Gemini visual review</h3>
             <p>
-              Lane parked for this bounded run. Local screenshot-first review says the image is
-              clear, the board remains readable, and the v2 mark is the safest visual next step.
+              Live visual packet was produced from an isolated screenshot. The packet stayed
+              advisory, with the strongest useful signal being to keep board readability and
+              use visual critique as a secondary judge.
             </p>
           </article>
           <article>
             <h3>ChatGPT strategy review</h3>
             <p>
-              Lane parked for this bounded run. Product challenge: keep this as a DEV candidate
-              until the mark is connected to a real Review or Practice decision moment.
+              Strategy packet normalized cleanly: reduce visual dominance, anchor the mark to
+              the outer frame, and keep the position as the first thing the player reads.
             </p>
           </article>
           <article className="recommendation-card" data-testid="multi-agent-final-recommendation">
             <h3>Final recommendation</h3>
             <ul>
-              <li>Keep Premium Clarity as the leading signature candidate.</li>
+              <li>Promote Premium Clarity v3 as the safest DEV candidate.</li>
               <li>Refine Radical but Board-Safe before any further promotion.</li>
               <li>Promote only as a DEV candidate until tied to a real learning-loop action.</li>
             </ul>
