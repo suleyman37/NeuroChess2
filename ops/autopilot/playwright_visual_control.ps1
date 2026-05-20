@@ -7,6 +7,7 @@ param(
     [string]$MissionId = "A20BD",
     [string]$ArtifactPath = "",
     [string]$OutPath = "",
+    [string]$McpScreenshotPath = "",
     [ValidateSet("", "PAGE_USABLE", "HUMAN_ACTION_REQUIRED", "PAGE_LOADING", "UNCLASSIFIED_PAGE_STATE", "WRONG_ACCOUNT_OR_PLAN")]
     [string]$MockClassification = "",
     [switch]$MockComposerVisible,
@@ -14,6 +15,7 @@ param(
     [switch]$MockUploadControlVisible,
     [switch]$MockForegroundBlocker,
     [switch]$MockWrongAccount,
+    [switch]$RequireMcpScreenshot,
     [switch]$NoPrompt,
     [switch]$DryRun
 )
@@ -24,7 +26,9 @@ if ($CDPPort -eq 0) {
     $CDPPort = if ($Service -eq "chatgpt") { 9222 } else { 9223 }
 }
 if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
-    if ($MissionId -eq "A20BE") {
+    if ($MissionId -eq "A20BF") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\mcp_playwright_browser_truth\A20BF_screenshot_first_web_control_20260518"
+    } elseif ($MissionId -eq "A20BE") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BE_gemini_upload_second_pass_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\dual_browser_profiles\A20BD_dual_profile_playwright_control_20260518"
@@ -62,6 +66,9 @@ function New-BaseResult {
         wrong_account_or_plan_suspected = $false
         history_text_ignored = $true
         screenshot_before_verdict = $false
+        mcp_screenshot_required = ($MissionId -eq "A20BF" -or [bool]$RequireMcpScreenshot)
+        mcp_screenshot_path = ""
+        mcp_screenshot_present = $false
         dom_probe_before_verdict = $false
         mcp_playwright_used = $false
         playwright_fallback_used = $true
@@ -78,6 +85,22 @@ function New-BaseResult {
         no_blind_typing = $true
         no_paid_api = $true
     }
+}
+
+function Test-McpScreenshotPresent {
+    if (-not ($MissionId -eq "A20BF" -or [bool]$RequireMcpScreenshot)) { return $true }
+    return (-not [string]::IsNullOrWhiteSpace($McpScreenshotPath) -and (Test-Path -LiteralPath $McpScreenshotPath -PathType Leaf))
+}
+
+function New-McpScreenshotRequiredResult {
+    $result = New-BaseResult
+    $result.classification = "MCP_SCREENSHOT_REQUIRED"
+    $result.recommended_action = "STOP_DIAGNOSTIC"
+    $result.screenshot_before_verdict = $false
+    $result.mcp_screenshot_required = $true
+    $result.mcp_screenshot_present = $false
+    $result.evidence = @("mcp_screenshot_missing")
+    return $result
 }
 
 function Set-Classification {
@@ -288,7 +311,7 @@ async function main() {
         if (/thinking|extended|deep|approfondie|raisonnement/i.test(label)) modelLabels.push(label);
       }
       const fileInputs = Array.from(document.querySelectorAll('input[type="file"]'));
-      const uploadButtons = visibleControls.filter((element) => /upload|image|attach|importer|joindre|photo/i.test(String(element.getAttribute("aria-label") || element.innerText || element.textContent || "")));
+      const uploadButtons = visibleControls.filter((element) => /upload|image|attach|importation|importer|outil|tools|joindre|photo|\+/i.test(String(element.getAttribute("aria-label") || element.innerText || element.textContent || "")));
       const directBlockers = Array.from(document.querySelectorAll('input[type="password"], input[name*="otp" i], input[id*="otp" i], iframe[src*="captcha" i], [id*="captcha" i], [class*="captcha" i]')).filter(isVisible);
       const overlayText = Array.from(document.querySelectorAll('[role="dialog"], [aria-modal="true"], [data-state="open"]')).filter(isVisible).map((element) => String(element.innerText || element.textContent || ""));
       const overlayBlockers = overlayText.filter((text) => /captcha|human verification|verify you are human|i am human|je suis humain|consent|login|log in|2fa|two-factor|auth|verification/i.test(text));
@@ -371,10 +394,17 @@ main().then(() => process.exit(0)).catch((error) => {
 }
 
 New-Item -ItemType Directory -Force -Path $ArtifactPath | Out-Null
-if ($Mode -eq "DryRun" -or $DryRun -or -not [string]::IsNullOrWhiteSpace($MockClassification) -or $MockComposerVisible -or $MockModelSelectorVisible -or $MockUploadControlVisible -or $MockForegroundBlocker -or $MockWrongAccount) {
+if (-not (Test-McpScreenshotPresent)) {
+    $result = New-McpScreenshotRequiredResult
+} elseif ($Mode -eq "DryRun" -or $DryRun -or -not [string]::IsNullOrWhiteSpace($MockClassification) -or $MockComposerVisible -or $MockModelSelectorVisible -or $MockUploadControlVisible -or $MockForegroundBlocker -or $MockWrongAccount) {
     $result = New-MockResult
 } else {
     $result = Invoke-LiveCapture
+}
+
+if (-not [string]::IsNullOrWhiteSpace($McpScreenshotPath) -and (Test-Path -LiteralPath $McpScreenshotPath -PathType Leaf)) {
+    $result.mcp_screenshot_path = (Resolve-Path -LiteralPath $McpScreenshotPath).Path
+    $result.mcp_screenshot_present = $true
 }
 
 Write-JsonFile -Path $OutPath -Payload $result

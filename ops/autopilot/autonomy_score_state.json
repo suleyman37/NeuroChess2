@@ -1,10 +1,10 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20BE_GEMINI_UPLOAD_SECOND_PASS",
+  "updated_by": "A20BF_MCP_PLAYWRIGHT_SCREENSHOT_FIRST_WEB_CONTROL",
   "scores": {
     "safety_git": 18.7,
     "operator_zero_friction": 18.4,
-    "web_orchestrator": 18.1,
+    "web_orchestrator": 18.5,
     "external_judge_reliability": 18.7,
     "autonomous_loop": 19.5,
     "visual_production": 19.0,
@@ -55,7 +55,8 @@
     "A20BB restores ChatGPT Web supervision with the composer-first classifier, records eight ChatGPT attempts and four successful Decision Packets, and keeps the overall score at 19.5 without arbitrary inflation.",
     "A20BC opens Gemini Web through the free browser lane, proves a zero-cost text smoke, records exact-model and upload limitations honestly, and keeps the overall score at 19.5.",
     "A20BD isolates ChatGPT and Gemini into separate browser profiles and CDP ports, adds screenshot-first Playwright visual control, confirms both lanes are currently PAGE_USABLE, and keeps the overall score at 19.5 because Gemini visual upload and exact model remain incomplete.",
-    "A20BE runs a no-user-intervention Gemini upload second pass on CDP 9223, diagnoses upload unavailable after four safe adapters, sends an ntfy informational alert, and keeps Gemini text-only without claiming visual judge readiness."
+    "A20BE runs a no-user-intervention Gemini upload second pass on CDP 9223, diagnoses upload unavailable after four safe adapters, sends an ntfy informational alert, and keeps Gemini text-only without claiming visual judge readiness.",
+    "A20BF adds screenshot-first browser truth with separate ChatGPT/Gemini windows: no screenshot means no verdict, DOM-only browser verdicts are rejected, ChatGPT uses CDP 9222, Gemini uses CDP 9223, and Gemini produces a confirmed visual Decision Packet."
   ],
   "a20ap_score_update": {
     "before_overall": 17.0,
@@ -397,5 +398,33 @@
       "external_judge_sre.ps1 sent an ntfy informational alert for GEMINI_UPLOAD_UNAVAILABLE_DIAGNOSED while Codex continued offline."
     ],
     "not_ready_for_chatgpt_and_gemini_true_night_reason": "Gemini remains usable as a text lane but not as a visual judge until upload attachment is confirmed."
+  },
+  "a20bf_score_update": {
+    "before_overall": 19.5,
+    "after_overall": 19.5,
+    "web_orchestrator_before": 18.4,
+    "web_orchestrator_after": 18.5,
+    "mcp_playwright_available": true,
+    "screenshots_before_verdict": true,
+    "dom_only_verdict_rejected": true,
+    "chatgpt_screenshot_captured": true,
+    "chatgpt_screenshot_verdict": "PAGE_USABLE",
+    "chatgpt_aj_pool_loaded": true,
+    "chatgpt_aj_threshold_50": true,
+    "gemini_screenshot_captured": true,
+    "gemini_screenshot_verdict": "PAGE_USABLE",
+    "gemini_lane_status": "VISUAL_READY",
+    "gemini_visual_packet_status": "GEMINI_VISUAL_PACKET_READY",
+    "ntfy_alert_sent": false,
+    "score_inflation_prevented": true,
+    "evidence": [
+      "A20BF uses separate dedicated browser windows and profiles for ChatGPT and Gemini before browser verdicts.",
+      "mcp_playwright_browser_truth.ps1 returns MCP_SCREENSHOT_REQUIRED when screenshot evidence is absent.",
+      "ChatGPT dedicated-window screenshot shows the NeuroChess Supervisor discussion composer and A-J pool status is loaded/redacted.",
+      "Gemini dedicated-window screenshot shows PAGE_USABLE with Flash Extended and a visible import control.",
+      "gemini_upload_adapter.ps1 confirms an isolated screenshot attachment before sending the visual prompt.",
+      "Gemini visual response was normalized into a Decision Packet without API calls or paid services."
+    ],
+    "not_ready_for_chatgpt_and_gemini_visual_night_reason": "No blocker recorded for visual-lane proof; the next combined overnight still needs a bounded run contract and supervisor fabric reporting before any product or release claim."
   }
 }

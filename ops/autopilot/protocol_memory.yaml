@@ -262,3 +262,30 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20BE
+  - id: memory-a20bf-mcp-screenshot-required
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "No ChatGPT or Gemini browser verdict is allowed without a current screenshot from the service-specific dedicated window."
+    evidence: "A20BF captured screenshots from the isolated ChatGPT window on CDP 9222 and isolated Gemini window on CDP 9223; the browser-truth gate rejects DOM-only verdicts and wrong-port checks."
+    action_rule: "Return MCP_SCREENSHOT_REQUIRED instead of PAGE_USABLE, HUMAN_ACTION_REQUIRED, MODEL_SELECTOR_NOT_FOUND, or UPLOAD_UNAVAILABLE when MCP screenshot evidence is absent."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BF
+  - id: memory-a20bf-visible-ui-before-locators
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "Visible current UI observations must decide browser state before locators or DOM are used."
+    evidence: "The dedicated Gemini screenshot showed a visible composer, Flash Extended selector, and plus/import control; locator logic was then used only to confirm and operate the visible import menu."
+    action_rule: "Use DOM and locators only to confirm controls already visible in the screenshot."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BF
+  - id: memory-a20bf-chatgpt-gemini-separate-windows
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "ChatGPT and Gemini must be opened in separate dedicated browser windows because their Chrome and account identities can differ."
+    evidence: "The user corrected A20BF after a shared MCP tab observation; the successful pass used ChatGPT profile/CDP 9222 and Gemini profile/CDP 9223."
+    action_rule: "Do not treat a same-page or same-context MCP browser observation as authoritative for both services; use service-specific profiles, ports, screenshots, and redacted state."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BF

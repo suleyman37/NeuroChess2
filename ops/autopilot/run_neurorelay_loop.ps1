@@ -39,6 +39,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\dual_browser_profiles\A20BD_dual_profile_playwright_control_20260518"
     } elseif ($MissionId -eq "A20BE") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BE_gemini_upload_second_pass_20260518"
+    } elseif ($MissionId -eq "A20BF") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\mcp_playwright_browser_truth\A20BF_screenshot_first_web_control_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -270,6 +272,41 @@ function Get-ProbeAwareObjective {
                 allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
                 forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
                 success_criteria = @("gemini_text_only_not_counted_as_visual", "visual_packets_optional", "fallback_preserved")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $candidate = $objectives | Where-Object { $avoid -notcontains $_.id } | Select-Object -First 1
+        if ($candidate) { return $candidate }
+        return $objectives[0]
+    }
+    if ($MissionId -eq "A20BF") {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20BG_TRUE_OVERNIGHT_WITH_CHATGPT_AND_GEMINI_VISUAL"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Run the next bounded overnight only after ChatGPT and Gemini both report separate-window screenshot-first readiness."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/**", "scripts/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("chatgpt_profile_9222_ready", "gemini_profile_9223_visual_packet_ready", "screenshots_external_only", "local_fallback_preserved")
+            },
+            [pscustomobject]@{
+                id = "A20BG_TRUE_OVERNIGHT_WITH_CHATGPT_AND_GEMINI_TEXT"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Run a bounded overnight using ChatGPT and Gemini text-only status only after screenshot-first browser gates are respected."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/**", "scripts/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("screenshot_first_gates", "gemini_visual_not_claimed", "local_fallback_preserved")
+            },
+            [pscustomobject]@{
+                id = "A20BG_SUPERVISOR_TRANSPORT_FABRIC_MULTI_CHANNEL_ROUTER"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Make ChatGPT, Gemini visual, screenshot-first browser truth, and OMEGA fallback explicit in one supervisor fabric."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("mcp_screenshot_required", "dom_only_rejected", "fallback_preserved")
             }
         )
         $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
@@ -716,7 +753,7 @@ function Run-OneRelayIteration {
             "-StatePath", (Join-Path $iterDir "external_judge_sre_state.json"),
             "-OutPath", (Join-Path $iterDir "external_judge_sre_health.json")
         )
-        if ($NoLiveWeb -or $MissionId -notin @("A20BC", "A20BD", "A20BE")) { $sreArgs += "-DryRun" }
+        if ($NoLiveWeb -or $MissionId -notin @("A20BC", "A20BD", "A20BE", "A20BF")) { $sreArgs += "-DryRun" }
         $sre = Invoke-JsonScript -ScriptPath $srePath -Arguments $sreArgs
     }
 
@@ -771,6 +808,8 @@ function Run-OneRelayIteration {
             "A20BC records Gemini Web lane readiness or the precise parked reason; local fallback remains authoritative before any combined ChatGPT/Gemini overnight run."
         } elseif ($MissionId -eq "A20BE") {
             "A20BE records Gemini upload second-pass status as visual-ready or text-only/upload-unavailable; local fallback remains authoritative before any combined ChatGPT/Gemini overnight run."
+        } elseif ($MissionId -eq "A20BF") {
+            "A20BF records screenshot-first browser truth with separate ChatGPT/Gemini windows; Gemini visual packet proof is ready, while local fallback remains available."
         } elseif ($MissionId -eq "A20AY") {
             "A20AY real full-night run evidence has six-plus useful screenshot-backed pixel deltas; local fallback routes toward A20AZ audit, integration review, or final handoff."
         } elseif ($MissionId -eq "A20AW") {
@@ -837,15 +876,15 @@ function Run-OneRelayIteration {
         $geminiPacketStatus = [string]$sre.lanes.gemini.state
     }
     $geminiExternalPacketCount = 0
-    if ($MissionId -eq "A20BE") {
-        $a20beUploadPath = Join-Path $ArtifactPath "visual_packet_result.json"
-        if (Test-Path -LiteralPath $a20beUploadPath -PathType Leaf) {
+    if ($MissionId -in @("A20BE", "A20BF")) {
+        $uploadPath = Join-Path $ArtifactPath "visual_packet_result.json"
+        if (Test-Path -LiteralPath $uploadPath -PathType Leaf) {
             try {
-                $a20beUpload = Get-Content -LiteralPath $a20beUploadPath -Raw | ConvertFrom-Json
-                if (-not [string]::IsNullOrWhiteSpace([string]$a20beUpload.lane_status)) {
-                    $geminiPacketStatus = [string]$a20beUpload.lane_status
+                $uploadResult = Get-Content -LiteralPath $uploadPath -Raw | ConvertFrom-Json
+                if (-not [string]::IsNullOrWhiteSpace([string]$uploadResult.lane_status)) {
+                    $geminiPacketStatus = [string]$uploadResult.lane_status
                 }
-                if ([bool]$a20beUpload.decision_packet_produced -and [string]$a20beUpload.lane_status -eq "AVAILABLE_VISUAL_PACKET_READY") {
+                if ([bool]$uploadResult.decision_packet_produced -and [string]$uploadResult.lane_status -eq "AVAILABLE_VISUAL_PACKET_READY") {
                     $geminiExternalPacketCount = 1
                 }
             } catch {}

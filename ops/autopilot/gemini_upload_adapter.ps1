@@ -22,6 +22,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 function Get-DefaultArtifactPath {
+    if ($MissionId -eq "A20BF") {
+        return (Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\mcp_playwright_browser_truth\A20BF_screenshot_first_web_control_20260518")
+    }
     if ($MissionId -eq "A20BE") {
         return (Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BE_gemini_upload_second_pass_20260518")
     }
@@ -100,6 +103,19 @@ function Get-ReachableEndpoint {
 
 function Invoke-VisualControl {
     $out = Join-Path $ArtifactPath "gemini_page_state.json"
+    $mcpScreenshot = ""
+    $observationPath = Join-Path $ArtifactPath "gemini_screenshot_observation.json"
+    if (Test-Path -LiteralPath $observationPath -PathType Leaf) {
+        try {
+            $observation = Get-Content -LiteralPath $observationPath -Raw | ConvertFrom-Json
+            if ($observation.PSObject.Properties.Name -contains "screenshot_path") {
+                $candidate = [string]$observation.screenshot_path
+                if (-not [string]::IsNullOrWhiteSpace($candidate) -and (Test-Path -LiteralPath $candidate -PathType Leaf)) {
+                    $mcpScreenshot = $candidate
+                }
+            }
+        } catch {}
+    }
     $args = @(
         "-Mode", "CaptureState",
         "-Service", "gemini",
@@ -109,6 +125,9 @@ function Invoke-VisualControl {
         "-OutPath", $out,
         "-NoPrompt"
     )
+    if ($MissionId -eq "A20BF" -and -not [string]::IsNullOrWhiteSpace($mcpScreenshot)) {
+        $args += @("-McpScreenshotPath", $mcpScreenshot)
+    }
     if ($DryRun) { $args += @("-DryRun", "-MockComposerVisible") }
     $output = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "playwright_visual_control.ps1") @args 2>&1
     try { return Convert-JsonOutput -Output $output } catch { return $null }
@@ -311,6 +330,19 @@ async function screenshot(page, file) {
   await page.screenshot({ path: file, fullPage: false }).catch(() => {});
   return fs.existsSync(file);
 }
+async function activateVisibleControl(locator) {
+  if (await locator.count().catch(() => 0) < 1) return false;
+  const control = locator.first();
+  if (!await control.isVisible().catch(() => false)) return false;
+  const clicked = await control.click({ timeout: 3000 }).then(() => true).catch(() => false);
+  if (clicked) return true;
+  return await control.evaluate((element) => {
+    element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
+    element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
+    element.click();
+    return true;
+  }).catch(() => false);
+}
 async function attachmentConfirmed(page, imagePath) {
   const fileName = path.basename(imagePath).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return await page.evaluate((namePattern) => {
@@ -346,22 +378,56 @@ async function adapterFileChooser(page, imagePath, root) {
     'button[aria-label*="upload" i]',
     'button[aria-label*="image" i]',
     'button[aria-label*="attach" i]',
+    'button[aria-label*="importation" i]',
     'button[aria-label*="importer" i]',
+    'button[aria-label*="outil" i]',
+    'button[aria-label*="tools" i]',
     'button[aria-label*="joindre" i]',
     'button[aria-label*="photo" i]',
+    'button:has-text("+")',
     '[role="button"][aria-label*="upload" i]',
     '[role="button"][aria-label*="image" i]',
     '[role="button"][aria-label*="attach" i]',
+    '[role="button"][aria-label*="importation" i]',
+    '[role="button"][aria-label*="outil" i]',
+    '[role="button"][aria-label*="tools" i]',
     '[role="button"][aria-label*="joindre" i]'
   ];
-  for (const selector of selectors) {
-    const control = page.locator(selector).first();
+  const directControls = selectors.map((selector) => page.locator(selector));
+  directControls.push(page.getByRole('button', { name: /Importation et outils|Upload|Importer|Joindre|Attach|Image/i }));
+  directControls.push(page.getByLabel(/Importation et outils|Upload|Importer|Joindre|Attach|Image/i));
+  directControls.push(page.getByRole('menuitem', { name: /Importer des fichiers|Upload files|Téléverser|Importer un fichier|Fichier/i }));
+  directControls.push(page.getByText(/Importer des fichiers|Upload files|Téléverser|Importer un fichier/i));
+  for (const candidate of directControls) {
+    const control = candidate.first();
     if (await control.count().catch(() => 0) < 1) continue;
     if (!await control.isVisible().catch(() => false)) continue;
     const chooserPromise = page.waitForEvent("filechooser", { timeout: 3000 }).catch(() => null);
-    await control.click({ timeout: 3000 }).catch(() => {});
+    await activateVisibleControl(control);
     const chooser = await chooserPromise;
-    if (!chooser) continue;
+    if (!chooser) {
+      await page.waitForTimeout(500);
+      const menuItems = [
+        page.getByRole('menuitem', { name: /Importer des fichiers|Upload files|Téléverser|Importer un fichier|Fichier/i }),
+        page.getByRole('button', { name: /Importer des fichiers|Upload files|Téléverser|Importer un fichier|Fichier/i }),
+        page.getByText(/Importer des fichiers|Upload files|Téléverser|Importer un fichier/i)
+      ];
+      for (const menuCandidate of menuItems) {
+        const menuControl = menuCandidate.first();
+        if (await menuControl.count().catch(() => 0) < 1) continue;
+        if (!await menuControl.isVisible().catch(() => false)) continue;
+        const nestedChooserPromise = page.waitForEvent("filechooser", { timeout: 3000 }).catch(() => null);
+        await activateVisibleControl(menuControl);
+        const nestedChooser = await nestedChooserPromise;
+        if (!nestedChooser) continue;
+        await nestedChooser.setFiles(imagePath).catch(() => {});
+        await page.waitForTimeout(1500);
+        const confirmed = await attachmentConfirmed(page, imagePath);
+        await screenshot(page, after);
+        return attempt("file_chooser", confirmed ? "ATTACHMENT_CONFIRMED" : "ATTACHMENT_NOT_CONFIRMED", confirmed, before, after, confirmed ? "Safe import menu opened file chooser." : "Import menu file chooser did not yield visible attachment proof.");
+      }
+      continue;
+    }
     await chooser.setFiles(imagePath).catch(() => {});
     await page.waitForTimeout(1500);
     const confirmed = await attachmentConfirmed(page, imagePath);
@@ -491,6 +557,23 @@ async function main() {
     }
     const root = args.adapterRoot;
     fs.mkdirSync(root, { recursive: true });
+    if (await attachmentConfirmed(page, args.imagePath)) {
+      result.adapter_attempts.push(attempt("existing_attachment", "ATTACHMENT_CONFIRMED", true, "", "", "Attachment preview already visible before prompt send."));
+      result.successful_adapter = "existing_attachment";
+      result.attachment_confirmed = true;
+      if (args.sendPrompt === "true") {
+        const sent = await sendVisualPrompt(page, Number(args.maxWaitSeconds || 90) * 1000);
+        result.prompt_sent = sent.prompt_sent;
+        result.response_read = sent.response_read;
+        result.response_json_valid = sent.response_json_valid;
+        result.visual_packet_result = sent.response_json_valid ? "GEMINI_VISUAL_PACKET_READY" : "GEMINI_VISUAL_RESPONSE_INVALID";
+      } else {
+        result.visual_packet_result = "GEMINI_UPLOAD_CONFIRMED";
+      }
+      writeJson(args.out, result);
+      console.log(JSON.stringify(result, null, 2));
+      return;
+    }
     for (const fn of [adapterNative, adapterFileChooser, adapterDragDrop, adapterClipboard]) {
       const one = await fn(page, args.imagePath, root);
       result.adapter_attempts.push(one);

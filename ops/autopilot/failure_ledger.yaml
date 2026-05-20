@@ -1,5 +1,5 @@
 schema_version: failure_ledger_v2
-updated_by: A20BE_GEMINI_UPLOAD_SECOND_PASS
+updated_by: A20BF_MCP_PLAYWRIGHT_SCREENSHOT_FIRST_WEB_CONTROL
 entries:
   - id: a20az-chatgpt-cdp-unavailable
     mission_id: A20AZ
@@ -78,30 +78,40 @@ entries:
     ntfy_alert_sent: true
     user_intervention_required: false
     loop_continued: true
+  - id: a20bf-shared-mcp-context-rejected-for-identity-isolation
+    mission_id: A20BF
+    failed_lane: shared_mcp_browser_context
+    reason: SHARED_BROWSER_CONTEXT_NOT_AUTHORITATIVE_FOR_DIFFERENT_SERVICE_IDENTITIES
+    recurrence_count: 1
+    parked_until: never_use_shared_context_for_chatgpt_and_gemini_identity_checks
+    do_not_repeat_rule: chatgpt_and_gemini_require_separate_dedicated_windows_profiles_and_cdp_ports
+    next_safe_alternative: dedicated_chatgpt_9222_and_gemini_9223_windows_with_screenshot_first_verdicts
+    ntfy_alert_sent: false
+    user_intervention_required: false
+    loop_continued: true
 last_run_summary:
-  mission_id: A20BE
-  blockers:
-    - GEMINI_MODEL_MENU_VISIBLE_TARGET_NOT_FOUND
-    - GEMINI_UPLOAD_UNAVAILABLE_DIAGNOSED
+  mission_id: A20BF
+  blockers: []
   resolved:
-    - GEMINI_PROFILE_ISOLATED_CDP_9223
-    - GEMINI_VISUAL_CONTROL_PAGE_USABLE
-    - SAFE_UPLOAD_ADAPTER_SEQUENCE_RECORDED
-    - CONTACT_SHEET_PRIMARY_REJECTED
-    - NTFY_UPLOAD_UNAVAILABLE_ALERT_SENT
-  repeated_blocked_lanes:
-    - gemini_visual_packet
+    - MCP_PLAYWRIGHT_AVAILABLE
+    - MCP_SCREENSHOT_CAPTURED_CHATGPT
+    - MCP_SCREENSHOT_CAPTURED_GEMINI
+    - DOM_ONLY_VERDICT_REJECTED
+    - CHATGPT_AJ_POOL_REDACTED_STATUS_LOADED
+    - SHARED_MCP_CONTEXT_REJECTED_FOR_IDENTITY_ISOLATION
+    - GEMINI_UPLOAD_CONFIRMED_FROM_VISIBLE_IMPORT_MENU
+    - GEMINI_VISUAL_PACKET_READY
+  repeated_blocked_lanes: []
   live_lanes_required: false
   loop_continued: true
   kill_switch_triggered: false
-  gemini_profile_isolated: true
-  gemini_cdp_port: 9223
-  gemini_page_opened: true
-  gemini_composer_usable: true
-  gemini_text_smoke: GEMINI_TEXT_SMOKE_RESPONSE_UNREAD
-  gemini_visual_packet: GEMINI_UPLOAD_UNAVAILABLE_DIAGNOSED
-  selected_model: MODEL_NOT_EXACT
-  gemini_lane_status: AVAILABLE_TEXT_ONLY_UPLOAD_UNAVAILABLE
+  mcp_playwright_available: true
+  chatgpt_screenshot_verdict: PAGE_USABLE
+  chatgpt_aj_pool_loaded: true
+  chatgpt_aj_threshold_50: true
+  gemini_screenshot_verdict: PAGE_USABLE
+  gemini_lane_status: VISUAL_READY
+  gemini_visual_packet: GEMINI_VISUAL_PACKET_READY
 policy:
   repeat_threshold: 2
   repeated_failure_action: avoid_lane_unless_explicitly_unparked
