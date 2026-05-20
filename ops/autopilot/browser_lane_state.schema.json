@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "neurochess.browser_lane_state.schema.json",
+  "title": "NeuroChess Browser Lane State",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "mission_id",
+    "service",
+    "cdp_port",
+    "profile_path_redacted",
+    "state",
+    "private_urls_redacted",
+    "secrets_redacted"
+  ],
+  "properties": {
+    "schema_version": { "const": "browser_lane_state_v1" },
+    "mission_id": { "type": "string" },
+    "service": { "enum": ["chatgpt", "gemini"] },
+    "cdp_port": { "type": "integer" },
+    "profile_path_redacted": { "type": "boolean" },
+    "profile_relative_path": { "type": "string" },
+    "state": { "type": "string" },
+    "cdp_reachable": { "type": "boolean" },
+    "browser_process_running": { "type": "boolean" },
+    "runtime_state_path": { "type": "string" },
+    "private_urls_redacted": { "type": "boolean" },
+    "secrets_redacted": { "type": "boolean" },
+    "no_credentials": { "type": "boolean" },
+    "no_verification_bypass": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

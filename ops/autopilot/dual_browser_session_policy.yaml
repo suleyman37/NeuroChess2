@@ -1,0 +1,25 @@
+schema_version: dual_browser_session_policy_v1
+mission_id: A20BD
+lanes:
+  chatgpt:
+    profile_dir: ops/autopilot/local/browser_profiles/chatgpt
+    cdp_port: 9222
+    service: chatgpt
+    start_mode: a_j_pool
+  gemini:
+    profile_dir: ops/autopilot/local/browser_profiles/gemini
+    cdp_port: 9223
+    service: gemini
+    start_url: https://gemini.google.com/app
+rules:
+  forbid_shared_profile: true
+  forbid_shared_cdp_port: true
+  screenshots_before_verdict: true
+  mcp_playwright_preferred: true
+  no_credentials: true
+  no_verification_bypass: true
+  ntfy_on_manual_account_action: true
+  park_lane_on_account_mismatch: true
+  continue_offline_on_lane_failure: true
+  no_paid_api: true
+  no_private_url_logging: true

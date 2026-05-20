@@ -17,6 +17,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 function Get-DefaultArtifactPath {
+    if ($MissionId -eq "A20BD") {
+        return (Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\dual_browser_profiles\A20BD_dual_profile_playwright_control_20260518")
+    }
     Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\browser_state_truth\A20BA_composer_first_classifier_20260518"
 }
 
@@ -352,7 +355,7 @@ function Get-ReachableEndpoint {
     param([string]$Preferred)
     $candidates = @()
     if (-not [string]::IsNullOrWhiteSpace($Preferred)) { $candidates += $Preferred }
-    $candidates += @("http://127.0.0.1:9229", "http://127.0.0.1:9222")
+    $candidates += @("http://127.0.0.1:9222", "http://127.0.0.1:9229")
     foreach ($candidate in @($candidates | Select-Object -Unique)) {
         try {
             $response = Invoke-WebRequest -UseBasicParsing -Uri ($candidate.TrimEnd("/") + "/json/version") -TimeoutSec 2

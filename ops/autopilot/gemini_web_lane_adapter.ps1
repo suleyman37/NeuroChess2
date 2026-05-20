@@ -5,6 +5,7 @@ param(
     [string]$VisualEvidencePath = "",
     [string]$MessageFile = "",
     [string]$Endpoint = "",
+    [int]$CDPPort = 9223,
     [string]$ArtifactPath = "",
     [string]$OutPath = "",
     [ValidateSet("", "PAGE_USABLE", "HUMAN_ACTION_REQUIRED", "PAGE_LOADING", "UNCLASSIFIED_PAGE_STATE")]
@@ -23,6 +24,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 function Get-DefaultArtifactPath {
+    if ($MissionId -eq "A20BD") {
+        return (Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\dual_browser_profiles\A20BD_dual_profile_playwright_control_20260518")
+    }
     Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BC_gemini_3_5_flash_extended_lane_20260518"
 }
 
@@ -79,7 +83,7 @@ function Get-ReachableEndpoint {
     param([string]$Preferred)
     $candidates = @()
     if (-not [string]::IsNullOrWhiteSpace($Preferred)) { $candidates += $Preferred }
-    $candidates += @("http://127.0.0.1:9229", "http://127.0.0.1:9222")
+    $candidates += @("http://127.0.0.1:$CDPPort")
     foreach ($candidate in @($candidates | Select-Object -Unique)) {
         try {
             $response = Invoke-WebRequest -UseBasicParsing -Uri ($candidate.TrimEnd("/") + "/json/version") -TimeoutSec 2
@@ -87,6 +91,24 @@ function Get-ReachableEndpoint {
         } catch {}
     }
     return ""
+}
+
+function Invoke-VisualControl {
+    param([string]$Classification = "")
+    $args = @(
+        "-Mode", "CaptureState",
+        "-Service", "gemini",
+        "-CDPPort", ([string]$CDPPort),
+        "-MissionId", $MissionId,
+        "-ArtifactPath", $ArtifactPath,
+        "-NoPrompt"
+    )
+    if ($DryRun) { $args += "-DryRun" }
+    if (-not [string]::IsNullOrWhiteSpace($Classification)) { $args += @("-MockClassification", $Classification) }
+    if ($MockComposerVisible) { $args += "-MockComposerVisible" }
+    if ($MockUploadAvailable) { $args += "-MockUploadControlVisible" }
+    $output = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "playwright_visual_control.ps1") @args 2>&1
+    try { return Convert-JsonOutput -Output $output } catch { return $null }
 }
 
 function Invoke-Classifier {
@@ -143,7 +165,7 @@ function Invoke-GeminiBrowserProbe {
     param([string]$Action, [string]$ResolvedEndpoint, [string]$StartUrl, [string]$Prompt, [string]$ImagePath)
     $probeDir = Join-Path $ArtifactPath "browser_probe"
     New-Item -ItemType Directory -Force -Path $probeDir | Out-Null
-    $scriptPath = Join-Path $probeDir "gemini_web_lane_probe.mjs"
+    $scriptPath = Join-Path $probeDir ("gemini_web_lane_probe_{0}_{1}.mjs" -f $Action, [guid]::NewGuid().ToString("N"))
     $probeOut = Join-Path $probeDir ("{0}_result.json" -f $Action)
     $screenshotPath = Join-Path $ArtifactPath ("screenshots\gemini_{0}_{1}.png" -f $Action, (Get-Date -Format "yyyyMMdd_HHmmss"))
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $screenshotPath) | Out-Null
@@ -575,6 +597,23 @@ Do not include implementation instructions, private URLs, or credentials.
 "@
     }
     $probe = Invoke-GeminiBrowserProbe -Action $action -ResolvedEndpoint $resolvedEndpoint -StartUrl ([string]$config.start_url) -Prompt $prompt -ImagePath $VisualEvidencePath
+}
+
+$visualClassification = ""
+if (-not [string]::IsNullOrWhiteSpace($MockClassification)) { $visualClassification = $MockClassification }
+$visual = Invoke-VisualControl -Classification $visualClassification
+if ($visual) {
+    $probe.composer_visible = [bool]$visual.composer_visible
+    $probe.composer_enabled = [bool]$visual.composer_enabled
+    $probe.send_available = [bool]$visual.send_available
+    $probe.upload_available = [bool]$visual.upload_control_visible
+    $probe.model_selector_found = [bool]$visual.model_selector_visible
+    $probe.foreground_blocker_visible = [bool]$visual.foreground_blocker_detected
+    $probe.direct_blocker_selector_visible = [bool]$visual.foreground_blocker_detected
+    if (-not [string]::IsNullOrWhiteSpace([string]$visual.screenshot_path)) { $probe.screenshot_path = [string]$visual.screenshot_path }
+    $statusBase.visual_control_classification = [string]$visual.classification
+    $statusBase.screenshot_before_verdict = [bool]$visual.screenshot_before_verdict
+    $statusBase.playwright_visual_control = "PLAYWRIGHT_FALLBACK"
 }
 
 $classifier = Invoke-Classifier -Signals $probe

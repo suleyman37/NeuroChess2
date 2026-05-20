@@ -13,6 +13,8 @@ lane_states:
   - PARKED_RATE_LIMITED
   - PARKED_SESSION_CLOSED
   - PARKED_UPLOAD_UNAVAILABLE
+  - PARKED_ACCOUNT_MISMATCH
+  - PARKED_SAFETY_STOP
   - PARKED_UNCLASSIFIED_PAGE_STATE
   - FAILED_INVALID_RESPONSE
   - SKIPPED_NOT_CONFIGURED
@@ -32,6 +34,21 @@ problems:
     action: allow supervisor packet send
     lane_state: AVAILABLE
     retry_after_minutes: 0
+  CHATGPT_PROFILE_READY:
+    detect: isolated ChatGPT profile and CDP lane are ready
+    action: allow ChatGPT A-J supervisor checks under composer-first classifier
+    lane_state: AVAILABLE
+    retry_after_minutes: 0
+  CHATGPT_PROFILE_EXISTS_LOGIN_REQUIRED:
+    detect: isolated ChatGPT profile exists but current UI needs login or verification
+    action: ntfy alert, park ChatGPT lane, continue offline
+    lane_state: PARKED_AUTH_REQUIRED
+    retry_after_minutes: 60
+  CHATGPT_WRONG_ACCOUNT_OR_PROJECT_PARKED:
+    detect: ChatGPT profile appears to be on the wrong account or project without printing account details
+    action: ntfy alert, park ChatGPT lane, continue offline
+    lane_state: PARKED_AUTH_REQUIRED
+    retry_after_minutes: 60
   CHATGPT_UNCLASSIFIED_PAGE_STATE:
     detect: page state not recognized by orchestrator
     action: park lane, write diagnostic artifact, avoid repeated alert spam
@@ -52,6 +69,26 @@ problems:
     action: allow optional Gemini Web visual packet attempts
     lane_state: AVAILABLE
     retry_after_minutes: 0
+  GEMINI_PROFILE_READY:
+    detect: isolated Gemini profile and CDP lane are ready
+    action: allow optional Gemini Web checks under visual-control protocol
+    lane_state: AVAILABLE
+    retry_after_minutes: 0
+  GEMINI_PROFILE_EXISTS_LOGIN_REQUIRED:
+    detect: isolated Gemini profile exists but login or manual account selection is required
+    action: ntfy alert, park Gemini lane, continue offline
+    lane_state: PARKED_AUTH_REQUIRED
+    retry_after_minutes: 60
+  GEMINI_WRONG_ACCOUNT_OR_PLAN_PARKED:
+    detect: Gemini page appears to use the wrong account or plan without printing account details
+    action: ntfy alert, park Gemini lane, continue offline
+    lane_state: PARKED_ACCOUNT_MISMATCH
+    retry_after_minutes: 60
+  SHARED_BROWSER_PROFILE_FORBIDDEN:
+    detect: ChatGPT and Gemini share a profile path or CDP port
+    action: stop the browser-lane attempt, write diagnostic artifact, continue local fallback
+    lane_state: PARKED_SAFETY_STOP
+    retry_after_minutes: 240
   GEMINI_WEB_LANE_READY:
     detect: Gemini Web composer usable and target model/mode selected or confirmed
     action: include Gemini as optional visual supervisor, never as sole authority

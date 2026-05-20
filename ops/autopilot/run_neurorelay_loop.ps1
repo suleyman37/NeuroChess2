@@ -35,6 +35,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\true_overnight_composer_first\A20BB_true_overnight_composer_first_20260518"
     } elseif ($MissionId -eq "A20BC") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BC_gemini_3_5_flash_extended_lane_20260518"
+    } elseif ($MissionId -eq "A20BD") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\dual_browser_profiles\A20BD_dual_profile_playwright_control_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -238,6 +240,41 @@ function Test-A20BBComposerFirstRunReady {
 
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20BD") {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20BE_TRUE_OVERNIGHT_WITH_CHATGPT_AND_GEMINI_DUAL_PROFILES"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Run the next bounded live-supervised overnight only after ChatGPT and Gemini browser lanes report isolated profile status."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/**", "scripts/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("chatgpt_profile_status_reported", "gemini_profile_status_reported", "screenshots_external_only", "local_fallback_preserved")
+            },
+            [pscustomobject]@{
+                id = "A20BE_GEMINI_LOGIN_MANUAL_THEN_RECHECK"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Let the user manually log into the isolated Gemini profile, then rerun visual-control health checks with zero API use and auth safety preserved."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("manual_login_not_automated", "gemini_profile_rechecked", "no_secrets_logged")
+            },
+            [pscustomobject]@{
+                id = "A20BE_GEMINI_UPLOAD_SECOND_PASS"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Rerun Gemini upload-control and isolated visual-packet smoke after model/account state is stable."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("upload_control_status", "isolated_screenshot_only", "local_fallback_preserved")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $remaining = @($objectives | Where-Object { $avoid -notcontains [string]$_.id })
+        if ($remaining.Count -gt 0) { return $remaining[0] }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20BB" -and (Test-A20BBComposerFirstRunReady)) {
         $objectives = @(
             [pscustomobject]@{
@@ -642,7 +679,7 @@ function Run-OneRelayIteration {
             "-StatePath", (Join-Path $iterDir "external_judge_sre_state.json"),
             "-OutPath", (Join-Path $iterDir "external_judge_sre_health.json")
         )
-        if ($NoLiveWeb -or $MissionId -ne "A20BC") { $sreArgs += "-DryRun" }
+        if ($NoLiveWeb -or $MissionId -notin @("A20BC", "A20BD")) { $sreArgs += "-DryRun" }
         $sre = Invoke-JsonScript -ScriptPath $srePath -Arguments $sreArgs
     }
 

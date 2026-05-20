@@ -226,3 +226,21 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20BC
+  - id: memory-a20bd-dual-browser-profile-isolation
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "ChatGPT Web and Gemini Web must not share a browser profile, CDP port, or account state."
+    evidence: "A20BD created dedicated gitignored profiles for ChatGPT and Gemini, with separate CDP ports 9222 and 9223."
+    action_rule: "Launch, classify, and smoke each Web lane only through its service-specific profile and CDP endpoint."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BD
+  - id: memory-a20bd-visual-control-before-verdict
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "Every Web UI lane verdict needs screenshot, DOM probe, and locator evidence before action."
+    evidence: "A20BD Playwright visual control captured external screenshots and redacted DOM probes before classifying ChatGPT and Gemini PAGE_USABLE."
+    action_rule: "Do not conclude auth, account mismatch, model selector missing, upload unavailable, or composer missing without current visual-control evidence."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BD

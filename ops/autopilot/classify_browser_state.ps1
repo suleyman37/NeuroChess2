@@ -131,7 +131,13 @@ function Get-ReachableEndpoint {
     param([string]$Preferred)
     $candidates = @()
     if (-not [string]::IsNullOrWhiteSpace($Preferred)) { $candidates += $Preferred }
-    $candidates += @("http://127.0.0.1:9229", "http://127.0.0.1:9222")
+    if ($Service -eq "chatgpt") {
+        $candidates += @("http://127.0.0.1:9222", "http://127.0.0.1:9229")
+    } elseif ($Service -eq "gemini") {
+        $candidates += @("http://127.0.0.1:9223")
+    } else {
+        $candidates += @("http://127.0.0.1:9222", "http://127.0.0.1:9223", "http://127.0.0.1:9229")
+    }
     foreach ($candidate in @($candidates | Select-Object -Unique)) {
         try {
             $response = Invoke-WebRequest -UseBasicParsing -Uri ($candidate.TrimEnd("/") + "/json/version") -TimeoutSec 2
