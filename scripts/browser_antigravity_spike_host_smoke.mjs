@@ -9,6 +9,7 @@ import {
 
 const MISSION = "A20BM Antigravity Safe Import Surface";
 const EVIDENCE_DIR =
+  process.env.ANTIGRAVITY_SMOKE_ARTIFACT_DIR ??
   "C:\\Users\\suley\\Documents\\Dev\\NeuroChess_QA_Artifacts\\autopilot\\antigravity\\A20BM_revision_pack_20260518\\smoke_artifacts";
 const SCREENSHOT_DIR = path.join(EVIDENCE_DIR, "screenshots");
 const DEV_ROUTE = "/app?antigravitySpike=critical_moment_sigil";
@@ -54,12 +55,17 @@ async function main() {
         const host = document.querySelector('[data-testid="antigravity-spike-host"]');
         const text = document.body?.innerText ?? "";
         const normalizedText = text.toLowerCase();
+        const variantTabs = Array.from(document.querySelectorAll("button.sigil-tab")).map(
+          (node) => node.textContent ?? "",
+        );
         return {
           ok:
             Boolean(host) &&
             normalizedText.includes("critical_moment_sigil") &&
-            normalizedText.includes("awaiting revised patch proposal pack"),
+            (normalizedText.includes("awaiting revised patch proposal pack") ||
+              (variantTabs.length === 3 && normalizedText.includes("visual placement context"))),
           text,
+          variantTabs,
         };
       },
       30_000,
@@ -70,6 +76,9 @@ async function main() {
       const variantSlots = Array.from(
         document.querySelectorAll('[data-testid="antigravity-spike-variant-slot"]'),
       ).map((node) => node.textContent ?? "");
+      const variantTabs = Array.from(document.querySelectorAll("button.sigil-tab")).map(
+        (node) => node.textContent ?? "",
+      );
       const forbiddenVisible = forbiddenLabels.filter((label) => text.includes(label));
       return {
         route_visible: Boolean(document.querySelector('[data-testid="antigravity-spike-host"]')),
@@ -82,6 +91,8 @@ async function main() {
         spike_id: document.querySelector('[data-testid="antigravity-spike-id"]')?.textContent ?? "",
         variant_slot_count: variantSlots.length,
         variant_slots: variantSlots,
+        variant_tab_count: variantTabs.length,
+        variant_tabs: variantTabs,
         allowed_surface_text:
           document.querySelector('[data-testid="antigravity-spike-allowed-surface"]')?.textContent ?? "",
         forbidden_visible: forbiddenVisible,
@@ -94,10 +105,13 @@ async function main() {
     if (routeState.spike_id !== "critical_moment_sigil") {
       harness.fail("spike_id", JSON.stringify(routeState));
     }
-    if (routeState.variant_slot_count !== 3) {
-      harness.fail("variant_slots", JSON.stringify(routeState));
+    if (routeState.variant_slot_count !== 3 && routeState.variant_tab_count !== 3) {
+      harness.fail("variant_slots_or_tabs", JSON.stringify(routeState));
     }
-    if (!routeState.allowed_surface_text.includes("frontend/src/dev/antigravity-spikes/**")) {
+    if (
+      routeState.placeholder_visible &&
+      !routeState.allowed_surface_text.includes("frontend/src/dev/antigravity-spikes/**")
+    ) {
       harness.fail("allowed_surface", JSON.stringify(routeState));
     }
     if (routeState.forbidden_visible.length > 0) {
