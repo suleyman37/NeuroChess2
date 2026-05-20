@@ -7,7 +7,7 @@ export const antigravitySpikeRegistry = {
     title: "Critical Moment Sigil",
     description:
       "Reserved DEV-only mount for Antigravity visual variants around the moment when a chess decision becomes teachable.",
-    status: "awaiting_revision",
+    status: "accepted_dev_only",
     objective: "critical_moment_sigil visual variant spike",
     allowedPaths: [
       "frontend/src/dev/antigravity-spikes/**",
@@ -19,6 +19,7 @@ export const antigravitySpikeRegistry = {
       "Signature Identity variant",
       "Radical but Board-Safe variant",
     ],
+    componentLoader: () => import("./CriticalMomentSigilSpike"),
   },
 } satisfies Record<string, AntigravitySpikeDefinition>;
 
