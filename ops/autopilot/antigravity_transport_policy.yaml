@@ -1,0 +1,55 @@
+schema_version: antigravity_transport_policy_v1
+mission_id: A20BK
+
+absolute_rules:
+  screenshot_before_gui_verdict: true
+  process_list_only_ready_forbidden: true
+  dom_only_verdict_forbidden: true
+  blind_typing_forbidden: true
+  official_repo_workspace_forbidden: true
+  antigravity_commit_forbidden: true
+  antigravity_push_forbidden: true
+  road_to_v2_forbidden: true
+
+transport_order:
+  - cli
+  - local_server
+  - protocol_handler
+  - file_inbox_outbox
+  - browser_web_ui
+  - desktop_gui
+  - manual_fallback
+
+safe_transport_criteria:
+  targets_antigravity_specifically: true
+  sandbox_worktree_required: true
+  official_repo_direct_write_forbidden: true
+  patch_proposal_pack_required: true
+  secrets_forbidden: true
+  paid_api_forbidden: true
+  human_verification_bypass_forbidden: true
+  bounded_and_stoppable: true
+  auditable_artifacts_required: true
+
+unsafe_transport_criteria:
+  unidentified_window_typing: unsafe
+  official_repo_workspace: unsafe
+  can_commit_or_push_directly: unsafe
+  requires_credentials: unsafe
+  hidden_outputs: unsafe
+  sandbox_path_not_proven: unsafe
+  proposal_pack_not_supported: unsafe
+  modifies_files_without_pack: unsafe
+
+file_bridge:
+  inbox: "external artifact path only"
+  outbox: "external artifact path only"
+  safe_manual_fallback: true
+  automated_ready_requires_monitor_or_cli: true
+
+gui:
+  allowed_only_with_screenshot: true
+  must_identify_antigravity_window: true
+  must_prove_sandbox_worktree: true
+  must_prove_outbox_pack: true
+  no_blind_typing: true
