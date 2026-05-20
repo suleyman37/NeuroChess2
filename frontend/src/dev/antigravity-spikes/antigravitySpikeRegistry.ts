@@ -21,6 +21,25 @@ export const antigravitySpikeRegistry = {
     ],
     componentLoader: () => import("./CriticalMomentSigilSpike"),
   },
+  memory_cabinet: {
+    id: "memory_cabinet",
+    routeParam: "memory_cabinet",
+    title: "Memory Cabinet",
+    description:
+      "DEV-only mount for visual variants representing remembered fragile positions, reviewed moments, and return points.",
+    status: "proposal_ready",
+    objective: "memory_cabinet visual variant spike",
+    allowedPaths: [
+      "frontend/src/dev/antigravity-spikes/**",
+      "scripts/browser_antigravity_*_smoke.mjs",
+    ],
+    expectedOutputs: [
+      "Premium Clarity variant",
+      "Signature Identity variant",
+      "Radical but Board-Safe variant",
+    ],
+    componentLoader: () => import("./MemoryCabinetSpike"),
+  },
 } satisfies Record<string, AntigravitySpikeDefinition>;
 
 export type AntigravitySpikeId = keyof typeof antigravitySpikeRegistry;
