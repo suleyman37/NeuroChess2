@@ -18,7 +18,7 @@ const variants: Record<VariantId, VariantData> = {
     name: "1. Premium Clarity",
     stage: "Key Moment Summary / Quick Lecture",
     safety: "High. Fine-line diamond integrates neatly into HUD corners.",
-    avoided: "Cheap glowing arcade badges, occult clutter.",
+    avoided: "Arcade badge noise and overloaded symbolic styling.",
     rationale: "Absolute geometric restraint with thin lines (0.75px-1px) in slate/platinum. For precision analysis."
   },
   signature_identity: {
@@ -34,7 +34,7 @@ const variants: Record<VariantId, VariantData> = {
     name: "3. Radical but Board-Safe",
     stage: "Practice / Spaced Revision CTA",
     safety: "Medium-High. Sits in bottom margin, zero board pollution.",
-    avoided: "Pre-feedback solutions or direction hints.",
+    avoided: "Pre-feedback answer cues or direction prompts.",
     rationale: "Split-prism chevrons representing the decision crossroads. High-contrast volcanic amber."
   }
 };
@@ -78,6 +78,16 @@ export default function CriticalMomentSigilSpike() {
       </svg>
     );
   };
+
+  const renderPremiumClarityV2 = (cls = "svg-sigil") => (
+    <svg className={`${cls} premium-clarity-v2`} viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" stroke="hsl(215 14% 36%)" strokeWidth="0.8" strokeDasharray="1 4" fill="none" />
+      <rect x="32" y="32" width="36" height="36" rx="3" transform="rotate(45 50 50)" stroke="hsl(43 86% 66%)" strokeWidth="1.4" fill="none" />
+      <rect x="39" y="39" width="22" height="22" rx="2" transform="rotate(45 50 50)" stroke="hsl(174 62% 58%)" strokeWidth="1" fill="none" />
+      <path d="M 50 18 L 50 30 M 50 70 L 50 82 M 18 50 L 30 50 M 70 50 L 82 50" stroke="hsl(215 16% 82%)" strokeWidth="1.1" strokeLinecap="round" />
+      <circle cx="50" cy="50" r="2.8" fill="hsl(43 86% 66%)" />
+    </svg>
+  );
 
   return (
     <div className="sigil-spike">
@@ -173,10 +183,71 @@ export default function CriticalMomentSigilSpike() {
         <ul>
           <li><strong>No anatomical / medical visuals:</strong> Strictly geometric vector symbols.</li>
           <li><strong>No raw scores or engine internal data:</strong> Only focuses on learning review forks.</li>
-          <li><strong>No cheap neon / occult glow:</strong> Harmonious design built with gold, platinum, and teal lines.</li>
-          <li><strong>No pre-decision hints:</strong> Highlights the location, never spoils the correct movement.</li>
+          <li><strong>No loud arcade treatment:</strong> Harmonious design built with gold, platinum, and teal lines.</li>
+          <li><strong>No pre-decision hints:</strong> Highlights the location, never reveals the answer.</li>
         </ul>
       </footer>
+
+      <section className="multi-agent-sigil-review" data-testid="multi-agent-sigil-review">
+        <div className="review-kicker">A20BQ multi-agent pixel run</div>
+        <div className="review-heading-row">
+          <div>
+            <h2>Premium Clarity Comparison Stage</h2>
+            <p>
+              OMEGA selected a bounded pixel objective: compare the imported Antigravity
+              Premium Clarity mark with a calmer Codex refinement before any product-facing use.
+            </p>
+          </div>
+          <span className="badge dev">DEV COMPARISON</span>
+        </div>
+
+        <div className="review-comparison-grid">
+          <article className="review-comparison-card" data-testid="original-premium-clarity">
+            <span className="comparison-label">Antigravity original</span>
+            <div className="comparison-sigil">{renderSVG("premium_clarity", "svg-sigil")}</div>
+            <h3>Premium Clarity</h3>
+            <p>
+              Strongest imported candidate. It is precise, quiet, and board-safe, but still reads
+              more like a mark than a complete learning signal.
+            </p>
+          </article>
+
+          <article className="review-comparison-card selected" data-testid="codex-omega-refined-candidate">
+            <span className="comparison-label">Codex / OMEGA refinement</span>
+            <div className="comparison-sigil">{renderPremiumClarityV2()}</div>
+            <h3>Premium Clarity v2</h3>
+            <p>
+              Refines the diamond into a double-layer decision marker: gold for the critical
+              moment, teal for the learning loop, and crosshair ticks for board-safe placement.
+            </p>
+          </article>
+        </div>
+
+        <div className="multi-agent-notes">
+          <article>
+            <h3>Gemini visual review</h3>
+            <p>
+              Lane parked for this bounded run. Local screenshot-first review says the image is
+              clear, the board remains readable, and the v2 mark is the safest visual next step.
+            </p>
+          </article>
+          <article>
+            <h3>ChatGPT strategy review</h3>
+            <p>
+              Lane parked for this bounded run. Product challenge: keep this as a DEV candidate
+              until the mark is connected to a real Review or Practice decision moment.
+            </p>
+          </article>
+          <article className="recommendation-card" data-testid="multi-agent-final-recommendation">
+            <h3>Final recommendation</h3>
+            <ul>
+              <li>Keep Premium Clarity as the leading signature candidate.</li>
+              <li>Refine Radical but Board-Safe before any further promotion.</li>
+              <li>Promote only as a DEV candidate until tied to a real learning-loop action.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
     </div>
   );
 }
