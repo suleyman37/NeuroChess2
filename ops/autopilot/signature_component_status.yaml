@@ -1,9 +1,10 @@
 schema_version: signature_component_status_v1
-updated_by: A20AY_FULL_NIGHT_REAL_PIXEL_RUN
+updated_by: A20BT_CRITICAL_MOMENT_SIGIL_FINALIZATION_PLAN
 statuses:
   - STATUS_0_NOT_STARTED
   - STATUS_1_PROBED
   - STATUS_2_TRIPLED
+  - STATUS_2_REVIEWED_DEV_ONLY
   - STATUS_3_VOTED
   - STATUS_4_INTEGRATED
   - STATUS_5_PROMOTED
@@ -68,11 +69,39 @@ candidate_statuses:
       crowd_validation_claim_allowed: false
   - id: critical_moment_sigil
     name: Critical Moment Sigil
-    status: STATUS_1_PROBED
+    status: STATUS_2_REVIEWED_DEV_ONLY
     selection_status: SELECTED_SIGNATURE_FIVE
-    marker: SELECTED_FOR_LATER_VARIANTS
+    marker: CANONICAL_DEV_CANDIDATE_SELECTED
     rank: 3
     weighted_score: 4.65
+    route: /app?antigravitySpike=critical_moment_sigil
+    canonical_dev_candidate:
+      name: Premium Clarity v3
+      status: CANONICAL_DEV_CANDIDATE
+      source_mission: A20BR_A20BS_MULTI_AGENT_REFINEMENT
+      board_safety: PASS
+      anti_weirdness: PASS_WITH_MONITORING
+      product_integration_allowed: false
+    variants:
+      premium_clarity_original:
+        status: REFERENCE_ORIGINAL
+      premium_clarity_v2:
+        status: SECONDARY_REFERENCE
+      premium_clarity_v3:
+        status: CANONICAL_DEV_CANDIDATE
+      radical_but_board_safe_original:
+        status: PARKED_HIGHER_RISK
+      radical_but_board_safe_v2:
+        status: EXPERIMENTAL_RESERVE
+      signature_identity:
+        status: PARKED_REFERENCE
+    finalization:
+      status: STATUS_2_REVIEWED_DEV_ONLY
+      source_report: docs/autopilot/A20BT_CRITICAL_MOMENT_SIGIL_FINALIZATION_PLAN_REPORT.md
+      evidence_status: SCREENSHOT_AND_MULTI_AGENT_REVIEWED
+      gemini_visual_packet: AVAILABLE_ADVISORY
+      chatgpt_strategy_packet: USEFUL_BUT_NOT_STRICT
+      next_recommended_component: memory_cabinet
   - id: decision_pressure_field
     name: Decision Pressure Field
     status: STATUS_1_PROBED
@@ -168,5 +197,5 @@ full_night_real_pixel_run:
   public_release_made: false
   road_to_v2_pushed: false
   product_integration_made: false
-next_recommended_objective: A20AZ_ROAD_TO_V2_MERGE_AUDIT_PLAN
+next_recommended_objective: A20BU_SECOND_ANTIGRAVITY_VISUAL_SPIKE_MEMORY_CABINET
 score_rule: Sum selected final-five status indexes and divide by 25.
