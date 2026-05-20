@@ -128,6 +128,11 @@ proposal_pack:
 import_gate:
   max_files: 20
   max_diff_lines: 800
+  safe_import_surface:
+    - "frontend/src/dev/antigravity-spikes/**"
+    - "scripts/browser_antigravity_*_smoke.mjs"
+    - "docs/autopilot/A20ANTIGRAVITY*_REPORT.md"
+  app_tsx_mount_owned_by_codex_only: true
   reject_missing_nonce: true
   reject_duplicate_nonce: true
   reject_base_commit_mismatch: true
@@ -138,6 +143,8 @@ import_gate:
   reject_images_and_screenshots: true
   reject_secrets_private_urls_cookies_tokens: true
   reject_v1_route_modification: true
+  reject_frontend_dev_paths_outside_antigravity_spikes: true
+  reject_invalid_git_patch_diff: true
   require_summary_risk_test_reports: true
   require_clear_objective: true
   require_rollback_path: true
@@ -163,11 +170,13 @@ first_antigravity_work_order:
   minimum_candidates: 12
   selected_task: critical_moment_sigil_visual_variant_spike
   allowed_paths:
-    - "frontend/src/dev/antigravity/critical_moment_sigil/**"
-    - "scripts/browser_antigravity_critical_moment_sigil_smoke.mjs"
+    - "frontend/src/dev/antigravity-spikes/**"
+    - "scripts/browser_antigravity_*_smoke.mjs"
+    - "docs/autopilot/A20ANTIGRAVITY*_REPORT.md"
   forbidden_paths:
     - "backend/**"
     - "frontend/src/App.tsx"
+    - "frontend/src/dev/** except frontend/src/dev/antigravity-spikes/**"
     - "package.json"
     - "package-lock.json"
     - "ops/autopilot/local/**"

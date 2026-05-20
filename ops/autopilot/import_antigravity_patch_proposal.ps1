@@ -76,10 +76,20 @@ function Test-PathAllowed {
     return $false
 }
 
+function Test-AntigravityImportSurface {
+    param([string]$PathText)
+    $path = Normalize-PathText -PathText $PathText
+    if ($path -like "frontend/src/dev/antigravity-spikes/*") { return $true }
+    if ($path -like "scripts/browser_antigravity_*_smoke.mjs") { return $true }
+    if ($path -like "docs/autopilot/A20ANTIGRAVITY*_REPORT.md") { return $true }
+    return $false
+}
+
 function Test-ForbiddenPath {
     param([string]$PathText)
     $path = Normalize-PathText -PathText $PathText
     if ($path -match '^(backend|frontend)/(?!src/dev/)') { return "PRODUCT_PATH_FORBIDDEN" }
+    if ($path -match '^frontend/src/dev/' -and $path -notlike 'frontend/src/dev/antigravity-spikes/*') { return "DEV_IMPORT_SURFACE_FORBIDDEN" }
     if ($path -match '(^|/)package(-lock)?\.json$') { return "PACKAGE_FILE_FORBIDDEN" }
     if ($path -match '\.(db|sqlite|sqlite3)$') { return "DB_FILE_FORBIDDEN" }
     if ($path -match '^ops/autopilot/(local|runtime)/') { return "LOCAL_RUNTIME_FORBIDDEN" }
@@ -99,6 +109,24 @@ function Test-SecretText {
     if ($Text -match 'https://chatgpt\.com/g/') { return $true }
     if ($Text -match 'https://gemini\.google\.com/app/.+') { return $true }
     return $false
+}
+
+function Test-PatchApplyCheck {
+    param([string]$PatchPath)
+    $repoRoot = Get-RepoRoot
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = & git -C $repoRoot apply --check -- $PatchPath 2>&1
+        $exitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+    if ($exitCode -ne 0) {
+        $detail = (($output | ForEach-Object { $_.ToString() }) -join " ").Trim() -replace '\s+', ' '
+        return [pscustomobject]@{ ok = $false; detail = $detail }
+    }
+    return [pscustomobject]@{ ok = $true; detail = "" }
 }
 
 function New-BaseResult {
@@ -169,6 +197,7 @@ function Invoke-Validate {
     if ([string]::IsNullOrWhiteSpace([string]$proposal.objective)) { $result.rejected_reasons += "OBJECTIVE_MISSING" }
     if ([string]::IsNullOrWhiteSpace([string]$proposal.rollback_plan) -and $notesText -notmatch '(?i)rollback') { $result.rejected_reasons += "ROLLBACK_PATH_MISSING" }
     if ([string]$proposal.base_commit -ne [string]$result.expected_base_commit) { $result.rejected_reasons += "BASE_COMMIT_MISMATCH" }
+    if ([string]$patchText -notmatch '(?m)^diff --git a/.+ b/.+') { $result.rejected_reasons += "PATCH_DIFF_FORMAT_INVALID" }
     if (@($allFiles).Count -gt $MaxFiles) { $result.rejected_reasons += "MAX_FILES_EXCEEDED" }
     if ([int]$result.diff_lines -gt $MaxDiffLines) { $result.rejected_reasons += "MAX_DIFF_LINES_EXCEEDED" }
     if (@($proposal.dependencies_added).Count -gt 0) { $result.rejected_reasons += "DEPENDENCIES_ADDED_FORBIDDEN" }
@@ -185,6 +214,9 @@ function Invoke-Validate {
     foreach ($file in $allFiles) {
         $reason = Test-ForbiddenPath -PathText $file
         if ($reason) { $result.rejected_reasons += "$reason`:$file" }
+        if (-not (Test-AntigravityImportSurface -PathText $file)) {
+            $result.rejected_reasons += "IMPORT_SURFACE_FORBIDDEN:$file"
+        }
         if (-not (Test-PathAllowed -PathText $file -AllowedPaths @($proposal.allowed_paths))) {
             $result.rejected_reasons += "PATH_NOT_ALLOWED:$file"
         }
@@ -198,6 +230,8 @@ function Invoke-Validate {
     if ($summaryText.Trim().Length -lt 10) { $result.rejected_reasons += "SUMMARY_TOO_SHORT" }
     if ($riskText.Trim().Length -lt 5) { $result.rejected_reasons += "RISK_REPORT_MISSING" }
     if ($testText.Trim().Length -lt 5) { $result.rejected_reasons += "TEST_REPORT_MISSING" }
+    $patchApplyCheck = Test-PatchApplyCheck -PatchPath (Join-Path $ProposalDir "patch.diff")
+    if (-not [bool]$patchApplyCheck.ok) { $result.rejected_reasons += "PATCH_APPLY_CHECK_FAILED" }
 
     if (@($result.rejected_reasons).Count -eq 0) {
         $result.status = "ANTIGRAVITY_PROPOSAL_VALID"

@@ -1,0 +1,222 @@
+.antigravity-spike-host {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 28px;
+  color: hsl(42 28% 94%);
+  background:
+    linear-gradient(90deg, hsl(164 35% 8% / 0.88), transparent 48%, hsl(349 32% 10% / 0.74)),
+    linear-gradient(180deg, hsl(216 22% 7%), hsl(32 24% 8%));
+  font-family: Aptos, "Segoe UI", system-ui, sans-serif;
+}
+
+.antigravity-spike-host *,
+.antigravity-spike-host *::before,
+.antigravity-spike-host *::after {
+  box-sizing: border-box;
+}
+
+.ag-spike-hero,
+.ag-spike-contract,
+.ag-spike-placeholder {
+  width: min(1480px, 100%);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.ag-spike-hero {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid hsl(43 80% 64% / 0.3);
+}
+
+.ag-spike-hero p,
+.ag-spike-hero h1,
+.ag-spike-hero span,
+.ag-spike-hero small,
+.ag-spike-contract p,
+.ag-spike-contract strong,
+.ag-spike-band p,
+.ag-spike-band strong,
+.ag-spike-variant-slot h2,
+.ag-spike-variant-slot p,
+.ag-spike-variant-slot span,
+.ag-spike-surface h2,
+.ag-spike-surface li {
+  margin: 0;
+}
+
+.ag-spike-hero p,
+.ag-spike-contract p,
+.ag-spike-band p,
+.ag-spike-variant-slot span {
+  color: hsl(43 86% 66%);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.ag-spike-hero h1 {
+  max-width: 920px;
+  font-size: 2.2rem;
+  line-height: 1.04;
+  letter-spacing: 0;
+}
+
+.ag-spike-hero span {
+  width: fit-content;
+  padding: 7px 10px;
+  border: 1px solid hsl(43 80% 64% / 0.4);
+  border-radius: 8px;
+  color: hsl(174 62% 72%);
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.ag-spike-hero small {
+  max-width: 760px;
+  color: hsl(42 28% 83%);
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.ag-spike-contract {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.ag-spike-contract div,
+.ag-spike-band,
+.ag-spike-variant-slot,
+.ag-spike-surface {
+  border: 1px solid hsl(43 78% 66% / 0.24);
+  border-radius: 8px;
+  background: hsl(220 18% 9% / 0.74);
+}
+
+.ag-spike-contract div {
+  display: grid;
+  gap: 8px;
+  min-height: 92px;
+  padding: 14px;
+}
+
+.ag-spike-contract strong {
+  color: hsl(42 32% 94%);
+  font-size: 0.98rem;
+  line-height: 1.28;
+  overflow-wrap: anywhere;
+}
+
+.ag-spike-placeholder {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.ag-spike-band {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-color: hsl(174 62% 60% / 0.34);
+  background: hsl(172 31% 12% / 0.52);
+}
+
+.ag-spike-band strong {
+  color: hsl(174 68% 77%);
+  font-size: 1.12rem;
+  line-height: 1.35;
+}
+
+.ag-spike-variant-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ag-spike-variant-slot {
+  position: relative;
+  display: grid;
+  min-height: 220px;
+  gap: 12px;
+  align-content: end;
+  padding: 18px;
+  overflow: hidden;
+}
+
+.ag-spike-variant-slot::before {
+  content: "";
+  position: absolute;
+  inset: 18px 18px auto auto;
+  width: 74px;
+  aspect-ratio: 1;
+  border: 2px solid hsl(43 84% 66% / 0.58);
+  transform: rotate(45deg);
+}
+
+.ag-spike-variant-slot::after {
+  content: "";
+  position: absolute;
+  top: 42px;
+  right: 42px;
+  width: 26px;
+  aspect-ratio: 1;
+  border: 1px solid hsl(174 62% 70% / 0.62);
+}
+
+.ag-spike-variant-slot h2 {
+  max-width: 260px;
+  color: hsl(42 30% 94%);
+  font-size: 1.34rem;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.ag-spike-variant-slot p {
+  max-width: 300px;
+  color: hsl(42 22% 78%);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.ag-spike-surface {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.ag-spike-surface h2 {
+  color: hsl(42 30% 94%);
+  font-size: 1rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.ag-spike-surface ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.ag-spike-surface li {
+  color: hsl(42 21% 80%);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 920px) {
+  .antigravity-spike-host {
+    padding: 18px;
+  }
+
+  .ag-spike-contract,
+  .ag-spike-variant-grid {
+    grid-template-columns: 1fr;
+  }
+}

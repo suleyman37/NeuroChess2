@@ -48,7 +48,17 @@ function Write-ProposalPack {
         rollback_plan = "Delete the fixture file from the sandbox proposal."
         recommended_codex_action = "ACCEPT"
     } | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath (Join-Path $Dir "proposal.json") -Encoding UTF8
-    Set-Content -LiteralPath (Join-Path $Dir "patch.diff") -Value ("diff --git a/$FilePath b/$FilePath`n+++ b/$FilePath`n") -Encoding UTF8
+    Set-Content -LiteralPath (Join-Path $Dir "patch.diff") -Value @(
+        "diff --git a/$FilePath b/$FilePath",
+        "new file mode 100644",
+        "index 0000000..3333333",
+        "--- /dev/null",
+        "+++ b/$FilePath",
+        "@@ -0,0 +1,3 @@",
+        "+# Antigravity Bridge Fixture",
+        "+",
+        "+Safe dummy proposal."
+    ) -Encoding UTF8
     Set-Content -LiteralPath (Join-Path $Dir "summary.md") -Value "Safe fixture proposal for bridge testing." -Encoding UTF8
     Set-Content -LiteralPath (Join-Path $Dir "risk_report.json") -Value '{"risk":"low"}' -Encoding UTF8
     Set-Content -LiteralPath (Join-Path $Dir "test_report.json") -Value '{"tests":"fixture pass"}' -Encoding UTF8
@@ -70,7 +80,7 @@ try {
     Assert-True ($missing.status -eq "PROPOSAL_NOT_FOUND") "missing proposal should return PROPOSAL_NOT_FOUND"
 
     $safe = Join-Path $tempRoot "outbox\proposal_pack"
-    Write-ProposalPack -Dir $safe -Nonce "a20bk-safe-nonce" -FilePath "frontend/src/dev/antigravity_transport_dummy/sample.md"
+    Write-ProposalPack -Dir $safe -Nonce "a20bk-safe-nonce" -FilePath "frontend/src/dev/antigravity-spikes/bridge-fixture.md"
     $valid = Invoke-Bridge -Arguments @("-Mode", "ValidateOutbox", "-ArtifactRoot", $tempRoot, "-ExpectedBaseCommit", $expected, "-NonceLedgerPath", (Join-Path $tempRoot "nonce_safe.json"), "-NoPrompt")
     Assert-True ($valid.status -eq "ANTIGRAVITY_BRIDGE_PROPOSAL_VALID") "safe dummy proposal should validate"
 

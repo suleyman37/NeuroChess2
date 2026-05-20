@@ -6,14 +6,14 @@
   "base_commit": "a8f46fc",
   "objective": "Add a DEV-only visual spike note for review by Codex without touching product behavior.",
   "files_changed": [
-    "docs/autopilot/ANTIGRAVITY_SPIKE_NOTES_SAMPLE.md"
+    "docs/autopilot/A20ANTIGRAVITY_SPIKE_NOTES_SAMPLE_REPORT.md"
   ],
   "allowed_paths": [
-    "docs/autopilot/"
+    "docs/autopilot/A20ANTIGRAVITY_SPIKE_NOTES_SAMPLE_REPORT.md"
   ],
   "forbidden_paths": [
     "backend/**",
-    "frontend/**",
+    "frontend/src/App.tsx",
     "package.json",
     "package-lock.json",
     "ops/autopilot/local/**",

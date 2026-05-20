@@ -153,6 +153,10 @@ import {
   type WebVisualRecoveryRunRoute,
 } from "./dev/web-visual-recovery-run/WebVisualRecoveryRun";
 import {
+  AntigravitySpikeHost,
+  type AntigravitySpikeHostRoute,
+} from "./dev/antigravity-spikes/AntigravitySpikeHost";
+import {
   signatureArenaSignatureIds,
   signatureArenaVariantIds,
   type SignatureArenaSignatureId,
@@ -624,6 +628,21 @@ function getWebVisualRecoveryRunDevRoute(): WebVisualRecoveryRunRoute | null {
   return null;
 }
 
+function getAntigravitySpikeDevRoute(): AntigravitySpikeHostRoute | null {
+  if (typeof window === "undefined" || !import.meta.env.DEV) {
+    return null;
+  }
+  if (window.location.pathname !== "/app") {
+    return null;
+  }
+  const params = new URLSearchParams(window.location.search);
+  const value = params.get("antigravitySpike");
+  if (!value) {
+    return null;
+  }
+  return { spikeId: value };
+}
+
 function getSignatureArenaVariantDevRoute(): SignatureArenaVariantRoute | null {
   if (typeof window === "undefined" || !import.meta.env.DEV) {
     return null;
@@ -716,6 +735,9 @@ export default function App() {
   const [webVisualRecoveryRunRoute, setWebVisualRecoveryRunRoute] = useState(() =>
     getWebVisualRecoveryRunDevRoute(),
   );
+  const [antigravitySpikeRoute, setAntigravitySpikeRoute] = useState(() =>
+    getAntigravitySpikeDevRoute(),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -739,6 +761,7 @@ export default function App() {
       setTrueOvernightLiveRunRoute(getTrueOvernightLiveRunDevRoute());
       setTrueOvernightComposerFirstRunRoute(getTrueOvernightComposerFirstRunDevRoute());
       setWebVisualRecoveryRunRoute(getWebVisualRecoveryRunDevRoute());
+      setAntigravitySpikeRoute(getAntigravitySpikeDevRoute());
     };
     window.addEventListener("popstate", handleRouteChange);
     window.addEventListener("hashchange", handleRouteChange);
@@ -845,6 +868,10 @@ export default function App() {
 
   if (webVisualRecoveryRunRoute) {
     return <WebVisualRecoveryRun route={webVisualRecoveryRunRoute} />;
+  }
+
+  if (antigravitySpikeRoute) {
+    return <AntigravitySpikeHost route={antigravitySpikeRoute} />;
   }
 
   if (currentRoute === "/app") {
