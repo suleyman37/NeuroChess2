@@ -15,6 +15,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 function Get-DefaultArtifactPath {
+    if ($MissionId -eq "A20BE") {
+        return (Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BE_gemini_upload_second_pass_20260518")
+    }
     if ($MissionId -eq "A20BD") {
         return (Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\dual_browser_profiles\A20BD_dual_profile_playwright_control_20260518")
     }

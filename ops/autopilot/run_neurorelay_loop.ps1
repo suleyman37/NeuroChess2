@@ -37,6 +37,8 @@ if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BC_gemini_3_5_flash_extended_lane_20260518"
     } elseif ($MissionId -eq "A20BD") {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\dual_browser_profiles\A20BD_dual_profile_playwright_control_20260518"
+    } elseif ($MissionId -eq "A20BE") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BE_gemini_upload_second_pass_20260518"
     } else {
         $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\neurorelay\A20AO_external_intelligence_load_balancer_20260518"
     }
@@ -240,6 +242,41 @@ function Test-A20BBComposerFirstRunReady {
 
 function Get-ProbeAwareObjective {
     param([string[]]$AvoidObjectiveIds = @())
+    if ($MissionId -eq "A20BE") {
+        $objectives = @(
+            [pscustomobject]@{
+                id = "A20BF_TRUE_OVERNIGHT_WITH_CHATGPT_AND_GEMINI"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Run the next bounded live-supervised overnight only if ChatGPT remains composer-first ready and Gemini visual packet status is explicit."
+                risk_tier = "low"
+                allowed_paths = @("frontend/src/dev/**", "scripts/**", "docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("chatgpt_ready_or_parked", "gemini_visual_ready_or_text_only_diagnosed", "local_fallback_preserved")
+            },
+            [pscustomobject]@{
+                id = "A20BF_GEMINI_UPLOAD_THIRD_PASS"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Try a narrower Gemini Web upload repair only if A20BE diagnostics identify a concrete safe upload control gap."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("no_user_prompt", "upload_gap_targeted", "no_paid_api")
+            },
+            [pscustomobject]@{
+                id = "A20BF_SUPERVISOR_TRANSPORT_FABRIC_MULTI_CHANNEL_ROUTER"
+                family = "ORCHESTRATOR_RELIABILITY"
+                expected_value = "Route ChatGPT, Gemini text-only or visual, and OMEGA fallback through one explicit supervisor fabric."
+                risk_tier = "low"
+                allowed_paths = @("docs/autopilot/**", "ops/autopilot/**")
+                forbidden_paths = @("backend/**", "frontend/**", "package.json", "package-lock.json", "ops/autopilot/local/**", "ops/autopilot/runtime/**")
+                success_criteria = @("gemini_text_only_not_counted_as_visual", "visual_packets_optional", "fallback_preserved")
+            }
+        )
+        $avoid = @($AvoidObjectiveIds | ForEach-Object { ([string]$_) -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $candidate = $objectives | Where-Object { $avoid -notcontains $_.id } | Select-Object -First 1
+        if ($candidate) { return $candidate }
+        return $objectives[0]
+    }
     if ($MissionId -eq "A20BD") {
         $objectives = @(
             [pscustomobject]@{
@@ -679,7 +716,7 @@ function Run-OneRelayIteration {
             "-StatePath", (Join-Path $iterDir "external_judge_sre_state.json"),
             "-OutPath", (Join-Path $iterDir "external_judge_sre_health.json")
         )
-        if ($NoLiveWeb -or $MissionId -notin @("A20BC", "A20BD")) { $sreArgs += "-DryRun" }
+        if ($NoLiveWeb -or $MissionId -notin @("A20BC", "A20BD", "A20BE")) { $sreArgs += "-DryRun" }
         $sre = Invoke-JsonScript -ScriptPath $srePath -Arguments $sreArgs
     }
 
@@ -732,6 +769,8 @@ function Run-OneRelayIteration {
             "A20BB produced composer-first ChatGPT Decision Packets and twelve-plus useful deltas; local fallback routes toward Gemini setup or multi-channel supervisor routing before broader night expansion."
         } elseif ($MissionId -eq "A20BC") {
             "A20BC records Gemini Web lane readiness or the precise parked reason; local fallback remains authoritative before any combined ChatGPT/Gemini overnight run."
+        } elseif ($MissionId -eq "A20BE") {
+            "A20BE records Gemini upload second-pass status as visual-ready or text-only/upload-unavailable; local fallback remains authoritative before any combined ChatGPT/Gemini overnight run."
         } elseif ($MissionId -eq "A20AY") {
             "A20AY real full-night run evidence has six-plus useful screenshot-backed pixel deltas; local fallback routes toward A20AZ audit, integration review, or final handoff."
         } elseif ($MissionId -eq "A20AW") {
@@ -797,6 +836,21 @@ function Run-OneRelayIteration {
     if ($sre -and $sre.lanes -and $sre.lanes.gemini) {
         $geminiPacketStatus = [string]$sre.lanes.gemini.state
     }
+    $geminiExternalPacketCount = 0
+    if ($MissionId -eq "A20BE") {
+        $a20beUploadPath = Join-Path $ArtifactPath "visual_packet_result.json"
+        if (Test-Path -LiteralPath $a20beUploadPath -PathType Leaf) {
+            try {
+                $a20beUpload = Get-Content -LiteralPath $a20beUploadPath -Raw | ConvertFrom-Json
+                if (-not [string]::IsNullOrWhiteSpace([string]$a20beUpload.lane_status)) {
+                    $geminiPacketStatus = [string]$a20beUpload.lane_status
+                }
+                if ([bool]$a20beUpload.decision_packet_produced -and [string]$a20beUpload.lane_status -eq "AVAILABLE_VISUAL_PACKET_READY") {
+                    $geminiExternalPacketCount = 1
+                }
+            } catch {}
+        }
+    }
 
     return [pscustomobject]([ordered]@{
         iteration = $Index
@@ -814,7 +868,7 @@ function Run-OneRelayIteration {
         chatgpt_packet_status = if ($NoLiveWeb) { "PARKED_NO_LIVE_WEB" } else { "PARKED_UNATTENDED" }
         gemini_packet_status = $geminiPacketStatus
         local_fallback_packets_count = 1
-        external_decision_packets_count = 0
+        external_decision_packets_count = $geminiExternalPacketCount
         giant_prompt_prevented = [bool]$contract.giant_prompt_prevented
         no_user_intervention = $true
     })

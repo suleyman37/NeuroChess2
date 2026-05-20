@@ -14,6 +14,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 function Get-DefaultArtifactPath {
+    if ($MissionId -eq "A20BE") {
+        return (Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BE_gemini_upload_second_pass_20260518")
+    }
     if ($MissionId -eq "A20BD") {
         return (Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\dual_browser_profiles\A20BD_dual_profile_playwright_control_20260518")
     }
@@ -117,13 +120,13 @@ $args = @(
     "-MaxWaitSeconds", ([string]$MaxWaitSeconds),
     "-NoPrompt"
 )
-if ($DryRun -or $Mode -eq "DryRun") { $args += @("-DryRun", "-MockClassification", "PAGE_USABLE", "-MockComposerVisible", "-MockUploadAvailable") }
-if ($MockVisualPass) { $args += "-MockVisualPacketPass" }
-$output = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "gemini_web_lane_adapter.ps1") @args 2>&1
+if ($DryRun -or $Mode -eq "DryRun") { $args += "-DryRun" }
+if ($MockVisualPass) { $args += @("-MockNativeFileInputWorks", "-MockVisualResponseValid") }
+$output = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "gemini_upload_adapter.ps1") @args 2>&1
 $adapter = Convert-JsonOutput -Output $output
 $base.adapter_status = [string]$adapter.status
 $base.visual_packet_result = [string]$adapter.visual_packet_result
 $base.decision_packet_produced = [bool]$adapter.decision_packet_produced
-$base.status = if ($base.visual_packet_result -eq "GEMINI_VISUAL_PACKET_SMOKE_PASS") { "GEMINI_VISUAL_PACKET_SMOKE_PASS" } elseif ($base.visual_packet_result -eq "GEMINI_UPLOAD_UNAVAILABLE") { "GEMINI_UPLOAD_UNAVAILABLE" } else { "GEMINI_VISUAL_PACKET_SMOKE_PARTIAL" }
+$base.status = if ($base.visual_packet_result -eq "GEMINI_VISUAL_PACKET_READY" -or $base.adapter_status -eq "GEMINI_VISUAL_PACKET_READY") { "GEMINI_VISUAL_PACKET_SMOKE_PASS" } elseif ($base.visual_packet_result -eq "GEMINI_UPLOAD_UNAVAILABLE_DIAGNOSED" -or $base.adapter_status -eq "GEMINI_UPLOAD_UNAVAILABLE_DIAGNOSED") { "GEMINI_UPLOAD_UNAVAILABLE" } else { "GEMINI_VISUAL_PACKET_SMOKE_PARTIAL" }
 Write-JsonFile -Path $OutPath -Payload $base
 $base | ConvertTo-Json -Depth 60

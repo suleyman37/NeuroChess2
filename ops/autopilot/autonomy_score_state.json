@@ -1,11 +1,11 @@
 {
   "schema_version": "autonomy_score_state_v1",
-  "updated_by": "A20BD_DUAL_BROWSER_PROFILE_ISOLATION_PLAYWRIGHT_CONTROL",
+  "updated_by": "A20BE_GEMINI_UPLOAD_SECOND_PASS",
   "scores": {
     "safety_git": 18.7,
     "operator_zero_friction": 18.4,
     "web_orchestrator": 18.1,
-    "external_judge_reliability": 18.5,
+    "external_judge_reliability": 18.7,
     "autonomous_loop": 19.5,
     "visual_production": 19.0,
     "art_direction_concrete": 18.2,
@@ -54,7 +54,8 @@
     "A20AZ adds a true-overnight live-supervised route and actively records ChatGPT/Gemini attempts or parked lanes, but does not raise score because runtime minimum and live supervisor success were not proven.",
     "A20BB restores ChatGPT Web supervision with the composer-first classifier, records eight ChatGPT attempts and four successful Decision Packets, and keeps the overall score at 19.5 without arbitrary inflation.",
     "A20BC opens Gemini Web through the free browser lane, proves a zero-cost text smoke, records exact-model and upload limitations honestly, and keeps the overall score at 19.5.",
-    "A20BD isolates ChatGPT and Gemini into separate browser profiles and CDP ports, adds screenshot-first Playwright visual control, confirms both lanes are currently PAGE_USABLE, and keeps the overall score at 19.5 because Gemini visual upload and exact model remain incomplete."
+    "A20BD isolates ChatGPT and Gemini into separate browser profiles and CDP ports, adds screenshot-first Playwright visual control, confirms both lanes are currently PAGE_USABLE, and keeps the overall score at 19.5 because Gemini visual upload and exact model remain incomplete.",
+    "A20BE runs a no-user-intervention Gemini upload second pass on CDP 9223, diagnoses upload unavailable after four safe adapters, sends an ntfy informational alert, and keeps Gemini text-only without claiming visual judge readiness."
   ],
   "a20ap_score_update": {
     "before_overall": 17.0,
@@ -367,5 +368,34 @@
       "gemini_visual_packet_smoke.ps1 still returns GEMINI_UPLOAD_UNAVAILABLE, so visual judge readiness remains unclaimed."
     ],
     "not_ready_for_chatgpt_and_gemini_true_night_reason": "Dual profiles and Gemini text supervision are ready, but exact Gemini model/mode and visual upload packet proof remain incomplete."
+  },
+  "a20be_score_update": {
+    "before_overall": 19.5,
+    "after_overall": 19.5,
+    "external_judge_reliability_before": 18.7,
+    "external_judge_reliability_after": 18.7,
+    "gemini_cdp_port": 9223,
+    "gemini_page_usable": true,
+    "gemini_model_selector_second_pass": "GEMINI_MODEL_MENU_VISIBLE_TARGET_NOT_FOUND",
+    "gemini_3_5_flash_visible": false,
+    "extended_thinking_mode_visible": false,
+    "text_smoke_result": "GEMINI_TEXT_SMOKE_RESPONSE_UNREAD",
+    "upload_adapter_native_file_input": "NOT_FOUND_OR_UNSUPPORTED",
+    "upload_adapter_file_chooser": "NOT_FOUND_OR_UNSUPPORTED",
+    "upload_adapter_drag_drop": "UNSUPPORTED_OR_NOT_CONFIRMED",
+    "upload_adapter_clipboard": "UNSUPPORTED_OR_NOT_CONFIRMED",
+    "visual_packet_result": "GEMINI_UPLOAD_UNAVAILABLE_DIAGNOSED",
+    "decision_packet_produced": false,
+    "gemini_lane_status": "AVAILABLE_TEXT_ONLY_UPLOAD_UNAVAILABLE",
+    "ntfy_alert_sent": true,
+    "score_inflation_prevented": true,
+    "evidence": [
+      "gemini_model_selector_second_pass.ps1 captured before/after screenshots and redacted DOM labels without selecting an unavailable target model.",
+      "gemini_upload_adapter.ps1 selected an isolated screenshot and rejected contact sheets as primary evidence.",
+      "Native file input, file chooser, drag/drop, and clipboard upload adapters did not confirm an attachment.",
+      "No visual prompt was sent before attachment confirmation, so no Gemini visual Decision Packet was claimed.",
+      "external_judge_sre.ps1 sent an ntfy informational alert for GEMINI_UPLOAD_UNAVAILABLE_DIAGNOSED while Codex continued offline."
+    ],
+    "not_ready_for_chatgpt_and_gemini_true_night_reason": "Gemini remains usable as a text lane but not as a visual judge until upload attachment is confirmed."
   }
 }

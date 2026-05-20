@@ -244,3 +244,21 @@ entries:
     expires_after_missions: 20
     confidence: high
     source_mission: A20BD
+  - id: memory-a20be-gemini-upload-adapters
+    date: 2026-05-20
+    category: visual_supervision
+    lesson: "Gemini visual supervision requires confirmed screenshot attachment before any visual prompt is sent."
+    evidence: "A20BE tried native file input, file chooser, drag/drop, and clipboard paths; none confirmed attachment, so no visual Decision Packet was claimed."
+    action_rule: "Keep Gemini as text-only/upload-unavailable until an adapter confirms an isolated screenshot attachment."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BE
+  - id: memory-a20be-model-selector-no-faking
+    date: 2026-05-20
+    category: supervisor_robustness
+    lesson: "Do not pretend Gemini 3.5 Flash or Extended/Thinking mode is selected unless visible current UI labels prove it."
+    evidence: "A20BE opened the safe selector/mode control but did not find exact Gemini 3.5 Flash or Extended labels."
+    action_rule: "Report target model/mode as not exact and continue with OMEGA fallback rather than forcing model selection."
+    expires_after_missions: 20
+    confidence: high
+    source_mission: A20BE

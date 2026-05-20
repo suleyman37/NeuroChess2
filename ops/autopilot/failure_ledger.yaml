@@ -1,5 +1,5 @@
 schema_version: failure_ledger_v2
-updated_by: A20BD_DUAL_BROWSER_PROFILE_ISOLATION_PLAYWRIGHT_CONTROL
+updated_by: A20BE_GEMINI_UPLOAD_SECOND_PASS
 entries:
   - id: a20az-chatgpt-cdp-unavailable
     mission_id: A20AZ
@@ -67,31 +67,41 @@ entries:
     ntfy_alert_sent: false
     user_intervention_required: false
     loop_continued: true
+  - id: a20be-gemini-upload-unavailable-diagnosed
+    mission_id: A20BE
+    failed_lane: gemini_visual_packet
+    reason: GEMINI_UPLOAD_UNAVAILABLE_DIAGNOSED_AFTER_SAFE_ADAPTERS
+    recurrence_count: 3
+    parked_until: upload_control_visible_or_third_pass_targeted
+    do_not_repeat_rule: do_not_send_visual_prompt_until_attachment_confirmed
+    next_safe_alternative: gemini_text_only_plus_chatgpt_composer_first_and_local_omega
+    ntfy_alert_sent: true
+    user_intervention_required: false
+    loop_continued: true
 last_run_summary:
-  mission_id: A20BD
+  mission_id: A20BE
   blockers:
-    - GEMINI_MODEL_SELECTOR_NOT_FOUND
-    - GEMINI_UPLOAD_UNAVAILABLE
+    - GEMINI_MODEL_MENU_VISIBLE_TARGET_NOT_FOUND
+    - GEMINI_UPLOAD_UNAVAILABLE_DIAGNOSED
   resolved:
-    - CHATGPT_PROFILE_ISOLATED_CDP_9222
     - GEMINI_PROFILE_ISOLATED_CDP_9223
-    - CHATGPT_VISUAL_CONTROL_PAGE_USABLE
     - GEMINI_VISUAL_CONTROL_PAGE_USABLE
-    - GEMINI_TEXT_SMOKE_PASS
+    - SAFE_UPLOAD_ADAPTER_SEQUENCE_RECORDED
+    - CONTACT_SHEET_PRIMARY_REJECTED
+    - NTFY_UPLOAD_UNAVAILABLE_ALERT_SENT
   repeated_blocked_lanes:
     - gemini_visual_packet
   live_lanes_required: false
   loop_continued: true
   kill_switch_triggered: false
-  chatgpt_profile_isolated: true
   gemini_profile_isolated: true
-  chatgpt_cdp_port: 9222
   gemini_cdp_port: 9223
   gemini_page_opened: true
   gemini_composer_usable: true
-  gemini_text_smoke: GEMINI_TEXT_SMOKE_PASS
-  gemini_visual_packet: GEMINI_UPLOAD_UNAVAILABLE
+  gemini_text_smoke: GEMINI_TEXT_SMOKE_RESPONSE_UNREAD
+  gemini_visual_packet: GEMINI_UPLOAD_UNAVAILABLE_DIAGNOSED
   selected_model: MODEL_NOT_EXACT
+  gemini_lane_status: AVAILABLE_TEXT_ONLY_UPLOAD_UNAVAILABLE
 policy:
   repeat_threshold: 2
   repeated_failure_action: avoid_lane_unless_explicitly_unparked

@@ -24,7 +24,11 @@ if ($CDPPort -eq 0) {
     $CDPPort = if ($Service -eq "chatgpt") { 9222 } else { 9223 }
 }
 if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
-    $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\dual_browser_profiles\A20BD_dual_profile_playwright_control_20260518"
+    if ($MissionId -eq "A20BE") {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BE_gemini_upload_second_pass_20260518"
+    } else {
+        $ArtifactPath = Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\dual_browser_profiles\A20BD_dual_profile_playwright_control_20260518"
+    }
 }
 if ([string]::IsNullOrWhiteSpace($OutPath)) {
     $OutPath = Join-Path $ArtifactPath ("{0}_state_capture.json" -f $Service)

@@ -24,6 +24,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 function Get-DefaultArtifactPath {
+    if ($MissionId -eq "A20BE") {
+        return (Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\gemini_web_lane\A20BE_gemini_upload_second_pass_20260518")
+    }
     if ($MissionId -eq "A20BD") {
         return (Join-Path $env:USERPROFILE "Documents\Dev\NeuroChess_QA_Artifacts\autopilot\dual_browser_profiles\A20BD_dual_profile_playwright_control_20260518")
     }
@@ -500,10 +503,10 @@ function Invoke-ParkGeminiLane {
 }
 
 function New-DecisionPacket {
-    param([string]$Evidence)
+    param([string]$Evidence, [string]$PacketType = "strategy_review")
     [ordered]@{
         source = "gemini"
-        packet_type = "visual_review"
+        packet_type = $PacketType
         confidence = "medium"
         recommended_action = "Use Gemini visual lane feedback as advisory evidence only; keep local OMEGA and Mission Doctor authoritative."
         candidate_mission = [ordered]@{
@@ -657,18 +660,43 @@ if ($Mode -eq "ParkLane") {
     $statusBase.status = "GEMINI_WEB_LANE_PAGE_NOT_USABLE"
 } elseif ($Mode -eq "SendTextSmoke") {
     $statusBase.text_smoke_result = if ($MockTextSmokePass) { "GEMINI_TEXT_SMOKE_PASS" } else { [string]$probe.text_smoke_result }
-    $statusBase.status = if ($statusBase.text_smoke_result -eq "GEMINI_TEXT_SMOKE_PASS") { "GEMINI_WEB_LANE_READY" } else { "GEMINI_WEB_LANE_PARTIAL_NEEDS_SECOND_PASS" }
+    $statusBase.status = if ($statusBase.text_smoke_result -eq "GEMINI_TEXT_SMOKE_PASS") {
+        if ($MissionId -eq "A20BE") { "GEMINI_AVAILABLE_TEXT_ONLY" } else { "GEMINI_WEB_LANE_READY" }
+    } else { "GEMINI_WEB_LANE_PARTIAL_NEEDS_SECOND_PASS" }
     if ($statusBase.text_smoke_result -eq "GEMINI_TEXT_SMOKE_PASS") {
         $packetPath = Join-Path $ArtifactPath "gemini_decision_packet.json"
-        Write-JsonFile -Path $packetPath -Payload (New-DecisionPacket -Evidence "Gemini text smoke")
+        Write-JsonFile -Path $packetPath -Payload (New-DecisionPacket -Evidence "Gemini text smoke" -PacketType "strategy_review")
         $statusBase.decision_packet_produced = $true
     }
 } elseif ($Mode -eq "SendVisualPacket") {
+    if ($MissionId -eq "A20BE" -and -not $DryRun -and -not $MockVisualPacketPass) {
+        $uploadOut = Join-Path $ArtifactPath "visual_packet_result.json"
+        $uploadArgs = @(
+            "-Mode", "SendVisualPacket",
+            "-MissionId", $MissionId,
+            "-VisualEvidencePath", $VisualEvidencePath,
+            "-CDPPort", ([string]$CDPPort),
+            "-ArtifactPath", $ArtifactPath,
+            "-OutPath", $uploadOut,
+            "-MaxWaitSeconds", ([string]$MaxWaitSeconds),
+            "-NoPrompt"
+        )
+        $uploadOutput = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "gemini_upload_adapter.ps1") @uploadArgs 2>&1
+        $upload = Convert-JsonOutput -Output $uploadOutput
+        $statusBase.status = [string]$upload.status
+        $statusBase.visual_packet_result = [string]$upload.visual_packet_result
+        $statusBase.upload_available = [bool]$upload.attachment_confirmed
+        $statusBase.decision_packet_produced = [bool]$upload.decision_packet_produced
+        $statusBase.gemini_lane_status = [string]$upload.lane_status
+        Write-JsonFile -Path $OutPath -Payload $statusBase
+        $statusBase | ConvertTo-Json -Depth 80
+        exit 0
+    }
     $statusBase.visual_packet_result = if ($MockVisualPacketPass) { "GEMINI_VISUAL_PACKET_SMOKE_PASS" } else { [string]$probe.visual_packet_result }
     $statusBase.status = if ($statusBase.visual_packet_result -eq "GEMINI_VISUAL_PACKET_SMOKE_PASS") { "GEMINI_WEB_LANE_READY" } else { "GEMINI_WEB_LANE_PARTIAL_NEEDS_SECOND_PASS" }
     if ($statusBase.visual_packet_result -eq "GEMINI_VISUAL_PACKET_SMOKE_PASS") {
         $packetPath = Join-Path $ArtifactPath "gemini_decision_packet.json"
-        Write-JsonFile -Path $packetPath -Payload (New-DecisionPacket -Evidence $VisualEvidencePath)
+        Write-JsonFile -Path $packetPath -Payload (New-DecisionPacket -Evidence $VisualEvidencePath -PacketType "visual_review")
         $statusBase.decision_packet_produced = $true
     }
 } elseif ([bool]$model.gemini_3_5_flash_visible -and [bool]$model.extended_thinking_mode_visible) {
