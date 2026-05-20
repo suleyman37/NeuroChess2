@@ -34,8 +34,8 @@ const variants: Record<VariantId, VariantData> = {
     name: "3. Radical but Board-Safe",
     stage: "Practice / Spaced Revision CTA",
     safety: "Medium-High. Sits in bottom margin, zero board pollution.",
-    avoided: "Pre-feedback answer cues or direction prompts.",
-    rationale: "Split-prism chevrons representing the decision crossroads. High-contrast volcanic amber."
+    avoided: "Answer cues, loud direction prompts, and board overlays.",
+    rationale: "Split-prism chevrons representing the decision crossroads. High-contrast amber."
   }
 };
 
@@ -96,6 +96,16 @@ export default function CriticalMomentSigilSpike() {
       <path d="M 22 22 V 38 M 78 22 V 38 M 22 78 V 62 M 78 78 V 62" stroke="hsl(43 78% 67%)" strokeWidth="1" strokeLinecap="round" />
       <rect x="41" y="41" width="18" height="18" rx="2" transform="rotate(45 50 50)" stroke="hsl(174 58% 60%)" strokeWidth="1" fill="none" />
       <circle cx="50" cy="50" r="1.8" fill="hsl(42 72% 74%)" />
+    </svg>
+  );
+
+  const renderRadicalSafeV2 = (cls = "svg-sigil") => (
+    <svg className={`${cls} radical-safe-v2`} viewBox="0 0 100 100">
+      <rect x="18" y="26" width="64" height="48" rx="8" stroke="hsl(214 14% 48%)" strokeWidth="0.9" fill="none" />
+      <path d="M 28 50 H 41 M 59 50 H 72" stroke="hsl(42 58% 68%)" strokeWidth="1.1" strokeLinecap="round" />
+      <path d="M 42 39 L 50 50 L 42 61 M 58 39 L 50 50 L 58 61" stroke="hsl(176 44% 60%)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <circle cx="50" cy="50" r="3" fill="hsl(42 62% 68%)" />
+      <path d="M 32 31 H 42 M 58 69 H 68" stroke="hsl(42 44% 54%)" strokeWidth="0.8" strokeLinecap="round" />
     </svg>
   );
 
@@ -194,7 +204,7 @@ export default function CriticalMomentSigilSpike() {
           <li><strong>No anatomical / medical visuals:</strong> Strictly geometric vector symbols.</li>
           <li><strong>No raw scores or engine internal data:</strong> Only focuses on learning review forks.</li>
           <li><strong>No loud arcade treatment:</strong> Harmonious design built with gold, platinum, and teal lines.</li>
-          <li><strong>No pre-decision hints:</strong> Highlights the location, never reveals the answer.</li>
+          <li><strong>No answer reveal:</strong> Highlights the location, never reveals the move.</li>
         </ul>
       </footer>
 
@@ -276,6 +286,41 @@ export default function CriticalMomentSigilSpike() {
             </ul>
           </article>
         </div>
+
+        <section className="radical-risk-reduction" data-testid="radical-risk-reduction-panel">
+          <div className="risk-panel-copy">
+            <span className="comparison-label">A20BS risk reduction</span>
+            <h3>Radical but Board-Safe: v2 Comparison</h3>
+            <p>
+              The current radical mark keeps ambition, but its sharp chevrons and hotter
+              contrast can pull too much attention. v2 keeps the crossroads idea while
+              moving it into a calmer margin signal.
+            </p>
+          </div>
+
+          <div className="risk-comparison-grid">
+            <article data-testid="radical-original-risk-card">
+              <div className="comparison-sigil risk-original">{renderSVG("radical_safe", "svg-sigil")}</div>
+              <h4>Current Radical</h4>
+              <p>Bold and memorable, but still the riskiest imported direction.</p>
+            </article>
+
+            <article className="preferred" data-testid="radical-safe-v2-card">
+              <div className="comparison-sigil risk-v2">{renderRadicalSafeV2()}</div>
+              <h4>Radical but Board-Safe v2</h4>
+              <p>
+                Softer geometry, lower contrast, and frame-margin placement. It reads as
+                serious craft instead of spectacle.
+              </p>
+            </article>
+
+            <article className="safe-reference" data-testid="premium-clarity-v3-reference-card">
+              <div className="comparison-sigil frame-anchored">{renderPremiumClarityV3()}</div>
+              <h4>Safe Reference</h4>
+              <p>Premium Clarity v3 remains the safest DEV candidate for future exploration.</p>
+            </article>
+          </div>
+        </section>
       </section>
     </div>
   );

@@ -60,8 +60,11 @@ async function main() {
             Boolean(document.querySelector('[data-testid="codex-omega-refined-candidate"]')) &&
             Boolean(document.querySelector('[data-testid="live-lane-refined-candidate"]')) &&
             Boolean(document.querySelector('[data-testid="multi-agent-final-recommendation"]')) &&
+            Boolean(document.querySelector('[data-testid="radical-risk-reduction-panel"]')) &&
+            Boolean(document.querySelector('[data-testid="radical-safe-v2-card"]')) &&
             text.includes("Premium Clarity v2") &&
             text.includes("Premium Clarity v3") &&
+            text.includes("Radical but Board-Safe v2") &&
             text.includes("Gemini visual review") &&
             text.includes("ChatGPT strategy review"),
           text,
@@ -86,16 +89,25 @@ async function main() {
         live_lane_refined_visible: Boolean(
           document.querySelector('[data-testid="live-lane-refined-candidate"]'),
         ),
+        radical_risk_panel_visible: Boolean(
+          document.querySelector('[data-testid="radical-risk-reduction-panel"]'),
+        ),
+        radical_safe_v2_visible: Boolean(document.querySelector('[data-testid="radical-safe-v2-card"]')),
+        premium_clarity_v3_reference_visible: Boolean(
+          document.querySelector('[data-testid="premium-clarity-v3-reference-card"]'),
+        ),
         recommendation_visible: Boolean(
           document.querySelector('[data-testid="multi-agent-final-recommendation"]'),
         ),
         premium_clarity_v2_visible: text.includes("Premium Clarity v2"),
         premium_clarity_v3_visible: text.includes("Premium Clarity v3"),
+        radical_safe_v2_text_visible: text.includes("Radical but Board-Safe v2"),
         board_visible: Boolean(document.querySelector(".board")),
         board_square_count: document.querySelectorAll(".board .square").length,
         svg_count: document.querySelectorAll(".sigil-spike svg").length,
         forbidden_visible: forbiddenVisible,
-        fake_progress_visible: normalized.includes("xp") || normalized.includes("rank"),
+        fake_progress_visible: /(^|\W)(xp|rank|ranks)(\W|$)/i.test(text),
+        risky_hint_copy_visible: normalized.includes("pre-feedback"),
         move_solution_visible:
           normalized.includes("best move") ||
           normalized.includes("correct move") ||
@@ -112,6 +124,9 @@ async function main() {
     if (!routeState.recommendation_visible) {
       harness.fail("recommendation_visible", JSON.stringify(routeState));
     }
+    if (!routeState.radical_risk_panel_visible || !routeState.radical_safe_v2_visible) {
+      harness.fail("radical_safe_v2_visible", JSON.stringify(routeState));
+    }
     if (routeState.board_square_count !== 64) {
       harness.fail("board_square_count", JSON.stringify(routeState));
     }
@@ -120,6 +135,9 @@ async function main() {
     }
     if (routeState.fake_progress_visible) {
       harness.fail("fake_progress_visible", JSON.stringify(routeState));
+    }
+    if (routeState.risky_hint_copy_visible) {
+      harness.fail("risky_hint_copy_visible", JSON.stringify(routeState));
     }
     if (routeState.move_solution_visible) {
       harness.fail("pre_feedback_solution_visible", JSON.stringify(routeState));
